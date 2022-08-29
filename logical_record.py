@@ -4,7 +4,7 @@ from common.data_types import *
 class LogicalRecordSegment(object):
 
     def __init__(self,
-                 length:int,
+                 segment_length:int,
                  logical_record_type:int,
                  is_eflr:str,
                  has_predecessor_segment:str,
@@ -19,7 +19,7 @@ class LogicalRecordSegment(object):
         '''  
 
 
-        :length --> Integer
+        :segment_length --> Integer. Denotes the length of logical record segment in bytes.
         
         :logical_record_type --> Integer denoting the Logical Record Type (to be converted to USHORT). 
         For all record types please see: http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2
@@ -74,7 +74,7 @@ class LogicalRecordSegment(object):
         '''
 
 
-        self.length = length
+        self.segment_length = segment_length
         self.logical_record_type = logical_record_type
 
         # Attributes
@@ -89,7 +89,7 @@ class LogicalRecordSegment(object):
 
 
     def get_bytes(self):
-        _length = get_unorm(self.length)
+        _length = get_unorm(self.segment_length)
         _logical_record_type = get_ushort(self.logical_record_type)
         _attributes = get_ushort(
             int(
@@ -107,6 +107,12 @@ class LogicalRecordSegment(object):
 
         return _length + _attributes + _logical_record_type
 
+
+
+
+    # def get_trailer_length(self):
+
+    #     trailer_lengt
 
 # s = LogicalRecordSegment(124,0,"1","0","0","0","0","0","0","0")
 # print(s.get_bytes())

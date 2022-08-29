@@ -16,10 +16,12 @@ class VisibleRecord(object):
 
     '''
     
-    def __init__(self, visible_record_length, logical_record_segments):
-        self.visible_record_length = visible_record_length
+    def __init__(self, logical_record_segments):
         self.format_version = get_ushort(255) + get_ushort(1)
         self.logical_record_segments = [] 
+        
+        #TODO some of all three in bytes (2 (from visible_record_length) + 2 (from format_version) + sum of len of all logical_record_segments) 
+        self.visible_record_length = None
 
 # q1 = fs.read(4)
 # q2 = fs.read(5)
