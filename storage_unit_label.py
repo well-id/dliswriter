@@ -30,7 +30,12 @@ class StorageUnitLabel(object):
 
     '''
 
-    def __init__(self, storage_unit_sequence_number, dlis_version, storage_unit_structure, max_record_length, storage_set_identifier):
+    def __init__(self,
+                 storage_unit_sequence_number:int=None, # It indicates the order in which the current Storage Unit appears in a Storage Set.
+                 storage_set_identifier:str=None, # ID of the storage set (eg. "Default Storage Set")
+                 dlis_version='V1.00',
+                 storage_unit_structure='RECORD',
+                 max_record_length=8192):
 
         self.storage_unit_sequence_number = storage_unit_sequence_number
         self.dlis_version = dlis_version
@@ -42,6 +47,10 @@ class StorageUnitLabel(object):
 
 
     def get_as_bytes(self):
+        '''
+        Converts the arguments passed to __init__ to ASCII as per the RP66 V1 specifications and 
+        returns bytes.
+        '''
 
         # Storage Unit Sequence Number
         _susn_as_bytes = get_ascii_bytes(self.storage_unit_sequence_number, 4)
@@ -61,3 +70,6 @@ class StorageUnitLabel(object):
         self.as_bytes = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
         
         return self.as_bytes
+
+# q = StorageUnitLabel()
+# q.get_as_bytes()

@@ -16,7 +16,9 @@ class VisibleRecord(object):
 
     '''
     
-    def __init__(self, logical_record_segments):
+    def __init__(self,
+                 logical_record_segments:list=None):
+        
         self.format_version = get_ushort(255) + get_ushort(1)
         self.logical_record_segments = [] 
         

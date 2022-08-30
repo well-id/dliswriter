@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" type="text/css" href="static/bootstrap/css/bootstrap.min.css">
+  <link rel="stylesheet" type="text/css" href="static/css/sidebars.css">
+  <link rel="stylesheet" type="text/css" href="static/highlight/styles/default.min.css">
+  <title>DLIS Writer Documentation</title>
+</head>
+<body>
+
+
+  <!-- NAVBAR -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background: #1A374D !important" aria-label="Eighth navbar example">
+    <div class="container">
+      <a class="navbar-brand" href="#">DLIS Writer Documentation</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainNavbar">
+        <form role="search" class="ms-auto">
+          <input class="form-control my-2" type="search" placeholder="Search" aria-label="Search">
+        </form>
+      </div>
+    </div>
+  </nav>
+
+  <!-- SIDEBAR -->
+  <div class="flex-shrink-0 p-3 bg-white mt-3" style="width: 280px; position: fixed !important;">
+    <ul class="list-unstyled ps-0">
+      <li class="mb-1">
+        <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#home-collapse" aria-expanded="true">
+          Introduction
+        </button>
+        <div class="collapse show" id="home-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Overview</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Updates</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Reports</a></li>
+          </ul>
+        </div>
+      </li>
+      <li class="mb-1">
+        <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#dashboard-collapse" aria-expanded="false">
+          Tutorial
+        </button>
+        <div class="collapse" id="dashboard-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Overview</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Weekly</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Monthly</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Annually</a></li>
+          </ul>
+        </div>
+      </li>
+      <li class="mb-1">
+        <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#orders-collapse" aria-expanded="false">
+          API reference
+        </button>
+        <div class="collapse" id="orders-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">New</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Processed</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Shipped</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Returned</a></li>
+          </ul>
+        </div>
+      </li>
+      <li class="border-top my-3"></li>
+      <li class="mb-1">
+        <button class="btn btn-toggle d-inline-flex align-items-center rounded border-0 collapsed" data-bs-toggle="collapse" data-bs-target="#account-collapse" aria-expanded="false">
+          Account
+        </button>
+        <div class="collapse" id="account-collapse">
+          <ul class="btn-toggle-nav list-unstyled fw-normal pb-1 small">
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">New...</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Profile</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Settings</a></li>
+            <li><a href="#" class="link-dark d-inline-flex text-decoration-none rounded">Sign out</a></li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <!-- TEMP -->
+  <div class="container" style="height: 1000px; position: relative; padding-left: 248px !important;">
+    
+    <pre>
+      <code class="python">print(hello)</code>
+    </pre>
+
+  </div>
+
+
+  <script src="static/bootstrap/js/bootstrap.min.js"></script>
+  <script src="static/js/sidebars.js"></script>
+  <script src="static/highlight/highlight.min.js"></script>
+</body>
+</html>

@@ -22,9 +22,9 @@ storage_set_identifier = 'Default Storage Set'
 ''' FOR EACH LOGICAL RECORD SEGMENT IN A LOGICAL FILE '''
 
 # LOGICAL RECORD SEGMENT
-
 logical_record_segment_length = None
 
+# LOGICAL RECORD SEGMENT ATTRIBUTES
 is_eflr = '1' # 1 or 0
 has_predecessor_segment = '0' # 1 or 0
 has_successor_segment = '0' # 1 or 0
@@ -34,9 +34,17 @@ has_checksum = '0' # 1 or 0
 has_trailing_length = '0' # 1 or 0
 has_padding = '0' # 1 or 0
 
+# LOGICAL RECORD TYPE
+logical_record_type = 0 # FHLR
+
+# SET COMPONENT
+component_type = 'SET'
+set_type = 'FILE-HEADER'
 
 
 
+# x = StorageUnitLabel()
+# print(x)
 
-x = StorageUnitLabel()
-print(x)
+
+# channel_filepath = './data/data.csv'
