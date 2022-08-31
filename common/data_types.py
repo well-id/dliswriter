@@ -1,5 +1,6 @@
 from struct import Struct
 
+from converters import get_datetime
 
 # FSHORT = Struct('>h')
 # def read_fshort(value):
@@ -58,6 +59,27 @@ def read_struct(struct_type, packed_value):
 	return struct_type_dict[struct_type].unpack(packed_value)[0]
 
 def write_struct(struct_type, value):
-	return struct_type_dict[struct_type].pack(value)
+	if struct_type == 'ASCII':
+		return value.encode('ascii')
+	elif struct_type == 'UVARI':
+	    if value > 127:
+	    	if value > 16383:
+	    		value = '{0:08b}'.format(value)
+	    		value = '11' + (30 - len(value)) * '0' + value
+	    		return write_struct('ULONG', int(value,2))
+	    	else:
+	    		value = '{0:08b}'.format(value)
+	    		value = '10' + (14 - len(value)) * '0' + value
+	    		return write_struct('UNORM', int(value,2))
+	    		
+	    return write_struct('USHORT',int('{0:08b}'.format(value),2))
+
+	elif struct_type == 'IDENT':
+		return write_struct('USHORT', len(value)) + value.encode('ascii')
+
+	elif struct_type == 'DTIME':
+		return get_datetime(value)
+	else:
+		return struct_type_dict[struct_type].pack(value)
 
 

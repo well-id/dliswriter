@@ -37,85 +37,13 @@ visible_record = VisibleRecord()
 file_header = LogicalRecordSegment()
 
 file_header.logical_record_type = get_logical_record_type('FILE-HEADER')
-'''
-logical_record_type must be one of the following:
-    FILE-HEADER
-    ORIGIN
-    AXIS
-    CHANNEL
-    FRAME
-    STATIC
-    SCRIPT
-    UPDATE
-    UNFORMATTED-DATA-IDENTIFIER
-    LONG-NAME
-    SPECIFICATION
-    DICTIONARY
-'''
-
-
 file_header.has_predecessor_segment = False # There is no Logical Record Segment BEFORE this one
 file_header.has_successor_segment = True # There is a Logical Record Segment AFTER this one
-
-
-
-# Set component
-
-'''
-set_type must be one of the following:
-    FILE-HEADER
-    ORIGIN
-    WELL-REFERENCE
-    AXIS
-    CHANNEL
-    FRAME
-    PATH
-    CALIBRATION
-    CALIBRATION-COEFFICIENT
-    CALIBRATION-MEASUREMENT
-    COMPUTATION
-    EQUIPMENT
-    GROUP
-    PARAMETER
-    PROCESS
-    SPICE
-    TOOL
-    ZONE
-    COMMENT
-    UPDATE
-    NO-FORMAT
-    LONG-NAME
-    ATTRIBUTE
-    CODE
-    EFLR
-    IFLR
-    OBJECT-TYPE
-    REPRESENTATION-CODE
-    SPECIFICATION
-    UNIT-SYMBOL
-    BASE-DICTIONARY
-    IDENTIFIER
-    LEXICON
-    OPTION
-
-please check docstring of Set(Component) object in component.py for details.
-
-'''
 
 set_component = Set(set_type='FILE-HEADER')
 set_component.set_name = 'Test SET'
 
 file_header.set_component = set_component
-
-
-
-
-# Template
-'''
-Template is basically a mix of attributes that define the objects in the set.
-You can think of these attributes as "columns" with extra information about the
-values like data type, units, etc.
-'''
 
 template = Template()
 
@@ -123,16 +51,16 @@ template_attribute_1 = Attribute()
 template_attribute_1.label = 'SEQUENCE-NUMBER'
 template_attribute_1.representation_code = get_representation_code('ASCII')
 
-template.attributes.append(template_attribute_1)
+template.components.append(template_attribute_1)
 
 
 template_attribute_2 = Attribute()
 template_attribute_2.label = 'ID'
 template_attribute_2.representation_code = get_representation_code('ASCII')
 
-template.attributes.append(template_attribute_2)
+template.components.append(template_attribute_2)
 
-
+file_header.template = template
 
 # Objects
 object_1 = Object('Default File Header')
@@ -149,6 +77,8 @@ attribute_2.value = 'AQLN_TEST_FILE'
 object_1.attributes.append(attribute_2)
 
 
+file_header.objects.append(object_1)
+
 
 
 
@@ -164,14 +94,6 @@ set_component = Set(set_type='ORIGIN')
 set_component.set_name = 'DEFINING ORIGIN SET'
 origin.set_component = set_component
 
-'''
-Just like we did with the previous Logical Record Segment (file_header), we will
-define the template here. But, Origin needs more attributes, and implicitly defining
-each attribute would take time. So, I will use the template_attributes_list below
-in a for loop to save time. As long as you are creating a Template(), creating
-Attributes and adding them to Template.attributes list, you can follow any methodology
-that you wish.
-'''
 
 origin_template = Template()
 
@@ -200,14 +122,15 @@ origin_template_attributes = [
     ('NAME-SPACE-VERSION', 'UVARI')
 ]
 
-for attribute_tuple in template_attributes:
+for attribute_tuple in origin_template_attributes:
     attribute = Attribute()
     attribute.label = attribute_tuple[0]
     attribute.representation_code = get_representation_code(attribute_tuple[1])
 
-    origin_template.attributes.append(attribute)
+    origin_template.components.append(attribute)
 
 
+origin.template = origin_template
 
 origin_object = Object('DEFINING ORIGIN')
 origin_object.origin_reference = 41
@@ -238,6 +161,8 @@ origin_object_attributes = [
 
 for attr in origin_object_attributes:
     attribute = Attribute()
-    attribute.value = attr[0]
+    attribute.value = attr
 
     origin_object.attributes.append(attribute)
+
+origin.objects.append(origin_object)

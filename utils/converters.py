@@ -124,3 +124,59 @@ def get_representation_code(description:str):
         raise Exception(error_message)
 
     return representation_code_dictionary[description]
+
+
+def get_datetime(date_time):
+
+    '''
+
+    RP66 V1 uses a specific datetime format.
+
+    QUOTE
+
+
+        Y = Years Since 1900 (Range 0 to 255)
+        TZ = Time Zone (0 = Local Standard, 1 = Local Daylight Savings, 2 = Greenwich Mean Time)
+        M = Month of the Year (Range 1 to 12)
+        D = Day of Month (Range 1 to 31)
+        H = Hours Since Midnight (Range 0 to 23)
+        MN = Minutes Past Hour (Range 0 to 59)
+        S = Seconds Past Minute (Range 0 to 59)
+        MS = Milliseconds Past Second (Range 0 to 999)
+
+
+        9:20:15.62 PM, April 19, 1987 (DST) =
+        87 years since 1900, 4th month, 19th day,
+        21 hours since midnight, 20 minutes past hour,
+        15 seconds past minute, 620 milliseconds past second =
+            01010111 00010100 00010011 00010101
+            00010100 00001111 00000010 01101100
+    END QUOTE FROM -> http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_21
+
+    
+
+    :date_time -> is a datetime.datetime object.
+
+    :returns -> converted datetime in bytes
+
+    Usage:
+        from datetime import datetime
+
+        now = datetime.now()
+        converted_datetime = get_datetime(now)
+
+    '''
+
+    year = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.year - 1900),2))
+    time_zone = struct.Struct('>B').pack(int('{0:04b}'.format(0),2)) # Local Standard Time is set as default.
+    month = struct.Struct('>B').pack(int('{0:04b}'.format(date_time.month),2))
+    day = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.day),2))
+    hours = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.hour),2))
+    minutes = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.minute),2))
+    seconds = struct.Struct('>B').pack(int('{0:08b}'.format(q.second),2))
+    miliseconds = struct.Struct('>H').pack(int('{0:016b}'.format(int(q.microsecond / 1000)),2))
+
+    
+    date_time_bytes = year + time_zone + month + day + hours + minutes + seconds + miliseconds
+    
+    return date_time_bytes

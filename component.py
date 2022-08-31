@@ -13,7 +13,7 @@ component_dictionary = {
 
 
 class Component(object):
-	def get_as_bytes(self):
+	def smh(self):
 		pass
 
 class Set(Component):
@@ -78,6 +78,27 @@ class Set(Component):
 
 		self.set_type = set_type
 		self.set_name = set_name
+
+	def get_as_bytes(self):
+
+		set_component_bytes = b''
+
+		if self.set_name:
+			descriptive_bits = '11111000'
+		else:
+			descriptive_bits = '11110000'
+
+		set_component_bytes += write_struct('USHORT', int(descriptive_bits, 2))
+		set_component_bytes += write_struct('IDENT', self.set_type)
+
+		if self.set_name:
+			set_component_bytes += write_struct('IDENT', self.set_name)
+
+		return set_component_bytes
+
+
+
+
 
 
 class Attribute(Component):
@@ -145,7 +166,7 @@ class Template(object):
 
 
 	def __init__(self,
-				 components:list=None):
+				 components:list=[]):
 		'''
 		
 		:components -> A list of Component object instances.
@@ -174,7 +195,7 @@ class Object(Component):
 				 name:str,
 				 origin_reference:int=None,
 				 copy_number:int=0,
-				 attributes:list=None):
+				 attributes:list=[]):
 
 		self.name = name
 		self.origin_reference = origin_reference

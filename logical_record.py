@@ -95,14 +95,20 @@ class LogicalRecordSegment(object):
         # Set component
         self.set_component = set_component
 
+        # Template
+        self.template = None
+
+        # Objects
+        self.objects = []
+
 
 
     def get_as_bytes(self):
 
         # HEADER
-        _length = get_unorm(self.segment_length)
-        _logical_record_type = get_ushort(self.logical_record_type)
-        _attributes = get_ushort(
+        _length = write_struct('UNORM', self.segment_length)
+        _logical_record_type = write_struct('USHORT', self.logical_record_type)
+        _attributes = write_struct('USHORT',
             int(
                 self.is_eflr\
                +self.has_predecessor_segment\
