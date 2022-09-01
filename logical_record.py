@@ -628,3 +628,90 @@ class Equipment(object):
             _bytes += write_struct('USHORT', 1)
 
         return _bytes
+
+
+
+class Axis(object):
+
+    def __init__(self,
+                 set_name:str=None,
+                 origin_reference:int=None,
+                 copy_number:int=0,
+                 object_name:str=None,
+                 axis_id:str=None,
+                 coordinates:str=None,
+                 spacing:str=None,
+                 has_padding:bool=False):
+
+        self.set_name = set_name
+        self.origin_reference = origin_reference
+        self.copy_number = copy_number
+        self.object_name = object_name
+        self.axis_id = axis_id
+        self.coordinates = coordinates
+        self.spacing = spacing
+        self.has_padding = has_padding
+
+
+    def get_as_bytes(self):
+        _body = b''
+
+        # SET
+        _body += Set(set_type='AXIS', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE        
+        if self.axis_id:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'AXIS-ID')
+        
+        if self.coordinates:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATES')
+        
+        if self.spacing:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'SPACING')
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES (VALUES)
+        if self.axis_id:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 19)
+            _body += write_struct('IDENT', self.axis_id)
+
+        if self.coordinates:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 14)
+            _body += write_struct('SLONG', self.coordinates)
+
+        if self.spacing:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 14)
+            _body += write_struct('SLONG', self.spacing)
+
+
+        # HEADER
+        if len(_body) % 2 != 0:
+            self.has_padding = True
+            _length = write_struct('UNORM', len(_body) + 5)
+        else:
+            _length = write_struct('UNORM', len(_body) + 4)
+
+        _logical_record_type = write_struct('USHORT', 2)
+        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
+
+        _header = _length + _attributes + _logical_record_type
+
+
+        _bytes = _header + _body
+        if self.has_padding:
+            _bytes += write_struct('USHORT', 1)
+
+        return _bytes

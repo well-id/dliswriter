@@ -7,10 +7,12 @@ from utils.converters import get_logical_record_type
 from utils.converters import get_representation_code
 
 from storage_unit_label import StorageUnitLabel
+
 from visible_record import VisibleRecord
 from logical_record import LogicalRecordSegment
 from logical_record import FileHeader
 from logical_record import Equipment
+from logical_record import Axis
 
 from component import Set
 from component import Attribute
@@ -147,11 +149,21 @@ equipment.pressure_units = 'psi'
 equipment._type = 'Tool'
 
 
+# AXIS
+axis = Axis()
+axis.set_name = 'AXIS SET NAME'
+axis.origin_reference = 41
+axis.object_name = 'AXISOBJNAME'
+axis.axis_id = 31
+axis.coordinates = 0
+axis.spacing = 1
+
 
 visible_record = VisibleRecord()
 visible_record.logical_record_segments.append(file_header)
 visible_record.logical_record_segments.append(origin)
 visible_record.logical_record_segments.append(equipment)
+visible_record.logical_record_segments.append(axis)
 
 
 file_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
