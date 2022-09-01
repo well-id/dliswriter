@@ -70,6 +70,3 @@ class StorageUnitLabel(object):
         self.as_bytes = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
         
         return self.as_bytes
-
-# q = StorageUnitLabel()
-# q.get_as_bytes()

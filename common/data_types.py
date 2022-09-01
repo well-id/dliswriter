@@ -1,27 +1,7 @@
 from struct import Struct
 
-from converters import get_datetime
+from utils.converters import get_datetime
 
-# FSHORT = Struct('>h')
-# def read_fshort(value):
-# 	''' 2 bytes Low precision floating point '''
-# 	return FSHORT.unpack(value)
-# def write_fshort(value):
-# 	return FSHORT.pack(value)
-
-
-
-# UNORM = Struct('>H')
-# USHORT = Struct('>B')
-
-
-# def read_unorm(value):
-# 	''' 2 bytes unsigned integer '''
-# 	return UNORM.pack(value)
-
-# def read_ushort(value):
-# 	''' 1 byte unsigned integer '''
-# 	return USHORT.pack(value)
 
 
 struct_type_dict = {
@@ -75,10 +55,14 @@ def write_struct(struct_type, value):
 	    return write_struct('USHORT',int('{0:08b}'.format(value),2))
 
 	elif struct_type == 'IDENT':
-		return write_struct('USHORT', len(value)) + value.encode('ascii')
+		return write_struct('USHORT', len(str(value))) + str(value).encode('ascii')
 
 	elif struct_type == 'DTIME':
 		return get_datetime(value)
+
+	elif struct_type == 'OBNAME':
+		pass
+
 	else:
 		return struct_type_dict[struct_type].pack(value)
 

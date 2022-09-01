@@ -1,5 +1,9 @@
-from common.data_types import *
+from common.data_types import struct_type_dict
+from common.data_types import write_struct
 
+from utils.converters import get_ascii_bytes
+
+from component import Set
 
 class LogicalRecordSegment(object):
 
@@ -105,21 +109,105 @@ class LogicalRecordSegment(object):
 
     def get_as_bytes(self):
 
+
+
+        # Constructing the body bytes first as we need to provide the lenght of the segment in the header.
+
+        _body_bytes = b''
+
+        # BODY
+        if self.set_component:
+            _body_bytes += self.set_component.get_as_bytes()
+
+        if self.template:
+            _body_bytes += self.template.get_as_bytes()
+
+        for _object in self.objects:
+            _body_bytes += _object.get_as_bytes()
+
+
         # HEADER
-        _length = write_struct('UNORM', self.segment_length)
+
+        if len(_body_bytes) % 2 != 0:
+            self.has_padding = True
+            _length = write_struct('UNORM', len(_body_bytes) + 5)
+        else:
+            _length = write_struct('UNORM', len(_body_bytes) + 4)
+
         _logical_record_type = write_struct('USHORT', self.logical_record_type)
         _attributes = write_struct('USHORT',
             int(
-                self.is_eflr\
-               +self.has_predecessor_segment\
-               +self.has_successor_segment\
-               +self.is_encrypted\
-               +self.has_encryption_protocol\
-               +self.has_checksum\
-               +self.has_trailing_length\
-               +self.has_padding,
+                str(int(self.is_eflr))\
+               +str(int(self.has_predecessor_segment))\
+               +str(int(self.has_successor_segment))\
+               +str(int(self.is_encrypted))\
+               +str(int(self.has_encryption_protocol))\
+               +str(int(self.has_checksum))\
+               +str(int(self.has_trailing_length))\
+               +str(int(self.has_padding)),
                2
             )
         )
 
-        return _length + _attributes + _logical_record_type
+        _header_bytes = _length + _attributes + _logical_record_type
+
+
+        _bytes = _header_bytes + _body_bytes
+        if self.has_padding:
+            _bytes += write_struct('USHORT', 1)
+
+        return _bytes
+
+
+
+
+class FileHeader(object):
+
+    def __init__(self,
+                 sequence_number:int=None,
+                 _id:str=None):
+
+        self.sequence_number = sequence_number
+        self._id = _id
+        self.origin_reference = None
+        self.copy_number = 0
+        self.name = None
+
+
+    def get_as_bytes(self):
+        # HEADER
+        _length = write_struct('UNORM', 124)
+        _attributes = write_struct('USHORT', int('10000000', 2))
+        _type = write_struct('USHORT', 0)
+
+        _header_bytes = _length + _attributes + _type
+
+        # BODY
+        _body_bytes = b''
+        _body_bytes += Set(set_type='FILE-HEADER').get_as_bytes()
+        _body_bytes += write_struct('USHORT', int('00110100', 2))
+        _body_bytes += write_struct('USHORT', 15)
+        _body_bytes += write_struct('ASCII', 'SEQUENCE-NUMBER')
+        _body_bytes += write_struct('USHORT', 20)
+        _body_bytes += write_struct('USHORT', int('00110100', 2))
+        _body_bytes += write_struct('USHORT', 2)
+        _body_bytes += write_struct('ASCII', 'ID')
+        _body_bytes += write_struct('USHORT', 20)
+
+        _body_bytes += write_struct('USHORT', int('01110000', 2))
+        _body_bytes += write_struct('UVARI', self.origin_reference)
+        _body_bytes += write_struct('USHORT', self.copy_number)
+        _body_bytes += write_struct('IDENT', self.name)
+
+        _body_bytes += write_struct('USHORT', int('00100001', 2))
+        _body_bytes += write_struct('USHORT', 10)
+        _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify='right')
+        _body_bytes += write_struct('USHORT', int('00100001', 2))
+        _body_bytes += write_struct('USHORT', 65)
+        _body_bytes += get_ascii_bytes(self._id, 65, justify='left')
+
+
+        _bytes = _header_bytes + _body_bytes
+        return _bytes
+
+

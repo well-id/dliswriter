@@ -1,4 +1,5 @@
-from common.data_types import *
+from common.data_types import struct_type_dict
+from common.data_types import write_struct
 
 
 class VisibleRecord(object):
@@ -16,17 +17,21 @@ class VisibleRecord(object):
 
     '''
     
-    def __init__(self,
-                 logical_record_segments:list=None):
-        
-        self.format_version = write_struct('USHORT',255) + write_struct('USHORT',1)
-        self.logical_record_segments = [] 
-        
-        #TODO some of all three in bytes (2 (from visible_record_length) + 2 (from format_version) + sum of len of all logical_record_segments) 
-        self.visible_record_length = None
+    def __init__(self):
 
-# q1 = fs.read(4)
-# q2 = fs.read(5)
-# q3 = fs.read(6)
-# q4 = fs.read(5)
-# q5 = fs.read(60)
+        self.logical_record_segments = [] 
+
+    def get_as_bytes(self):
+
+
+        _body = b''
+        for logical_record_segment in self.logical_record_segments:
+            _body += logical_record_segment.get_as_bytes()
+
+        _visible_record_length = write_struct('UNORM', len(_body) + 4)
+        _format_version = write_struct('USHORT', 255) + write_struct('USHORT', 1)
+
+        _bytes = _visible_record_length + _format_version + _body
+
+
+        return _bytes

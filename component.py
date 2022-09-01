@@ -1,4 +1,8 @@
-from common.data_types import *
+from common.data_types import struct_type_dict
+from common.data_types import write_struct
+
+from utils.converters import get_representation_code
+from utils.converters import get_ascii_bytes
 
 component_dictionary = {
 	'000': 'ABSATR',
@@ -13,10 +17,10 @@ component_dictionary = {
 
 
 class Component(object):
-	def smh(self):
+	def __init__(self):
 		pass
 
-class Set(Component):
+class Set(object):
 
 	'''
 
@@ -80,7 +84,6 @@ class Set(Component):
 		self.set_name = set_name
 
 	def get_as_bytes(self):
-
 		set_component_bytes = b''
 
 		if self.set_name:
@@ -101,7 +104,7 @@ class Set(Component):
 
 
 
-class Attribute(Component):
+class Attribute(object):
 
 	'''
 
@@ -133,7 +136,7 @@ class Attribute(Component):
 
 	def __init__(self,
 				 label:str=None,
-				 count:int=1,
+				 count:int=0,
 				 representation_code:str='IDENT',
 				 units:str=None,
 				 value=None):
@@ -144,6 +147,49 @@ class Attribute(Component):
 		self.representation_code = representation_code
 		self.units = units
 		self.value = value
+
+
+	def get_as_bytes(self):
+
+		_bytes = b''
+		descriptive_bits = '001'
+
+		if self.label:
+			descriptive_bits += '1'
+			_bytes += write_struct('IDENT', self.label)
+		else:
+			descriptive_bits += '0'
+
+
+		if self.count != 0:
+			descriptive_bits += '1'
+			_bytes += write_struct('UVARI', self.count)
+		else:
+			descriptive_bits += '0'
+
+
+		if self.representation_code:
+			descriptive_bits += '1'
+			_bytes += write_struct('USHORT', get_representation_code(self.representation_code))
+		else:
+			descriptive_bits += '0'
+
+		if self.units:
+			descriptive_bits += '1'
+			_bytes += write_struct('IDENT', self.units)
+		else:
+			descriptive_bits += '0'
+
+		if self.value:
+			descriptive_bits += '1'
+			_bytes += write_struct(self.representation_code, self.value)
+		else:
+			descriptive_bits += '0'
+
+
+		_bytes = write_struct('USHORT', int(descriptive_bits, 2)) + _bytes
+
+		return _bytes
 
 
 class Template(object):
@@ -166,16 +212,27 @@ class Template(object):
 
 
 	def __init__(self,
-				 components:list=[]):
+				 components:list=None):
 		'''
 		
 		:components -> A list of Component object instances.
 
 		'''
-		self.components = components
+		if components:
+			self.components = components
+		else:
+			self.components = []
+
+	def get_as_bytes(self):
+		_bytes = b'' 
+		if self.components:
+			for component in self.components:
+				_bytes += component.get_as_bytes()
+
+		return _bytes
 
 
-class Object(Component):
+class Object(object):
 	'''
 	
 	Object component has an OBNAME, and a list of Attribute object instances.
@@ -195,9 +252,32 @@ class Object(Component):
 				 name:str,
 				 origin_reference:int=None,
 				 copy_number:int=0,
-				 attributes:list=[]):
+				 attributes:list=None):
 
 		self.name = name
 		self.origin_reference = origin_reference
 		self.copy_number = copy_number
-		self.attributes = attributes
+		if attributes:
+			self.attributes = attributes
+		else:
+			self.attributes = []
+
+	def get_as_bytes(self):
+		_bytes = b''
+		descriptive_bits = '01110000'
+		
+
+		_bytes += write_struct('USHORT', int(descriptive_bits, 2))
+
+
+		# OBNAME 
+		_bytes += write_struct('UVARI', self.origin_reference)
+		_bytes += write_struct('USHORT', self.copy_number)
+		_bytes += write_struct('IDENT', self.name)
+
+
+		if self.attributes:
+			for attribute in self.attributes:
+				_bytes += attribute.get_as_bytes()
+
+		return _bytes
