@@ -211,3 +211,420 @@ class FileHeader(object):
         return _bytes
 
 
+
+
+class Equipment(object):
+
+    def __init__(self,
+                 set_name:str=None,
+                 origin_reference:int=None,
+                 copy_number:int=0,
+                 object_name:str=None,
+                 trademark_name:str=None,
+                 status:bool=True,
+                 _type:str=None,
+                 serial_number:str=None,
+                 location:str=None,
+                 height:float=None,
+                 height_units:float=None,
+                 length:float=None,
+                 length_units:float=None,
+                 minimum_diameter:float=None,
+                 minimum_diameter_units:float=None,
+                 maximum_diameter:float=None,
+                 maximum_diameter_units:float=None,
+                 volume:float=None,
+                 volume_units:float=None,
+                 weight:float=None,
+                 weight_units:float=None,
+                 hole_size:float=None,
+                 hole_size_units:float=None,
+                 pressure:float=None,
+                 pressure_units:float=None,
+                 temperature:float=None,
+                 temperature_units:float=None,
+                 vertical_depth:float=None,
+                 vertical_depth_units:float=None,
+                 radial_drift:float=None,
+                 radial_drift_units:float=None,
+                 angular_drift:float=None,
+                 angular_drift_units:float=None,
+                 has_padding:bool=False):
+
+        self.set_name = set_name
+        self.origin_reference = origin_reference
+        self.copy_number = copy_number
+        self.object_name = object_name
+        self.trademark_name = trademark_name
+        self.status = status
+        self._type = _type
+        self.serial_number = serial_number
+        self.location = location
+        self.height = height
+        self.height_units = height_units
+        self.length = length
+        self.length_units = length_units
+        self.minimum_diameter = minimum_diameter
+        self.minimum_diameter_units = minimum_diameter_units
+        self.maximum_diameter = maximum_diameter
+        self.maximum_diameter_units = maximum_diameter_units
+        self.volume = volume
+        self.volume_units = volume_units
+        self.weight = weight
+        self.weight_units = weight_units
+        self.hole_size = hole_size
+        self.hole_size_units = hole_size_units
+        self.pressure = pressure
+        self.pressure_units = pressure_units
+        self.temperature = temperature
+        self.temperature_units = temperature_units
+        self.vertical_depth = vertical_depth
+        self.vertical_depth_units = vertical_depth_units
+        self.radial_drift = radial_drift
+        self.radial_drift_units = radial_drift_units
+        self.angular_drift = angular_drift
+        self.angular_drift_units = angular_drift_units
+
+        self.has_padding = has_padding
+
+
+
+    def get_as_bytes(self):
+
+        # Body
+        _body = b''
+
+        # Set
+        _body += Set(set_type='EQUIPMENT', set_name=self.set_name).get_as_bytes()
+
+        # Template
+        if self.trademark_name:
+            print('Creating TM template')
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'TRADEMARK-NAME')
+
+        if self.status:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'STATUS')
+
+        if self._type:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'TYPE')
+
+        if self.serial_number:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'SERIAL-NUMBER')
+
+        if self.location:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'LOCATION')
+
+
+        if self.height:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'HEIGHT')
+        
+        if self.length:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'LENGTH')
+        
+        if self.minimum_diameter:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'MINIMUM-DIAMETER')
+        
+        if self.maximum_diameter:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'MAXIMUM-DIAMETER')
+        
+        if self.volume:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'VOLUME')
+        
+        if self.weight:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'WEIGHT')
+       
+        if self.hole_size:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'HOLE-SIZE')
+        
+        if self.pressure:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'PRESSURE')
+        
+        if self.temperature:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'TEMPERATURE')
+        
+        if self.vertical_depth:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'VERTICAL-DEPTH')
+        
+        if self.radial_drift:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'RADIAL-DRIFT')
+        
+        if self.angular_drift:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'ANGULAR-DRIFT')
+
+
+        # Object
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # Attributes (VALUES)
+        
+        if self.trademark_name:
+            print('Creating TM ATTTTTRRR')
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('IDENT', self.trademark_name)
+
+        if self.status:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 26)
+            _body += write_struct('USHORT', int(self.status))
+
+        if self._type:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 19)
+            _body += write_struct('IDENT', self._type)
+
+        if self.serial_number:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 19)
+            _body += write_struct('IDENT', self.serial_number)
+
+        if self.location:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 19)
+            _body += write_struct('IDENT', self.location)
+
+        if self.height:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.height_units:
+                units = write_struct('IDENT', self.height_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.height)
+
+        if self.length:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.length_units:
+                units = write_struct('IDENT', self.length_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.length)
+
+        if self.minimum_diameter:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.minimum_diameter_units:
+                units = write_struct('IDENT', self.minimum_diameter_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.minimum_diameter)
+
+        if self.maximum_diameter:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.maximum_diameter_units:
+                units = write_struct('IDENT', self.maximum_diameter_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.maximum_diameter)
+
+        if self.volume:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.volume_units:
+                units = write_struct('IDENT', self.volume_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.volume)
+
+        if self.weight:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.weight_units:
+                units = write_struct('IDENT', self.weight_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.weight)
+
+        if self.hole_size:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.hole_size_units:
+                units = write_struct('IDENT', self.hole_size_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.hole_size)
+
+        if self.pressure:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.pressure_units:
+                units = write_struct('IDENT', self.pressure_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.pressure)
+
+        if self.temperature:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.temperature_units:
+                units = write_struct('IDENT', self.temperature_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.temperature)
+
+        if self.vertical_depth:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.vertical_depth_units:
+                units = write_struct('IDENT', self.vertical_depth_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.vertical_depth)
+
+        if self.radial_drift:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.radial_drift_units:
+                units = write_struct('IDENT', self.radial_drift_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.radial_drift)
+
+        if self.angular_drift:
+            descriptive_bits = '001001'
+            representation_code = write_struct('USHORT', 2)
+            units = None
+            if self.angular_drift_units:
+                units = write_struct('IDENT', self.angular_drift_units)
+                descriptive_bits += '11'
+            else:
+                descriptive_bits += '01'
+
+            _body += write_struct('USHORT', int(descriptive_bits, 2))
+            _body += write_struct('USHORT', 2)
+
+            if units:
+                _body += units
+            _body += write_struct('FSINGL', self.angular_drift)
+
+
+
+        # HEADER
+        if len(_body) % 2 != 0:
+            self.has_padding = True
+            _length = write_struct('UNORM', len(_body) + 5)
+        else:
+            _length = write_struct('UNORM', len(_body) + 4)
+
+        _logical_record_type = write_struct('USHORT', 5)
+        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
+
+        _header = _length + _attributes + _logical_record_type
+
+
+        _bytes = _header + _body
+        if self.has_padding:
+            _bytes += write_struct('USHORT', 1)
+
+        return _bytes

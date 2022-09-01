@@ -10,6 +10,7 @@ from storage_unit_label import StorageUnitLabel
 from visible_record import VisibleRecord
 from logical_record import LogicalRecordSegment
 from logical_record import FileHeader
+from logical_record import Equipment
 
 from component import Set
 from component import Attribute
@@ -127,10 +128,30 @@ origin.objects.append(origin_object)
 
 
 
+# EQUIPMENT
+equipment = Equipment()
+equipment.set_name = 'Equipment Set Name'
+equipment.origin_reference = 41
+equipment.copy_number = 0
+equipment.object_name = 'SOME_EQPMNT'
+equipment.trademark_name = 'EQ-TRADEMARKNAME'
+equipment.serial_number = '9101-21391'
+equipment.height = 140
+equipment.height_units = 'in' 
+equipment.length = 230.78
+equipment.length_units = 'cm'
+equipment.weight = 1.2
+equipment.weight_units = 't'
+equipment.pressure = 18000
+equipment.pressure_units = 'psi'
+equipment._type = 'Tool'
+
+
 
 visible_record = VisibleRecord()
 visible_record.logical_record_segments.append(file_header)
 visible_record.logical_record_segments.append(origin)
+visible_record.logical_record_segments.append(equipment)
 
 
 file_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()

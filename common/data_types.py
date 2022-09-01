@@ -61,7 +61,14 @@ def write_struct(struct_type, value):
 		return get_datetime(value)
 
 	elif struct_type == 'OBNAME':
-		pass
+		''' value must be passed as a tuple (origin, copy_number, name) '''
+		origin_reference = write_struct('UVARI', value[0])
+		copy_number = write_struct('USHORT', value[1])
+		name = write_struct('IDENT', value[2])
+
+		return origin_reference + copy_number + name
+
+
 
 	else:
 		return struct_type_dict[struct_type].pack(value)
