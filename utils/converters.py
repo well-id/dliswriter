@@ -173,8 +173,8 @@ def get_datetime(date_time):
     day = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.day),2))
     hours = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.hour),2))
     minutes = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.minute),2))
-    seconds = struct.Struct('>B').pack(int('{0:08b}'.format(q.second),2))
-    miliseconds = struct.Struct('>H').pack(int('{0:016b}'.format(int(q.microsecond / 1000)),2))
+    seconds = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.second),2))
+    miliseconds = struct.Struct('>H').pack(int('{0:016b}'.format(int(date_time.microsecond / 1000)),2))
 
     
     date_time_bytes = year + time_zone + month + day + hours + minutes + seconds + miliseconds

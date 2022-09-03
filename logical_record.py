@@ -207,8 +207,8 @@ class EFLR(object):
 class FileHeader(object):
 
     def __init__(self,
-                 sequence_number:int=None,
-                 _id:str=None):
+                 sequence_number:int=1,
+                 _id:str='0'):
 
         self.sequence_number = sequence_number
         self._id = _id
@@ -273,7 +273,7 @@ class Origin(EFLR):
                  order_number:str=None,
                  descent_number:int=None,
                  run_number:int=None,
-                 well_id:str=None,
+                 well_id:int=None,
                  well_name:str=None,
                  field_name:str=None,
                  producer_code:int=None,
@@ -310,105 +310,105 @@ class Origin(EFLR):
         _body = b''
 
         # Set
-        _body += Set(set_type='ORIGIN', set_name=self.set_name)
+        _body += Set(set_type='ORIGIN', set_name=self.set_name).get_as_bytes()
 
         # Template
-        if.self.file_id:
+        if self.file_id:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FILE-ID')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.file_set_name:
+        if self.file_set_name:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FILE-SET-NAME')
             _body += write_struct('USHORT', get_representation_code('IDENT'))
         
-        if.self.file_set_number:
+        if self.file_set_number:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FILE-SET-NUMBER')
             _body += write_struct('USHORT', get_representation_code('UVARI'))
         
-        if.self.file_number:
+        if self.file_number:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FILE-NUMBER')
             _body += write_struct('USHORT', get_representation_code('UVARI'))
         
-        if.self.file_type:
+        if self.file_type:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FILE-TYPE')
             _body += write_struct('USHORT', get_representation_code('IDENT'))
         
-        if.self.product:
+        if self.product:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'PRODUCT')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.version:
+        if self.version:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'VERSION')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.programs:
+        if self.programs:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'PROGRAMS')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.creation_time:
+        if self.creation_time:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'CREATION-TIME')
             _body += write_struct('USHORT', get_representation_code('DTIME'))
         
-        if.self.order_number:
+        if self.order_number:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'ORDER-NUMBER')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.descent_number:
+        if self.descent_number:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'DESCENT-NUMBER')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.run_number:
+        if self.run_number:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'RUN-NUMBER')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.well_id:
+        if self.well_id:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'WELL-ID')
             _body += write_struct('USHORT', get_representation_code('UVARI'))
         
-        if.self.well_name:
+        if self.well_name:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'WELL-NAME')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.field_name:
+        if self.field_name:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'FIELD-NAME')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.producer_code:
+        if self.producer_code:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'PRODUCER-CODE')
             _body += write_struct('USHORT', get_representation_code('UNORM'))
         
-        if.self.producer_name:
+        if self.producer_name:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'PRODUCER-NAME')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.company:
+        if self.company:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'COMPANY')
             _body += write_struct('USHORT', get_representation_code('ASCII'))
         
-        if.self.name_space_name:
+        if self.name_space_name:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'NAME-SPACE-NAME')
             _body += write_struct('USHORT', get_representation_code('IDENT'))
         
-        if.self.name_space_version:
+        if self.name_space_version:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'NAME-SPACE-VERSION')
             _body += write_struct('USHORT', get_representation_code('UVARI'))
@@ -1097,7 +1097,7 @@ class ChannelLogicalRecord(EFLR):
         _body = b''
 
         # SET
-        _body += Set(set_type=self.set_type, set_name=self.set_name).get_as_bytes()
+        _body += Set(set_type='CHANNEL', set_name=self.set_name).get_as_bytes()
 
         # TEMPLATE
 
@@ -1159,7 +1159,7 @@ class Frame(EFLR):
                  channels:list=None,
                  index_type:str=None,
                  direction:str=None,
-                 spacing:int=None,
+                 spacing:float=None,
                  spacing_units:str=None,
                  encrypted:bool=False,
                  index_min:int=None,
@@ -1212,7 +1212,7 @@ class Frame(EFLR):
         if self.spacing:
             _body += write_struct('USHORT', int('00110100', 2))
             _body += write_struct('IDENT', 'SPACING')
-            _body += write_struct('USHORT', get_representation_code('SLONG'))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
         
         if self.encrypted:
             _body += write_struct('USHORT', int('00110100', 2))
@@ -1263,10 +1263,10 @@ class Frame(EFLR):
             if self.spacing_units:
                 _body += write_struct('USHORT', int('00100011', 2))
                 _body += write_struct('UNITS', self.spacing_units)
-                _body += write_struct('SLONG', self.spacing)
+                _body += write_struct('FDOUBL', self.spacing)
             else:
                 _body += write_struct('USHORT', int('00100001', 2))
-                _body += write_struct('SLONG', self.spacing)
+                _body += write_struct('FDOUBL', self.spacing)
 
         if self.encrypted:
             _body += write_struct('USHORT', int('00100001', 2))
@@ -1300,7 +1300,7 @@ class FrameData(IFLR):
     def __init__(self,
                  frame=None,
                  frame_number:int=None,
-                 slots:list=None):
+                 slots=None):
 
         '''
     
@@ -1320,44 +1320,63 @@ class FrameData(IFLR):
 
         self.frame = frame
         self.frame_number = frame_number # UVARI
+        self.slots = slots # np.ndarray
 
-        if slots:
-            self.slots = slots
-        else:
-            self.slots = []
 
-    def get_header_bytes(self):
-        _length = None
-        _padding = None
+    def finalize_bytes(self, _body):
         
-        if _padding:
-            _attr = '00000001'
+        
+        _length = len(_body) + 4
+        if _length % 2 == 0:
+            _attributes = write_struct('USHORT', int('00000000', 2))
+            _has_padding = False
         else:
-            _attr = '00000000'
+            _attributes = write_struct('USHORT', int('00000001', 2))
+            _length += 1
+            _has_padding = True
 
-        _type = 0
+        
+        _header = b''
+        _header += write_struct('UNORM', _length)
+        _header += _attributes
+        _header += write_struct('USHORT', 0) # Logical Record Type
+
+
+
+        _bytes = _header + _body
+
+        if _has_padding:
+            _bytes += write_struct('USHORT', 0)
+
+        return _bytes
+
 
     def get_as_bytes(self):
 
         _body = b''
 
+        _body += self.frame.get_obname_only()
         _body += write_struct('UVARI', self.frame_number)
         
         for i in range(len(self.slots)):
 
-            data = self.slots[i]
+            data = self.slots[i] # NP array
+            # data = list(data.flatten('F'))
 
             # Get representation code from corresponding Channel
-            corresponding_channel = self.frame.channels[i]
+            representation_code = self.frame.channels[i].representation_code
 
-            representation_code = get_representation_code(corresponding_channel.representation_code)
+            if type(data) == list:
+                for value in data:
+                    _body += write_struct(representation_code, value)
 
-            # For each slot, we check the dimension of the corresponding channel to determine how many elements will be written.
-            dimensions = corresponding_channel.dimension
+            else:
+                _body += write_struct(representation_code, data)
+
+        return self.finalize_bytes(_body)
 
 
-            for j in range(dimension[0]):
-                pass
+
 
 class Equipment(object):
 
@@ -1780,11 +1799,37 @@ class Equipment(object):
 
 
 
+class EOD(object):
+    def get_as_bytes(self, frame):
+        
 
 
+        _body = b''
+        _body += frame.get_obname_only()
+        _body += write_struct('USHORT', 0)
+
+        _length = len(_body + 4)
+        if _length % 2 == 0:
+            _attributes = write_struct('USHORT', int('00000000', 2))
+            _has_padding = False
+        else:
+            _attributes = write_struct('USHORT', int('00000001', 2))
+            _length += 1
+            _has_padding = True
+
+        # HEADER
+
+        _header = b''
+        _header += write_struct('UNORM', _length)
+        _header += _attributes
+        _header += write_struct('USHORT', 127)
+
+        _bytes = _header + _body
+
+        if has_padding:
+            _bytes += write_struct('USHORT', 0)
 
 
-
-
+        return _bytes
 
 

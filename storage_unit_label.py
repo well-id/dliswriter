@@ -31,8 +31,8 @@ class StorageUnitLabel(object):
     '''
 
     def __init__(self,
-                 storage_unit_sequence_number:int=None, # It indicates the order in which the current Storage Unit appears in a Storage Set.
-                 storage_set_identifier:str=None, # ID of the storage set (eg. "Default Storage Set")
+                 storage_unit_sequence_number:int=1, # It indicates the order in which the current Storage Unit appears in a Storage Set.
+                 storage_set_identifier:str='DEFAULT STORAGE SET', # ID of the storage set (eg. "Default Storage Set")
                  dlis_version='V1.00',
                  storage_unit_structure='RECORD',
                  max_record_length=8192):
