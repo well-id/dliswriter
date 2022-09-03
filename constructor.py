@@ -9,10 +9,13 @@ from utils.converters import get_representation_code
 from storage_unit_label import StorageUnitLabel
 
 from visible_record import VisibleRecord
+
 from logical_record import LogicalRecordSegment
 from logical_record import FileHeader
 from logical_record import Equipment
 from logical_record import Axis
+from logical_record import ChannelLogicalRecord
+from logical_record import Channel
 
 from component import Set
 from component import Attribute
@@ -159,11 +162,67 @@ axis.coordinates = 0
 axis.spacing = 1
 
 
+
+
+
+# CHANNELS
+
+channel_logical_record = ChannelLogicalRecord()
+channel_logical_record.set_type = 'CHANNEL'
+channel_logical_record.set_name = 'CHANNL EFLR'
+
+
+# Create a channel object
+channel_1 = Channel()
+channel_1.origin_reference = 41
+channel_1.copy_number = 0
+channel_1.object_name = 'DEPTH'
+
+# Attributes
+channel_1.long_name = 'DEPTH in mm'
+channel_1.representation_code = 'SLONG'
+channel_1.units = 'mm'
+channel_1.dimension = [1]
+channel_1.element_limit = [1]
+
+# add to LR
+channel_logical_record.channels.append(channel_1)
+
+
+#  ADD another Channel
+channel_2 = Channel()
+channel_2.origin_reference = 41
+channel_2.copy_number = 0
+channel_2.object_name = 'WIDTH'
+
+# Attributes
+channel_2.long_name = 'WIDTH in mm'
+channel_2.representation_code = 'SLONG'
+channel_2.units = 'mm'
+channel_2.dimension = [1]
+channel_2.element_limit = [1]
+
+# add to LR
+channel_logical_record.channels.append(channel_2)
+
+
+
+
+
+
+
+
+
+
+
+
+
 visible_record = VisibleRecord()
 visible_record.logical_record_segments.append(file_header)
 visible_record.logical_record_segments.append(origin)
 visible_record.logical_record_segments.append(equipment)
 visible_record.logical_record_segments.append(axis)
+visible_record.logical_record_segments.append(channel_logical_record)
 
 
 file_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
