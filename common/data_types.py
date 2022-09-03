@@ -1,4 +1,5 @@
 from struct import Struct
+import re
 
 from utils.converters import get_datetime
 
@@ -35,12 +36,65 @@ struct_type_dict = {
 
 }
 
+def validate_units(value:str):
+	'''
+
+	:value -> A string representing the units.
+
+	:returns -> Validates the "value" and returns after converting to bytes
+	as per RP66 V1 specifications.
+
+	
+	Validates the user input for UNITS data type according to
+	RP66 V1 specifications.
+
+	QUOTE
+		Syntactically, Representation Code UNITS is similar to Representation Codes IDENT and ASCII.
+		However, upper case and lower case are considered
+		distinct (e.g., "A" and "a" for Ampere and annum, respectively),
+		and permissible characters are restricted to the following ASCII codes:
+
+			--> lower case letters [a, b, c, ..., z]
+			--> upper case letters [A, B, C, ..., Z]
+			--> digits [0, 1, 2, ..., 9]
+			--> blank [ ]
+			--> hyphen or minus sign [-]
+			--> dot or period [.]
+			--> slash [/]
+			--> parentheses [(, )]
+
+	END QUOTE FROM -> RP66 V1 Appendix B.27 -> http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_27
+
+	References:
+
+		-> http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_27
+	'''
+	
+	regex_checked = ''.join(re.findall(r'[a-zA-Z\d\s\-.,/()]', value))
+
+	if regex_checked == value:
+		return value
+	else:
+		message = '''{}
+
+		\n
+		UNITS must comply with the RP66 V1 specification.
+
+		Value "{}" does not comply with the rules printed above.
+		'''.format(validate_units.__doc__, value)
+		raise Exception(message)
+
+
 def read_struct(struct_type, packed_value):
 	return struct_type_dict[struct_type].unpack(packed_value)[0]
 
 def write_struct(struct_type, value):
+	
+
 	if struct_type == 'ASCII':
-		return value.encode('ascii')
+		return write_struct('UVARI', len(str(value))) + str(value).encode('ascii')
+	
+
 	elif struct_type == 'UVARI':
 	    if value > 127:
 	    	if value > 16383:
@@ -54,9 +108,11 @@ def write_struct(struct_type, value):
 	    		
 	    return write_struct('USHORT',int('{0:08b}'.format(value),2))
 
+	
 	elif struct_type == 'IDENT':
 		return write_struct('USHORT', len(str(value))) + str(value).encode('ascii')
 
+	
 	elif struct_type == 'DTIME':
 		return get_datetime(value)
 
@@ -67,6 +123,9 @@ def write_struct(struct_type, value):
 		name = write_struct('IDENT', value[2])
 
 		return origin_reference + copy_number + name
+
+	elif struct_type == 'UNITS':
+		return write_struct('IDENT', validate_units(value))
 
 
 

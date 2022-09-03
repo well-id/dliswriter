@@ -161,6 +161,47 @@ class LogicalRecordSegment(object):
         return _bytes
 
 
+class IFLR(object):
+
+    def __init__(self):
+        pass
+
+
+class EFLR(object):
+
+    def __init__(self,
+                 set_name:str=None,
+                 origin_reference:int=None,
+                 copy_number:int=0,
+                 object_name:str=None,
+                 has_padding:bool=False):
+
+        self.set_name = set_name
+        self.origin_reference = origin_reference
+        self.copy_number = copy_number
+        self.object_name = object_name
+        self.has_padding = has_padding
+
+
+    def finalize_bytes(self, logical_record_type, _body):
+        # HEADER
+        if len(_body) % 2 != 0:
+            self.has_padding = True
+            _length = write_struct('UNORM', len(_body) + 5)
+        else:
+            _length = write_struct('UNORM', len(_body) + 4)
+
+        _logical_record_type = write_struct('USHORT', logical_record_type)
+        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
+
+        _header = _length + _attributes + _logical_record_type
+
+
+        _bytes = _header + _body
+        if self.has_padding:
+            _bytes += write_struct('USHORT', 1)
+
+        return _bytes
 
 
 class FileHeader(object):
@@ -171,9 +212,10 @@ class FileHeader(object):
 
         self.sequence_number = sequence_number
         self._id = _id
+        
         self.origin_reference = None
         self.copy_number = 0
-        self.name = None
+        self.object_name = None
 
 
     def get_as_bytes(self):
@@ -187,20 +229,23 @@ class FileHeader(object):
         # BODY
         _body_bytes = b''
         _body_bytes += Set(set_type='FILE-HEADER').get_as_bytes()
+        
+        # TEMPLATE
         _body_bytes += write_struct('USHORT', int('00110100', 2))
-        _body_bytes += write_struct('USHORT', 15)
         _body_bytes += write_struct('ASCII', 'SEQUENCE-NUMBER')
         _body_bytes += write_struct('USHORT', 20)
+        
         _body_bytes += write_struct('USHORT', int('00110100', 2))
-        _body_bytes += write_struct('USHORT', 2)
         _body_bytes += write_struct('ASCII', 'ID')
         _body_bytes += write_struct('USHORT', 20)
 
+        # OBJECT
         _body_bytes += write_struct('USHORT', int('01110000', 2))
-        _body_bytes += write_struct('UVARI', self.origin_reference)
-        _body_bytes += write_struct('USHORT', self.copy_number)
-        _body_bytes += write_struct('IDENT', self.name)
+        _body_bytes += write_struct('OBNAME', (self.origin_reference,
+                                               self.copy_number,
+                                               self.object_name))
 
+        # ATTRIBUTES
         _body_bytes += write_struct('USHORT', int('00100001', 2))
         _body_bytes += write_struct('USHORT', 10)
         _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify='right')
@@ -210,10 +255,1109 @@ class FileHeader(object):
 
 
         _bytes = _header_bytes + _body_bytes
+        
         return _bytes
 
 
+class Origin(EFLR):
+    def __init__(self,
+                 file_id:str=None,
+                 file_set_name:str=None,
+                 file_set_number:int=None,
+                 file_number:int=None,
+                 file_type:str=None,
+                 product:str=None,
+                 version:str=None,
+                 programs:str=None,
+                 creation_time=None,
+                 order_number:str=None,
+                 descent_number:int=None,
+                 run_number:int=None,
+                 well_id:str=None,
+                 well_name:str=None,
+                 field_name:str=None,
+                 producer_code:int=None,
+                 producer_name:str=None,
+                 company:str=None,
+                 name_space_name:str=None,
+                 name_space_version:int=None):
 
+        super().__init__()
+
+        self.file_id = file_id
+        self.file_set_name = file_set_name
+        self.file_set_number = file_set_number
+        self.file_number = file_number
+        self.file_type = file_type
+        self.product = product
+        self.version = version
+        self.programs = programs
+        self.creation_time = creation_time
+        self.order_number = order_number
+        self.descent_number = descent_number
+        self.run_number = run_number
+        self.well_id = well_id
+        self.well_name = well_name
+        self.field_name = field_name
+        self.producer_code = producer_code
+        self.producer_name = producer_name
+        self.company = company
+        self.name_space_name = name_space_name
+        self.name_space_version = name_space_version
+
+
+    def get_as_bytes(self):
+        _body = b''
+
+        # Set
+        _body += Set(set_type='ORIGIN', set_name=self.set_name)
+
+        # Template
+        if.self.file_id:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FILE-ID')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.file_set_name:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FILE-SET-NAME')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        if.self.file_set_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FILE-SET-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('UVARI'))
+        
+        if.self.file_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FILE-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('UVARI'))
+        
+        if.self.file_type:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FILE-TYPE')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        if.self.product:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'PRODUCT')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.version:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'VERSION')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.programs:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'PROGRAMS')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.creation_time:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'CREATION-TIME')
+            _body += write_struct('USHORT', get_representation_code('DTIME'))
+        
+        if.self.order_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ORDER-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.descent_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DESCENT-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.run_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'RUN-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.well_id:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'WELL-ID')
+            _body += write_struct('USHORT', get_representation_code('UVARI'))
+        
+        if.self.well_name:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'WELL-NAME')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.field_name:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'FIELD-NAME')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.producer_code:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'PRODUCER-CODE')
+            _body += write_struct('USHORT', get_representation_code('UNORM'))
+        
+        if.self.producer_name:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'PRODUCER-NAME')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.company:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'COMPANY')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if.self.name_space_name:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'NAME-SPACE-NAME')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        if.self.name_space_version:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'NAME-SPACE-VERSION')
+            _body += write_struct('USHORT', get_representation_code('UVARI'))
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+        
+        if self.file_id:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.file_id)
+        
+        if self.file_set_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.file_set_name)
+        
+        if self.file_set_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('UVARI', self.file_set_number)
+        
+        if self.file_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('UVARI', self.file_number)
+        
+        if self.file_type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.file_type)
+        
+        if self.product:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.product)
+        
+        if self.version:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.version)
+        
+        if self.programs:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.programs)
+        
+        if self.creation_time:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('DTIME', self.creation_time)
+        
+        if self.order_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.order_number)
+        
+        if self.descent_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.descent_number)
+        
+        if self.run_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.run_number)
+        
+        if self.well_id:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('UVARI', self.well_id)
+        
+        if self.well_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.well_name)
+        
+        if self.field_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.field_name)
+        
+        if self.producer_code:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('UNORM', self.producer_code)
+        
+        if self.producer_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.producer_name)
+        
+        if self.company:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.company)
+        
+        if self.name_space_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.name_space_name)
+        
+        if self.name_space_version:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('UVARI', self.name_space_version)
+
+
+        # HEADER
+        return self.finalize_bytes(1, _body)
+
+
+class WellReferencePoint(EFLR):
+
+    def __init__(self,
+                 permanent_datum:str=None,
+                 vertical_zero:str=None,
+                 permanent_datum_elevation:float=None,
+                 above_permanent_datum:float=None,
+                 magnetic_declination:float=None,
+                 coordinate_1_name:str=None,
+                 coordinate_1_value:float=None,
+                 coordinate_2_name:str=None,
+                 coordinate_2_value:float=None,
+                 coordinate_3_name:str=None,
+                 coordinate_3_value:float=None):
+
+        super().__init__()
+
+        self.permanent_datum = permanent_datum
+        self.vertical_zero = vertical_zero
+        self.permanent_datum_elevation = permanent_datum_elevation
+        self.above_permanent_datum = above_permanent_datum
+        self.magnetic_declination = magnetic_declination
+        self.coordinate_1_name = coordinate_1_name
+        self.coordinate_1_value = coordinate_1_value
+        self.coordinate_2_name = coordinate_2_name
+        self.coordinate_2_value = coordinate_2_value
+        self.coordinate_3_name = coordinate_3_name
+        self.coordinate_3_value = coordinate_3_value
+
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='WELL-REFERENCE', set_name=self.set_name).get_as_bytes()
+
+
+        # TEMPLATE
+        if self.permanent_datum:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'PERMANENT-DATUM')
+        if self.vertical_zero:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'VERTICAL-ZERO')
+        if self.permanent_datum_elevation:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'PERMANENT-DATUM-ELEVATION')
+        if self.above_permanent_datum:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'ABOVE-PERMANENT-DATUM')
+        if self.magnetic_declination:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'MAGNETIC-DECLINATION')
+        if self.coordinate_1_name:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-1-NAME')
+        if self.coordinate_1_value:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-1-VALUE')
+        if self.coordinate_2_name:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-2-NAME')
+        if self.coordinate_2_value:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-2-VALUE')
+        if self.coordinate_3_name:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-3-NAME')
+        if self.coordinate_3_value:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATE-3-VALUE')
+
+
+        # Object
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+
+        if self.permanent_datum:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('ASCII', self.permanent_datum)
+
+        if self.vertical_zero:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('ASCII', self.vertical_zero)
+
+        if self.permanent_datum_elevation:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 7)
+            _body += write_struct('FDOUBL', self.permanent_datum_elevation)
+
+        if self.above_permanent_datum:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 2)
+            _body += write_struct('FDOUBL', self.above_permanent_datum)
+
+        if self.magnetic_declination:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 7)
+            _body += write_struct('FDOUBL', self.magnetic_declination)
+
+        if self.coordinate_1_name:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('ASCII', self.coordinate_1_name)
+
+        if self.coordinate_1_value:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 7)
+            _body += write_struct('FDOUBL', self.coordinate_1_value)
+
+        if self.coordinate_2_name:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('ASCII', self.coordinate_2_name)
+
+        if self.coordinate_2_value:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 7)
+            _body += write_struct('FDOUBL', self.coordinate_2_value)
+
+        if self.coordinate_3_name:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 20)
+            _body += write_struct('ASCII', self.coordinate_3_name)
+
+        if self.coordinate_3_value:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', 7)
+            _body += write_struct('FDOUBL', self.coordinate_3_value)
+
+
+        return self.finalize_bytes(1, _body)
+
+
+class Axis(EFLR):
+
+    def __init__(self,
+                 axis_id:str=None,
+                 coordinates:list=None,
+                 coordinates_struct_type:str='FDOUBL',
+                 spacing:int=None):
+        '''
+        
+        
+        :axis_id -> Identifier
+        
+        :coordinates -> A list of coordinates (please see the quote below)
+        
+        :coordinates_struct_type -> Default data type is float, but
+        if you pass string, this attribute must be set to 'ASCII' or 'IDENT'.
+        (see below quote)
+
+        :spacing -> signed spacing along the axis between successive coordinates,
+        beginning at the last coordinate value specified by the coordinates attribute.
+
+
+        QUOTE
+            The Coordinates Attribute specifies explicit coordinate values 
+            along a coordinate axis. 
+            These values may be numeric (i.e., for non-uniform coordinate spacing),
+            or they may be textual identifiers, for example "Near" and "Far".
+            If the Coordinates Value has numeric Elements, 
+            then they must occur in order of increasing or decreasing value.
+            The Count of the Coordinates Attribute need not agree 
+            with the number of array elements along this axis 
+            specified by a related Dimension Attribute.
+        END QUOTE FROM ->  RP66 V1 Section 5.3.1 -> http://w3.energistics.org/rp66/v1/rp66v1_sec5.html#5_3_1
+
+        
+        References:
+            -> http://w3.energistics.org/rp66/v1/rp66v1_sec5.html#5_3_1
+
+        '''
+
+        super().__init__()
+
+        self.axis_id = axis_id
+        if coordinates:
+            self.coordinates = coordinates
+        else:
+            self.coordinates = []
+        self.coordinates_struct_type = coordinates_struct_type
+        self.spacing = spacing
+
+
+    def get_as_bytes(self):
+        _body = b''
+
+        # SET
+        _body += Set(set_type='AXIS', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE        
+        if self.axis_id:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'AXIS-ID')
+        
+        if self.coordinates:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'COORDINATES')
+        
+        if self.spacing:
+            _body += write_struct('USHORT', int('00110000', 2))
+            _body += write_struct('IDENT', 'SPACING')
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES (VALUES)
+        if self.axis_id:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+            _body += write_struct('IDENT', self.axis_id)
+
+        if self.coordinates:
+
+            if len(self.coordinates) > 1:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.coordinates))
+
+                for coord in self.coordinates:
+                    _body += write_struct(self.coordinates_struct_type, coord)
+
+            else:
+                _body += write_struct('USHORT', int('00100101', 2))
+                _body += write_struct('USHORT', get_representation_code(self.coordinates_struct_type))
+                _body += write_struct(get_representation_code(self.coordinates_struct_type), self.coordinates[0])
+
+        if self.spacing:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', get_representation_code('SLONG'))
+            _body += write_struct('SLONG', self.spacing)
+
+
+        return self.finalize_bytes(2, _body)
+
+
+    def get_obname_only(self):
+        '''
+        Axis object might be referenced from other Objects like Channels.
+        The reference identifier is a 'OBNAME' attribute.
+        This method returns only OBNAME attribute of this Axis object.
+
+        '''
+
+        return write_struct('OBNAME', (self.origin_reference,
+                                       self.copy_number,
+                                       self.object_name))
+
+
+class LongName(EFLR):
+
+    def __init__(self,
+                 general_modifier:str=None,
+                 quantity:str=None,
+                 quantity_modifier:str=None,
+                 altered_form:str=None,
+                 entity:str=None,
+                 entity_modifier:str=None,
+                 entity_number:str=None,
+                 entity_part:str=None,
+                 entity_part_number:str=None,
+                 generic_source:str=None,
+                 source_part:str=None,
+                 source_part_number:str=None,
+                 conditions:str=None,
+                 standard_symbol:str=None,
+                 private_symbol:str=None):
+
+
+        super().__init__()
+
+        self.general_modifier = general_modifier
+        self.quantity = quantity
+        self.quantity_modifier = quantity_modifier
+        self.altered_form = altered_form
+        self.entity = entity
+        self.entity_modifier = entity_modifier
+        self.entity_number = entity_number
+        self.entity_part = entity_part
+        self.entity_part_number = entity_part_number
+        self.generic_source = generic_source
+        self.source_part = source_part
+        self.source_part_number = source_part_number
+        self.conditions = conditions
+        self.standard_symbol = standard_symbol
+        self.private_symbol = private_symbol
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='LONG-NAME', set_name=self.set_name).get_as_bytes()
+
+
+        if self.general_modifier:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'GENERAL-MODIFIER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.quantity:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'QUANTITY')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.quantity_modifier:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'QUANTITY-MODIFIER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.altered_form:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ALTERED-FORM')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.entity:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENTITY')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.entity_modifier:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENTITY-MODIFIER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.entity_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENTITY-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.entity_part:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENTITY-PART')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.entity_part_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENTITY-PART-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.generic_source:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'GENERIC-SOURCE')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.source_part:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'SOURCE-PART')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.source_part_number:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'SOURCE-PART-NUMBER')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.conditions:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'CONDITIONS')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.standard_symbol:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'STANDARD-SYMBOL')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        if self.private_symbol:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'PRIVATE-SYMBOL')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+
+        # Object
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+        if self.general_modifier:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.general_modifier)
+            
+        if self.quantity:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.quantity)
+            
+        if self.quantity_modifier:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.quantity_modifier)
+            
+        if self.altered_form:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.altered_form)
+            
+        if self.entity:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.entity)
+            
+        if self.entity_modifier:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.entity_modifier)
+            
+        if self.entity_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.entity_number)
+            
+        if self.entity_part:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.entity_part)
+            
+        if self.entity_part_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.entity_part_number)
+            
+        if self.generic_source:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.generic_source)
+            
+        if self.source_part:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.source_part)
+            
+        if self.source_part_number:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.source_part_number)
+            
+        if self.conditions:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.conditions)
+            
+        if self.standard_symbol:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.standard_symbol)
+            
+        if self.private_symbol:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.private_symbol)
+            
+
+
+        return self.finalize_bytes(9, _body)
+
+
+# !!!!! COMPLETE Source Attribute (OBJREF)
+class Channel(EFLR):
+    def __init__(self,
+                 long_name:str=None,
+                 properties:list=None,
+                 representation_code:str=None,
+                 units:str=None,
+                 dimension:list=None,
+                 axis=None,
+                 element_limit:list=None,
+                 source=None):
+
+        super().__init__()
+
+        self.long_name = long_name
+        self.properties = properties
+        self.representation_code = representation_code
+        self.units = units
+        self.dimension = dimension
+        self.axis = axis
+        self.element_limit = element_limit
+        self.source = source
+
+    def get_as_bytes(self):
+        _bytes = b''
+        _bytes += write_struct('USHORT', int('01110000', 2))
+        _bytes += write_struct('OBNAME', (self.origin_reference,
+                                          self.copy_number,
+                                          self.object_name))
+
+        if self.long_name:
+            _bytes += write_struct('USHORT', int('00100001', 2))
+            _bytes += write_struct('ASCII', self.long_name)
+        else:
+            _bytes += self.write_absent_attribute()
+
+        
+        if self.properties:
+            if len(self.properties) > 1:
+                _bytes += write_struct('USHORT', int('00101001', 2))
+                _bytes += write_struct('UVARI', len(self.properties))
+
+                for prop in self.properties:
+                    _bytes += write_struct('IDENT', prop)
+
+            else:
+                _bytes += write_struct('USHORT', int('00100001', 2))
+                _bytes += write_struct('IDENT', self.dimension[0])
+        else:
+            _bytes += self.write_absent_attribute()
+
+
+        
+        if self.representation_code:
+            _bytes += write_struct('USHORT', int('00100001', 2))
+            _bytes += write_struct('USHORT', get_representation_code(self.representation_code))
+
+        else:
+            _bytes += self.write_absent_attribute()
+        
+
+        if self.units:
+            _bytes += write_struct('USHORT', int('00100001', 2))
+            _bytes += write_struct('UNITS', self.units)
+
+        else:
+            _bytes += self.write_absent_attribute()
+        
+
+        if self.dimension:
+            if len(self.dimension) > 1:
+                _bytes += write_struct('USHORT', int('00101001', 2))
+                _bytes += write_struct('UVARI', len(self.dimension))
+                for dim in self.dimension:
+                    _bytes += write_struct('UVARI', dim)
+
+            else:
+                _bytes += write_struct('USHORT', int('00100001', 2))
+                _bytes += write_struct('UVARI', self.dimension[0])
+            
+        else:
+            _bytes += self.write_absent_attribute()
+        
+
+        if self.axis:
+            _bytes += write_struct('USHORT', int('00100001', 2))
+            _bytes += self.axis.get_obname_only()
+
+        else:
+            _bytes += self.write_absent_attribute()
+        
+
+        if self.element_limit:
+            if len(self.element_limit) > 1:
+                _bytes += write_struct('USHORT', int('00101001', 2))
+                _bytes += write_struct('UVARI', len(self.element_limit))
+                for el in self.element_limit:
+                    _bytes += write_struct('UVARI', el)
+            else:
+                _bytes += write_struct('USHORT', int('00100001', 2))
+                _bytes += write_struct('UVARI', self.element_limit[0])
+            
+        else:
+            _bytes += self.write_absent_attribute()
+        
+
+        # NEEDS REFACTORING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if self.source:
+            pass
+        else:
+            _bytes += self.write_absent_attribute()
+
+        return _bytes
+
+    def write_absent_attribute(self):
+        return write_struct('USHORT', int('00000000', 2))
+
+    def get_obname_only(self):
+        '''
+        
+        Channel Objects are referenced in Frame Objects using OBNAME attribute.
+
+        '''
+
+        return write_struct('OBNAME', (self.origin_reference,
+                                       self.copy_number,
+                                       self.object_name))
+
+
+class ChannelLogicalRecord(EFLR):
+    def __init__(self,
+                 channels:list=None):
+
+        super().__init__()
+
+        if channels:
+            self.channels = channels
+        else:
+            self.channels = []
+    
+    def get_as_bytes(self):
+        _body = b''
+
+        # SET
+        _body += Set(set_type=self.set_type, set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE
+
+        
+        # if self.long_name:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'LONG-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+    
+        # if self.properties:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PROPERTIES')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+    
+        # if self.representation_code:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'REPRESENTATION-CODE')
+        _body += write_struct('USHORT', get_representation_code('USHORT'))
+    
+        # if self.units:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'UNITS')
+        _body += write_struct('USHORT', get_representation_code('UNITS'))
+    
+        # if self.dimension:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DIMENSION')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
+    
+        # if self.axis:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'AXIS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+    
+        # if self.element_limit:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ELEMENT-LIMIT')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
+    
+        # if self.source:
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'SOURCE')
+        _body += write_struct('USHORT', get_representation_code('OBJREF'))
+
+
+        # add each Channel object here
+
+        for channel_object in self.channels:
+            _body += channel_object.get_as_bytes()
+
+
+        return self.finalize_bytes(3, _body)
+
+
+class Frame(EFLR):
+
+    def __init__(self,
+                 description:str=None,
+                 channels:list=None,
+                 index_type:str=None,
+                 direction:str=None,
+                 spacing:int=None,
+                 spacing_units:str=None,
+                 encrypted:bool=False,
+                 index_min:int=None,
+                 index_max:int=None):
+
+        super().__init__()
+
+        self.description = description
+        if channels:
+            self.channels = channels
+        else:
+            self.channels = []
+        self.index_type = index_type
+        self.direction = direction
+        self.spacing = spacing
+        self.spacing_units = spacing_units
+        self.encrypted = encrypted
+        self.index_min = index_min
+        self.index_max = index_max
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='FRAME').get_as_bytes()
+
+        # TEMPLATE
+        if self.description:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DESCRIPTION')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        if self.channels:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'CHANNELS')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        if self.index_type:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'INDEX-TYPE')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        if self.direction:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DIRECTION')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        if self.spacing:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'SPACING')
+            _body += write_struct('USHORT', get_representation_code('SLONG'))
+        
+        if self.encrypted:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ENCRYPTED')
+            _body += write_struct('USHORT', get_representation_code('USHORT'))
+        
+        if self.index_min:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'INDEX-MIN')
+            _body += write_struct('USHORT', get_representation_code('SLONG'))
+        
+        if self.index_max:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'INDEX-MAX')
+            _body += write_struct('USHORT', get_representation_code('SLONG'))
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        # ATTRIBUTES
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+
+        if self.channels:
+            if len(self.channels) > 1:
+                _body += write_struct('USHORT', int('00101001', 2))
+                _body += write_struct('UVARI', len(self.channels))
+
+                for channel in self.channels:
+                    _body += channel.get_obname_only()
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+                _body += self.channels[0].get_obname_only()
+
+        if self.index_type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.index_type)
+
+        if self.direction:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.direction)
+
+        if self.spacing:
+            if self.spacing_units:
+                _body += write_struct('USHORT', int('00100011', 2))
+                _body += write_struct('UNITS', self.spacing_units)
+                _body += write_struct('SLONG', self.spacing)
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+                _body += write_struct('SLONG', self.spacing)
+
+        if self.encrypted:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('USHORT', int(self.encrypted))
+
+        if self.index_min:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('SLONG', self.index_min)
+
+        if self.index_max:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('SLONG', self.index_max)
+
+
+        return self.finalize_bytes(4, _body)
+
+
+    def get_obname_only(self):
+        '''
+    
+        Frame Object is referenced from FrameData using OBNAME
+
+        '''
+        return write_struct('OBNAME', (self.origin_reference,
+                                       self.copy_number,
+                                       self.object_name))
+
+
+class FrameData(IFLR):
+
+    def __init__(self,
+                 frame=None,
+                 frame_number:int=None,
+                 slots:list=None):
+
+        '''
+    
+        FrameData is an Implicitly Formatted Logical Record (IFLR)
+
+        Each FrameData object begins with a reference to the Frame object
+        that they belong to using OBNAME.
+
+        :frame -> A Frame(EFLR) object instance
+        :position -> Auto-assigned integer denoting the position of the FrameData
+        
+        :slots -> Represents a row in the dataframe. If there are 3 channels, slots will be the array
+        of values at the corresponding index for those channels.
+
+        '''
+
+
+        self.frame = frame
+        self.frame_number = frame_number # UVARI
+
+        if slots:
+            self.slots = slots
+        else:
+            self.slots = []
+
+    def get_header_bytes(self):
+        _length = None
+        _padding = None
+        
+        if _padding:
+            _attr = '00000001'
+        else:
+            _attr = '00000000'
+
+        _type = 0
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('UVARI', self.frame_number)
+        
+        for i in range(len(self.slots)):
+
+            data = self.slots[i]
+
+            # Get representation code from corresponding Channel
+            corresponding_channel = self.frame.channels[i]
+
+            representation_code = get_representation_code(corresponding_channel.representation_code)
+
+            # For each slot, we check the dimension of the corresponding channel to determine how many elements will be written.
+            dimensions = corresponding_channel.dimension
+
+
+            for j in range(dimension[0]):
+                pass
 
 class Equipment(object):
 
@@ -257,6 +1401,7 @@ class Equipment(object):
         self.origin_reference = origin_reference
         self.copy_number = copy_number
         self.object_name = object_name
+        
         self.trademark_name = trademark_name
         self.status = status
         self._type = _type
@@ -301,7 +1446,6 @@ class Equipment(object):
 
         # Template
         if self.trademark_name:
-            print('Creating TM template')
             _body += write_struct('USHORT', int('00110000', 2))
             _body += write_struct('IDENT', 'TRADEMARK-NAME')
 
@@ -633,670 +1777,14 @@ class Equipment(object):
 
 
 
-class Axis(object):
 
-    def __init__(self,
-                 set_name:str=None,
-                 origin_reference:int=None,
-                 copy_number:int=0,
-                 object_name:str=None,
-                 axis_id:str=None,
-                 coordinates:str=None,
-                 spacing:str=None,
-                 has_padding:bool=False):
 
-        self.set_name = set_name
-        self.origin_reference = origin_reference
-        self.copy_number = copy_number
-        self.object_name = object_name
-        self.axis_id = axis_id
-        self.coordinates = coordinates
-        self.spacing = spacing
-        self.has_padding = has_padding
 
 
-    def get_as_bytes(self):
-        _body = b''
 
-        # SET
-        _body += Set(set_type='AXIS', set_name=self.set_name).get_as_bytes()
 
-        # TEMPLATE        
-        if self.axis_id:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'AXIS-ID')
-        
-        if self.coordinates:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATES')
-        
-        if self.spacing:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'SPACING')
 
 
-        # OBJECT
-        _body += write_struct('USHORT', int('01110000', 2))
-        _body += write_struct('OBNAME', (self.origin_reference,
-                                         self.copy_number,
-                                         self.object_name))
-
-
-        # ATTRIBUTES (VALUES)
-        if self.axis_id:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.axis_id)
-
-        if self.coordinates:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 14)
-            _body += write_struct('SLONG', self.coordinates)
-
-        if self.spacing:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 14)
-            _body += write_struct('SLONG', self.spacing)
-
-
-        # HEADER
-        if len(_body) % 2 != 0:
-            self.has_padding = True
-            _length = write_struct('UNORM', len(_body) + 5)
-        else:
-            _length = write_struct('UNORM', len(_body) + 4)
-
-        _logical_record_type = write_struct('USHORT', 2)
-        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
-
-        _header = _length + _attributes + _logical_record_type
-
-
-        _bytes = _header + _body
-        if self.has_padding:
-            _bytes += write_struct('USHORT', 1)
-
-        return _bytes
-
-
-
-class EFLR(object):
-
-    def __init__(self,
-                 set_name:str=None,
-                 origin_reference:int=None,
-                 copy_number:int=0,
-                 object_name:str=None,
-                 has_padding:bool=False):
-
-        self.set_name = set_name
-        self.origin_reference = origin_reference
-        self.copy_number = copy_number
-        self.object_name = object_name
-        self.has_padding = has_padding
-
-
-    def finalize_bytes(self, logical_record_type, _body):
-        # HEADER
-        if len(_body) % 2 != 0:
-            self.has_padding = True
-            _length = write_struct('UNORM', len(_body) + 5)
-        else:
-            _length = write_struct('UNORM', len(_body) + 4)
-
-        _logical_record_type = write_struct('USHORT', logical_record_type)
-        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
-
-        _header = _length + _attributes + _logical_record_type
-
-
-        _bytes = _header + _body
-        if self.has_padding:
-            _bytes += write_struct('USHORT', 1)
-
-        return _bytes
-
-
-class Channel(EFLR):
-    def __init__(self,
-                 long_name:str=None,
-                 properties:list=None,
-                 representation_code:int=None,
-                 units:str=None,
-                 dimension:list=None,
-                 axis=None,
-                 element_limit:list=None,
-                 source=None):
-
-        super().__init__()
-
-        self.long_name = long_name
-        self.properties = properties
-        self.representation_code = representation_code
-        self.units = units
-        self.dimension = dimension
-        self.axis = axis
-        self.element_limit = element_limit
-        self.source = source
-
-    def get_as_bytes(self):
-        _bytes = b''
-        _bytes += write_struct('USHORT', int('01110000', 2))
-        _bytes += write_struct('OBNAME', (self.origin_reference,
-                                          self.copy_number,
-                                          self.object_name))
-
-        if self.long_name:
-            _bytes += write_struct('USHORT', int('00100001', 2))
-            _bytes += write_struct('IDENT', self.long_name)
-        else:
-            _bytes += self.write_absent_attribute()
-
-        
-        if self.properties:
-            if len(self.properties) > 1:
-                _bytes += write_struct('USHORT', int('00101001', 2))
-                _bytes += write_struct('USHORT', len(self.properties))
-
-                for prop in self.properties:
-                    _bytes += write_struct('IDENT', prop)
-
-            else:
-                _bytes += write_struct('USHORT', int('00100001', 2))
-                _bytes += write_struct('IDENT', self.dimension[0])
-        else:
-            _bytes += self.write_absent_attribute()
-
-
-        
-        if self.representation_code:
-            _bytes += write_struct('USHORT', int('00100001', 2))
-            _bytes += write_struct('USHORT', get_representation_code(self.representation_code))
-
-        else:
-            _bytes += self.write_absent_attribute()
-        
-
-        if self.units:
-            _bytes += write_struct('USHORT', int('00100001', 2))
-            _bytes += write_struct('IDENT', self.units)
-
-        else:
-            _bytes += self.write_absent_attribute()
-        
-
-        if self.dimension:
-            if len(self.dimension) > 1:
-                _bytes += write_struct('USHORT', int('00101001', 2))
-                _bytes += write_struct('USHORT', len(self.dimension))
-                for dim in self.dimension:
-                    _bytes += write_struct('UVARI', dim)
-
-            else:
-                _bytes += write_struct('USHORT', int('00100001', 2))
-                _bytes += write_struct('UVARI', self.dimension[0])
-            
-        else:
-            _bytes += self.write_absent_attribute()
-        
-
-        # !!!!!!!!!!! NEEDS REFACTORING OF Axis(object) class !!!!!
-        if self.axis:
-            _bytes += write_struct('USHORT', int('00100001', 2))
-            _bytes += self.axis.get_obname_only()
-
-        else:
-            _bytes += self.write_absent_attribute()
-        
-
-        if self.element_limit:
-            if len(self.element_limit) > 1:
-                _bytes += write_struct('USHORT', int('00101001', 2))
-                _bytes += write_struct('USHORT', len(self.element_limit))
-                for el in self.element_limit:
-                    _bytes += write_struct('UVARI', el)
-            else:
-                _bytes += write_struct('USHORT', int('00100001', 2))
-                _bytes += write_struct('UVARI', self.element_limit[0])
-            
-        else:
-            _bytes += self.write_absent_attribute()
-        
-
-        # NEEDS REFACTORING !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if self.source:
-            pass
-        else:
-            _bytes += self.write_absent_attribute()
-
-        return _bytes
-
-    def write_absent_attribute(self):
-        return write_struct('USHORT', int('00000000', 2))
-
-
-
-
-class ChannelLogicalRecord(EFLR):
-    def __init__(self,
-                 channels:list=None):
-
-        super().__init__()
-
-        if channels:
-            self.channels = channels
-        else:
-            self.channels = []
-    
-    def get_as_bytes(self):
-        _body = b''
-
-        # SET
-        _body += Set(set_type=self.set_type, set_name=self.set_name).get_as_bytes()
-
-        # TEMPLATE
-
-        
-        # if self.long_name:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'LONG-NAME')
-        _body += write_struct('USHORT', 20)
-    
-        # if self.properties:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'PROPERTIES')
-        _body += write_struct('USHORT', 19)
-    
-        # if self.representation_code:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'REPRESENTATION-CODE')
-        _body += write_struct('USHORT', 15)
-    
-        # if self.units:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'UNITS')
-        _body += write_struct('USHORT', 27)
-    
-        # if self.dimension:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'DIMENSION')
-        _body += write_struct('USHORT', 18)
-    
-        # if self.axis:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'AXIS')
-        _body += write_struct('USHORT', 23)
-    
-        # if self.element_limit:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'ELEMENT-LIMIT')
-        _body += write_struct('USHORT', 18)
-    
-        # if self.source:
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'SOURCE')
-        _body += write_struct('USHORT', 24)
-
-
-        # add each Channel object here
-
-        for channel_object in self.channels:
-            _body += channel_object.get_as_bytes()
-
-
-        return self.finalize_bytes(3, _body)
-
-
-
-class WellReferencePoint(object):
-
-    def __init__(self,
-                 set_name:str=None,
-                 origin_reference:int=None,
-                 copy_number:int=None,
-                 object_name:str=None,
-                 permanent_datum:str=None,
-                 vertical_zero:str=None,
-                 permanent_datum_elevation:float=None,
-                 above_permanent_datum:float=None,
-                 magnetic_declination:float=None,
-                 coordinate_1_name:str=None,
-                 coordinate_1_value:float=None,
-                 coordinate_2_name:str=None,
-                 coordinate_2_value:float=None,
-                 coordinate_3_name:str=None,
-                 coordinate_3_value:float=None,
-                 has_padding:bool=False):
-
-
-        self.permanent_datum = permanent_datum
-        self.vertical_zero = vertical_zero
-        self.permanent_datum_elevation = permanent_datum_elevation
-        self.above_permanent_datum = above_permanent_datum
-        self.magnetic_declination = magnetic_declination
-        self.coordinate_1_name = coordinate_1_name
-        self.coordinate_1_value = coordinate_1_value
-        self.coordinate_2_name = coordinate_2_name
-        self.coordinate_2_value = coordinate_2_value
-        self.coordinate_3_name = coordinate_3_name
-        self.coordinate_3_value = coordinate_3_value
-
-
-
-    def get_as_bytes(self):
-
-        _body = b''
-
-        # SET
-        _body += Set(set_type='WELL-REFERENCE', set_name=self.set_name).get_as_bytes()
-
-
-        # TEMPLATE
-
-
-        if self.permanent_datum:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'PERMANENT-DATUM')
-        if self.vertical_zero:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'VERTICAL-ZERO')
-        if self.permanent_datum_elevation:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'PERMANENT-DATUM-ELEVATION')
-        if self.above_permanent_datum:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ABOVE-PERMANENT-DATUM')
-        if self.magnetic_declination:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'MAGNETIC-DECLINATION')
-        if self.coordinate_1_name:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-1-NAME')
-        if self.coordinate_1_value:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-1-VALUE')
-        if self.coordinate_2_name:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-2-NAME')
-        if self.coordinate_2_value:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-2-VALUE')
-        if self.coordinate_3_name:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-3-NAME')
-        if self.coordinate_3_value:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'COORDINATE-3-VALUE')
-
-
-        # Object
-        _body += write_struct('USHORT', int('01110000', 2))
-        _body += write_struct('OBNAME', (self.origin_reference,
-                                         self.copy_number,
-                                         self.object_name))
-
-
-        # ATTRIBUTES
-
-        if self.permanent_datum:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 19)
-            _body.write_struct('IDENT', self.permanent_datum)
-
-        if self.vertical_zero:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 19)
-            _body.write_struct('IDENT', self.vertical_zero)
-
-        if self.permanent_datum_elevation:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.permanent_datum_elevation)
-
-        if self.above_permanent_datum:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.above_permanent_datum)
-
-        if self.magnetic_declination:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.magnetic_declination)
-
-        if self.coordinate_1_name:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 19)
-            _body.write_struct('IDENT', self.coordinate_1_name)
-
-        if self.coordinate_1_value:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.coordinate_1_value)
-
-        if self.coordinate_2_name:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 19)
-            _body.write_struct('IDENT', self.coordinate_2_name)
-
-        if self.coordinate_2_value:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.coordinate_2_value)
-
-        if self.coordinate_3_name:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 19)
-            _body.write_struct('IDENT', self.coordinate_3_name)
-
-        if self.coordinate_3_value:
-            _body.write_struct('USHORT', int('00100101', 2))
-            _body.write_struct('USHORT', 7)
-            _body.write_struct('FDOUBL', self.coordinate_3_value)
-
-
-        # HEADER
-        if len(_body) % 2 != 0:
-            self.has_padding = True
-            _length = write_struct('UNORM', len(_body) + 5)
-        else:
-            _length = write_struct('UNORM', len(_body) + 4)
-
-        _logical_record_type = write_struct('USHORT', 1)
-        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
-
-        _header = _length + _attributes + _logical_record_type
-
-
-        _bytes = _header + _body
-        if self.has_padding:
-            _bytes += write_struct('USHORT', 1)
-
-        return _bytes
-
-
-
-
-
-
-class LongName(EFLR):
-
-    def __init__(self,
-                 general_modifier:str=None,
-                 quantity:str=None,
-                 quantity_modifier:str=None,
-                 altered_form:str=None,
-                 entity:str=None,
-                 entity_modifier:str=None,
-                 entity_number:str=None,
-                 entity_part:str=None,
-                 entity_part_number:str=None,
-                 generic_source:str=None,
-                 source_part:str=None,
-                 source_part_number:str=None,
-                 conditions:str=None,
-                 standard_symbol:str=None,
-                 private_symbol:str=None):
-
-
-
-
-        self.general_modifier = general_modifier
-        self.quantity = quantity
-        self.quantity_modifier = quantity_modifier
-        self.altered_form = altered_form
-        self.entity = entity
-        self.entity_modifier = entity_modifier
-        self.entity_number = entity_number
-        self.entity_part = entity_part
-        self.entity_part_number = entity_part_number
-        self.generic_source = generic_source
-        self.source_part = source_part
-        self.source_part_number = source_part_number
-        self.conditions = conditions
-        self.standard_symbol = standard_symbol
-        self.private_symbol = private_symbol
-
-
-    def get_as_bytes(self):
-
-        _body = b''
-
-        _body += Set(set_type='LONG-NAME', set_name=self.set_name).get_as_bytes()
-
-
-        if self.general_modifier:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'GENERAL-MODIFIER')
-        if self.quantity:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'QUANTITY')
-        if self.quantity_modifier:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'QUANTITY-MODIFIER')
-        if self.altered_form:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ALTERED-FORM')
-        if self.entity:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ENTITY')
-        if self.entity_modifier:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ENTITY-MODIFIER')
-        if self.entity_number:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ENTITY-NUMBER')
-        if self.entity_part:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ENTITY-PART')
-        if self.entity_part_number:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'ENTITY-PART-NUMBER')
-        if self.generic_source:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'GENERIC-SOURCE')
-        if self.source_part:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'SOURCE-PART')
-        if self.source_part_number:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'SOURCE-PART-NUMBER')
-        if self.conditions:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'CONDITIONS')
-        if self.standard_symbol:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'STANDARD-SYMBOL')
-        if self.private_symbol:
-            _body += write_struct('USHORT', int('00110000', 2))
-            _body += write_struct('IDENT', 'PRIVATE-SYMBOL')
-
-
-        # Object
-        _body += write_struct('USHORT', int('01110000', 2))
-        _body += write_struct('OBNAME', (self.origin_reference,
-                                         self.copy_number,
-                                         self.object_name))
-
-
-        # ATTRIBUTES
-        if self.general_modifier:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.general_modifier)
-
-        if self.quantity:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.quantity)
-
-        if self.quantity_modifier:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.quantity_modifier)
-
-        if self.altered_form:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.altered_form)
-
-        if self.entity:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.entity)
-
-        if self.entity_modifier:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.entity_modifier)
-
-        if self.entity_number:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.entity_number)
-
-        if self.entity_part:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.entity_part)
-
-        if self.entity_part_number:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.entity_part_number)
-
-        if self.generic_source:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.generic_source)
-
-        if self.source_part:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.source_part)
-
-        if self.source_part_number:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.source_part_number)
-
-        if self.conditions:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.conditions)
-
-        if self.standard_symbol:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.standard_symbol)
-
-        if self.private_symbol:
-            _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
-            _body += write_struct('IDENT', self.private_symbol)
-
-
-
-        self.finalize_bytes(9, _body)
 
 
 
