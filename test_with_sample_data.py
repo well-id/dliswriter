@@ -1,4 +1,5 @@
 from datetime import datetime
+import io
 
 from storage_unit_label import StorageUnitLabel
 
@@ -12,6 +13,13 @@ from logical_record import ChannelLogicalRecord
 from logical_record import Frame
 from logical_record import FrameData
 from logical_record import EOD
+
+from common.data_types import struct_type_dict
+from common.data_types import read_struct
+from common.data_types import write_struct
+
+from utils.converters import get_datetime
+
 
 import pandas as pd
 import numpy as np
@@ -29,26 +37,27 @@ origin = Origin()
 origin.file_id = 'AQLN file_id'
 origin.file_set_name = 'AQLN file_set_name'
 origin.file_set_number = 11
-origin.file_number = 222
+origin.file_number = 22
 origin.file_type = 'AQLN file_type'
 origin.product = 'AQLN product'
 origin.version = 'AQLN version'
 origin.programs = 'AQLN programs'
-origin.creation_time = datetime.now()
+# origin.creation_time = datetime.now()
 origin.order_number = 'AQLN order_number'
-origin.descent_number = 333
-origin.run_number = 444
-origin.well_id = 5555
+origin.descent_number = 33
+origin.run_number = 44
+origin.well_id = 55
 origin.well_name = 'AQLN well_name'
 origin.field_name = 'AQLN field_name'
 origin.producer_code = 1
 origin.producer_name = 'AQLN producer_name'
 origin.company = 'AQLN company'
 origin.name_space_name = 'AQLN name_space_name'
-origin.name_space_version = 6666
+origin.name_space_version = 66
 
 origin.origin_reference = origin.file_set_number
 origin.object_name = 'DEFINING ORIGIN'
+origin.set_name = 'OGR SET NAME'
 
 
 # FILE-HEADER
@@ -74,6 +83,7 @@ well_reference_point.coordinate_2_value = 27.792470
 
 well_reference_point.origin_reference = origin.file_set_number
 well_reference_point.object_name = 'AQLN WELL-REF'
+well_reference_point.set_name = 'WELL-REF-SET-NAME'
 
 
 

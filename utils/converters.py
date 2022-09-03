@@ -167,14 +167,24 @@ def get_datetime(date_time):
 
     '''
 
-    year = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.year - 1900),2))
-    time_zone = struct.Struct('>B').pack(int('{0:04b}'.format(0),2)) # Local Standard Time is set as default.
-    month = struct.Struct('>B').pack(int('{0:04b}'.format(date_time.month),2))
-    day = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.day),2))
-    hours = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.hour),2))
-    minutes = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.minute),2))
-    seconds = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.second),2))
-    miliseconds = struct.Struct('>H').pack(int('{0:016b}'.format(int(date_time.microsecond / 1000)),2))
+    # year = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.year - 1900),2))
+    # time_zone = struct.Struct('>B').pack(int('{0:04b}'.format(0),2)) # Local Standard Time is set as default.
+    # month = struct.Struct('>B').pack(int('{0:04b}'.format(date_time.month),2))
+    # day = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.day),2))
+    # hours = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.hour),2))
+    # minutes = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.minute),2))
+    # seconds = struct.Struct('>B').pack(int('{0:08b}'.format(date_time.second),2))
+    # miliseconds = struct.Struct('>H').pack(int('{0:016b}'.format(int(date_time.microsecond / 1000)),2))
+    
+
+    year = int('{0:08b}'.format(date_time.year - 1900),2)
+    time_zone = int('{0:04b}'.format(0),2) # Local Standard Time is set as default
+    month = int('{0:04b}'.format(date_time.month),2)
+    day = int('{0:08b}'.format(date_time.day),2)
+    hours = int('{0:08b}'.format(date_time.hour),2)
+    minutes = int('{0:08b}'.format(date_time.minute),2)
+    seconds = int('{0:08b}'.format(date_time.second),2)
+    miliseconds = int('{0:016b}'.format(int(date_time.microsecond / 1000)),2)
 
     
     date_time_bytes = year + time_zone + month + day + hours + minutes + seconds + miliseconds

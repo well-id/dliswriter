@@ -208,14 +208,14 @@ class FileHeader(object):
 
     def __init__(self,
                  sequence_number:int=1,
-                 _id:str='0'):
+                 _id:str='DEFAULT FHLR'):
 
         self.sequence_number = sequence_number
         self._id = _id
         
         self.origin_reference = None
         self.copy_number = 0
-        self.object_name = None
+        self.object_name = '0'
 
 
     def get_as_bytes(self):
