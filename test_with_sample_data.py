@@ -183,7 +183,7 @@ for frame_data in frame_data_objects:
 	visible_record.logical_record_segments.append(frame_data)
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
-file_name = 'test_with_curves.DLIS'
+file_name = 'test_with_curves_22.DLIS'
 
 with open(file_name, 'wb') as f:
 	f.write(dlis_bytes)
@@ -200,3 +200,17 @@ with dlis.load(file_name) as (f, *tail):
     print(f.origins[0].describe())
 
 print('\n\ndone..')
+
+
+
+
+
+
+
+
+
+# WRITE AS CSV USING DLISPY
+print('Dump using dlispy, to folder named "output22"')
+from dlispy import dump
+dump(file_name, output_path='output22', eflr_only= False)
+print('\ndone..\n\n')

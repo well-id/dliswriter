@@ -609,7 +609,7 @@ class WellReferencePoint(EFLR):
 
         if self.above_permanent_datum:
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 2)
+            _body += write_struct('USHORT', 7)
             _body += write_struct('FDOUBL', self.above_permanent_datum)
 
         if self.magnetic_declination:
