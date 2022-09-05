@@ -18,8 +18,6 @@ from common.data_types import struct_type_dict
 from common.data_types import read_struct
 from common.data_types import write_struct
 
-from utils.converters import get_datetime
-
 
 import pandas as pd
 import numpy as np
@@ -42,7 +40,7 @@ origin.file_type = 'AQLN file_type'
 origin.product = 'AQLN product'
 origin.version = 'AQLN version'
 origin.programs = 'AQLN programs'
-# origin.creation_time = datetime.now()
+origin.creation_time = datetime.now()
 origin.order_number = 'AQLN order_number'
 origin.descent_number = 33
 origin.run_number = 44

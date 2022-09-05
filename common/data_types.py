@@ -1,9 +1,5 @@
-from struct import Struct
 import re
-
-from utils.converters import get_datetime
-
-
+from struct import Struct
 
 struct_type_dict = {
 	'FSHORT': Struct('>h'),
@@ -83,6 +79,64 @@ def validate_units(value:str):
 		Value "{}" does not comply with the rules printed above.
 		'''.format(validate_units.__doc__, value)
 		raise Exception(message)
+
+
+def get_datetime(date_time):
+
+    '''
+
+    RP66 V1 uses a specific datetime format.
+
+    QUOTE
+
+
+        Y = Years Since 1900 (Range 0 to 255)
+        TZ = Time Zone (0 = Local Standard, 1 = Local Daylight Savings, 2 = Greenwich Mean Time)
+        M = Month of the Year (Range 1 to 12)
+        D = Day of Month (Range 1 to 31)
+        H = Hours Since Midnight (Range 0 to 23)
+        MN = Minutes Past Hour (Range 0 to 59)
+        S = Seconds Past Minute (Range 0 to 59)
+        MS = Milliseconds Past Second (Range 0 to 999)
+
+
+        9:20:15.62 PM, April 19, 1987 (DST) =
+        87 years since 1900, 4th month, 19th day,
+        21 hours since midnight, 20 minutes past hour,
+        15 seconds past minute, 620 milliseconds past second =
+            01010111 00010100 00010011 00010101
+            00010100 00001111 00000010 01101100
+    END QUOTE FROM -> http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_21
+
+    
+
+    :date_time -> is a datetime.datetime object.
+
+    :returns -> converted datetime in bytes
+
+    Usage:
+        from datetime import datetime
+
+        now = datetime.now()
+        converted_datetime = get_datetime(now)
+
+    '''
+    
+    value = b''
+
+    time_zone = '{0:04b}'.format(0) # Local Standard Time is set as default
+    month = '{0:04b}'.format(date_time.month)
+
+
+    value += write_struct('USHORT', date_time.year - 1900)
+    value += write_struct('USHORT', int(time_zone + month, 2))
+    value += write_struct('USHORT', date_time.day)
+    value += write_struct('USHORT', date_time.hour)
+    value += write_struct('USHORT', date_time.minute)
+    value += write_struct('USHORT', date_time.second)
+    value += write_struct('UNORM', int(date_time.microsecond / 1000))
+    
+    return value
 
 
 def read_struct(struct_type, packed_value):
