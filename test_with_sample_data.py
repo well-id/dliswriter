@@ -17,6 +17,8 @@ from logical_record import Zone
 from logical_record import Parameter
 from logical_record import ParameterLogicalRecord
 from logical_record import Equipment
+from logical_record import Tool
+from logical_record import ToolLogicalRecord
 
 from common.data_types import struct_type_dict
 from common.data_types import read_struct
@@ -273,11 +275,39 @@ equipment.object_name = 'SOME_EQPMNT'
 
 
 
+# TOOL
+
+tool_1 = Tool()
+
+tool_1.description = 'TOOL 1'
+tool_1.trademark_name = 'AQLN TOOL 1'
+tool_1.generic_name = 'SOME TOOL'
+tool_1.parts = [equipment]
+tool_1.status = True
+tool_1.channels = [curve_1_channel, curve_2_channel]
+tool_1.parameters = [parameter_1, parameter_2]
+
+tool_1.origin_reference = origin.file_set_number
+tool_1.object_name = 'FIRST TOOL'
 
 
 
+tool_2 = Tool()
+
+tool_2.description = 'TOOL for DEPTH'
+tool_2.trademark_name = 'AQLN DEPTH TOOL'
+tool_2.generic_name = 'SOME TOOL for DEPTH'
+tool_2.parts = [equipment]
+tool_2.status = True
+tool_2.channels = [depth_channel]
+tool_2.parameters = [parameter_1, parameter_2]
+
+tool_2.origin_reference = origin.file_set_number
+tool_2.object_name = 'DEPTH TOOL'
 
 
+tool_logical_record = ToolLogicalRecord()
+tool_logical_record.tools = [tool_1, tool_2]
 
 
 
@@ -300,6 +330,8 @@ visible_record.logical_record_segments.append(zone_1)
 visible_record.logical_record_segments.append(zone_2)
 visible_record.logical_record_segments.append(parameter_logical_record)
 visible_record.logical_record_segments.append(equipment)
+visible_record.logical_record_segments.append(tool_logical_record)
+
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
 file_name = 'test_with_curves_22.DLIS'

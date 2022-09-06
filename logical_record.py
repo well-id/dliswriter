@@ -206,6 +206,15 @@ class EFLR(object):
         return _bytes
 
 
+    def get_obname_only(self):
+        return write_struct('OBNAME', (self.origin_reference,
+                                       self.copy_number,
+                                       self.object_name))
+
+    def write_absent_attribute(self):
+        return write_struct('USHORT', int('00000000', 2))
+
+
 class FileHeader(object):
 
     def __init__(self,
@@ -262,6 +271,7 @@ class FileHeader(object):
 
 
 class Origin(EFLR):
+    
     def __init__(self,
                  file_id:str=None,
                  file_set_name:str=None,
@@ -540,7 +550,6 @@ class WellReferencePoint(EFLR):
         self.coordinate_3_value = coordinate_3_value
 
 
-
     def get_as_bytes(self):
 
         _body = b''
@@ -760,18 +769,6 @@ class Axis(EFLR):
         return self.finalize_bytes(2, _body)
 
 
-    def get_obname_only(self):
-        '''
-        Axis object might be referenced from other Objects like Channels.
-        The reference identifier is a 'OBNAME' attribute.
-        This method returns only OBNAME attribute of this Axis object.
-
-        '''
-
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
-
 
 class LongName(EFLR):
 
@@ -957,6 +954,7 @@ class LongName(EFLR):
 
 # !!!!! COMPLETE Source Attribute (OBJREF)
 class Channel(EFLR):
+    
     def __init__(self,
                  long_name:str=None,
                  properties:list=None,
@@ -1069,22 +1067,12 @@ class Channel(EFLR):
 
         return _bytes
 
-    def write_absent_attribute(self):
-        return write_struct('USHORT', int('00000000', 2))
+    
 
-    def get_obname_only(self):
-        '''
-        
-        Channel Objects are referenced in Frame Objects using OBNAME attribute.
-
-        '''
-
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
 
 
 class ChannelLogicalRecord(EFLR):
+    
     def __init__(self,
                  channels:list=None):
 
@@ -1104,42 +1092,42 @@ class ChannelLogicalRecord(EFLR):
         # TEMPLATE
 
         
-        # if self.long_name:
+        # long_name:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'LONG-NAME')
         _body += write_struct('USHORT', get_representation_code('ASCII'))
     
-        # if self.properties:
+        # properties:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'PROPERTIES')
         _body += write_struct('USHORT', get_representation_code('IDENT'))
     
-        # if self.representation_code:
+        # representation_code:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'REPRESENTATION-CODE')
         _body += write_struct('USHORT', get_representation_code('USHORT'))
     
-        # if self.units:
+        # units:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'UNITS')
         _body += write_struct('USHORT', get_representation_code('UNITS'))
     
-        # if self.dimension:
+        # dimension:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'DIMENSION')
         _body += write_struct('USHORT', get_representation_code('UVARI'))
     
-        # if self.axis:
+        # axis:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'AXIS')
         _body += write_struct('USHORT', get_representation_code('OBNAME'))
     
-        # if self.element_limit:
+        # element_limit:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'ELEMENT-LIMIT')
         _body += write_struct('USHORT', get_representation_code('UVARI'))
     
-        # if self.source:
+        # source:
         _body += write_struct('USHORT', int('00110100', 2))
         _body += write_struct('IDENT', 'SOURCE')
         _body += write_struct('USHORT', get_representation_code('OBJREF'))
@@ -1285,16 +1273,6 @@ class Frame(EFLR):
 
         return self.finalize_bytes(4, _body)
 
-
-    def get_obname_only(self):
-        '''
-    
-        Frame Object is referenced from FrameData using OBNAME
-
-        '''
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
 
 
 class FrameData(IFLR):
@@ -1530,13 +1508,6 @@ class Zone(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-
-    def get_obname_only(self):
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
-
-
 class Parameter(EFLR):
 
     def __init__(self,
@@ -1585,7 +1556,7 @@ class Parameter(EFLR):
             _body += write_struct('USHORT', int('00100001', 2))
             _body += write_struct('ASCII', self.long_name)
         else:
-            _body += write_struct('USHORT', int('00000000', 2)) # absent
+            _body += self.write_absent_attribute()
 
         if self.dimension:
             if len(self.dimension) > 1:
@@ -1597,13 +1568,13 @@ class Parameter(EFLR):
             for dim in self.dimension:
                 _body += write_struct('UVARI', dim)
         else:
-            _body += write_struct('USHORT', int('00000000', 2)) # absent
+            _body += self.write_absent_attribute()
 
         if self.axis:
             _body += write_struct('USHORT', int('00100001', 2))
             _body += self.axis.get_obname_only()
         else:
-            _body += write_struct('USHORT', int('00000000', 2)) # absent
+            _body += self.write_absent_attribute()
 
         if self.zones:
             if len(self.zones) > 1:
@@ -1615,7 +1586,7 @@ class Parameter(EFLR):
             for zone in self.zones:
                 _body += zone.get_obname_only()
         else:
-            _body += write_struct('USHORT', int('00000000', 2)) # absent
+            _body += self.write_absent_attribute()
 
 
         if self.values:
@@ -1631,7 +1602,7 @@ class Parameter(EFLR):
             for val in self.values:
                 _body += write_struct(self.representation_code, val)
         else:
-            _body += write_struct('USHORT', int('00000000', 2)) # absent
+            _body += self.write_absent_attribute()
 
 
         return _body
@@ -2078,11 +2049,159 @@ class Equipment(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+
 class Tool(EFLR):
 
-    def __init__(self):
+    def __init__(self,
+                 description:str=None,
+                 trademark_name:str=None,
+                 generic_name:str=None,
+                 parts:list=None,
+                 status:bool=True,
+                 channels:list=None,
+                 parameters:list=None):
 
         super().__init__()
+        self.description = description
+        self.trademark_name = trademark_name
+        self.generic_name = generic_name
+        if parts:
+            self.parts = parts
+        else:
+            self.parts = []
+        self.status = status
+        if channels:
+            self.channels = channels
+        else:
+            self.channels = []
+
+        if parameters:
+            self.parameters = parameters
+        else:
+            self.parameters = []
+
+
+    def get_as_bytes(self):
+        
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.trademark_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.trademark_name)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.generic_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.generic_name)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.parts:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.parts))
+            for obj in self.parts:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.status:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('USHORT', int(self.status))
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.channels))
+            for obj in self.channels:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.parameters:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.parameters))
+            for obj in self.parameters:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+
+        return _body
+
+
+
+class ToolLogicalRecord(EFLR):
+    
+    def __init__(self,
+                 tools:list=None):
+
+        super().__init__()
+
+        if tools:
+            self.tools = tools
+        else:
+            self.tools = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='TOOL', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DESCRIPTION')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TRADEMARK-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'GENERIC-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PARTS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'STATUS')
+        _body += write_struct('USHORT', get_representation_code('STATUS'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'CHANNELS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PARAMETERS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        # VALUES
+        for tool in self.tools:
+            _body += tool.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
+
+
 
 
 
