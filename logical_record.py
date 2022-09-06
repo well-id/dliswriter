@@ -2364,6 +2364,213 @@ class ComputationLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+class Process(EFLR):
+
+    def __init__(self,
+                 description:str=None,
+                 trademark_name:str=None,
+                 version:str=None,
+                 properties:list=None,
+                 status:str=None,
+                 input_channels:list=None,
+                 output_channels:list=None,
+                 input_computations:list=None,
+                 output_computations:list=None,
+                 parameters:list=None,
+                 comments:str=None):
+
+        super().__init__()
+
+        self.description = description
+        self.trademark_name = trademark_name
+        self.version = version
+        if properties:
+            self.properties = properties
+        else:
+            self.properties = []
+        self.status = status
+        if input_channels:
+            self.input_channels = input_channels
+        else:
+            self.input_channels = []
+        if output_channels:
+            self.output_channels = output_channels
+        else:
+            self.output_channels = []
+        if input_computations:
+            self.input_computations = input_computations
+        else:
+            self.input_computations = []
+        if output_computations:
+            self.output_computations = output_computations
+        else:
+            self.output_computations = []
+        if parameters:
+            self.parameters = parameters
+        else:
+            self.parameters = []
+        self.comments = comments
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.trademark_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.trademark_name)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.version:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.version)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.properties:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.properties))
+            for prop in self.properties:
+                _body += write_struct('IDENT', prop)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.status:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.status)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.input_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.input_channels))
+            for obj in self.input_channels:
+                _body += obj.get_obname_only()
+
+        if self.output_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.output_channels))
+            for obj in self.output_channels:
+                _body += obj.get_obname_only()
+
+        if self.input_computations:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.input_computations))
+            for obj in self.input_computations:
+                _body += obj.get_obname_only()
+
+        if self.output_computations:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.output_computations))
+            for obj in self.output_computations:
+                _body += obj.get_obname_only()
+
+        if self.parameters:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.parameters))
+            for obj in self.parameters:
+                _body += obj.get_obname_only()
+        
+        if self.comments:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.comments)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        return _body
+
+
+class ProcessLogicalRecord(EFLR):
+
+    def __init__(self,
+                 processes:list=None):
+
+        super().__init__()
+
+        if processes:
+            self.processes = processes
+        else:
+            self.processes = []
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='PROCESS', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DESCRIPTION')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TRADEMARK-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'VERSION')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PROPERTIES')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'STATUS')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'INPUT-CHANNELS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'OUTPUT-CHANNELS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'INPUT-COMPUTATIONS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'OUTPUT-COMPUTATIONS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PARAMETERS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'COMMENTS')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+
+        # OBJECTS
+
+        for process in self.processes:
+            _body += process.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
+
+
 class EOD(object):
     def get_as_bytes(self, frame):
         

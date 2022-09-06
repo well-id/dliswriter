@@ -21,6 +21,8 @@ from logical_record import Tool
 from logical_record import ToolLogicalRecord
 from logical_record import Computation
 from logical_record import ComputationLogicalRecord
+from logical_record import Process
+from logical_record import ProcessLogicalRecord
 
 
 from common.data_types import struct_type_dict
@@ -346,6 +348,58 @@ computation_logical_record.computations = [computation_1, computation_2]
 
 
 
+# PROCESS
+process_1 = Process()
+process_1.description = 'Process 1'
+process_1.trademark_name = 'Proc 1 TMN'
+process_1.version = '1.0.0'
+process_1.properties = ['NOPROP']
+process_1.status = 'COMPLETE'
+process_1.input_channels = [depth_channel]
+process_1.output_channels = [curve_1_channel]
+process_1.input_computations = [computation_1]
+process_1.output_computations = [computation_2]
+process_1.parameters = [parameter_1, parameter_2, parameter_3]
+process_1.comments = 'These are dummy values for testing'
+process_1.origin_reference = origin.file_set_number
+process_1.object_name = 'PROC-1 OBJ-NAME'
+
+process_2 = Process()
+process_2.description = 'Process 2'
+process_2.trademark_name = 'Proc 2 TMN'
+process_2.version = '2.0.0'
+process_2.properties = ['AVERAGED']
+process_2.status = 'IN-PROGRESS'
+process_2.input_channels = [curve_1_channel]
+process_2.output_channels = [curve_2_channel]
+process_2.input_computations = [computation_1]
+process_2.output_computations = [computation_2]
+process_2.parameters = [parameter_1]
+process_2.comments = 'These are dummy values for testing'
+process_2.origin_reference = origin.file_set_number
+process_2.object_name = 'PROC-2 OBJ-NAME'
+
+
+process_3 = Process()
+process_3.description = 'Process 3'
+process_3.trademark_name = 'Proc 3 TMN'
+process_3.version = '3.0.0'
+process_3.properties = ['PROP-3']
+process_3.status = 'ABORTED'
+process_3.input_channels = [depth_channel]
+process_3.output_channels = [curve_1_channel]
+process_3.input_computations = [computation_1]
+process_3.output_computations = [computation_2]
+process_3.parameters = [parameter_1, parameter_2, parameter_3]
+process_3.comments = 'These are dummy values for testing'
+process_3.origin_reference = origin.file_set_number
+process_3.object_name = 'PROC-3 OBJ-NAME'
+
+
+
+process_logical_record = ProcessLogicalRecord()
+process_logical_record.processes = [process_1, process_2, process_3]
+
 
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
@@ -368,7 +422,7 @@ visible_record.logical_record_segments.append(parameter_logical_record)
 visible_record.logical_record_segments.append(equipment)
 visible_record.logical_record_segments.append(tool_logical_record)
 visible_record.logical_record_segments.append(computation_logical_record)
-
+visible_record.logical_record_segments.append(process_logical_record)
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
 file_name = 'test_with_curves_22.DLIS'
