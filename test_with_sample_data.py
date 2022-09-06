@@ -13,6 +13,9 @@ from logical_record import ChannelLogicalRecord
 from logical_record import Frame
 from logical_record import FrameData
 from logical_record import EOD
+from logical_record import Zone
+from logical_record import Parameter
+from logical_record import ParameterLogicalRecord
 
 from common.data_types import struct_type_dict
 from common.data_types import read_struct
@@ -164,6 +167,70 @@ for i in range(len(data)):
 
 
 
+# ZONE
+
+zone_1 = Zone()
+zone_1.description = 'DEPTH ZONE'
+zone_1.domain = 'BOREHOLE-DEPTH'
+zone_1.maximum = 922.98
+zone_1.minimum = 10.42
+zone_1.units = 'm'
+
+zone_1.origin_reference = origin.file_set_number
+zone_1.object_name = 'DEPTH ZONE OBJ'
+
+
+zone_2 = Zone()
+zone_2.description = 'TIME'
+zone_2.domain = 'TIME'
+zone_2.minimum = datetime(2022, 8, 5, 9)
+zone_2.maximum = datetime(2022, 8, 5, 16)
+
+zone_2.origin_reference = origin.file_set_number
+zone_2.object_name = 'TIME -ZONE OBJ'
+
+
+
+
+# PARAMETER
+parameter_1 = Parameter()
+parameter_1.long_name = 'LAT'
+parameter_1.dimension = [1]
+parameter_1.zones = [zone_1, zone_2]
+parameter_1.values = ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"]
+parameter_1.representation_code = 'ASCII'
+
+parameter_1.origin_reference = origin.file_set_number
+parameter_1.object_name = 'parameter_1-OBJ-NAME'
+
+
+parameter_2 = Parameter()
+parameter_2.long_name = 'LON'
+parameter_2.dimension = [1]
+parameter_2.zones = [zone_1]
+parameter_2.values = ["27deg 47' 32.8956'' E"]
+parameter_2.representation_code = 'ASCII'
+
+parameter_2.origin_reference = origin.file_set_number
+parameter_2.object_name = 'parameter_2-OBJ-NAME'
+
+
+parameter_3 = Parameter()
+parameter_3.long_name = 'SOME-FLOAT-PARAM'
+parameter_3.dimension = [1]
+parameter_3.values = [2378.1312]
+parameter_3.units = 'm'
+parameter_3.representation_code = 'FDOUBL'
+
+parameter_3.origin_reference = origin.file_set_number
+parameter_3.object_name = 'parameter_3-OBJ-NAME'
+
+
+
+
+parameter_logical_record = ParameterLogicalRecord()
+parameter_logical_record.parameters = [parameter_1, parameter_2, parameter_3]
+
 
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
@@ -179,6 +246,10 @@ visible_record.logical_record_segments.append(frame)
 
 for frame_data in frame_data_objects:
 	visible_record.logical_record_segments.append(frame_data)
+
+visible_record.logical_record_segments.append(zone_1)
+visible_record.logical_record_segments.append(zone_2)
+visible_record.logical_record_segments.append(parameter_logical_record)
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
 file_name = 'test_with_curves_22.DLIS'

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from common.data_types import struct_type_dict
 from common.data_types import write_struct
 
@@ -1376,15 +1378,319 @@ class FrameData(IFLR):
         return self.finalize_bytes(_body)
 
 
+# INCOMPLETE
+class Path(EFLR):
+
+    def __init__(self):
+        super().__init__()
 
 
+class Zone(EFLR):
+
+    def __init__(self,
+                 description:str=None,
+                 domain:str=None,
+                 maximum=None,
+                 minimum=None,
+                 representation_code=None,
+                 units=None):
+
+
+        '''
+
+        :description -> str
+
+        :domain -> 3 options:
+            BOREHOLE-DEPTH
+            TIME
+            VERTICAL-DEPTH
+
+        :maximum -> Depending on the 'domain' attribute, this is either
+        max-depth (dtype: float) or the latest time (dtype: datetime.datetime)
+
+        :minimum -> Dependng on the 'domain' attribute, this is either
+        min-depth (dtype: float) or the earlieast time (dtype: datetime.datetime)
+
+        '''
+
+
+        super().__init__()
+        self.description = description
+
+        self.domain = domain
+        self.maximum = maximum
+        self.minimum = minimum
+        self.representation_code = representation_code
+        self.units = units
+
+
+
+    def validate(self):
+
+        if self.domain is not None and self.domain not in ['BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH']:
+            exception_message = ('\n\nDomain attribute for zone must be one of the following:\n'
+                                 '\t1. BOREHOLE-DEPTH\n\t2. TIME\n\t3. VERTICAL-DEPTH\n'
+                                 'Reference: http://w3.energistics.org/rp66/v1/rp66v1_sec5.html#5_8_1\n\n')
+            raise Exception(exception_message)
+
+        if self.domain in ['BOREHOLE-DEPTH', 'VERTICAL-DEPTH']:
+            self.representation_code = 'FDOUBL'
+            if self.maximum is not None and type(self.maximum) != float:
+                exception_message = (f'\n\nWhen the "domain" attribute is {self.domain}, '
+                                     '"maximum" attribute must be a float\n\n')
+                raise Exception(exception_message)
+
+            if self.minimum is not None and type(self.minimum) != float:
+                exception_message = (f'\n\nWhen the "domain" attribute is {self.domain}, '
+                                     '"minimum" attribute must be a float\n\n')
+                raise Exception(exception_message)
+
+        elif self.domain == 'TIME':
+            self.representation_code = 'DTIME'
+            if self.maximum is not None and type(self.maximum) != datetime:
+                exception_message = (f'\n\nWhen the "domain" attribute is {self.domain}, '
+                                     '"maximum" attribute must be a datetime.datetime instance\n'
+                                     'eg. datetime.datetime.now()\n\n')
+                raise Exception(exception_message)
+
+            if self.minimum is not None and type(self.minimum) != datetime:
+                exception_message = (f'\n\nWhen the "domain" attribute is {self.domain}, '
+                                     '"minimum" attribute must be a datetime.datetime instance\n'
+                                     'eg. datetime.datetime.now()\n\n')
+                raise Exception(exception_message)
+
+
+
+    def get_as_bytes(self):
+
+        self.validate()
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='ZONE', set_name=self.set_name).get_as_bytes()
+
+
+        # TEMPLATE
+        if self.description:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DESCRIPTION')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        if self.domain:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DOMAIN')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        if self.maximum:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'MAXIMUM')
+            _body += write_struct('USHORT', get_representation_code(self.representation_code))
+
+        if self.minimum:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'MINIMUM')
+            _body += write_struct('USHORT', get_representation_code(self.representation_code))
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # VALUES
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+        
+        if self.domain:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.domain)
+        
+        if self.maximum:
+            if self.units:
+                _body += write_struct('USHORT', int('00100011', 2))
+                _body += write_struct('UNITS', self.units)
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct(self.representation_code, self.maximum)
+        
+        if self.minimum:
+            if self.units:
+                _body += write_struct('USHORT', int('00100011', 2))
+                _body += write_struct('UNITS', self.units)
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct(self.representation_code, self.minimum)
+
+
+
+        return self.finalize_bytes(5, _body)
+
+
+
+    def get_obname_only(self):
+        return write_struct('OBNAME', (self.origin_reference,
+                                       self.copy_number,
+                                       self.object_name))
+
+
+class Parameter(EFLR):
+
+    def __init__(self,
+                 long_name:str=None,
+                 dimension:list=None,
+                 axis=None, # Not enough info on RP66 V1
+                 zones:list=None,
+                 values:list=None,
+                 representation_code:str=None,
+                 units:str=None):
+
+        super().__init__()
+
+        self.long_name = long_name
+        
+        if dimension:
+            self.dimension = dimension
+        else:
+            self.dimension = []
+
+        self.axis = axis
+        
+        if zones:
+            self.zones = zones
+        else:
+            self.zones = []
+        
+        if values:
+            self.values = values
+        else:
+            self.values = []
+
+
+        self.representation_code = representation_code
+        self.units = units
+
+    def get_as_bytes(self):
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        if self.long_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.long_name)
+        else:
+            _body += write_struct('USHORT', int('00000000', 2)) # absent
+
+        if self.dimension:
+            if len(self.dimension) > 1:
+                _body += write_struct('USHORT', int('00101001', 2))
+                _body += write_struct('UVARI', len(self.dimension))
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+
+            for dim in self.dimension:
+                _body += write_struct('UVARI', dim)
+        else:
+            _body += write_struct('USHORT', int('00000000', 2)) # absent
+
+        if self.axis:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += self.axis.get_obname_only()
+        else:
+            _body += write_struct('USHORT', int('00000000', 2)) # absent
+
+        if self.zones:
+            if len(self.zones) > 1:
+                _body += write_struct('USHORT', int('00101001', 2))
+                _body += write_struct('UVARI', len(self.zones))
+            else:
+                _body += write_struct('USHORT', int('00100001', 2))
+
+            for zone in self.zones:
+                _body += zone.get_obname_only()
+        else:
+            _body += write_struct('USHORT', int('00000000', 2)) # absent
+
+
+        if self.values:
+            if self.units:
+                _body += write_struct('USHORT', int('00101111', 2))
+                _body += write_struct('UVARI', len(self.values))
+                _body += write_struct('USHORT', get_representation_code(self.representation_code))
+                _body += write_struct('UNITS', self.units)
+            else:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.values))
+                _body += write_struct('USHORT', get_representation_code(self.representation_code))
+            for val in self.values:
+                _body += write_struct(self.representation_code, val)
+        else:
+            _body += write_struct('USHORT', int('00000000', 2)) # absent
+
+
+        return _body
+
+
+class ParameterLogicalRecord(EFLR):
+
+    def __init__(self,
+                 parameters:list=None):
+
+        super().__init__()
+
+        if parameters:
+            self.parameters = parameters
+        else:
+            self.parameters = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='PARAMETER', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'LONG-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DIMENSION')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'AXIS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ZONES')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'VALUES')
+
+
+        # VALUES
+        for parameter in self.parameters:
+            _body += parameter.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
+
+
+
+# NEED TO TEST
 class Equipment(object):
 
     def __init__(self,
-                 set_name:str=None,
-                 origin_reference:int=None,
-                 copy_number:int=0,
-                 object_name:str=None,
                  trademark_name:str=None,
                  status:bool=True,
                  _type:str=None,
@@ -1413,14 +1719,13 @@ class Equipment(object):
                  radial_drift:float=None,
                  radial_drift_units:float=None,
                  angular_drift:float=None,
-                 angular_drift_units:float=None,
-                 has_padding:bool=False):
+                 angular_drift_units:float=None):
 
-        self.set_name = set_name
-        self.origin_reference = origin_reference
-        self.copy_number = copy_number
-        self.object_name = object_name
-        
+
+
+        super().__init__()
+
+
         self.trademark_name = trademark_name
         self.status = status
         self._type = _type
@@ -1450,9 +1755,6 @@ class Equipment(object):
         self.radial_drift_units = radial_drift_units
         self.angular_drift = angular_drift
         self.angular_drift_units = angular_drift_units
-
-        self.has_padding = has_padding
-
 
 
     def get_as_bytes(self):
@@ -1775,27 +2077,14 @@ class Equipment(object):
 
 
 
-        # HEADER
-        if len(_body) % 2 != 0:
-            self.has_padding = True
-            _length = write_struct('UNORM', len(_body) + 5)
-        else:
-            _length = write_struct('UNORM', len(_body) + 4)
-
-        _logical_record_type = write_struct('USHORT', 5)
-        _attributes = write_struct('USHORT', int('1000000' + str(int(self.has_padding)), 2))
-
-        _header = _length + _attributes + _logical_record_type
+        return self.finalize_bytes(5, _body)
 
 
-        _bytes = _header + _body
-        if self.has_padding:
-            _bytes += write_struct('USHORT', 1)
+class Tool(EFLR):
 
-        return _bytes
+    def __init__(self):
 
-
-
+        super().__init__()
 
 
 

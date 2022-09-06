@@ -35,3 +35,59 @@ class VisibleRecord(object):
 
 
         return _bytes
+
+
+
+'''
+
+TODO: When a logical record overflows a Visible Record, give the LR segment that overflew attribute "1" for the successor
+which is the third attribute denoting "this is not the last segment". Then, start a new VR, define the remaining LR segment and 
+give "1" for the predecessor attribute denoting "this is not the first segment"
+
+Let's say you have FDATA:
+    
+    UNORM length 2096
+    USHORT attributes '00000001'
+    USHORT 0 (denoting IFLR FDATA logical record type)
+    OBNAME for the frame reference
+    FRAMENO 1
+    .
+    .
+    ...data
+
+
+Then you have another FDATA which must be length 2096 but will overflow after 324
+THEN:
+    
+    UNORM length 324
+    USHORT attributes '00100001'
+    USHORT 0 (denoting IFLR FDATA logical record type)
+    OBNAME for the frame reference
+    FRAMENO 2
+    .
+    .
+    ...data
+
+
+Visible Record
+    
+    UNORM length 8192
+    USHORT 255
+    USHORT 1
+
+FDATA continued
+    
+    UNORM length 2096
+    USHORT attributes '01000001'
+    USHORT 0 (denoting IFLR FDATA logical record type)
+    .
+    .
+    ...data
+
+
+Observe the 'Predecessor' and 'Successor' attributes,
+
+AND NO OBNAME or FRAME NUMBER is required for the continued FDATA.
+
+
+'''
