@@ -27,6 +27,8 @@ from logical_record import CalibrationMeasurement
 from logical_record import CalibrationMeasurementLogicalRecord
 from logical_record import CalibrationCoefficient
 from logical_record import CalibrationCoefficientLogicalRecord
+from logical_record import Calibration
+from logical_record import CalibrationLogicalRecord
 
 
 from common.data_types import struct_type_dict
@@ -488,6 +490,59 @@ calibration_coefficient_logical_record.calibration_coefficients = [calibration_c
 
 
 
+
+
+
+# CALIBRATION
+calibration_1 = Calibration()
+calibration_1.origin_reference = origin.file_set_number
+calibration_1.object_name = 'calibration_1 OBJ-NAME'
+calibration_1.calibrated_channels = [curve_1_channel, curve_2_channel]
+calibration_1.uncalibrated_channels = [depth_channel]
+calibration_1.coefficients = [calibration_coefficient_1, calibration_coefficient_2]
+calibration_1.measurements = [calibration_measurement_1]
+calibration_1.parameters = [parameter_1, parameter_2]
+calibration_1.method = 'SOME METHOD'
+
+
+calibration_2 = Calibration()
+calibration_2.origin_reference = origin.file_set_number
+calibration_2.object_name = 'calibration_2 OBJ-NAME'
+calibration_2.calibrated_channels = [depth_channel]
+calibration_2.uncalibrated_channels = [curve_1_channel, curve_2_channel]
+calibration_2.coefficients = [calibration_coefficient_2]
+calibration_2.measurements = [calibration_measurement_1, calibration_measurement_2]
+calibration_2.parameters = [parameter_1, parameter_2, parameter_3]
+calibration_2.method = 'SOME OTHER METHOD'
+
+
+
+calibration_logical_record = CalibrationLogicalRecord()
+calibration_logical_record.calibrations = [calibration_1, calibration_2]
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
 
@@ -512,8 +567,7 @@ visible_record.logical_record_segments.append(computation_logical_record)
 visible_record.logical_record_segments.append(process_logical_record)
 visible_record.logical_record_segments.append(calibration_measurement_logical_record)
 visible_record.logical_record_segments.append(calibration_coefficient_logical_record)
-
-
+visible_record.logical_record_segments.append(calibration_logical_record)
 
 
 
