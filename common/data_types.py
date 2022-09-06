@@ -181,8 +181,6 @@ def write_struct(struct_type, value):
 	elif struct_type == 'UNITS':
 		return write_struct('IDENT', validate_units(value))
 
-
-
 	else:
 		return struct_type_dict[struct_type].pack(value)
 

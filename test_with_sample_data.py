@@ -16,6 +16,7 @@ from logical_record import EOD
 from logical_record import Zone
 from logical_record import Parameter
 from logical_record import ParameterLogicalRecord
+from logical_record import Equipment
 
 from common.data_types import struct_type_dict
 from common.data_types import read_struct
@@ -232,6 +233,54 @@ parameter_logical_record = ParameterLogicalRecord()
 parameter_logical_record.parameters = [parameter_1, parameter_2, parameter_3]
 
 
+
+
+# EQUIPMENT
+equipment = Equipment()
+
+equipment.trademark_name = 'EQ-TRADEMARKNAME'
+equipment.status = True
+equipment._type = 'Tool'
+equipment.serial_number = '9101-21391'
+equipment.location = 'Well'
+equipment.height = 140
+equipment.height_units = 'in' 
+equipment.length = 230.78
+equipment.length_units = 'cm'
+equipment.minimum_diameter = 2.3
+equipment.minimum_diameter_units = 'm'
+equipment.maximum_diameter = 3.2
+equipment.maximum_diameter_units = 3.2
+equipment.volume = 100
+equipment.volume_units = 'cm3'
+equipment.weight = 1.2
+equipment.weight_units = 't'
+equipment.hole_size = 323.2
+equipment.hole_size_units = 'm' 
+equipment.pressure = 18000
+equipment.pressure_units = 'psi' 
+equipment.temperature = 24
+equipment.temperature_units = 'degC' 
+equipment.vertical_depth = 587
+equipment.vertical_depth_units = 'm'
+equipment.radial_drift = 23.22
+equipment.radial_drift_units = 'm' 
+equipment.angular_drift = 32.5
+equipment.angular_drift_units = 'm' 
+
+equipment.origin_reference = origin.file_set_number
+equipment.object_name = 'SOME_EQPMNT'
+
+
+
+
+
+
+
+
+
+
+
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
 
@@ -250,6 +299,7 @@ for frame_data in frame_data_objects:
 visible_record.logical_record_segments.append(zone_1)
 visible_record.logical_record_segments.append(zone_2)
 visible_record.logical_record_segments.append(parameter_logical_record)
+visible_record.logical_record_segments.append(equipment)
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
 file_name = 'test_with_curves_22.DLIS'

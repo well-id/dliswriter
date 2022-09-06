@@ -1686,9 +1686,7 @@ class ParameterLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-
-# NEED TO TEST
-class Equipment(object):
+class Equipment(EFLR):
 
     def __init__(self,
                  trademark_name:str=None,
@@ -1848,27 +1846,27 @@ class Equipment(object):
         if self.trademark_name:
             print('Creating TM ATTTTTRRR')
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 20)
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
             _body += write_struct('IDENT', self.trademark_name)
 
         if self.status:
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 26)
-            _body += write_struct('USHORT', int(self.status))
+            _body += write_struct('USHORT', get_representation_code('STATUS'))
+            _body += write_struct('STATUS', int(self.status))
 
         if self._type:
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
             _body += write_struct('IDENT', self._type)
 
         if self.serial_number:
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
             _body += write_struct('IDENT', self.serial_number)
 
         if self.location:
             _body += write_struct('USHORT', int('00100101', 2))
-            _body += write_struct('USHORT', 19)
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
             _body += write_struct('IDENT', self.location)
 
         if self.height:
