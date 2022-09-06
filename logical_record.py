@@ -2962,13 +2962,94 @@ class CalibrationMeasurementLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-# INCOMPLETE
 class CalibrationCoefficient(EFLR):
 
-    def __init__(self):
+    def __init__(self,
+                 label:str=None,
+                 coefficients:list=None,
+                 references:list=None,
+                 plus_tolerances:list=None,
+                 minus_tolerances:list=None):
         
+        super().__init__()
+        self.label = label
+        if coefficients:
+            self.coefficients = coefficients
+        else:
+            self.coefficients = []
+        if references:
+            self.references = references
+        else:
+            self.references = []
+        if plus_tolerances:
+            self.plus_tolerances = plus_tolerances
+        else:
+            self.plus_tolerances = []
+        if minus_tolerances:
+            self.minus_tolerances = minus_tolerances
+        else:
+            self.minus_tolerances = []
+
+
 
         self.set_type = 'CALIBRATION-COEFFICIENT'
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        
+        if self.label:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.label)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.coefficients:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.coefficients))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.coefficients:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.references:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.references))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.references:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.plus_tolerances:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.plus_tolerances))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.plus_tolerances:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+        
+        if self.minus_tolerances:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.minus_tolerances))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.minus_tolerances:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        return _body
 
 
 class CalibrationCoefficientLogicalRecord(EFLR):
