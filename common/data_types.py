@@ -181,6 +181,9 @@ def write_struct(struct_type, value):
 	elif struct_type == 'UNITS':
 		return write_struct('IDENT', validate_units(value))
 
+	elif struct_type == 'OBJREF':
+		return write_struct('IDENT', value.set_type) + value.get_obname_only()
+
 	else:
 		return struct_type_dict[struct_type].pack(value)
 

@@ -172,12 +172,14 @@ class IFLR(object):
 class EFLR(object):
 
     def __init__(self,
+                 set_type:str=None,
                  set_name:str=None,
                  origin_reference:int=None,
                  copy_number:int=0,
                  object_name:str=None,
                  has_padding:bool=False):
 
+        self.set_type = set_type
         self.set_name = set_name
         self.origin_reference = origin_reference
         self.copy_number = copy_number
@@ -211,6 +213,7 @@ class EFLR(object):
                                        self.copy_number,
                                        self.object_name))
 
+
     def write_absent_attribute(self):
         return write_struct('USHORT', int('00000000', 2))
 
@@ -227,6 +230,8 @@ class FileHeader(object):
         self.origin_reference = None
         self.copy_number = 0
         self.object_name = '0'
+
+        self.set_type = 'FILE-HEADER'
 
 
     def get_as_bytes(self):
@@ -316,6 +321,9 @@ class Origin(EFLR):
         self.company = company
         self.name_space_name = name_space_name
         self.name_space_version = name_space_version
+
+
+        self.set_type = 'ORIGIN'
 
 
     def get_as_bytes(self):
@@ -549,6 +557,7 @@ class WellReferencePoint(EFLR):
         self.coordinate_3_name = coordinate_3_name
         self.coordinate_3_value = coordinate_3_value
 
+        self.set_type = 'WELL-REFERENCE'
 
     def get_as_bytes(self):
 
@@ -712,6 +721,7 @@ class Axis(EFLR):
         self.coordinates_struct_type = coordinates_struct_type
         self.spacing = spacing
 
+        self.set_type = 'AXIS'
 
     def get_as_bytes(self):
         _body = b''
@@ -806,6 +816,9 @@ class LongName(EFLR):
         self.conditions = conditions
         self.standard_symbol = standard_symbol
         self.private_symbol = private_symbol
+
+
+        self.set_type = 'LONG-NAME'
 
 
     def get_as_bytes(self):
@@ -975,6 +988,9 @@ class Channel(EFLR):
         self.element_limit = element_limit
         self.source = source
 
+
+        self.set_type = 'CHANNEL'
+
     def get_as_bytes(self):
         _bytes = b''
         _bytes += write_struct('USHORT', int('01110000', 2))
@@ -1079,6 +1095,9 @@ class ChannelLogicalRecord(EFLR):
         else:
             self.channels = []
     
+
+        self.set_type = 'CHANNEL'
+
     def get_as_bytes(self):
         _body = b''
 
@@ -1166,6 +1185,8 @@ class Frame(EFLR):
         self.index_min = index_min
         self.index_max = index_max
 
+
+        self.set_type = 'FRAME'
 
     def get_as_bytes(self):
 
@@ -1298,6 +1319,8 @@ class FrameData(IFLR):
         self.slots = slots # np.ndarray
 
 
+        self.set_type = 'FDATA'
+
     def finalize_bytes(self, _body):
         
         
@@ -1358,6 +1381,9 @@ class Path(EFLR):
         super().__init__()
 
 
+        self.set_type = 'PATH'
+
+
 class Zone(EFLR):
 
     def __init__(self,
@@ -1397,6 +1423,7 @@ class Zone(EFLR):
         self.units = units
 
 
+        self.set_type = 'ZONE'
 
     def validate(self):
 
@@ -1539,6 +1566,8 @@ class Parameter(EFLR):
         self.representation_code = representation_code
         self.units = units
 
+        self.set_type = 'PARAMETER'
+
     def get_as_bytes(self):
         _body = b''
 
@@ -1615,6 +1644,8 @@ class ParameterLogicalRecord(EFLR):
         else:
             self.parameters = []
 
+
+        self.set_type = 'PARAMETER'
 
     def get_as_bytes(self):
 
@@ -1719,6 +1750,9 @@ class Equipment(EFLR):
         self.radial_drift_units = radial_drift_units
         self.angular_drift = angular_drift
         self.angular_drift_units = angular_drift_units
+
+
+        self.set_type = 'EQUIPMENT'
 
 
     def get_as_bytes(self):
@@ -2075,6 +2109,8 @@ class Tool(EFLR):
             self.parameters = []
 
 
+        self.set_type = 'TOOL'
+
     def get_as_bytes(self):
         
         _body = b''
@@ -2149,6 +2185,8 @@ class ToolLogicalRecord(EFLR):
         else:
             self.tools = []
 
+
+        self.set_type = 'TOOL'
 
     def get_as_bytes(self):
 
@@ -2233,6 +2271,8 @@ class Computation(EFLR):
         self.units = units
         self.source = source
 
+        self.set_type = 'COMPUTATION'
+
     def get_as_bytes(self):
         
         _body = b''
@@ -2313,6 +2353,9 @@ class ComputationLogicalRecord(EFLR):
             self.computations = computations
         else:
             self.computations = []
+
+
+        self.set_type = 'COMPUTATION'
 
 
     def get_as_bytes(self):
@@ -2411,6 +2454,7 @@ class Process(EFLR):
             self.parameters = []
         self.comments = comments
 
+        self.set_type = 'PROCESS'
 
     def get_as_bytes(self):
 
@@ -2508,6 +2552,9 @@ class ProcessLogicalRecord(EFLR):
         else:
             self.processes = []
 
+
+        self.set_type = 'PROCESS'
+
     def get_as_bytes(self):
 
         _body = b''
@@ -2571,7 +2618,6 @@ class ProcessLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-# TODO: complete get_as_bytes method
 class CalibrationMeasurement(EFLR):
 
     def __init__(self,
@@ -2581,9 +2627,11 @@ class CalibrationMeasurement(EFLR):
                  dimension:list=None,
                  axis=None,
                  measurement:list=None,
-                 sample_count:int=None,
-                 maximum_deviation:float=None,
-                 standard_deviation:float=None,
+                 measurement_representation_code:str=None,
+                 measurement_units:str=None,
+                 sample_count:list=None,
+                 maximum_deviation:list=None,
+                 standard_deviation:list=None,
                  begin_time=None,
                  duration=None,
                  duration_representation_code:str=None,
@@ -2595,24 +2643,43 @@ class CalibrationMeasurement(EFLR):
                  standard_representation_code:str=None,
                  standard_units:str=None,
                  plus_tolerance:list=None,
-                 minuse_tolerance:list=None):
+                 minus_tolerance:list=None):
 
         super().__init__()
         self.phase = phase
         self.measurement_source = measurement_source
         self._type = _type
+        
         if dimension:
             self.dimension = dimension
         else:
             self.dimension = []
+        
         self.axis = axis
+        
         if measurement:
             self.measurement = measurement
         else:
             self.measurement = []
-        self.sample_count = sample_count
-        self.maximum_deviation = maximum_deviation
-        self.standard_deviation = standard_deviation
+        
+        self.measurement_representation_code = measurement_representation_code
+        self.measurement_units = measurement_units
+        
+        if sample_count:
+            self.sample_count = sample_count
+        else:
+            self.sample_count = []
+        
+        if maximum_deviation:
+            self.maximum_deviation = maximum_deviation
+        else:
+            self.maximum_deviation = []
+        
+        if standard_deviation:
+            self.standard_deviation = standard_deviation
+        else:
+            self.standard_deviation = []
+        
         self.begin_time = begin_time
         self.duration = duration
         self.duration_representation_code = duration_representation_code
@@ -2623,14 +2690,19 @@ class CalibrationMeasurement(EFLR):
         self.standard = standard
         self.standard_representation_code = standard_representation_code
         self.standard_units = standard_units
+        
         if plus_tolerance:
             self.plus_tolerance = plus_tolerance
         else:
             self.plus_tolerance = []
-        if minuse_tolerance:
-            self.minuse_tolerance = minuse_tolerance
+        
+        if minus_tolerance:
+            self.minus_tolerance = minus_tolerance
         else:
-            self.minuse_tolerance = []
+            self.minus_tolerance = []
+
+
+        self.set_type = 'CALIBRATION-MEASUREMENT'
 
 
     def get_as_bytes(self):
@@ -2644,11 +2716,168 @@ class CalibrationMeasurement(EFLR):
 
         # VALUES
 
-        pass
+        if self.phase:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.phase)
+        else:
+            _body += self.write_absent_attribute()
 
 
-# TODO: Template INCOMPLETE
-# TODO: get_as_bytes INCOMPLETE
+        if self.measurement_source:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('OBJREF', self.measurement_source)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self._type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self._type)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.dimension:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.dimension))
+            for dim in self.dimension:
+                _body += write_struct('UVARI', dim)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.axis:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('OBNAME', self.axis)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.measurement:
+            if self.measurement_units:
+                _body += write_struct('USHORT', int('00101111', 2))
+                _body += write_struct('UVARI', len(self.measurement))
+                _body += write_struct('USHORT', get_representation_code(self.measurement_representation_code))
+                _body += write_struct('UNITS', self.measurement_units)
+            else:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.measurement))
+                _body += write_struct('USHORT', get_representation_code(self.measurement_representation_code))
+             
+            for val in self.measurement:
+                _body += write_struct(self.measurement_representation_code, val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.sample_count:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.sample_count))
+            _body += write_struct('USHORT', get_representation_code('UVARI'))
+            for val in self.sample_count:
+                _body += write_struct('UVARI', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.maximum_deviation:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.maximum_deviation))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.maximum_deviation:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.standard_deviation:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.standard_deviation))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.standard_deviation:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.begin_time:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('DTIME', self.begin_time)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.duration:
+            if self.duration_units:
+                _body += write_struct('USHORT', int('00100111', 2))
+                _body += write_struct('USHORT', get_representation_code(self.duration_representation_code))
+                _body += write_struct('UNITS', self.duration_units)
+            else:
+                _body += write_struct('USHORT', int('00100101', 2))
+                _body += write_struct('USHORT', get_representation_code(self.duration_representation_code))
+             
+            _body += write_struct(self.duration_representation_code, self.duration)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.reference:
+            if self.reference_units:
+                _body += write_struct('USHORT', int('00101111', 2))
+                _body += write_struct('UVARI', len(self.reference))
+                _body += write_struct('USHORT', get_representation_code(self.reference_representation_code))
+                _body += write_struct('UNITS', self.reference_units)
+            else:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.reference))
+                _body += write_struct('USHORT', get_representation_code(self.reference_representation_code))
+             
+            for val in self.reference:
+                _body += write_struct(self.reference_representation_code, val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.standard:
+            if self.standard_units:
+                _body += write_struct('USHORT', int('00101111', 2))
+                _body += write_struct('UVARI', len(self.standard))
+                _body += write_struct('USHORT', get_representation_code(self.standard_representation_code))
+                _body += write_struct('UNITS', self.standard_units)
+            else:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.standard))
+                _body += write_struct('USHORT', get_representation_code(self.standard_representation_code))
+             
+            for val in self.standard:
+                _body += write_struct(self.standard_representation_code, val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.plus_tolerance:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.plus_tolerance))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.plus_tolerance:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.minus_tolerance:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.minus_tolerance))
+            _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+            for val in self.minus_tolerance:
+                _body += write_struct('FDOUBL', val)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        return _body
+
+
 class CalibrationMeasurementLogicalRecord(EFLR):
 
     def __init__(self,
@@ -2662,6 +2891,9 @@ class CalibrationMeasurementLogicalRecord(EFLR):
             self.calibration_measurements = []
 
 
+        self.set_type = 'CALIBRATION-MEASUREMENT'
+
+
     def get_as_bytes(self):
 
         _body = b''
@@ -2671,58 +2903,72 @@ class CalibrationMeasurementLogicalRecord(EFLR):
 
 
         # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PHASE')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
         
         _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'phase')
+        _body += write_struct('IDENT', 'MEASUREMENT-SOURCE')
+        _body += write_struct('USHORT', get_representation_code('OBJREF'))
         
         _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'measurement_source')
+        _body += write_struct('IDENT', 'TYPE')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
         
         _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', '_type')
+        _body += write_struct('IDENT', 'DIMENSION')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
         
         _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'dimension')
+        _body += write_struct('IDENT', 'AXIS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'MEASUREMENT')
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'SAMPLE-COUNT')
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'MAXIMUM-DEVIATION')
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'STANDARD-DEVIATION')
         
         _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'axis')
+        _body += write_struct('IDENT', 'BEGIN-TIME')
+        _body += write_struct('USHORT', get_representation_code('DTIME'))
         
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'measurement')
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'DURATION')
         
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'sample_count')
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'REFERENCE')
         
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'maximum_deviation')
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'STANDARD')
         
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'standard_deviation')
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'PLUS-TOLERANCE')
         
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'begin_time')
-        
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'duration')
-        
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'reference')
-        
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'standard')
-        
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'plus_tolerance')
-        
-        _body += write_struct('USHORT', int('00110100', 2))
-        _body += write_struct('IDENT', 'minuse_tolerance')
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'MINUS-TOLERANCE')
+
+        # OBJECTS
+        for obj in self.calibration_measurements:
+            _body += obj.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
 
 
 # INCOMPLETE
 class CalibrationCoefficient(EFLR):
 
     def __init__(self):
-        pass
+        
+
+        self.set_type = 'CALIBRATION-COEFFICIENT'
 
 
 class CalibrationCoefficientLogicalRecord(EFLR):
@@ -2736,6 +2982,9 @@ class CalibrationCoefficientLogicalRecord(EFLR):
             self.calibration_coefficients = calibration_coefficients
         else:
             self.calibration_coefficients = []
+
+
+        self.set_type = 'CALIBRATION-COEFFICIENT'
 
     def get_as_bytes(self):
 
@@ -2811,6 +3060,8 @@ class Calibration(EFLR):
 
         self.method = method
 
+        self.set_type = 'CALIBRATION'
+
 
     def get_as_bytes(self):
 
@@ -2880,6 +3131,9 @@ class CalibrationLogicalRecord(EFLR):
             self.calibrations = calibrations
         else:
             self.calibrations = []
+
+
+        self.set_type = 'CALIBRATION'
 
 
     def get_as_bytes(self):

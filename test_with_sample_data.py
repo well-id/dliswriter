@@ -23,7 +23,8 @@ from logical_record import Computation
 from logical_record import ComputationLogicalRecord
 from logical_record import Process
 from logical_record import ProcessLogicalRecord
-
+from logical_record import CalibrationMeasurement
+from logical_record import CalibrationMeasurementLogicalRecord
 
 from common.data_types import struct_type_dict
 from common.data_types import read_struct
@@ -401,6 +402,62 @@ process_logical_record = ProcessLogicalRecord()
 process_logical_record.processes = [process_1, process_2, process_3]
 
 
+
+# CALIBRATION MEASUREMENT
+calibration_measurement_1 = CalibrationMeasurement()
+calibration_measurement_1.origin_reference = origin.file_set_number
+calibration_measurement_1.object_name = 'calibration_measurement_1 OBJ-NAME'
+calibration_measurement_1.phase = 'BEFORE'
+calibration_measurement_1.measurement_source = depth_channel
+calibration_measurement_1._type = 'Plus'
+calibration_measurement_1.dimension = [1]
+calibration_measurement_1.measurement = [12.2323]
+calibration_measurement_1.measurement_representation_code = 'FDOUBL'
+calibration_measurement_1.sample_count = [12]
+calibration_measurement_1.maximum_deviation = [2.2324]
+calibration_measurement_1.standard_deviation = [1.123]
+calibration_measurement_1.begin_time = datetime.now()
+calibration_measurement_1.duration = 15
+calibration_measurement_1.duration_representation_code = 'USHORT'
+calibration_measurement_1.duration_units = 's'
+calibration_measurement_1.reference = [11]
+calibration_measurement_1.reference_representation_code = 'USHORT'
+calibration_measurement_1.standard = [11.2]
+calibration_measurement_1.standard_representation_code = 'FDOUBL'
+calibration_measurement_1.plus_tolerance = [2]
+calibration_measurement_1.minus_tolerance = [1]
+
+
+calibration_measurement_2 = CalibrationMeasurement()
+calibration_measurement_2.origin_reference = origin.file_set_number
+calibration_measurement_2.object_name = 'calibration_measurement_2 OBJ-NAME'
+calibration_measurement_2.phase = 'AFTER'
+calibration_measurement_2.measurement_source = curve_1_channel
+calibration_measurement_2._type = 'Zero'
+calibration_measurement_2.dimension = [1]
+calibration_measurement_2.measurement = [12.2323]
+calibration_measurement_2.measurement_representation_code = 'FDOUBL'
+calibration_measurement_2.sample_count = [12]
+calibration_measurement_2.maximum_deviation = [2.2324]
+calibration_measurement_2.standard_deviation = [1.123]
+calibration_measurement_2.begin_time = datetime.now()
+calibration_measurement_2.duration = 20
+calibration_measurement_2.duration_representation_code = 'USHORT'
+calibration_measurement_2.duration_units = 's'
+calibration_measurement_2.reference = [11]
+calibration_measurement_2.reference_representation_code = 'USHORT'
+calibration_measurement_2.standard = [11.2]
+calibration_measurement_2.standard_representation_code = 'FDOUBL'
+calibration_measurement_2.plus_tolerance = [2]
+calibration_measurement_2.minus_tolerance = [1]
+
+
+
+calibration_measurement_logical_record = CalibrationMeasurementLogicalRecord()
+calibration_measurement_logical_record.calibration_measurements = [calibration_measurement_1, calibration_measurement_2]
+
+
+
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
 
@@ -423,6 +480,20 @@ visible_record.logical_record_segments.append(equipment)
 visible_record.logical_record_segments.append(tool_logical_record)
 visible_record.logical_record_segments.append(computation_logical_record)
 visible_record.logical_record_segments.append(process_logical_record)
+visible_record.logical_record_segments.append(calibration_measurement_logical_record)
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()
 file_name = 'test_with_curves_22.DLIS'
