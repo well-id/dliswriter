@@ -2571,6 +2571,361 @@ class ProcessLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+# TODO: complete get_as_bytes method
+class CalibrationMeasurement(EFLR):
+
+    def __init__(self,
+                 phase:str=None,
+                 measurement_source=None,
+                 _type:str=None,
+                 dimension:list=None,
+                 axis=None,
+                 measurement:list=None,
+                 sample_count:int=None,
+                 maximum_deviation:float=None,
+                 standard_deviation:float=None,
+                 begin_time=None,
+                 duration=None,
+                 duration_representation_code:str=None,
+                 duration_units:str=None,
+                 reference=None,
+                 reference_representation_code:str=None,
+                 reference_units:str=None,
+                 standard=None,
+                 standard_representation_code:str=None,
+                 standard_units:str=None,
+                 plus_tolerance:list=None,
+                 minuse_tolerance:list=None):
+
+        super().__init__()
+        self.phase = phase
+        self.measurement_source = measurement_source
+        self._type = _type
+        if dimension:
+            self.dimension = dimension
+        else:
+            self.dimension = []
+        self.axis = axis
+        if measurement:
+            self.measurement = measurement
+        else:
+            self.measurement = []
+        self.sample_count = sample_count
+        self.maximum_deviation = maximum_deviation
+        self.standard_deviation = standard_deviation
+        self.begin_time = begin_time
+        self.duration = duration
+        self.duration_representation_code = duration_representation_code
+        self.duration_units = duration_units
+        self.reference = reference
+        self.reference_representation_code = reference_representation_code
+        self.reference_units = reference_units
+        self.standard = standard
+        self.standard_representation_code = standard_representation_code
+        self.standard_units = standard_units
+        if plus_tolerance:
+            self.plus_tolerance = plus_tolerance
+        else:
+            self.plus_tolerance = []
+        if minuse_tolerance:
+            self.minuse_tolerance = minuse_tolerance
+        else:
+            self.minuse_tolerance = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        # VALUES
+
+        pass
+
+
+# TODO: Template INCOMPLETE
+# TODO: get_as_bytes INCOMPLETE
+class CalibrationMeasurementLogicalRecord(EFLR):
+
+    def __init__(self,
+                 calibration_measurements:list=None):
+
+        super().__init__()
+
+        if calibration_measurements:
+            self.calibration_measurements = calibration_measurements
+        else:
+            self.calibration_measurements = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='CALIBRATION-MEASUREMENT', set_name=self.set_name).get_as_bytes()
+
+
+        # TEMPLATE
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'phase')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'measurement_source')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', '_type')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'dimension')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'axis')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'measurement')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'sample_count')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'maximum_deviation')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'standard_deviation')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'begin_time')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'duration')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'reference')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'standard')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'plus_tolerance')
+        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'minuse_tolerance')
+
+
+# INCOMPLETE
+class CalibrationCoefficient(EFLR):
+
+    def __init__(self):
+        pass
+
+
+class CalibrationCoefficientLogicalRecord(EFLR):
+
+    def __init__(self,
+                 calibration_coefficients:list=None):
+
+        super().__init__()
+
+        if calibration_coefficients:
+            self.calibration_coefficients = calibration_coefficients
+        else:
+            self.calibration_coefficients = []
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='CALIBRATION-COEFFICIENT', set_name=self.set_name).get_as_bytes()
+
+
+        # TEMPLATE
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'LABEL')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'COEFFICIENTS')
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'REFERENCES')
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'PLUS-TOLERANCES')
+        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'MINUS-TOLERANCES')
+
+
+        # OBJECTS
+
+        for obj in self.calibration_coefficients:
+            _body += obj.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
+
+
+class Calibration(EFLR):
+
+    def __init__(self,
+                 calibrated_channels:list=None,
+                 uncalibrated_channels:list=None,
+                 coefficients:list=None,
+                 measurements:list=None,
+                 parameters:list=None,
+                 method:str=None):
+
+        super().__init__()
+        if calibrated_channels:
+            self.calibrated_channels = calibrated_channels
+        else:
+            self.calibrated_channels = []
+
+        if uncalibrated_channels:
+            self.uncalibrated_channels = uncalibrated_channels
+        else:
+            self.uncalibrated_channels = []
+
+        if coefficients:
+            self.coefficients = coefficients
+        else:
+            self.coefficients = []
+
+        if measurements:
+            self.measurements = measurements
+        else:
+            self.measurements = []
+
+        if parameters:
+            self.parameters = parameters
+        else:
+            self.parameters = []
+
+        self.method = method
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        if self.calibrated_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.calibrated_channels))
+            for obj in self.calibrated_channels:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.uncalibrated_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.uncalibrated_channels))
+            for obj in self.uncalibrated_channels:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.coefficients:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.coefficients))
+            for obj in self.coefficients:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.measurements:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.measurements))
+            for obj in self.measurements:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.parameters:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.parameters))
+            for obj in self.parameters:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.method:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.method)
+
+
+        return _body
+
+
+class CalibrationLogicalRecord(EFLR):
+
+    def __init__(self,
+                 calibrations:list=None):
+
+        super().__init__()
+        if calibrations:
+            self.calibrations = calibrations
+        else:
+            self.calibrations = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='CALIBRATION', set_name=self.set_name).get_as_bytes()
+
+        # TEMPLATES
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'CALIBRATED-CHANNELS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'UNCALIBRATED-CHANNELS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'COEFFICIENTS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'MEASUREMENTS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PARAMETERS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'METHOD')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+
+        # OBJECTS
+
+        for calibration in self.calibrations:
+            _body += calibration.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
+
+
+
+
 class EOD(object):
     def get_as_bytes(self, frame):
         
