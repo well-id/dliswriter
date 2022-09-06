@@ -19,6 +19,9 @@ from logical_record import ParameterLogicalRecord
 from logical_record import Equipment
 from logical_record import Tool
 from logical_record import ToolLogicalRecord
+from logical_record import Computation
+from logical_record import ComputationLogicalRecord
+
 
 from common.data_types import struct_type_dict
 from common.data_types import read_struct
@@ -311,6 +314,39 @@ tool_logical_record.tools = [tool_1, tool_2]
 
 
 
+# COMPUTATION
+computation_1 = Computation()
+computation_1.long_name = 'Average'
+computation_1.properties = ['AVERAGED']
+computation_1.dimension = [1]
+computation_1.zones = [zone_1, zone_2]
+computation_1.values = [112.124, 42.23]
+computation_1.representation_code = 'FDOUBL'
+computation_1.units = 'm'
+
+computation_1.origin_reference = origin.file_set_number
+computation_1.object_name = 'computation_1 OBJ NAME'
+
+
+computation_2 = Computation()
+computation_2.long_name = 'Normalization'
+computation_2.properties = ['NORMALIZED', 'AVERAGED']
+computation_2.dimension = [1]
+computation_2.zones = [zone_1, zone_2]
+computation_2.values = [0.876, 0.564]
+computation_2.representation_code = 'FDOUBL'
+computation_2.units = 'm'
+
+computation_2.origin_reference = origin.file_set_number
+computation_2.object_name = 'computation_2 OBJ NAME'
+
+
+computation_logical_record = ComputationLogicalRecord()
+computation_logical_record.computations = [computation_1, computation_2]
+
+
+
+
 # STORAGE-UNIT-LABEL
 sul = StorageUnitLabel()
 
@@ -331,6 +367,7 @@ visible_record.logical_record_segments.append(zone_2)
 visible_record.logical_record_segments.append(parameter_logical_record)
 visible_record.logical_record_segments.append(equipment)
 visible_record.logical_record_segments.append(tool_logical_record)
+visible_record.logical_record_segments.append(computation_logical_record)
 
 
 dlis_bytes = sul.get_as_bytes() + visible_record.get_as_bytes()

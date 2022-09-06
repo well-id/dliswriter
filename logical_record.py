@@ -769,7 +769,6 @@ class Axis(EFLR):
         return self.finalize_bytes(2, _body)
 
 
-
 class LongName(EFLR):
 
     def __init__(self,
@@ -1067,9 +1066,6 @@ class Channel(EFLR):
 
         return _bytes
 
-    
-
-
 
 class ChannelLogicalRecord(EFLR):
     
@@ -1272,7 +1268,6 @@ class Frame(EFLR):
 
 
         return self.finalize_bytes(4, _body)
-
 
 
 class FrameData(IFLR):
@@ -2049,7 +2044,6 @@ class Equipment(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-
 class Tool(EFLR):
 
     def __init__(self,
@@ -2143,7 +2137,6 @@ class Tool(EFLR):
         return _body
 
 
-
 class ToolLogicalRecord(EFLR):
     
     def __init__(self,
@@ -2202,7 +2195,173 @@ class ToolLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+# COMPLETE OBJREF
+class Computation(EFLR):
 
+    def __init__(self,
+                 long_name:str=None,
+                 properties:list=None,
+                 dimension:list=None,
+                 axis=None,
+                 zones:list=None,
+                 values:list=None,
+                 representation_code:str=None,
+                 units:str=None,
+                 source=None):
+
+        super().__init__()
+        self.long_name = long_name
+        if properties:
+            self.properties = properties
+        else:
+            self.properties = []
+        if dimension:
+            self.dimension = dimension
+        else:
+            self.dimension = []
+        self.axis = axis
+        if zones:
+            self.zones = zones
+        else:
+            self.zones = []
+        if values:
+            self.values = values
+        else:
+            self.values = []
+
+        self.representation_code = representation_code
+        self.units = units
+        self.source = source
+
+    def get_as_bytes(self):
+        
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        if self.long_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.long_name)
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.properties:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.properties))
+            for prop in self.properties:
+                _body += write_struct('IDENT', prop)
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.dimension:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.dimension))
+            for dim in self.dimension:
+                _body += write_struct('UVARI', dim)
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.axis:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += self.axis.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.zones:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.zones))
+            for zone in self.zones:
+                _body += zone.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.values:
+            if self.units:
+                _body += write_struct('USHORT', int('00101111', 2))
+                _body += write_struct('UVARI', len(self.zones))
+                _body += write_struct('USHORT', get_representation_code(self.representation_code))
+                _body += write_struct('UNITS', self.units)
+            else:
+                _body += write_struct('USHORT', int('00101101', 2))
+                _body += write_struct('UVARI', len(self.zones))
+                _body += write_struct('USHORT', get_representation_code(self.representation_code))
+                
+            for val in self.values:
+                _body += write_struct(self.representation_code, val)
+        else:
+            _body += self.write_absent_attribute()
+
+        if self.source:
+            pass
+        else:
+            _body += self.write_absent_attribute()
+
+
+        return _body
+
+
+class ComputationLogicalRecord(EFLR):
+
+    def __init__(self,
+                 computations:list=None):
+
+        super().__init__()
+        if computations:
+            self.computations = computations
+        else:
+            self.computations = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(set_type='COMPUTATION', set_name=self.set_name).get_as_bytes()
+
+        # long_name
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'LONG-NAME')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        # properties
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'PROPERTIES')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        # dimension
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DIMENSION')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
+
+        # axis
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'AXIS')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        # zones
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ZONES')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        # values
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'VALUES')
+
+        # source
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'SOURCE')
+
+
+        # OBJECTS
+        for computation in self.computations:
+            _body += computation.get_as_bytes()
+
+
+        return self.finalize_bytes(5, _body)
 
 
 class EOD(object):
