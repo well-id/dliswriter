@@ -3425,7 +3425,7 @@ class Splice(EFLR):
         return self.finalize_bytes(5, _body)
 
 
-class NoFormat(EFLR):
+class NoFormatEFLR(EFLR):
 
     def __init__(self,
                  consumer_name:str=None,
@@ -3503,6 +3503,53 @@ class UnformattedDataIdentifier(EFLR):
 
         return self.finalize_bytes(8, _body)
 
+
+class NoFormatFrameData(IFLR):
+
+    def __init__(self,
+                 no_format_object=None,
+                 data=None):
+
+        self.no_format_object = no_format_object
+        self.data = data
+
+        self.set_type = 'NO-FORMAT'
+
+    def get_as_bytes(self):
+        
+        _body = b''
+
+        _body += self.no_format_object.get_obname_only()
+        _body += self.data
+
+        return self.finalize_bytes(_body)
+
+    def finalize_bytes(self, _body):
+        
+        
+        _length = len(_body) + 4
+        if _length % 2 == 0:
+            _attributes = write_struct('USHORT', int('00000000', 2))
+            _has_padding = False
+        else:
+            _attributes = write_struct('USHORT', int('00000001', 2))
+            _length += 1
+            _has_padding = True
+
+        
+        _header = b''
+        _header += write_struct('UNORM', _length)
+        _header += _attributes
+        _header += write_struct('USHORT', 1) # Logical Record Type
+
+
+
+        _bytes = _header + _body
+
+        if _has_padding:
+            _bytes += write_struct('USHORT', 0)
+
+        return _bytes
 
 
 
