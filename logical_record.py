@@ -3425,6 +3425,86 @@ class Splice(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+class NoFormat(EFLR):
+
+    def __init__(self,
+                 consumer_name:str=None,
+                 description:str=None):
+
+        super().__init__()
+        self.set_type = 'NO-FORMAT'
+        
+        self.consumer_name = consumer_name
+        self.description = description
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        if self.consumer_name:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.consumer_name)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        return _body
+
+
+
+class UnformattedDataIdentifier(EFLR):
+
+    def __init__(self,
+                 no_formats:list=None):
+
+        super().__init__()
+        self.set_type = 'NO-FORMAT'
+
+        if no_formats:
+            self.no_formats = no_formats
+        else:
+            self.no_formats = []
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'CONSUMER-NAME')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'DESCRIPTION')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        # OBJECTS
+        for obj in self.no_formats:
+            _body += obj.get_as_bytes()
+
+
+        return self.finalize_bytes(8, _body)
+
+
+
 
 class EOD(object):
     def get_as_bytes(self, frame):

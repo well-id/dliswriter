@@ -31,6 +31,9 @@ from logical_record import Calibration
 from logical_record import CalibrationLogicalRecord
 from logical_record import Group
 from logical_record import Splice
+from logical_record import NoFormat
+from logical_record import UnformattedDataIdentifier
+
 
 
 from common.data_types import struct_type_dict
@@ -564,7 +567,24 @@ splice_2.zones = [zone_1]
 
 
 
+# NO-FORMAT
+no_format_1 = NoFormat()
+no_format_1.origin_reference = origin.file_set_number
+no_format_1.object_name = 'NO-FORMAT TEXT'
+no_format_1.consumer_name = 'SOME TEXT NOT FORMATTED'
+no_format_1.description = 'TESTING-NO-FORMAT'
 
+
+no_format_2 = NoFormat()
+no_format_2.origin_reference = origin.file_set_number
+no_format_2.object_name = 'NO-FORMAT IMAGE'
+no_format_2.consumer_name = 'SOME IMAGE NOT FORMATTED'
+no_format_2.description = 'TESTING-NO-FORMAT-2'
+
+
+
+unformatted_data_identifier = UnformattedDataIdentifier()
+unformatted_data_identifier.no_formats = [no_format_1, no_format_2]
 
 
 
@@ -611,7 +631,7 @@ visible_record.logical_record_segments.append(group_1)
 visible_record.logical_record_segments.append(group_2)
 visible_record.logical_record_segments.append(splice_1)
 visible_record.logical_record_segments.append(splice_2)
-
+visible_record.logical_record_segments.append(unformatted_data_identifier)
 
 
 
