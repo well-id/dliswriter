@@ -3259,6 +3259,94 @@ class CalibrationLogicalRecord(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+class Group(EFLR):
+
+    def __init__(self,
+                 description:str=None,
+                 object_type:str=None,
+                 object_list:list=None,
+                 group_list:list=None):
+
+        super().__init__()
+
+        self.description = description
+        self.object_type = object_type
+        
+        if object_list:
+            self.object_list = object_list
+        else:
+            self.object_list = []
+        
+        if group_list:
+            self.group_list = group_list
+        else:
+            self.group_list = []
+
+        self.set_type = 'GROUP'
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        if self.description:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'DESCRIPTION')
+            _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        if self.object_type:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'OBJECT-TYPE')
+            _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        if self.object_list:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'OBJECT-LIST')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        if self.group_list:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'GROUP-LIST')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+
+        # OBJ
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+        if self.description:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.description)
+
+        if self.object_type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.object_type)
+
+        if self.object_list:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.object_list))
+            for obj in self.object_list:
+                _body += obj.get_obname_only()
+
+        if self.group_list:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.group_list))
+            for obj in self.group_list:
+                _body += obj.get_obname_only()
+
+
+        return self.finalize_bytes(5, _body)
+
+
+
+
 
 
 class EOD(object):

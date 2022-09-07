@@ -29,6 +29,7 @@ from logical_record import CalibrationCoefficient
 from logical_record import CalibrationCoefficientLogicalRecord
 from logical_record import Calibration
 from logical_record import CalibrationLogicalRecord
+from logical_record import Group
 
 
 from common.data_types import struct_type_dict
@@ -523,6 +524,27 @@ calibration_logical_record.calibrations = [calibration_1, calibration_2]
 
 
 
+# GROUP
+group_1 = Group()
+group_1.origin_reference = origin.file_set_number
+group_1.object_name = 'test GROUP'
+group_1.description = 'Some Test Group'
+group_1.object_type = 'CHANNEL'
+group_1.object_list = [depth_channel, curve_1_channel, curve_2_channel]
+
+
+
+group_2 = Group()
+group_2.origin_reference = origin.file_set_number
+group_2.object_name = 'test GROUP 2'
+group_2.description = 'Some Test Group 2'
+group_2.object_type = 'PARAMETER'
+group_2.object_list = [parameter_1,parameter_3]
+
+
+
+
+
 
 
 
@@ -568,7 +590,8 @@ visible_record.logical_record_segments.append(process_logical_record)
 visible_record.logical_record_segments.append(calibration_measurement_logical_record)
 visible_record.logical_record_segments.append(calibration_coefficient_logical_record)
 visible_record.logical_record_segments.append(calibration_logical_record)
-
+visible_record.logical_record_segments.append(group_1)
+visible_record.logical_record_segments.append(group_2)
 
 
 
