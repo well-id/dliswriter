@@ -3345,7 +3345,84 @@ class Group(EFLR):
         return self.finalize_bytes(5, _body)
 
 
+class Splice(EFLR):
 
+    def __init__(self,
+                 output_channels:list=None,
+                 input_channels:list=None,
+                 zones:list=None):
+
+        super().__init__()
+        self.set_type = 'SPLICE'
+
+        if output_channels:
+            self.output_channels = output_channels
+        else:
+            self.output_channels = []
+
+        if input_channels:
+            self.input_channels = input_channels
+        else:
+            self.input_channels = []
+
+        if zones:
+            self.zones = zones
+        else:
+            self.zones = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        if self.output_channels:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'OUTPUT-CHANNELS')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        if self.input_channels:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'INPUT-CHANNELS')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        if self.zones:
+            _body += write_struct('USHORT', int('00110100', 2))
+            _body += write_struct('IDENT', 'ZONES')
+            _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+
+        # OBJ
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+        if self.output_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.output_channels))
+            for obj in self.output_channels:
+                _body += obj.get_obname_only()
+
+        if self.input_channels:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.input_channels))
+            for obj in self.input_channels:
+                _body += obj.get_obname_only()
+
+        if self.zones:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.zones))
+            for obj in self.zones:
+                _body += obj.get_obname_only()
+                
+
+        return self.finalize_bytes(5, _body)
 
 
 

@@ -30,6 +30,7 @@ from logical_record import CalibrationCoefficientLogicalRecord
 from logical_record import Calibration
 from logical_record import CalibrationLogicalRecord
 from logical_record import Group
+from logical_record import Splice
 
 
 from common.data_types import struct_type_dict
@@ -543,6 +544,22 @@ group_2.object_list = [parameter_1,parameter_3]
 
 
 
+# SPLICE
+splice_1 = Splice()
+splice_1.origin_reference = origin.file_set_number
+splice_1.object_name = 'SPLICE-1'
+splice_1.output_channels = [curve_2_channel]
+splice_1.input_channels = [depth_channel, curve_1_channel]
+splice_1.zones = [zone_1, zone_2]
+
+
+splice_2 = Splice()
+splice_2.origin_reference = origin.file_set_number
+splice_2.object_name = 'SPLICE-2'
+splice_2.output_channels = [curve_1_channel]
+splice_2.input_channels = [curve_2_channel]
+splice_2.zones = [zone_1]
+
 
 
 
@@ -592,7 +609,8 @@ visible_record.logical_record_segments.append(calibration_coefficient_logical_re
 visible_record.logical_record_segments.append(calibration_logical_record)
 visible_record.logical_record_segments.append(group_1)
 visible_record.logical_record_segments.append(group_2)
-
+visible_record.logical_record_segments.append(splice_1)
+visible_record.logical_record_segments.append(splice_2)
 
 
 
