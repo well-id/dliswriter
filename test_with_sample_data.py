@@ -36,6 +36,8 @@ from logical_record import UnformattedDataIdentifier
 from logical_record import NoFormatFrameData
 from logical_record import Path
 from logical_record import PathLogicalRecord
+from logical_record import Message
+from logical_record import Comment
 
 
 from common.data_types import struct_type_dict
@@ -616,7 +618,7 @@ path_1.object_name = 'PATH-1'
 path_1.frame_type = frame
 path_1.well_reference_point = well_reference_point
 path_1.value = [curve_1_channel, curve_2_channel]
-path_1.borehole_depth = depth_channel
+# path_1.borehole_depth = depth_channel
 path_1.vertical_depth = -187
 path_1.vertical_depth_representation_code = 'SNORM'
 path_1.radial_drift = 105
@@ -640,6 +642,7 @@ path_2.object_name = 'PATH-2'
 path_2.frame_type = frame
 path_2.well_reference_point = well_reference_point
 path_2.value = [depth_channel]
+# path_1.borehole_depth = depth_channel
 path_2.vertical_depth = -187
 path_2.vertical_depth_representation_code = 'SNORM'
 path_2.radial_drift = 105
@@ -663,12 +666,45 @@ path_logical_record.paths = [path_1, path_2]
 
 
 
+# MESSAGE
+
+message_1 = Message()
+message_1.origin_reference = origin.file_set_number
+message_1.object_name = 'MESSAGE-1'
+message_1._type = 'Command'
+message_1.time = datetime.now()
+message_1.time_representation_code = 'DTIME'
+message_1.borehole_drift = 123.34
+message_1.vertical_depth = 234.45
+message_1.radial_drift = 345.56
+message_1.angular_drift = 456.67
+message_1.text = 'Test message 11111'
+
+message_2 = Message()
+message_2.origin_reference = origin.file_set_number
+message_2.object_name = 'MESSAGE-2'
+message_2._type = 'Command'
+message_2.time = 100
+message_2.time_representation_code = 'USHORT'
+message_2.borehole_drift = 123.34
+message_2.vertical_depth = 234.45
+message_2.radial_drift = 345.56
+message_2.angular_drift = 456.67
+message_2.text = 'Test message 22222'
 
 
 
+# COMMENT
 
+comment_1 = Comment()
+comment_1.origin_reference = origin.file_set_number
+comment_1.object_name = 'COMMENT-1'
+comment_1.text = 'TEST COMMENT 111111111'
 
-
+comment_2 = Comment()
+comment_2.origin_reference = origin.file_set_number
+comment_2.object_name = 'COMMENT-2'
+comment_2.text = 'TEST COMMENT 222222222'
 
 
 
@@ -709,8 +745,11 @@ visible_record.logical_record_segments.append(no_format_fdata_2)
 visible_record.logical_record_segments.append(no_format_fdata_3)
 visible_record.logical_record_segments.append(path_logical_record)
 
+visible_record.logical_record_segments.append(message_1)
+visible_record.logical_record_segments.append(message_2)
 
-
+visible_record.logical_record_segments.append(comment_1)
+visible_record.logical_record_segments.append(comment_2)
 
 
 
@@ -743,7 +782,7 @@ print('\n\ndone..')
 
 
 # WRITE AS CSV USING DLISPY
-print('Dump using dlispy, to folder named "output22"')
-from dlispy import dump
-dump(file_name, output_path='output22', eflr_only= False)
-print('\ndone..\n\n')
+# print('Dump using dlispy, to folder named "output22"')
+# from dlispy import dump
+# dump(file_name, output_path='output22', eflr_only=True)
+# print('\ndone..\n\n')

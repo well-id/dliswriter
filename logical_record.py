@@ -1659,12 +1659,6 @@ class PathLogicalRecord(EFLR):
 
         return self.finalize_bytes(4, _body)
 
-        
-
-
-
-
-
 
 class Zone(EFLR):
 
@@ -3748,7 +3742,6 @@ class NoFormatEFLR(EFLR):
         return _body
 
 
-
 class UnformattedDataIdentifier(EFLR):
 
     def __init__(self,
@@ -3834,7 +3827,6 @@ class NoFormatFrameData(IFLR):
         return _bytes
 
 
-
 class EOD(object):
     def get_as_bytes(self, frame):
         
@@ -3869,3 +3861,171 @@ class EOD(object):
         return _bytes
 
 
+class Message(EFLR):
+
+    def __init__(self,
+                 _type:str=None,
+                 time=None,
+                 time_representation_code:str=None,
+                 borehole_drift:float=None,
+                 vertical_depth:float=None,
+                 radial_drift:float=None,
+                 angular_drift:float=None,
+                 text:str=None):
+
+        super().__init__()
+        self.set_type = 'MESSAGE'
+
+        self._type = _type
+        self.time = time
+        self.time_representation_code = time_representation_code
+        self.borehole_drift = borehole_drift
+        self.vertical_depth = vertical_depth
+        self.radial_drift = radial_drift
+        self.angular_drift = angular_drift
+        self.text = text
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+
+        # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TYPE')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TIME')
+        _body += write_struct('USHORT', get_representation_code(self.time_representation_code))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'BOREHOLE-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'VERTICAL-DEPTH')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'RADIAL-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ANGULAR-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TEXT')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # ATTRIBUTES
+
+        if self._type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self._type)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.time:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct(self.time_representation_code, self.time)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.borehole_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.borehole_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.vertical_depth:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.vertical_depth)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.radial_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.radial_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.angular_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.angular_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        if self.text:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.text)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        return self.finalize_bytes(6, _body)
+
+
+class Comment(EFLR):
+
+    def __init__(self,
+                 text:str=None):
+
+        super().__init__()
+        self.set_type = 'COMMENT'
+
+        self.text = text
+
+    def get_as_bytes(self):
+
+        _body = b''
+        
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TEXT')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        # ATTRIBUTE
+        if self.text:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.text)
+        else:
+            _body += self.write_absent_attribute()
+
+
+        return self.finalize_bytes(6, _body)
