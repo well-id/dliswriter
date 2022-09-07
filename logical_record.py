@@ -4029,3 +4029,274 @@ class Comment(EFLR):
 
 
         return self.finalize_bytes(6, _body)
+
+
+# NOT SUPPORTED BY dlisio!!!
+class Update(EFLR):
+    '''
+
+    DON'T USE THIS !!!!!!
+    https://github.com/equinor/dlisio/issues/216
+
+    '''
+
+    def __init__(self,
+                 time=None,
+                 time_representation_code:str=None,
+                 borehole_drift:float=None,
+                 vertical_depth:float=None,
+                 radial_drift:float=None,
+                 angular_drift:float=None,
+                 tag_channel=None,
+                 tag_value:list=None,
+                 tag_value_representation_code:str=None,
+                 frame_types:list=None,
+                 frame_numbers:list=None,
+                 comment:str=None,
+                 _object=None,
+                 attribute=None,
+                 new=None,
+                 old=None):
+
+        super().__init__()
+        self.set_type = 'UPDATE'
+
+        self.time = time
+        self.time_representation_code = time_representation_code
+        self.borehole_drift = borehole_drift
+        self.vertical_depth = vertical_depth
+        self.radial_drift = radial_drift
+        self.angular_drift = angular_drift
+        self.tag_channel = tag_channel
+
+        if tag_value:
+            self.tag_value = tag_value
+        else:
+            self.tag_value = []
+
+        self.tag_value_representation_code
+        
+        if frame_types:
+            self.frame_types = frame_types
+        else:
+            self.frame_types = []
+        
+        if frame_numbers:
+            self.frame_numbers = frame_numbers
+        else:
+            self.frame_numbers = []
+        
+        self.comment = comment
+        self._object = _object
+        self.attribute = attribute
+        self.new = new
+        self.old = old
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+
+        # time
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TIME')
+        _body += write_struct('USHORT', get_representation_code(self.time_representation_code))
+
+
+        # borehole-drift
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'BOREHOLE-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        # vertical depth
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'VERTICAL-DEPTH')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        # radial drift
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'RADIAL-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+        # angular drift 
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ANGULAR-DRIFT')
+        _body += write_struct('USHORT', get_representation_code('FDOUBL'))
+
+
+        # tag_channel
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'TAG-CHANNEL')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        # tag_value        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'TAG-VALUE')
+
+        # frame_types        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'FRAME-TYPES')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        # frame_numbers        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'FRAME-NUMBERS')
+        _body += write_struct('USHORT', get_representation_code('UVARI'))
+
+        # comment        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'COMMENT')
+        _body += write_struct('USHORT', get_representation_code('ASCII'))
+
+        # _object        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'OBJECT')
+        _body += write_struct('USHORT', get_representation_code('OBJREF'))
+
+        # attribute        
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'ATTRIBUTE')
+        _body += write_struct('USHORT', get_representation_code('IDENT'))
+
+        # new        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'NEW')
+
+        # old        
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'OLD')
+
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+        # ATTRIBUTES
+        
+        # time
+        if self.time:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct(self.time_representation_code, self.time)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        # borehole_drift
+        if self.borehole_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.borehole_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        # vertical_depth
+        if self.vertical_depth:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.vertical_depth)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        # radial_drift
+        if self.radial_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.radial_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+        # angular_drift
+        if self.angular_drift:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('FDOUBL', self.angular_drift)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # tag_channel
+        if self.tag_channel:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += self.tag_channel.get_obname_only()
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # tag_value !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if self.tag_value:
+            _body += write_struct('USHORT', int('00101101', 2))
+            _body += write_struct('UVARI', len(self.tag_value))
+            _body += write_struct('USHORT', get_representation_code(self.tag_value_representation_code))
+            for val in self.tag_value:
+                _body += write_struct(self.tag_value_representation_code, self.tag_value)
+        else:
+            _body += self.write_absent_attribute()
+
+        # frame_types        
+        if self.frame_types:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.frame_types))
+            for obj in self.frame_types:
+                _body += obj.get_obname_only()
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # frame_numbers        
+        if self.frame_numbers:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.frame_numbers))
+            for val in self.frame_numbers:
+                _body += write_struct('UVARI', val)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # comment        
+        if self.comment:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('ASCII', self.comment)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # _object        
+        if self._object:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('OBJREF', self._object)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # attribute        
+        if self.attribute:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += write_struct('IDENT', self.attribute)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # new    INCOMPLETE !!!!!!!!!!!!!!!!!!!!!    
+        if self.new:
+            _body += write_struct('USHORT', int('00100001', 2))
+
+        else:
+            _body += self.write_absent_attribute()
+
+        # old     INCOMPLETE !!!!!!!!!!!!!!!!!!!!!   
+        if self.old:
+            _body += write_struct('USHORT', int('00100001', 2))
+
+        else:
+            _body += self.write_absent_attribute()
+
