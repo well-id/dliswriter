@@ -34,6 +34,8 @@ from logical_record import Splice
 from logical_record import NoFormatEFLR
 from logical_record import UnformattedDataIdentifier
 from logical_record import NoFormatFrameData
+from logical_record import Path
+from logical_record import PathLogicalRecord
 
 
 from common.data_types import struct_type_dict
@@ -114,7 +116,7 @@ data = pd.read_csv('./data/data.csv')
 data = data[[col for col in data.columns[1:]]]
 
 # Convert to numpy.ndarray
-data = data.values[-40:]
+data = data.values[-10:]
 
 
 
@@ -606,6 +608,65 @@ no_format_fdata_3.data = 'This could be the BINARY data of an image rather than 
 
 
 
+# PATH
+
+path_1 = Path()
+path_1.origin_reference = origin.file_set_number
+path_1.object_name = 'PATH-1'
+path_1.frame_type = frame
+path_1.well_reference_point = well_reference_point
+path_1.value = [curve_1_channel, curve_2_channel]
+path_1.borehole_depth = depth_channel
+path_1.vertical_depth = -187
+path_1.vertical_depth_representation_code = 'SNORM'
+path_1.radial_drift = 105
+path_1.radial_drift_representation_code = 'SSHORT'
+path_1.angular_drift = 64.23
+path_1.angular_drift_representation_code = 'FDOUBL'
+path_1.time = 180
+path_1.time_representation_code = 'SNORM'
+path_1.depth_offset = -123
+path_1.depth_offset_representation_code = 'SSHORT'
+path_1.measure_point_offset = 82
+path_1.measure_point_offset_representation_code = 'SSHORT'
+path_1.tool_zero_offset = -7
+path_1.tool_zero_offset_representation_code = 'SSHORT'
+
+
+
+path_2 = Path()
+path_2.origin_reference = origin.file_set_number
+path_2.object_name = 'PATH-2'
+path_2.frame_type = frame
+path_2.well_reference_point = well_reference_point
+path_2.value = [depth_channel]
+path_2.vertical_depth = -187
+path_2.vertical_depth_representation_code = 'SNORM'
+path_2.radial_drift = 105
+path_2.radial_drift_representation_code = 'SSHORT'
+path_2.time = 180
+path_2.time_representation_code = 'SNORM'
+path_2.depth_offset = -123
+path_2.depth_offset_representation_code = 'SSHORT'
+path_2.measure_point_offset = 82
+path_2.measure_point_offset_representation_code = 'SSHORT'
+path_2.tool_zero_offset = -7
+path_2.tool_zero_offset_representation_code = 'SSHORT'
+
+
+
+
+path_logical_record = PathLogicalRecord()
+path_logical_record.paths = [path_1, path_2]
+
+
+
+
+
+
+
+
+
 
 
 
@@ -646,7 +707,7 @@ visible_record.logical_record_segments.append(unformatted_data_identifier)
 visible_record.logical_record_segments.append(no_format_fdata_1)
 visible_record.logical_record_segments.append(no_format_fdata_2)
 visible_record.logical_record_segments.append(no_format_fdata_3)
-
+visible_record.logical_record_segments.append(path_logical_record)
 
 
 

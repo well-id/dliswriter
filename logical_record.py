@@ -1376,12 +1376,294 @@ class FrameData(IFLR):
 
 # INCOMPLETE
 class Path(EFLR):
+    
+    def __init__(self,
+                 frame_type=None,
+                 well_reference_point=None,
+                 value:list=None,
+                 borehole_depth=None,
+                 borehole_depth_representation_code:str=None,
+                 vertical_depth=None,
+                 vertical_depth_representation_code:str=None,
+                 radial_drift=None,
+                 radial_drift_representation_code:str=None,
+                 angular_drift=None,
+                 angular_drift_representation_code:str=None,
+                 time=None,
+                 time_representation_code:str=None,
+                 depth_offset=None,
+                 depth_offset_representation_code:str=None,
+                 measure_point_offset=None,
+                 measure_point_offset_representation_code:str=None,
+                 tool_zero_offset=None,
+                 tool_zero_offset_representation_code:str=None):
 
-    def __init__(self):
         super().__init__()
-
-
         self.set_type = 'PATH'
+
+        self.frame_type = frame_type
+        self.well_reference_point = well_reference_point
+        
+        if value:
+            self.value = value
+        else:
+            self.value = []
+        
+        self.borehole_depth = borehole_depth
+        self.borehole_depth_representation_code = borehole_depth_representation_code
+        self.vertical_depth = vertical_depth
+        self.vertical_depth_representation_code = vertical_depth_representation_code
+        self.radial_drift = radial_drift
+        self.radial_drift_representation_code = radial_drift_representation_code
+        self.angular_drift = angular_drift
+        self.angular_drift_representation_code = angular_drift_representation_code
+        self.time = time
+        self.time_representation_code = time_representation_code
+        self.depth_offset = depth_offset
+        self.depth_offset_representation_code = depth_offset_representation_code
+        self.measure_point_offset = measure_point_offset
+        self.measure_point_offset_representation_code = measure_point_offset_representation_code
+        self.tool_zero_offset = tool_zero_offset
+        self.tool_zero_offset_representation_code = tool_zero_offset_representation_code
+
+
+    def get_as_bytes(self):
+        
+        _body = b''
+
+        # OBJECT
+        _body += write_struct('USHORT', int('01110000', 2))
+        _body += write_struct('OBNAME', (self.origin_reference,
+                                         self.copy_number,
+                                         self.object_name))
+
+
+        # VALUES
+        if self.frame_type:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += self.frame_type.get_obname_only()
+
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.well_reference_point:
+            _body += write_struct('USHORT', int('00100001', 2))
+            _body += self.well_reference_point.get_obname_only()
+
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.value:
+            _body += write_struct('USHORT', int('00101001', 2))
+            _body += write_struct('UVARI', len(self.value))
+            for obj in self.value:
+                _body += obj.get_obname_only()
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.borehole_depth:
+            
+            _body += write_struct('USHORT', int('00100101', 2))
+
+            if 'logical_record' in str(type(self.borehole_depth)):
+                # means representation code is OBNAME
+                _body += write_struct('USHORT', get_representation_code('OBNAME'))
+                _body += self.borehole_depth.get_obname_only()
+
+            else:
+                _body += write_struct('USHORT', get_representation_code(self.borehole_depth_representation_code))
+                _body += write_struct(self.borehole_depth_representation_code, self.borehole_depth)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        
+        if self.vertical_depth:
+            
+            _body += write_struct('USHORT', int('00100101', 2))
+
+            if 'logical_record' in str(type(self.vertical_depth)):
+                # means representation code is OBNAME
+                _body += write_struct('USHORT', get_representation_code('OBNAME'))
+                _body += self.vertical_depth.get_obname_only()
+
+            else:
+                _body += write_struct('USHORT', get_representation_code(self.vertical_depth_representation_code))
+                _body += write_struct(self.vertical_depth_representation_code, self.vertical_depth)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        
+        if self.radial_drift:
+            
+            _body += write_struct('USHORT', int('00100101', 2))
+
+            if 'logical_record' in str(type(self.radial_drift)):
+                # means representation code is OBNAME
+                _body += write_struct('USHORT', get_representation_code('OBNAME'))
+                _body += self.radial_drift.get_obname_only()
+
+            else:
+                _body += write_struct('USHORT', get_representation_code(self.radial_drift_representation_code))
+                _body += write_struct(self.radial_drift_representation_code, self.radial_drift)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        
+        if self.angular_drift:
+            
+            _body += write_struct('USHORT', int('00100101', 2))
+
+            if 'logical_record' in str(type(self.angular_drift)):
+                # means representation code is OBNAME
+                _body += write_struct('USHORT', get_representation_code('OBNAME'))
+                _body += self.angular_drift.get_obname_only()
+
+            else:
+                _body += write_struct('USHORT', get_representation_code(self.angular_drift_representation_code))
+                _body += write_struct(self.angular_drift_representation_code, self.angular_drift)
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        
+        if self.time:
+            
+            _body += write_struct('USHORT', int('00100101', 2))
+
+            if 'logical_record' in str(type(self.time)):
+                # means representation code is OBNAME
+                _body += write_struct('USHORT', get_representation_code('OBNAME'))
+                _body += self.time.get_obname_only()
+
+            else:
+                _body += write_struct('USHORT', get_representation_code(self.time_representation_code))
+                _body += write_struct(self.time_representation_code, self.time)
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.depth_offset:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', get_representation_code(self.depth_offset_representation_code))
+            _body += write_struct(self.depth_offset_representation_code, self.depth_offset)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.measure_point_offset:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', get_representation_code(self.measure_point_offset_representation_code))
+            _body += write_struct(self.measure_point_offset_representation_code, self.measure_point_offset)
+
+        else:
+            _body += self.write_absent_attribute()
+
+        
+        if self.tool_zero_offset:
+            _body += write_struct('USHORT', int('00100101', 2))
+            _body += write_struct('USHORT', get_representation_code(self.tool_zero_offset_representation_code))
+            _body += write_struct(self.tool_zero_offset_representation_code, self.tool_zero_offset)
+
+        else:
+            _body += self.write_absent_attribute()
+
+
+
+        return _body
+
+
+
+class PathLogicalRecord(EFLR):
+
+    def __init__(self,
+                 paths:list=None):
+
+        super().__init__()
+        self.set_type = 'PATH'
+
+        if paths:
+            self.paths = paths
+        else:
+            self.paths = []
+
+
+    def get_as_bytes(self):
+
+        _body = b''
+
+        # SET
+        _body += Set(self.set_type, self.set_name).get_as_bytes()
+
+        # TEMPLATE
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'FRAME-TYPE')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'WELL-REFERENCE-POINT')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+
+        _body += write_struct('USHORT', int('00110100', 2))
+        _body += write_struct('IDENT', 'VALUE')
+        _body += write_struct('USHORT', get_representation_code('OBNAME'))
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'BOREHOLE-DEPTH')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'VERTICAL-DEPTH')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'RADIAL-DRIFT')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'ANGULAR-DRIFT')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'TIME')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'DEPTH-OFFSET')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'MEASURE-POINT-OFFSET')
+
+
+        _body += write_struct('USHORT', int('00110000', 2))
+        _body += write_struct('IDENT', 'TOOL-ZERO-OFFSET')
+
+
+        # OBJECTS
+        for path in self.paths:
+            _body += path.get_as_bytes()
+
+
+        return self.finalize_bytes(4, _body)
+
+        
+
+
+
+
 
 
 class Zone(EFLR):
