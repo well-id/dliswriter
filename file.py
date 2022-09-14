@@ -2,6 +2,7 @@ import io
 from bisect import bisect
 from math import ceil
 from logical_record.utils.common import write_struct
+from logical_record.utils.enums import RepresentationCode
 
 
 class DLISFile(object):
@@ -45,9 +46,9 @@ class DLISFile(object):
             Visible Record object bytes
 
         """
-        return write_struct('UNORM', length)\
-               + write_struct('USHORT', 255)\
-               + write_struct('USHORT', 1)
+        return write_struct(RepresentationCode.UNORM, length)\
+               + write_struct(RepresentationCode.USHORT, 255)\
+               + write_struct(RepresentationCode.USHORT, 1)
 
     def validate(self):
         """Validates the object according to RP66 V1 rules"""

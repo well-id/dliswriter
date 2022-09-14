@@ -3,7 +3,7 @@ from typing import Union
 from .custom_types import Justify
 from .custom_types import LogicalRecordType
 from .custom_types import LogicalRecordTypeCode
-from .custom_types import RepresentationCode
+from .enums import RepresentationCode
 from .custom_types import RepresentationCodeNumber
 
 
@@ -93,33 +93,33 @@ def get_representation_code(key: Union[RepresentationCode, RepresentationCodeNum
     """
     
     representation_code_dictionary = {
-        'FSHORT': 1,
-        'FSINGL': 2,
-        'FSING1': 3,
-        'FSING2': 4,
-        'ISINGL': 5,
-        'VSINGL': 6,
-        'FDOUBL': 7,
-        'FDOUB1': 8,
-        'FDOUB2': 9,
-        'CSINGL': 10,
-        'CDOUBL': 11,
-        'SSHORT': 12,
-        'SNORM': 13,
-        'SLONG': 14,
-        'USHORT': 15,
-        'UNORM': 16,
-        'ULONG': 17,
-        'UVARI': 18,
-        'IDENT': 19,
-        'ASCII': 20,
-        'DTIME': 21,
-        'ORIGIN': 22,
-        'OBNAME': 23,
-        'OBJREF': 24,
-        'ATTREF': 25,
-        'STATUS': 26,
-        'UNITS': 27
+        RepresentationCode.FSHORT: 1,
+        RepresentationCode.FSINGL: 2,
+        RepresentationCode.FSING1: 3,
+        RepresentationCode.FSING2: 4,
+        RepresentationCode.ISINGL: 5,
+        RepresentationCode.VSINGL: 6,
+        RepresentationCode.FDOUBL: 7,
+        RepresentationCode.FDOUB1: 8,
+        RepresentationCode.FDOUB2: 9,
+        RepresentationCode.CSINGL: 10,
+        RepresentationCode.CDOUBL: 11,
+        RepresentationCode.SSHORT: 12,
+        RepresentationCode.SNORM: 13,
+        RepresentationCode.SLONG: 14,
+        RepresentationCode.USHORT: 15,
+        RepresentationCode.UNORM: 16,
+        RepresentationCode.ULONG: 17,
+        RepresentationCode.UVARI: 18,
+        RepresentationCode.IDENT: 19,
+        RepresentationCode.ASCII: 20,
+        RepresentationCode.DTIME: 21,
+        RepresentationCode.ORIGIN: 22,
+        RepresentationCode.OBNAME: 23,
+        RepresentationCode.OBJREF: 24,
+        RepresentationCode.ATTREF: 25,
+        RepresentationCode.STATUS: 26,
+        RepresentationCode.UNITS: 27
     }
 
     if key not in list(representation_code_dictionary.keys()) and not from_value:

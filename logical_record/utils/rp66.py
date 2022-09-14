@@ -3,6 +3,8 @@ default attribute values for each set type
 
 """
 
+from .enums import RepresentationCode
+
 
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
@@ -11,102 +13,102 @@ class RP66:
         
         'file_id': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'file_set_name': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'file_set_number': {
             'count': 1,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'file_number': {
             'count': 1,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'file_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'product': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'version': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'programs': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'creation_time': {
             'count': 1,
-            'representation_code': 'DTIME'
+            'representation_code': RepresentationCode.DTIME
         },
 
         'order_number': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'descent_number': {
             'count': 1,
-            'representation_code': 'UNORM'
+            'representation_code': RepresentationCode.UNORM
         },
 
         'run_number': {
             'count': 1,
-            'representation_code': 'UNORM'
+            'representation_code': RepresentationCode.UNORM
         },
 
         'well_id': {
             'count': 1,
-            'representation_code': 'UNORM'
+            'representation_code': RepresentationCode.UNORM
         },
 
         'well_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'field_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'producer_code': {
             'count': 1,
-            'representation_code': 'UNORM'
+            'representation_code': RepresentationCode.UNORM
         },
 
         'producer_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'company': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'name_space_name': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'name_space_version': {
             'count': 1,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         }
     }
 
@@ -114,57 +116,57 @@ class RP66:
         
         'permanent_datum': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'vertical_zero': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'permanent_datum_elevation': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'above_permanent_datum': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'magnetic_declination': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'coordinate_1_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'coordinate_1_value': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'coordinate_2_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'coordinate_2_value': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'coordinate_3_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'coordinate_3_value': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         }
     }
 
@@ -172,7 +174,7 @@ class RP66:
         
         'axis_id': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'coordinates': {
@@ -190,77 +192,77 @@ class RP66:
         
         'general_modifier': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'quantity': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'quantity_modifier': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'altered_form': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'entity': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'entity_modifier': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'entity_number': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'entity_part': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'entity_part_number': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'generic_source': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'source_part': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'source_part_number': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'conditions': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'standard_symbol': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'private_symbol': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         }
     }
 
@@ -268,42 +270,42 @@ class RP66:
         
         'long_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'properties': {
             'count': None,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'representation_code': {
             'count': 1,
-            'representation_code': 'USHORT'
+            'representation_code': RepresentationCode.USHORT
         },
 
         'units': {
             'count': 1,
-            'representation_code': 'UNITS'
+            'representation_code': RepresentationCode.UNITS
         },
 
         'dimension': {
             'count': None,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'axis': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'element_limit': {
             'count': None,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'source': {
             'count': 1,
-            'representation_code': 'OBJREF'
+            'representation_code': RepresentationCode.OBJREF
         }
     }
 
@@ -311,22 +313,22 @@ class RP66:
 
         'description': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'channels': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'index_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'direction': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'spacing': {
@@ -336,7 +338,7 @@ class RP66:
 
         'encrypted': {
             'count': 1,
-            'representation_code': 'USHORT'
+            'representation_code': RepresentationCode.USHORT
         },
 
         'index_min': {
@@ -354,17 +356,17 @@ class RP66:
         
         'frame_type': {
             'count': 1,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'well_reference_point': {
             'count': 1,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'value': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'borehole_depth': {
@@ -412,12 +414,12 @@ class RP66:
         
         'description': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'domain': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'maximum': {
@@ -435,22 +437,22 @@ class RP66:
 
         'long_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'dimension': {
             'count': None,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'axis': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'zones': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'values': {
@@ -463,87 +465,87 @@ class RP66:
 
         'trademark_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'status': {
             'count': 1,
-            'representation_code': 'STATUS'
+            'representation_code': RepresentationCode.STATUS
         },
 
         '_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'serial_number': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'location': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'height': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'length': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'minimum_diameter': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'maximum_diameter': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'volume': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'weight': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'hole_size': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'pressure': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'temperature': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'vertical_depth': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'radial_drift': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         },
 
         'angular_drift': {
             'count': 1,
-            'representation_code': 'FDOUBL'
+            'representation_code': RepresentationCode.FDOUBL
         }
     }
 
@@ -551,37 +553,37 @@ class RP66:
 
         'description': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'trademark_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'generic_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'parts': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'status': {
             'count': 1,
-            'representation_code': 'STATUS'
+            'representation_code': RepresentationCode.STATUS
         },
 
         'channels': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'parameters': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         }
     }
 
@@ -589,27 +591,27 @@ class RP66:
 
         'long_name': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'properties': {
             'count': None,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'dimension': {
             'count': None,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'axis': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'zones': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'values': {
@@ -627,57 +629,57 @@ class RP66:
         
         'description' : {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'trademark_name' : {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'version' : {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'properties' : {
             'count': None,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'status' : {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'input_channels' : {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'output_channels' : {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'input_computations' : {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'output_computations' : {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'parameters' : {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'comments' : {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         }
     }
 
@@ -685,27 +687,27 @@ class RP66:
         
         'phase': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'measurement_source': {
             'count': 1,
-            'representation_code': 'OBJREF'
+            'representation_code': RepresentationCode.OBJREF
         },
 
         '_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'dimension': {
             'count': None,
-            'representation_code': 'UVARI'
+            'representation_code': RepresentationCode.UVARI
         },
 
         'axis': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'measurement': {
@@ -763,7 +765,7 @@ class RP66:
         
         'label': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'coefficients': {
@@ -791,32 +793,32 @@ class RP66:
         
         'calibrated_channels': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'uncalibrated_channels': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'coefficients': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'measurements': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'parameters': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'method': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         }
     }
 
@@ -824,22 +826,22 @@ class RP66:
 
         'description': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         },
 
         'object_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'object_list': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'group_list': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         }
     }
 
@@ -847,17 +849,17 @@ class RP66:
 
         'output_channels': {
             'count': 1,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'input_channels': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         },
 
         'zones': {
             'count': None,
-            'representation_code': 'OBNAME'
+            'representation_code': RepresentationCode.OBNAME
         }
     }
 
@@ -865,12 +867,12 @@ class RP66:
 
         'consumer_name': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'description': {
             'count': 1,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         }
     }
 
@@ -878,7 +880,7 @@ class RP66:
 
         '_type': {
             'count': 1,
-            'representation_code': 'IDENT'
+            'representation_code': RepresentationCode.IDENT
         },
 
         'time': {
@@ -908,7 +910,7 @@ class RP66:
 
         'text': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         } 
     }
 
@@ -916,6 +918,6 @@ class RP66:
         
         'text': {
             'count': None,
-            'representation_code': 'ASCII'
+            'representation_code': RepresentationCode.ASCII
         }
     }

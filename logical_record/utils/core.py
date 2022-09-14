@@ -6,8 +6,9 @@ from .common import write_struct
 from .common import write_absent_attribute
 from .converters import get_representation_code
 from .converters import get_logical_record_type
-from .custom_types import RepresentationCode
 from .custom_types import AttributeValue
+from .enums import RepresentationCode
+from .enums import Units
 
 
 class Attribute(object):
@@ -54,7 +55,7 @@ class Attribute(object):
         """
         
         if self.label and for_template:
-            self.bytes += write_struct('IDENT', self.label)
+            self.bytes += write_struct(RepresentationCode.IDENT, self.label)
             self.characteristics += '1'
         else:
             self.characteristics += '0'
@@ -65,7 +66,7 @@ class Attribute(object):
 
         elif self.count and not for_template and self.count != 1:
 
-            self.bytes += write_struct('UVARI', self.count)
+            self.bytes += write_struct(RepresentationCode.UVARI, self.count)
             self.characteristics += '1'
         else:
             if self.value:
@@ -74,7 +75,7 @@ class Attribute(object):
                 else:
                     pass
                 if self.count is not None and self.count > 1:
-                    self.bytes += write_struct('UVARI', self.count)
+                    self.bytes += write_struct(RepresentationCode.UVARI, self.count)
                     self.characteristics += '1'
                 else:
                     self.characteristics += '0'
@@ -83,13 +84,16 @@ class Attribute(object):
 
 
         if self.representation_code and for_template:
-            self.bytes += write_struct('USHORT', get_representation_code(self.representation_code))
+            self.bytes += write_struct(RepresentationCode.USHORT, get_representation_code(self.representation_code))
             self.characteristics += '1'
         else:
             self.characteristics += '0'
 
         if self.units and for_template:
-            self.bytes += write_struct('UNITS', self.units)
+            if type(self.units) == Units:
+                self.bytes += write_struct(RepresentationCode.UNITS, self.units.value)
+            else:
+                self.bytes += write_struct(RepresentationCode.UNITS, self.units)
             self.characteristics += '1'
         else:
             self.characteristics += '0'
@@ -116,7 +120,12 @@ class Attribute(object):
                         self.bytes += write_struct(self.representation_code, val)
             else:
                 try:
-                    self.bytes += write_struct(self.representation_code, self.value)
+                    if type(self.value) == Units:
+                        value = self.value.value
+                    else:
+                        value = self.value
+
+                    self.bytes += write_struct(self.representation_code, value)
                 except:
                     raise Exception(f'{self.representation_code} ----- {self.value}')
 
@@ -136,7 +145,7 @@ class Attribute(object):
         .._RP66 V1 Component Descriptor:
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
         """
-        self.bytes = write_struct('USHORT', int(self.characteristics, 2)) + self.bytes
+        self.bytes = write_struct(RepresentationCode.USHORT, int(self.characteristics, 2)) + self.bytes
 
 
     def get_as_bytes(self, for_template=False) -> bytes:
@@ -225,9 +234,9 @@ class EFLR(object):
         .._RP66 V1 OBNAME Representation Code:
             http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_23
         """
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
+        return write_struct(RepresentationCode.OBNAME, (self.origin_reference,
+                                                        self.copy_number,
+                                                        self.object_name))
 
     @property
     def set_component(self) -> bytes:
@@ -239,9 +248,9 @@ class EFLR(object):
         .._RP66 Component Descriptor:
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
         """
-        _bytes = write_struct('IDENT', self.set_type)
+        _bytes = write_struct(RepresentationCode.IDENT, self.set_type)
         if self.set_name:
-            _bytes = b'\xf8' + _bytes + write_struct('IDENT', self.set_name)
+            _bytes = b'\xf8' + _bytes + write_struct(RepresentationCode.IDENT, self.set_name)
         else:
             _bytes = b'\xf0' + _bytes
 
@@ -317,7 +326,7 @@ class EFLR(object):
                 + str(int(self.has_trailing_length))\
                 + str(int(self.has_padding))
 
-        return write_struct('USHORT', int(_bits, 2))
+        return write_struct(RepresentationCode.USHORT, int(_bits, 2))
 
     @property
     def header_bytes(self) -> bytes:
@@ -334,9 +343,9 @@ class EFLR(object):
         else:
             self.has_padding = False
 
-        return write_struct('UNORM', self.segment_length)\
+        return write_struct(RepresentationCode.UNORM, self.segment_length)\
                + self.segment_attributes\
-               + write_struct('USHORT', get_logical_record_type(self.logical_record_type))
+               + write_struct(RepresentationCode.USHORT, get_logical_record_type(self.logical_record_type))
 
     @property
     def body_bytes(self) -> bytes:
@@ -357,7 +366,7 @@ class EFLR(object):
     @property
     def padding_bytes(self) -> bytes:
         """Writes padding bytes"""
-        return write_struct('USHORT', 1)
+        return write_struct(RepresentationCode.USHORT, 1)
 
     @property
     def as_bytes(self):
@@ -396,7 +405,7 @@ class EFLR(object):
         assert segment_length % 2 == 0, 'Splitted segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Splitted segment length can not be larger than the whole segment'
 
-        _length = write_struct('UNORM', segment_length)
+        _length = write_struct(RepresentationCode.UNORM, segment_length)
 
         toggle_padding = False
         
@@ -418,7 +427,7 @@ class EFLR(object):
         if toggle_padding:
             self.has_padding = not self.has_padding
 
-        return _length + _attributes + write_struct('USHORT', get_logical_record_type(self.logical_record_type))
+        return _length + _attributes + write_struct(RepresentationCode.USHORT, get_logical_record_type(self.logical_record_type))
 
     def __repr__(self):
         """String representation of this object"""
@@ -436,9 +445,9 @@ class DictionaryControlledObject:
 
     @property
     def obname(self):
-        return write_struct('OBNAME', (self.origin_reference,
-                                       self.copy_number,
-                                       self.object_name))
+        return write_struct(RepresentationCode.OBNAME, (self.origin_reference,
+                                                        self.copy_number,
+                                                        self.object_name))
 
     def create_attributes(self):
         for key in list(self.__dict__.keys()):
@@ -505,7 +514,7 @@ class IFLR(object):
               + str(int(self.has_trailing_length))\
               + str(int(self.has_padding))
 
-        return write_struct('USHORT', int(_bits, 2))
+        return write_struct(RepresentationCode.USHORT, int(_bits, 2))
 
     @property
     def size(self):
@@ -520,9 +529,9 @@ class IFLR(object):
         else:
             self.has_padding = False
 
-        return write_struct('UNORM', self.segment_length)\
+        return write_struct(RepresentationCode.UNORM, self.segment_length)\
                + self.segment_attributes\
-               + write_struct('USHORT', self.iflr_type)
+               + write_struct(RepresentationCode.USHORT, self.iflr_type)
 
 
     @property
@@ -530,7 +539,7 @@ class IFLR(object):
         _bytes = self.body_bytes # Create 
         _bytes = self.header_bytes + _bytes
         if self.has_padding:
-            _bytes += write_struct('USHORT', 1) # Padding
+            _bytes += write_struct(RepresentationCode.USHORT, 1) # Padding
 
         return _bytes
 
@@ -542,7 +551,7 @@ class IFLR(object):
         assert segment_length % 2 == 0, 'Splitted segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Splitted segment length can not be larger than the whole segment'
 
-        _length = write_struct('UNORM', segment_length)
+        _length = write_struct(RepresentationCode.UNORM, segment_length)
 
         toggle_padding = False
         
@@ -567,7 +576,7 @@ class IFLR(object):
 
 
 
-        return _length + _attributes + write_struct('USHORT', self.iflr_type)
+        return _length + _attributes + write_struct(RepresentationCode.USHORT, self.iflr_type)
 
     def __repr__(self):
         return self.set_type

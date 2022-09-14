@@ -1,8 +1,10 @@
 import math
 
 from .utils.core import IFLR
+from .utils.enums import Enum
 from .utils.common import write_struct
 from .utils.converters import get_representation_code
+from .utils.enums import RepresentationCode
 
 
 class FrameData(IFLR):
@@ -41,7 +43,7 @@ class FrameData(IFLR):
 
         _body = b''
         _body += self.frame.obname
-        _body += write_struct('UVARI', self.frame_number)
+        _body += write_struct(RepresentationCode.UVARI, self.frame_number)
         
         j = 0
         _channels = self.frame.channels.value

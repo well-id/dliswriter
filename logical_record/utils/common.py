@@ -2,7 +2,7 @@ import re
 from struct import Struct
 from datetime import datetime
 from typing import Any
-from .custom_types import RepresentationCode
+from .enums import RepresentationCode
 
 
 NOT_TEMPLATE = [
@@ -34,52 +34,6 @@ When creating attributes for EFLR objects, __dict__ is used to get a list of all
 And for each element in that list, an instance of Attribute class is created. NOT_TEMPLATE
 is a list of attributes that won't be in the Template and so neglected when creating Attribute
 instances.
-"""
-
-
-struct_type_dict = {
-    'FSHORT': Struct('>h'),
-    'FSINGL': Struct('>f'),
-    'FSING1': Struct('>ff'),
-    'FSING2': Struct('>fff'),
-    'ISINGL': Struct('>i'),
-    'VSINGL': Struct('>i'),
-    'FDOUBL': Struct('>d'),
-    'FDOUB1': Struct('>dd'),
-    'FDOUB2': Struct('>ddd'),
-    'CSINGL': Struct('>ff'),
-    'CDOUBL': Struct('>dd'),
-    'SSHORT': Struct('>b'),
-    'SNORM': Struct('>h'),
-    'SLONG': Struct('>i'),
-    'USHORT': Struct('>B'),
-    'UNORM': Struct('>H'),
-    'ULONG': Struct('>I'),
-    'UVARI': None,
-    'IDENT': None,
-    'ASCII': None,
-    'DTIME': Struct('>BBBBBBH'),
-    'ORIGIN': None,
-    'OBNAME': None,
-    'OBJREF': None,
-    'ATTREF': None,
-    'STATUS': Struct('>B'),
-    'UNITS': None
-}
-"""dict: Dictionary for RP66 V1 representation codes.
-
-Some representation codes can not be directly converted using Struct.
-Those have the value None. They are still included here, so that it also
-serves as a full list of representation codes included in the RP66 V1.
-
-Compiled using dlispy and RP66 V1 specification.
-
-.. _dlispy:
-    https://github.com/Teradata/dlispy/blob/master/dlispy/RCReader.py
-
-.. _RP66V1 Appendix B:
-    http://w3.energistics.org/rp66/v1/rp66v1_appb.html
-
 """
 
 
@@ -180,13 +134,13 @@ def get_datetime(date_time: datetime) -> bytes:
     time_zone = '{0:04b}'.format(0) # Local Standard Time is set as default
     month = '{0:04b}'.format(date_time.month)
 
-    value += write_struct('USHORT', date_time.year - 1900)
-    value += write_struct('USHORT', int(time_zone + month, 2))
-    value += write_struct('USHORT', date_time.day)
-    value += write_struct('USHORT', date_time.hour)
-    value += write_struct('USHORT', date_time.minute)
-    value += write_struct('USHORT', date_time.second)
-    value += write_struct('UNORM', int(date_time.microsecond / 1000))
+    value += write_struct(RepresentationCode.USHORT, date_time.year - 1900)
+    value += write_struct(RepresentationCode.USHORT, int(time_zone + month, 2))
+    value += write_struct(RepresentationCode.USHORT, date_time.day)
+    value += write_struct(RepresentationCode.USHORT, date_time.hour)
+    value += write_struct(RepresentationCode.USHORT, date_time.minute)
+    value += write_struct(RepresentationCode.USHORT, date_time.second)
+    value += write_struct(RepresentationCode.UNORM, int(date_time.microsecond / 1000))
     
     return value
 
@@ -201,7 +155,7 @@ def read_struct(representation_code: RepresentationCode, packed_value: bytes) ->
     Returns:
         Unpacked struct value. Might be int, float, str depending on the representation_code.
     """
-    return struct_type_dict[representation_code].unpack(packed_value)[0]
+    return representation_code.value.unpack(packed_value)[0]
 
 
 def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
@@ -220,33 +174,33 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     """
     
 
-    if representation_code == 'ASCII':
-        return write_struct('UVARI', len(str(value))) + str(value).encode('ascii')
+    if representation_code == RepresentationCode.ASCII:
+        return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')
 
-    elif representation_code == 'UVARI':
+    elif representation_code == RepresentationCode.UVARI:
         if value > 127:
             if value > 16383:
                 value = '{0:08b}'.format(value)
                 value = '11' + (30 - len(value)) * '0' + value
-                return write_struct('ULONG', int(value,2))
+                return RepresentationCode.ULONG.value.pack(int(value,2))
             else:
                 value = '{0:08b}'.format(value)
                 value = '10' + (14 - len(value)) * '0' + value
-                return write_struct('UNORM', int(value,2))
+                return RepresentationCode.UNORM.value.pack(int(value,2))
                 
-        return write_struct('USHORT',int('{0:08b}'.format(value),2))
+        return write_struct(RepresentationCode.USHORT,int('{0:08b}'.format(value),2))
     
-    elif representation_code == 'IDENT':
-        return write_struct('USHORT', len(str(value))) + str(value).encode('ascii')
+    elif representation_code == RepresentationCode.IDENT:
+        return write_struct(RepresentationCode.USHORT, len(str(value))) + str(value).encode('ascii')
 
-    elif representation_code == 'DTIME':
+    elif representation_code == RepresentationCode.DTIME:
         return get_datetime(value)
 
-    elif representation_code == 'OBNAME':
+    elif representation_code == RepresentationCode.OBNAME:
         try:
-            origin_reference = write_struct('UVARI', value[0])
-            copy_number = write_struct('USHORT', value[1])
-            name = write_struct('IDENT', value[2])
+            origin_reference = write_struct(RepresentationCode.UVARI, value[0])
+            copy_number = write_struct(RepresentationCode.USHORT, value[1])
+            name = write_struct(RepresentationCode.IDENT, value[2])
 
             obname = origin_reference + copy_number + name
 
@@ -260,22 +214,22 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
 
         return obname 
 
-    elif representation_code == 'UNITS':
-        return write_struct('IDENT', validate_units(value))
+    elif representation_code == RepresentationCode.UNITS:
+        return write_struct(RepresentationCode.IDENT, validate_units(value))
 
-    elif representation_code == 'OBJREF':
-        return write_struct('IDENT', value.set_type) + value.obname
+    elif representation_code == RepresentationCode.OBJREF:
+        return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
 
-    elif representation_code == 'STATUS':
+    elif representation_code == RepresentationCode.STATUS:
         if value not in [0, 1]:
             error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
                              " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
             raise Exception(error_message)
 
-        return write_struct('USHORT', value)
+        return write_struct(RepresentationCode.USHORT, value)
 
     else:
-        return struct_type_dict[representation_code].pack(value)
+        return representation_code.value.pack(value)
 
 
 def write_absent_attribute() -> bytes:

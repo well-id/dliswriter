@@ -31,6 +31,9 @@ from logical_record.frame_data import NoFormatFrameData
 from logical_record.message import Message
 from logical_record.message import Comment
 
+from logical_record.utils.enums import Units
+from logical_record.utils.enums import RepresentationCode
+
 import numpy as np
 import pandas as pd
 
@@ -87,13 +90,13 @@ well_reference_point.coordinate_2_value.value = 27.792470
 axis = Axis('AXS-1')
 axis.axis_id.value = 'FIRST AXIS'
 
-axis.coordinates.representation_code = 'FDOUBL'
+axis.coordinates.representation_code = RepresentationCode.FDOUBL
 axis.coordinates.count = 2
 axis.coordinates.value = [40.395241, 27.792471]
 
-axis.spacing.representation_code = 'FDOUBL'
+axis.spacing.representation_code = RepresentationCode.FDOUBL
 axis.spacing.value = 0.33
-axis.spacing.units = 'm'
+axis.spacing.units = Units.m
 
 
 # LONG NAME
@@ -121,35 +124,35 @@ long_name.private_symbol.value = 'SOME ASCII TEXT'
 depth_channel = Channel('DEPTH CHANNEL')
 depth_channel.long_name.value = 'DEPTH'
 depth_channel.properties.value = ['0309 AQLN PROP 1', 'PROP AQLN 2']
-depth_channel.representation_code.value = get_representation_code('FDOUBL')
-depth_channel.units.value = 'm'
+depth_channel.representation_code.value = get_representation_code(RepresentationCode.FDOUBL)
+depth_channel.units.value = Units.m
 depth_channel.dimension.value = [1]
 depth_channel.element_limit.value = [1]
 
 curve_1_channel = Channel('CURVE 1 CHANNEL')
 curve_1_channel.long_name.value = 'CURVE 1'
-curve_1_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_1_channel.units.value = 't'
+curve_1_channel.representation_code.value = get_representation_code(RepresentationCode.FDOUBL)
+curve_1_channel.units.value = Units.t
 curve_1_channel.dimension.value = [1]
 curve_1_channel.element_limit.value = [1]
 
 curve_2_channel = Channel('CURVE 2 CHANNEL')
 curve_2_channel.long_name.value = 'CURVE 2'
-curve_2_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_2_channel.units.value = 't'
+curve_2_channel.representation_code.value = get_representation_code(RepresentationCode.FDOUBL)
+curve_2_channel.units.value = Units.t
 curve_2_channel.dimension.value = [1]
 curve_2_channel.element_limit.value = [1]
 
 multi_dim_channel = Channel('MULTI DIM CHANNEL')
 multi_dim_channel.long_name.value = 'MULTI DIMENSIONAL'
-multi_dim_channel.representation_code.value = get_representation_code('FDOUBL')
-multi_dim_channel.units.value = 't'
+multi_dim_channel.representation_code.value = get_representation_code(RepresentationCode.FDOUBL)
+multi_dim_channel.units.value = Units.t
 multi_dim_channel.dimension.value = [2]
 multi_dim_channel.element_limit.value = [2]
 
 image_channel = Channel('IMG')
 image_channel.long_name.value = 'IMAGE CHANNEL'
-image_channel.representation_code.value = get_representation_code('FDOUBL')
+image_channel.representation_code.value = get_representation_code(RepresentationCode.FDOUBL)
 image_channel.dimension.value = [384]
 image_channel.element_limit.value = [384]
 
@@ -160,7 +163,7 @@ frame = Frame('MAIN')
 frame.channels.value = [depth_channel, curve_1_channel, curve_2_channel, multi_dim_channel, image_channel]
 frame.index_type.value = 'BOREHOLE-DEPTH'
 frame.spacing.value = 0.33
-frame.spacing.representation_code = 'FDOUBL'
+frame.spacing.representation_code = RepresentationCode.FDOUBL
 frame.spacing.units = 'm'
 
 # Read Data
@@ -195,25 +198,25 @@ path_1.well_reference_point.value = well_reference_point
 path_1.value.value = [curve_1_channel, curve_2_channel]
 
 path_1.vertical_depth.value = -187
-path_1.vertical_depth.representation_code = 'SNORM'
+path_1.vertical_depth.representation_code = RepresentationCode.SNORM
 
 path_1.radial_drift.value = 105
-path_1.radial_drift.representation_code = 'SSHORT'
+path_1.radial_drift.representation_code = RepresentationCode.SSHORT
 
 path_1.angular_drift.value = 64.23
-path_1.angular_drift.representation_code = 'FDOUBL'
+path_1.angular_drift.representation_code = RepresentationCode.FDOUBL
 
 path_1.time.value = 180
-path_1.time.representation_code = 'SNORM'
+path_1.time.representation_code = RepresentationCode.SNORM
 
 path_1.depth_offset.value = -123
-path_1.depth_offset.representation_code = 'SSHORT'
+path_1.depth_offset.representation_code = RepresentationCode.SSHORT
 
 path_1.measure_point_offset.value = 82
-path_1.measure_point_offset.representation_code = 'SSHORT'
+path_1.measure_point_offset.representation_code = RepresentationCode.SSHORT
 
 path_1.tool_zero_offset.value = -7
-path_1.tool_zero_offset.representation_code = 'SSHORT'
+path_1.tool_zero_offset.representation_code = RepresentationCode.SSHORT
 
 
 
@@ -223,41 +226,41 @@ zone_1.description.value = 'BOREHOLE-DEPTH-ZONE'
 zone_1.domain.value = 'BOREHOLE-DEPTH'
 
 zone_1.maximum.value = 1300.45
-zone_1.maximum.units = 'm'
-zone_1.maximum.representation_code = 'FDOUBL'
+zone_1.maximum.units = Units.m
+zone_1.maximum.representation_code = RepresentationCode.FDOUBL
 
 zone_1.minimum.value = 100
-zone_1.minimum.units = 'm'
-zone_1.minimum.representation_code = 'USHORT'
+zone_1.minimum.units = Units.m
+zone_1.minimum.representation_code = RepresentationCode.USHORT
 
 
 zone_2 = Zone('ZONE-2')
 zone_2.description.value = 'VERTICAL-DEPTH-ZONE'
 zone_2.domain.value = 'VERTICAL-DEPTH'
 zone_2.maximum.value = 2300.45
-zone_2.maximum.units = 'm'
-zone_2.maximum.representation_code = 'FDOUBL'
+zone_2.maximum.units = Units.m
+zone_2.maximum.representation_code = RepresentationCode.FDOUBL
 zone_2.minimum.value = 200
-zone_2.minimum.units = 'm'
-zone_2.minimum.representation_code = 'USHORT'
+zone_2.minimum.units = Units.m
+zone_2.minimum.representation_code = RepresentationCode.USHORT
 
 zone_3 = Zone('ZONE-3')
 zone_3.description.value = 'ZONE-TIME'
 zone_3.domain.value = 'TIME'
 zone_3.maximum.value = datetime(2022, 7, 13, 11, 30)
-zone_3.maximum.representation_code = 'DTIME'
+zone_3.maximum.representation_code = RepresentationCode.DTIME
 zone_3.minimum.value = datetime(2022, 7, 12, 9, 0)
-zone_3.minimum.representation_code = 'DTIME'
+zone_3.minimum.representation_code = RepresentationCode.DTIME
 
 zone_4 = Zone('ZONE-4')
 zone_4.description.value = 'ZONE-TIME-2'
 zone_4.domain.value = 'TIME'
 zone_4.maximum.value = 90
 zone_4.maximum.units = 'minute'
-zone_4.maximum.representation_code = 'USHORT'
+zone_4.maximum.representation_code = RepresentationCode.USHORT
 zone_4.minimum.value = 10
 zone_4.minimum.units = 'minute'
-zone_4.minimum.representation_code = 'USHORT'
+zone_4.minimum.representation_code = RepresentationCode.USHORT
 
 
 # PARAMETER
@@ -266,22 +269,22 @@ parameter_1.long_name.value = 'LATLONG-GPS'
 parameter_1.dimension.value = [1]
 parameter_1.zones.value = [zone_1, zone_3]
 parameter_1.values.value = ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"]
-parameter_1.values.representation_code = 'ASCII'
+parameter_1.values.representation_code = RepresentationCode.ASCII
 
 parameter_2 = Parameter('PARAM-2')
 parameter_2.long_name.value = 'LATLONG'
 parameter_2.dimension.value = [1]
 parameter_2.zones.value = [zone_2, zone_4]
 parameter_2.values.value = [40.395241, 27.792471]
-parameter_2.values.representation_code = 'FDOUBL'
+parameter_2.values.representation_code = RepresentationCode.FDOUBL
 
 
 parameter_3 = Parameter('PARAM-3')
 parameter_3.long_name.value = 'SOME-FLOAT-PARAM'
 parameter_3.dimension.value = [1]
 parameter_3.values.value = [2378.1312]
-parameter_3.values.representation_code = 'FDOUBL'
-parameter_3.values.units = 'm'
+parameter_3.values.representation_code = RepresentationCode.FDOUBL
+parameter_3.values.units = Units.m
 
 
 
@@ -293,29 +296,29 @@ equipment_1._type.value = 'Tool'
 equipment_1.serial_number.value = '9101-21391'
 equipment_1.location.value = 'Well'
 equipment_1.height.value = 140
-equipment_1.height.units = 'in' 
+equipment_1.height.units = Units.in_
 equipment_1.length.value = 230.78
-equipment_1.length.units = 'cm'
+equipment_1.length.units = Units.cm
 equipment_1.minimum_diameter.value = 2.3
-equipment_1.minimum_diameter.units = 'm'
+equipment_1.minimum_diameter.units = Units.m
 equipment_1.maximum_diameter.value = 3.2
-equipment_1.maximum_diameter.units = 'm'
+equipment_1.maximum_diameter.units = Units.m
 equipment_1.volume.value = 100
 equipment_1.volume.units = 'cm3'
 equipment_1.weight.value = 1.2
-equipment_1.weight.units = 't'
+equipment_1.weight.units = Units.t
 equipment_1.hole_size.value = 323.2
-equipment_1.hole_size.units = 'm' 
+equipment_1.hole_size.units = Units.m 
 equipment_1.pressure.value = 18000
-equipment_1.pressure.units = 'psi' 
+equipment_1.pressure.units = Units.psi
 equipment_1.temperature.value = 24
 equipment_1.temperature.units = 'degC' 
 equipment_1.vertical_depth.value = 587
-equipment_1.vertical_depth.units = 'm'
+equipment_1.vertical_depth.units = Units.m
 equipment_1.radial_drift.value = 23.22
-equipment_1.radial_drift.units = 'm' 
+equipment_1.radial_drift.units = Units.m
 equipment_1.angular_drift.value = 32.5
-equipment_1.angular_drift.units = 'm' 
+equipment_1.angular_drift.units = Units.m
 
 
 equipment_2 = Equipment('EQ2')
@@ -325,29 +328,29 @@ equipment_2._type.value = 'Tool'
 equipment_2.serial_number.value = '5559101-21391'
 equipment_2.location.value = 'Well'
 equipment_2.height.value = 140
-equipment_2.height.units = 'in' 
+equipment_2.height.units = Units.in_
 equipment_2.length.value = 230.78
-equipment_2.length.units = 'cm'
+equipment_2.length.units = Units.cm
 equipment_2.minimum_diameter.value = 2.3
-equipment_2.minimum_diameter.units = 'm'
+equipment_2.minimum_diameter.units = Units.m
 equipment_2.maximum_diameter.value = 3.2
-equipment_2.maximum_diameter.units = 'm'
+equipment_2.maximum_diameter.units = Units.m
 equipment_2.volume.value = 100
 equipment_2.volume.units = 'cm3'
 equipment_2.weight.value = 1.2
-equipment_2.weight.units = 't'
+equipment_2.weight.units = Units.t
 equipment_2.hole_size.value = 323.2
-equipment_2.hole_size.units = 'm' 
+equipment_2.hole_size.units = Units.m 
 equipment_2.pressure.value = 18000
-equipment_2.pressure.units = 'psi' 
+equipment_2.pressure.units = Units.psi 
 equipment_2.temperature.value = 24
 equipment_2.temperature.units = 'degC' 
 equipment_2.vertical_depth.value = 587
-equipment_2.vertical_depth.units = 'm'
+equipment_2.vertical_depth.units = Units.m
 equipment_2.radial_drift.value = 23.22
-equipment_2.radial_drift.units = 'm' 
+equipment_2.radial_drift.units = Units.m 
 equipment_2.angular_drift.value = 32.5
-equipment_2.angular_drift.units = 'm' 
+equipment_2.angular_drift.units = Units.m 
 
 
 
@@ -370,9 +373,9 @@ computation_1.dimension.value = [1]
 computation_1.axis.value = axis
 computation_1.zones.value = [zone_1, zone_2, zone_3]
 computation_1.values.value = [100, 200, 300]
-computation_1.values.representation_code = 'UNORM'
+computation_1.values.representation_code = RepresentationCode.UNORM
 computation_1.source.value = tool
-computation_1.source.representation_code = 'OBNAME'
+computation_1.source.representation_code = RepresentationCode.OBNAME
 
 computation_2 = Computation('COMPT-2')
 computation_2.long_name.value = 'COMPT 2'
@@ -381,7 +384,7 @@ computation_2.dimension.value = [1]
 computation_2.axis.value = axis
 computation_2.zones.value = [zone_1, zone_2, zone_3]
 computation_2.values.value = [100, 200, 300]
-computation_2.values.representation_code = 'UNORM'
+computation_2.values.representation_code = RepresentationCode.UNORM
 
 
 
@@ -421,26 +424,26 @@ calibration_measurement_1.measurement_source.value = depth_channel
 calibration_measurement_1._type.value = 'Plus'
 calibration_measurement_1.dimension.value = [1]
 calibration_measurement_1.measurement.value = [12.2323]
-calibration_measurement_1.measurement.representation_code = 'FDOUBL'
+calibration_measurement_1.measurement.representation_code = RepresentationCode.FDOUBL
 calibration_measurement_1.sample_count.value = [12]
-calibration_measurement_1.sample_count.representation_code = 'USHORT'
+calibration_measurement_1.sample_count.representation_code = RepresentationCode.USHORT
 calibration_measurement_1.maximum_deviation.value = [2.2324]
-calibration_measurement_1.maximum_deviation.representation_code = 'FDOUBL'
+calibration_measurement_1.maximum_deviation.representation_code = RepresentationCode.FDOUBL
 calibration_measurement_1.standard_deviation.value = [1.123]
-calibration_measurement_1.standard_deviation.representation_code = 'FDOUBL'
+calibration_measurement_1.standard_deviation.representation_code = RepresentationCode.FDOUBL
 calibration_measurement_1.begin_time.value = datetime.now()
-calibration_measurement_1.begin_time.representation_code = 'DTIME'
+calibration_measurement_1.begin_time.representation_code = RepresentationCode.DTIME
 calibration_measurement_1.duration.value = 15
-calibration_measurement_1.duration.representation_code = 'USHORT'
+calibration_measurement_1.duration.representation_code = RepresentationCode.USHORT
 calibration_measurement_1.duration.units = 's'
 calibration_measurement_1.reference.value = [11]
-calibration_measurement_1.reference.representation_code = 'USHORT'
+calibration_measurement_1.reference.representation_code = RepresentationCode.USHORT
 calibration_measurement_1.standard.value = [11.2]
-calibration_measurement_1.standard.representation_code = 'FDOUBL'
+calibration_measurement_1.standard.representation_code = RepresentationCode.FDOUBL
 calibration_measurement_1.plus_tolerance.value = [2]
-calibration_measurement_1.plus_tolerance.representation_code = 'USHORT'
+calibration_measurement_1.plus_tolerance.representation_code = RepresentationCode.USHORT
 calibration_measurement_1.minus_tolerance.value = [1]
-calibration_measurement_1.minus_tolerance.representation_code = 'USHORT'
+calibration_measurement_1.minus_tolerance.representation_code = RepresentationCode.USHORT
 
 
 
@@ -448,13 +451,13 @@ calibration_measurement_1.minus_tolerance.representation_code = 'USHORT'
 calibration_coefficient = CalibrationCoefficient('COEF-1')
 calibration_coefficient.label.value = 'Gain'
 calibration_coefficient.coefficients.value = [100.2, 201.3]
-calibration_coefficient.coefficients.representation_code = 'FDOUBL'
+calibration_coefficient.coefficients.representation_code = RepresentationCode.FDOUBL
 calibration_coefficient.references.value = [89, 298]
-calibration_coefficient.references.representation_code = 'FDOUBL'
+calibration_coefficient.references.representation_code = RepresentationCode.FDOUBL
 calibration_coefficient.plus_tolerances.value = [100.2, 222.124]
-calibration_coefficient.plus_tolerances.representation_code = 'FDOUBL'
+calibration_coefficient.plus_tolerances.representation_code = RepresentationCode.FDOUBL
 calibration_coefficient.minus_tolerances.value = [87.23, 214]
-calibration_coefficient.minus_tolerances.representation_code = 'FDOUBL'
+calibration_coefficient.minus_tolerances.representation_code = RepresentationCode.FDOUBL
 
 
 
@@ -510,15 +513,15 @@ no_format_fdata_3.data = 'This could be the BINARY data of an image rather than 
 message_1 = Message('MESSAGE-1')
 message_1._type.value = 'Command'
 message_1.time.value = datetime.now()
-message_1.time.representation_code = 'DTIME'
+message_1.time.representation_code = RepresentationCode.DTIME
 message_1.borehole_drift.value = 123.34
-message_1.borehole_drift.representation_code = 'FDOUBL'
+message_1.borehole_drift.representation_code = RepresentationCode.FDOUBL
 message_1.vertical_depth.value = 234.45
-message_1.vertical_depth.representation_code = 'FDOUBL'
+message_1.vertical_depth.representation_code = RepresentationCode.FDOUBL
 message_1.radial_drift.value = 345.56
-message_1.radial_drift.representation_code = 'FDOUBL'
+message_1.radial_drift.representation_code = RepresentationCode.FDOUBL
 message_1.angular_drift.value = 456.67
-message_1.angular_drift.representation_code = 'FDOUBL'
+message_1.angular_drift.representation_code = RepresentationCode.FDOUBL
 message_1.text.value = 'Test message 11111'
 
 
