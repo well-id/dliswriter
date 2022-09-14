@@ -34,8 +34,6 @@ from logical_record.message import Comment
 import numpy as np
 import pandas as pd
 
-from dlisio import dlis
-
 
 # STORAGE UNIT LABEL
 sul = StorageUnitLabel()
