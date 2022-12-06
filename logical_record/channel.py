@@ -17,5 +17,7 @@ class Channel(EFLR):
         self.axis = None
         self.element_limit = None
         self.source = None
+        self.minimum_value = None
+        self.maximum_value = None
 
         self.create_attributes()

@@ -3,6 +3,11 @@ from bisect import bisect
 from math import ceil
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
+import logging
+
+FORMAT = '[%(levelname)s] %(asctime)s: %(message)s'
+logging.basicConfig(level=logging.INFO, format=FORMAT)
+logger = logging.getLogger(__name__)
 
 
 class DLISFile(object):
@@ -24,6 +29,7 @@ class DLISFile(object):
     def __init__(self, file_path: str, storage_unit_label, file_header,
                  origin, visible_record_length: int=None):
         """Initiates the object with given parameters"""
+        self.pos = {}
         self.file_path = file_path
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
@@ -52,6 +58,7 @@ class DLISFile(object):
 
     def validate(self):
         """Validates the object according to RP66 V1 rules"""
+        logger.info('Validating... ')
         if not self.origin.file_set_number.value:
             raise Exception('Origin object MUST have a file_set_number')
 
@@ -61,6 +68,8 @@ class DLISFile(object):
 
     def assign_origin_reference(self):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
+        logger.info('Assigning...')
+
         self.file_header.origin_reference = self.origin.file_set_number.value
         self.origin.origin_reference = self.origin.file_set_number.value
         for logical_record in self.logical_records:
@@ -72,7 +81,8 @@ class DLISFile(object):
 
     def raw_bytes(self):
         """Writes bytes of entire file without Visible Record objects and splits"""
-        self.pos = {}
+        logger.info('Writing raw bytes...')
+
         _stream = io.BytesIO()
         _stream.write(self.storage_unit_label.as_bytes)
         for lr in [self.file_header, self.origin] + self.logical_records:
@@ -163,21 +173,25 @@ class DLISFile(object):
         received from self.create_visible_record_dictionary()
 
         """
-        self.vr_dict = self.create_visible_record_dictionary()
+        logger.info('Adding visible records...')
+        splits = 0
 
-        for key, _ in self.vr_dict.items():
+        self.vr_dict = self.create_visible_record_dictionary()
+        logger.info('visible record dictionary created')
+
+        for key, val in self.vr_dict.items():
 
             vr_position = key
-            vr_length = self.vr_dict[key]['length']
-            lrs_to_split = self.vr_dict[key]['split']
-            number_of_prior_splits = self.vr_dict[key]['number_of_prior_splits']
-            number_of_prior_vr = self.vr_dict[key]['number_of_prior_vr']
+            vr_length = val['length']
+            lrs_to_split = val['split']
+            number_of_prior_splits = val['number_of_prior_splits']
+            number_of_prior_vr = val['number_of_prior_vr']
 
             # Inserting Visible Record Bytes to the specified position
             self.raw = self.raw[:vr_position] + self.visible_record_bytes(vr_length) + self.raw[vr_position:]
 
             if lrs_to_split:
-
+                splits += 1
                 # FIRST PART OF THE SPLIT
                 updated_lrs_position = self.pos[lrs_to_split]\
                                      + (number_of_prior_splits * 4)\
@@ -208,6 +222,7 @@ class DLISFile(object):
                 # INSERTING the header bytes of the second split part of the Logical Record Segment 
                 self.raw = self.raw[:second_lrs_position-4] + header_bytes_to_insert + self.raw[second_lrs_position-4:]
 
+        logger.info(f'{splits} splits created.')
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
@@ -227,6 +242,8 @@ class DLISFile(object):
 
     def write_to_file(self):
         """Writes the bytes to a DLIS file"""
+        logger.info('Writing to file...')
+
         with open(self.file_path, 'wb') as f:
             f.write(self.raw)
 
@@ -237,3 +254,4 @@ class DLISFile(object):
         self.raw_bytes()
         self.add_visible_records()
         self.write_to_file()
+        logger.info('Done.')

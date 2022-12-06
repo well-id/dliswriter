@@ -306,6 +306,14 @@ class RP66:
         'source': {
             'count': 1,
             'representation_code': RepresentationCode.OBJREF
+        },
+        'minimum_value': {
+            'count': None,
+            'representation_code': RepresentationCode.FDOUBL
+        },
+        'maximum_value': {
+            'count': None,
+            'representation_code': RepresentationCode.FDOUBL
         }
     }
 

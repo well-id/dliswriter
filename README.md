@@ -981,15 +981,15 @@ from logical_record.frame_data import FrameData
 
 no_format_fdata_1 = NoFormatFrameData()
 no_format_fdata_1.no_format_object = no_format_1
-no_format_fdata_1.data = 'Some text that is recorded but never read by anyone.'
+no_format_fdata_1.image1 = 'Some text that is recorded but never read by anyone.'
 
 no_format_fdata_2 = NoFormatFrameData()
 no_format_fdata_2.no_format_object = no_format_1
-no_format_fdata_2.data = 'Some OTHER text that is recorded but never read by anyone.'
+no_format_fdata_2.image1 = 'Some OTHER text that is recorded but never read by anyone.'
 
 no_format_fdata_3 = NoFormatFrameData()
 no_format_fdata_3.no_format_object = no_format_2
-no_format_fdata_3.data = 'This could be the BINARY data of an image rather than ascii text'
+no_format_fdata_3.image1 = 'This could be the BINARY data of an image rather than ascii text'
 
 ```
 
