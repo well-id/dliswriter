@@ -25,11 +25,9 @@ class DLISFile(object):
         http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
     """
 
-    def __init__(self, file_path: str, storage_unit_label, file_header,
-                 origin, visible_record_length: int = None):
+    def __init__(self, storage_unit_label, file_header, origin, visible_record_length: int = None):
         """Initiates the object with given parameters"""
         self.pos = {}
-        self.file_path = file_path
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
         self.origin = origin
@@ -246,18 +244,21 @@ class DLISFile(object):
         """
         return self.pos[lrs] + (number_of_vr * 4) + (number_of_splits * 4)
 
-    def write_to_file(self, raw_bytes):
+    @staticmethod
+    def write_bytes_to_file(raw_bytes, filename):
         """Writes the bytes to a DLIS file"""
         logger.info('Writing to file...')
 
-        with open(self.file_path, 'wb') as f:
+        with open(filename, 'wb') as f:
             f.write(raw_bytes)
 
-    def write_dlis(self, logical_records):
+        logger.info(f"Data written to file: '{filename}'")
+
+    def write_dlis(self, logical_records, filename):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
         self.validate()
         self.assign_origin_reference(logical_records)
         raw_bytes = self.raw_bytes(logical_records)
         raw_bytes = self.add_visible_records(logical_records, raw_bytes)
-        self.write_to_file(raw_bytes)
+        self.write_bytes_to_file(raw_bytes, filename)
         logger.info('Done.')

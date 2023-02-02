@@ -137,10 +137,11 @@ for i in rows:  # range(len(rows)):
     frame_data_objects.append(frame_data)
 
 # CREATE THE FILE
-dlis_file = DLISFile(file_path='./output/test_improved.DLIS',
-                     storage_unit_label=sul,
-                     file_header=file_header,
-                     origin=origin)
+dlis_file = DLISFile(
+    storage_unit_label=sul,
+    file_header=file_header,
+    origin=origin
+)
 
 logical_records = [
     well_reference_point,
@@ -151,4 +152,4 @@ logical_records = [
 ]
 logical_records.extend(frame_data_objects)
 
-dlis_file.write_dlis(logical_records)
+dlis_file.write_dlis(logical_records, './output/test_improved.DLIS')
