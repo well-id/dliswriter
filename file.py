@@ -4,6 +4,7 @@ from math import ceil
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
 import logging
+from functools import lru_cache
 
 FORMAT = '[%(levelname)s] %(asctime)s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
@@ -42,6 +43,7 @@ class DLISFile(object):
         else:
             self.visible_record_length = 8192
 
+    @lru_cache
     def visible_record_bytes(self, length: int) -> bytes:
         """Create Visible Record object as bytes
         
@@ -93,7 +95,7 @@ class DLISFile(object):
         _bytes = _stream.getvalue()
         _stream.close()
 
-        self.raw = _bytes
+        self.raw = bytearray(_bytes)
 
     def create_visible_record_dictionary(self):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
@@ -179,16 +181,14 @@ class DLISFile(object):
         self.vr_dict = self.create_visible_record_dictionary()
         logger.info('visible record dictionary created')
 
-        for key, val in self.vr_dict.items():
+        for vr_position, val in self.vr_dict.items():
 
-            vr_position = key
             vr_length = val['length']
             lrs_to_split = val['split']
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            # Inserting Visible Record Bytes to the specified position
-            self.raw = self.raw[:vr_position] + self.visible_record_bytes(vr_length) + self.raw[vr_position:]
+            self.insert_visible_record_bytes(vr_length, vr_position)
 
             if lrs_to_split:
                 splits += 1
@@ -205,9 +205,7 @@ class DLISFile(object):
                                             add_extra_padding=False
                                           )
 
-                # Replacing the header bytes of the first split part of the Logical Record Segment
-                self.raw = self.raw[:updated_lrs_position] + header_bytes_to_replace + self.raw[updated_lrs_position+4:]
-
+                self.insert_header_bytes_into_raw(header_bytes_to_replace, updated_lrs_position)
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -219,10 +217,21 @@ class DLISFile(object):
                                             add_extra_padding=False
                                          )
 
-                # INSERTING the header bytes of the second split part of the Logical Record Segment 
-                self.raw = self.raw[:second_lrs_position-4] + header_bytes_to_insert + self.raw[second_lrs_position-4:]
+                self.insert_header_bytes_into_raw_2(header_bytes_to_insert, second_lrs_position)
 
         logger.info(f'{splits} splits created.')
+
+    def insert_visible_record_bytes(self, vr_length, vr_position):
+        # Inserting Visible Record Bytes to the specified position
+        self.raw = self.raw[:vr_position] + self.visible_record_bytes(vr_length) + self.raw[vr_position:]
+
+    def insert_header_bytes_into_raw_2(self, header_bytes_to_insert, second_lrs_position):
+        # INSERTING the header bytes of the second split part of the Logical Record Segment
+        self.raw = self.raw[:second_lrs_position - 4] + header_bytes_to_insert + self.raw[second_lrs_position - 4:]
+
+    def insert_header_bytes_into_raw(self, header_bytes_to_replace, updated_lrs_position):
+        # Replacing the header bytes of the first split part of the Logical Record Segment
+        self.raw = self.raw[:updated_lrs_position] + header_bytes_to_replace + self.raw[updated_lrs_position + 4:]
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
