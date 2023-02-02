@@ -142,14 +142,13 @@ dlis_file = DLISFile(file_path='./output/test_improved.DLIS',
                      file_header=file_header,
                      origin=origin)
 
-dlis_file.logical_records.extend([
+logical_records = [
     well_reference_point,
     axis,
     depth_channel,
     pad0_channel,
     frame,
-])
+]
+logical_records.extend(frame_data_objects)
 
-dlis_file.logical_records.extend(frame_data_objects)
-
-dlis_file.write_dlis()
+dlis_file.write_dlis(logical_records)

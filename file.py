@@ -33,7 +33,6 @@ class DLISFile(object):
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
         self.origin = origin
-        self.logical_records = []
         self.visible_records = []
 
         if visible_record_length:
@@ -66,27 +65,30 @@ class DLISFile(object):
         assert self.visible_record_length <= 16384, 'Maximum visible record length is 16384 bytes'
         assert self.visible_record_length % 2 == 0, 'Visible record length must be an even number'
 
-    def assign_origin_reference(self):
+    def assign_origin_reference(self, logical_records):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
         logger.info('Assigning...')
 
-        self.file_header.origin_reference = self.origin.file_set_number.value
-        self.origin.origin_reference = self.origin.file_set_number.value
-        for logical_record in self.logical_records:
-            logical_record.origin_reference = self.origin.file_set_number.value
+        val = self.origin.file_set_number.value
+        logger.debug(f"File set number is {val}")
 
-            if hasattr(logical_record,
-                       'is_dictionary_controlled') and logical_record.dictionary_controlled_objects is not None:
+        self.file_header.origin_reference = val
+        self.origin.origin_reference = val
+        for logical_record in logical_records:
+            logical_record.origin_reference = val
+
+            if hasattr(logical_record, 'is_dictionary_controlled') \
+                    and logical_record.dictionary_controlled_objects is not None:
                 for obj in logical_record.dictionary_controlled_objects:
-                    obj.origin_reference = self.origin.file_set_number.value
+                    obj.origin_reference = val
 
-    def raw_bytes(self):
+    def raw_bytes(self, logical_records):
         """Writes bytes of entire file without Visible Record objects and splits"""
         logger.info('Writing raw bytes...')
 
         _stream = io.BytesIO()
         _stream.write(self.storage_unit_label.as_bytes)
-        for lr in [self.file_header, self.origin] + self.logical_records:
+        for lr in [self.file_header, self.origin] + logical_records:
             _position = _stream.tell()
             self.pos[lr] = _position
             _stream.write(lr.as_bytes)
@@ -96,7 +98,7 @@ class DLISFile(object):
 
         self.raw = bytearray(_bytes)
 
-    def create_visible_record_dictionary(self):
+    def create_visible_record_dictionary(self, logical_records):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -105,7 +107,7 @@ class DLISFile(object):
 
         """
 
-        all_lrs = [self.file_header, self.origin] + self.logical_records
+        all_lrs = [self.file_header, self.origin] + logical_records
 
         q = {}
 
@@ -165,7 +167,7 @@ class DLISFile(object):
 
         return q
 
-    def add_visible_records(self):
+    def add_visible_records(self, logical_records):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -173,7 +175,7 @@ class DLISFile(object):
         logger.info('Adding visible records...')
         splits = 0
 
-        vr_dict = self.create_visible_record_dictionary()
+        vr_dict = self.create_visible_record_dictionary(logical_records)
         logger.info('visible record dictionary created')
 
         for vr_position, val in vr_dict.items():
@@ -249,11 +251,11 @@ class DLISFile(object):
         with open(self.file_path, 'wb') as f:
             f.write(self.raw)
 
-    def write_dlis(self):
+    def write_dlis(self, logical_records):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
         self.validate()
-        self.assign_origin_reference()
-        self.raw_bytes()
-        self.add_visible_records()
+        self.assign_origin_reference(logical_records)
+        self.raw_bytes(logical_records)
+        self.add_visible_records(logical_records)
         self.write_to_file()
         logger.info('Done.')
