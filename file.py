@@ -96,7 +96,8 @@ class DLISFile(object):
         _bytes = _stream.getvalue()
         _stream.close()
 
-        self.raw = bytearray(_bytes)
+        raw_bytes = bytearray(_bytes)
+        return raw_bytes
 
     def create_visible_record_dictionary(self, logical_records):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
@@ -167,7 +168,7 @@ class DLISFile(object):
 
         return q
 
-    def add_visible_records(self, logical_records):
+    def add_visible_records(self, logical_records, raw_bytes):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -185,7 +186,7 @@ class DLISFile(object):
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            self.insert_visible_record_bytes(vr_length, vr_position)
+            raw_bytes = self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position)
 
             if lrs_to_split:
                 splits += 1
@@ -202,7 +203,7 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw(header_bytes_to_replace, updated_lrs_position)
+                raw_bytes = self.insert_header_bytes_into_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -214,21 +215,22 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw_2(header_bytes_to_insert, second_lrs_position)
+                raw_bytes = self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position)
 
         logger.info(f'{splits} splits created.')
+        return raw_bytes
 
-    def insert_visible_record_bytes(self, vr_length, vr_position):
+    def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
         # Inserting Visible Record Bytes to the specified position
-        self.raw = self.raw[:vr_position] + self.visible_record_bytes(vr_length) + self.raw[vr_position:]
+        return raw_bytes[:vr_position] + self.visible_record_bytes(vr_length) + raw_bytes[vr_position:]
 
-    def insert_header_bytes_into_raw_2(self, header_bytes_to_insert, second_lrs_position):
+    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
-        self.raw = self.raw[:second_lrs_position - 4] + header_bytes_to_insert + self.raw[second_lrs_position - 4:]
+        return raw_bytes[:second_lrs_position - 4] + header_bytes_to_insert + raw_bytes[second_lrs_position - 4:]
 
-    def insert_header_bytes_into_raw(self, header_bytes_to_replace, updated_lrs_position):
+    def insert_header_bytes_into_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
-        self.raw = self.raw[:updated_lrs_position] + header_bytes_to_replace + self.raw[updated_lrs_position + 4:]
+        return raw_bytes[:updated_lrs_position] + header_bytes_to_replace + raw_bytes[updated_lrs_position + 4:]
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
@@ -244,18 +246,18 @@ class DLISFile(object):
         """
         return self.pos[lrs] + (number_of_vr * 4) + (number_of_splits * 4)
 
-    def write_to_file(self):
+    def write_to_file(self, raw_bytes):
         """Writes the bytes to a DLIS file"""
         logger.info('Writing to file...')
 
         with open(self.file_path, 'wb') as f:
-            f.write(self.raw)
+            f.write(raw_bytes)
 
     def write_dlis(self, logical_records):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
         self.validate()
         self.assign_origin_reference(logical_records)
-        self.raw_bytes(logical_records)
-        self.add_visible_records(logical_records)
-        self.write_to_file()
+        raw_bytes = self.raw_bytes(logical_records)
+        raw_bytes = self.add_visible_records(logical_records, raw_bytes)
+        self.write_to_file(raw_bytes)
         logger.info('Done.')
