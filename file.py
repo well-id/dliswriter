@@ -1,6 +1,4 @@
 import io
-from bisect import bisect
-from math import ceil
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
 import logging
@@ -28,7 +26,7 @@ class DLISFile(object):
     """
 
     def __init__(self, file_path: str, storage_unit_label, file_header,
-                 origin, visible_record_length: int=None):
+                 origin, visible_record_length: int = None):
         """Initiates the object with given parameters"""
         self.pos = {}
         self.file_path = file_path
@@ -54,8 +52,8 @@ class DLISFile(object):
             Visible Record object bytes
 
         """
-        return write_struct(RepresentationCode.UNORM, length)\
-               + write_struct(RepresentationCode.USHORT, 255)\
+        return write_struct(RepresentationCode.UNORM, length) \
+               + write_struct(RepresentationCode.USHORT, 255) \
                + write_struct(RepresentationCode.USHORT, 1)
 
     def validate(self):
@@ -77,7 +75,8 @@ class DLISFile(object):
         for logical_record in self.logical_records:
             logical_record.origin_reference = self.origin.file_set_number.value
 
-            if hasattr(logical_record, 'is_dictionary_controlled') and logical_record.dictionary_controlled_objects is not None:
+            if hasattr(logical_record,
+                       'is_dictionary_controlled') and logical_record.dictionary_controlled_objects is not None:
                 for obj in logical_record.dictionary_controlled_objects:
                     obj.origin_reference = self.origin.file_set_number.value
 
@@ -107,7 +106,7 @@ class DLISFile(object):
         """
 
         all_lrs = [self.file_header, self.origin] + self.logical_records
-        
+
         q = {}
 
         _vr_length = 4
@@ -118,7 +117,7 @@ class DLISFile(object):
 
         while True:
 
-            vr_position = (self.visible_record_length * (_number_of_vr - 1)) + 80 # DON'T TOUCH THIS
+            vr_position = (self.visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
             vr_position += vr_offset
             if _idx == len(all_lrs):
                 q[vr_position] = {
@@ -129,12 +128,9 @@ class DLISFile(object):
                 }
                 break
 
-
             lrs = all_lrs[_idx]
 
             _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
-
-
 
             # NO NEED TO SPLIT KEEP ON
             if (_vr_length + lrs.size) <= self.visible_record_length:
@@ -169,7 +165,6 @@ class DLISFile(object):
 
         return q
 
-
     def add_visible_records(self):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
@@ -178,10 +173,10 @@ class DLISFile(object):
         logger.info('Adding visible records...')
         splits = 0
 
-        self.vr_dict = self.create_visible_record_dictionary()
+        vr_dict = self.create_visible_record_dictionary()
         logger.info('visible record dictionary created')
 
-        for vr_position, val in self.vr_dict.items():
+        for vr_position, val in vr_dict.items():
 
             vr_length = val['length']
             lrs_to_split = val['split']
@@ -193,17 +188,17 @@ class DLISFile(object):
             if lrs_to_split:
                 splits += 1
                 # FIRST PART OF THE SPLIT
-                updated_lrs_position = self.pos[lrs_to_split]\
-                                     + (number_of_prior_splits * 4)\
-                                     + (number_of_prior_vr * 4)
+                updated_lrs_position = self.pos[lrs_to_split] \
+                                       + (number_of_prior_splits * 4) \
+                                       + (number_of_prior_vr * 4)
 
-                first_segment_length = vr_position + vr_length - updated_lrs_position                
+                first_segment_length = vr_position + vr_length - updated_lrs_position
                 header_bytes_to_replace = lrs_to_split.split(
-                                            is_first=True,
-                                            is_last=False,
-                                            segment_length=first_segment_length,
-                                            add_extra_padding=False
-                                          )
+                    is_first=True,
+                    is_last=False,
+                    segment_length=first_segment_length,
+                    add_extra_padding=False
+                )
 
                 self.insert_header_bytes_into_raw(header_bytes_to_replace, updated_lrs_position)
 
@@ -211,11 +206,11 @@ class DLISFile(object):
                 second_lrs_position = vr_position + vr_length + 4
                 second_segment_length = lrs_to_split.size - first_segment_length + 4
                 header_bytes_to_insert = lrs_to_split.split(
-                                            is_first=False,
-                                            is_last=True,
-                                            segment_length=second_segment_length,
-                                            add_extra_padding=False
-                                         )
+                    is_first=False,
+                    is_last=True,
+                    segment_length=second_segment_length,
+                    add_extra_padding=False
+                )
 
                 self.insert_header_bytes_into_raw_2(header_bytes_to_insert, second_lrs_position)
 
@@ -246,8 +241,6 @@ class DLISFile(object):
 
         """
         return self.pos[lrs] + (number_of_vr * 4) + (number_of_splits * 4)
-
-
 
     def write_to_file(self):
         """Writes the bytes to a DLIS file"""

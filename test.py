@@ -17,16 +17,15 @@ from logical_record.frame_data import FrameData
 from logical_record.utils.enums import Units
 from logical_record.utils.enums import RepresentationCode
 
-
 parser = ArgumentParser()
 parser.add_argument("-l", "--length", type=int, help="length", required=True)
 parser_args = parser.parse_args()
 
 start = 1275
-end = start+parser_args.length
+end = start + parser_args.length
 
 # Read Data
-file_path = Path(__name__).resolve().parent/'data/actual_data.hdf5'
+file_path = Path(__name__).resolve().parent / 'data/actual_data.hdf5'
 image0 = pd.read_hdf(file_path) * 39.37  # m to inch
 
 depth = np.array(image0.index)
@@ -53,10 +52,8 @@ for i, im in enumerate(images):
 # STORAGE UNIT LABEL
 sul = StorageUnitLabel()
 
-
 # FILE HEADER
 file_header = FileHeader()
-
 
 # ORIGIN
 origin = Origin('DEFINING ORIGIN')
@@ -75,7 +72,6 @@ origin.field_name.value = 'OSEBERG'
 # origin.producer_name.value = 'AQLN producer_name'
 origin.company.value = 'Equinor Norway'
 
-
 # WELL REFERENCE POINT
 well_reference_point = WellReferencePoint('WELL-REF')
 well_reference_point.permanent_datum.value = 'MSL'
@@ -84,13 +80,11 @@ well_reference_point.permanent_datum_elevation.value = 0.00
 well_reference_point.above_permanent_datum.value = 0.00
 well_reference_point.magnetic_declination.value = 0.00
 
-well_reference_point.coordinate_1_name.value = 'Lattitude'
+well_reference_point.coordinate_1_name.value = 'Latitude'
 well_reference_point.coordinate_1_value.value = 64.93284
 
 well_reference_point.coordinate_2_name.value = 'Longitude'
 well_reference_point.coordinate_2_value.value = 2.828584
-
-
 
 # AXIS
 axis = Axis('AXS-1')
@@ -136,10 +130,10 @@ frame_data_objects = []
 
 print(f'Making frames for {rows.size} rows.')
 
-for i in rows: #  range(len(rows)):
+for i in rows:  # range(len(rows)):
 
     slots = np.append(depth[i], [im[i] for im in images])
-    frame_data = FrameData(frame=frame, frame_number=i+1, slots=slots)
+    frame_data = FrameData(frame=frame, frame_number=i + 1, slots=slots)
     frame_data_objects.append(frame_data)
 
 # CREATE THE FILE
@@ -148,13 +142,14 @@ dlis_file = DLISFile(file_path='./output/test_improved.DLIS',
                      file_header=file_header,
                      origin=origin)
 
-dlis_file.logical_records.append(well_reference_point)
-dlis_file.logical_records.append(axis)
-dlis_file.logical_records.append(depth_channel)
-dlis_file.logical_records.append(pad0_channel)
-dlis_file.logical_records.append(frame)
+dlis_file.logical_records.extend([
+    well_reference_point,
+    axis,
+    depth_channel,
+    pad0_channel,
+    frame,
+])
 
-for fdata in frame_data_objects:
-    dlis_file.logical_records.append(fdata)
+dlis_file.logical_records.extend(frame_data_objects)
 
 dlis_file.write_dlis()
