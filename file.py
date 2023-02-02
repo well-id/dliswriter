@@ -33,10 +33,8 @@ class DLISFile(object):
         self.origin = origin
         self.visible_records = []
 
-        if visible_record_length:
-            self.visible_record_length = visible_record_length
-        else:
-            self.visible_record_length = 8192
+        self.visible_record_length = visible_record_length if visible_record_length else 8192
+        self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
 
     @lru_cache
     def visible_record_bytes(self, length: int) -> bytes:
@@ -49,9 +47,8 @@ class DLISFile(object):
             Visible Record object bytes
 
         """
-        return write_struct(RepresentationCode.UNORM, length) \
-               + write_struct(RepresentationCode.USHORT, 255) \
-               + write_struct(RepresentationCode.USHORT, 1)
+
+        return write_struct(RepresentationCode.UNORM, length) + self._vr_struct
 
     def validate(self):
         """Validates the object according to RP66 V1 rules"""
