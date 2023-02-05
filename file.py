@@ -1,4 +1,3 @@
-import io
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
 import logging
@@ -81,17 +80,16 @@ class DLISFile(object):
         """Writes bytes of entire file without Visible Record objects and splits"""
         logger.info('Writing raw bytes...')
 
-        _stream = io.BytesIO()
-        _stream.write(self.storage_unit_label.as_bytes)
-        for lr in [self.file_header, self.origin] + logical_records:
-            _position = _stream.tell()
-            self.pos[lr] = _position
-            _stream.write(lr.as_bytes)
+        raw_bytes = b''
 
-        _bytes = _stream.getvalue()
-        _stream.close()
+        position = 0
+        for lr in [self.storage_unit_label, self.file_header, self.origin] + logical_records:
+            self.pos[lr] = position
+            lr_bytes = lr.as_bytes
+            raw_bytes += lr_bytes
+            position += len(lr_bytes)
 
-        raw_bytes = bytearray(_bytes)
+        raw_bytes = bytearray(raw_bytes)
         return raw_bytes
 
     def create_visible_record_dictionary(self, logical_records):
