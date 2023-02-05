@@ -80,16 +80,18 @@ class DLISFile(object):
         """Writes bytes of entire file without Visible Record objects and splits"""
         logger.info('Writing raw bytes...')
 
-        raw_bytes = b''
+        all_records = [self.storage_unit_label, self.file_header, self.origin] + logical_records
+        all_records_bytes = [lr.as_bytes for lr in all_records]
+        n = len(all_records_bytes)
+        all_lengths = [len(lr) for lr in all_records_bytes]
+        all_positions = [sum(all_lengths[:i]) for i in range(n+1)]
 
-        position = 0
-        for lr in [self.storage_unit_label, self.file_header, self.origin] + logical_records:
-            self.pos[lr] = position
-            lr_bytes = lr.as_bytes
-            raw_bytes += lr_bytes
-            position += len(lr_bytes)
+        raw_bytes = bytearray(bytes(all_positions[-1]))
 
-        raw_bytes = bytearray(raw_bytes)
+        for i in range(n):
+            raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
+            self.pos[all_records[i]] = all_positions[i]
+
         return raw_bytes
 
     def create_visible_record_dictionary(self, logical_records):
