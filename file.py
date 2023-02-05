@@ -181,7 +181,7 @@ class DLISFile(object):
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            raw_bytes = self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position)
+            self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position)
 
             if lrs_to_split:
                 splits += 1
@@ -198,7 +198,7 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                raw_bytes = self.insert_header_bytes_into_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
+                self.insert_header_bytes_into_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -210,7 +210,7 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                raw_bytes = self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position)
+                self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position)
 
         logger.info(f'{splits} splits created.')
         return raw_bytes
@@ -218,17 +218,14 @@ class DLISFile(object):
     def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
         # Inserting Visible Record Bytes to the specified position
         raw_bytes[vr_position:vr_position] = self.visible_record_bytes(vr_length)
-        return raw_bytes
 
     def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
         raw_bytes[second_lrs_position-4:second_lrs_position-4] = header_bytes_to_insert
-        return raw_bytes
 
     def insert_header_bytes_into_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
         raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
-        return raw_bytes
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
