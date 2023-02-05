@@ -217,15 +217,18 @@ class DLISFile(object):
 
     def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
         # Inserting Visible Record Bytes to the specified position
-        return raw_bytes[:vr_position] + self.visible_record_bytes(vr_length) + raw_bytes[vr_position:]
+        raw_bytes[vr_position:vr_position] = self.visible_record_bytes(vr_length)
+        return raw_bytes
 
     def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
-        return raw_bytes[:second_lrs_position - 4] + header_bytes_to_insert + raw_bytes[second_lrs_position - 4:]
+        raw_bytes[second_lrs_position-4:second_lrs_position-4] = header_bytes_to_insert
+        return raw_bytes
 
     def insert_header_bytes_into_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
-        return raw_bytes[:updated_lrs_position] + header_bytes_to_replace + raw_bytes[updated_lrs_position + 4:]
+        raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
+        return raw_bytes
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
