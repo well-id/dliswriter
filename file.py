@@ -104,6 +104,8 @@ class DLISFile(object):
         """
 
         all_lrs = [self.file_header, self.origin] + logical_records
+        n_lrs = len(all_lrs)
+        visible_record_length = self.visible_record_length
 
         q = {}
 
@@ -115,9 +117,9 @@ class DLISFile(object):
 
         while True:
 
-            vr_position = (self.visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
+            vr_position = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
             vr_position += vr_offset
-            if _idx == len(all_lrs):
+            if _idx == n_lrs:
                 q[vr_position] = {
                     'length': _vr_length,
                     'split': None,
@@ -127,16 +129,18 @@ class DLISFile(object):
                 break
 
             lrs = all_lrs[_idx]
+            lrs_size = lrs.size
 
             _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
+            position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
 
             # NO NEED TO SPLIT KEEP ON
-            if (_vr_length + lrs.size) <= self.visible_record_length:
-                _vr_length += lrs.size
+            if (_vr_length + lrs_size) <= visible_record_length:
+                _vr_length += lrs_size
                 _idx += 1
 
             # NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
-            elif vr_position + self.visible_record_length - _lrs_position < 16:
+            elif position_diff < 16:
                 q[vr_position] = {
                     'length': _vr_length,
                     'split': None,
@@ -146,17 +150,17 @@ class DLISFile(object):
 
                 _vr_length = 4
                 _number_of_vr += 1
-                vr_offset -= (vr_position + self.visible_record_length - _lrs_position)
+                vr_offset -= position_diff
 
             else:
                 q[vr_position] = {
-                    'length': self.visible_record_length,
+                    'length': visible_record_length,
                     'split': lrs,
                     'number_of_prior_splits': number_of_splits,
                     'number_of_prior_vr': _number_of_vr
                 }
 
-                _vr_length = 4 + 4 + lrs.size - (vr_position + self.visible_record_length - _lrs_position)
+                _vr_length = 8 + lrs_size - position_diff
                 _number_of_vr += 1
                 _idx += 1
                 number_of_splits += 1
