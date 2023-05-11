@@ -21,3 +21,4 @@ class Channel(EFLR):
         self.maximum_value = None
 
         self.create_attributes()
+        self.data = None
