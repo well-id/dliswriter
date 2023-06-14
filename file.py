@@ -1,3 +1,5 @@
+import numpy as np
+
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
 import logging
@@ -88,7 +90,7 @@ class DLISFile(object):
         all_positions = [0] + [None] * n
         current_pos = 0
         for i, lr in enumerate(all_records):
-            b = lr.as_bytes
+            b = lr.as_bytes # grows with data size more than row number
             all_records_bytes[i] = b
             all_lengths[i] = len(b)
             current_pos += all_lengths[i]
@@ -96,9 +98,9 @@ class DLISFile(object):
         # all_records_bytes = [lr.as_bytes for lr in all_records]
 
         all_lengths = [len(lr) for lr in all_records_bytes]
-        all_positions = [sum(all_lengths[:i]) for i in range(n+1)]
-
-        raw_bytes = bytearray(bytes(all_positions[-1]))
+        all_positions = np.concatenate(([0], np.cumsum(all_lengths)))#[sum(all_lengths[:i]) for i in range(n+1)] # 92% time spent here for 1 line
+        print(all_positions[-1])
+        raw_bytes = bytearray(bytes(all_positions[-1]*2))
 
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]

@@ -1,4 +1,5 @@
 import struct
+from functools import lru_cache
 from typing import Union
 from .custom_types import Justify
 from .custom_types import LogicalRecordType
@@ -72,7 +73,7 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
 
     return logical_record_type_dictionary[logical_record_type]
 
-
+@lru_cache
 def get_representation_code(key: Union[RepresentationCode, RepresentationCodeNumber],
                             from_value:bool=False) -> Union[RepresentationCodeNumber, RepresentationCode]:
     """Converts RP66 V1 representation code to corresponding number or vice-versa.

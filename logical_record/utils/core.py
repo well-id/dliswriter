@@ -1,4 +1,6 @@
 import math
+from functools import cached_property
+import numpy as np
 
 from .common import NOT_TEMPLATE
 from .rp66 import RP66
@@ -351,9 +353,16 @@ class EFLR(object):
     def body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
         if self.is_dictionary_controlled:
-            return self.set_component + self.template + self.objects
+            a = self.set_component
+            b = self.template
+            c = self.objects
+            return a + b + c
         else:
-            return self.set_component + self.template + self.object_component + self.objects
+            a = self.set_component
+            b = self.template
+            d = self.object_component
+            c = self.objects
+            return a + b + d + c
 
     @property
     def size(self) -> bytes:
@@ -368,7 +377,7 @@ class EFLR(object):
         """Writes padding bytes"""
         return write_struct(RepresentationCode.USHORT, 1)
 
-    @property
+    @cached_property
     def as_bytes(self):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
         
@@ -434,53 +443,53 @@ class EFLR(object):
         return self.set_type
 
 
-class DictionaryControlledObject:
-    """Obsolete class"""
-
-    def __init__(self, object_name:str, *args, **kwargs):
-
-        self.origin_reference = None
-        self.copy_number = 0
-        self.object_name = object_name
-
-    @property
-    def obname(self):
-        return write_struct(RepresentationCode.OBNAME, (self.origin_reference,
-                                                        self.copy_number,
-                                                        self.object_name))
-
-    def create_attributes(self):
-        for key in list(self.__dict__.keys()):
-            if key not in NOT_TEMPLATE:
-                _rules = getattr(RP66, self.set_type.replace('-','_'))[key]
-
-                _label = key.upper().replace('_', '-')
-                _count = _rules['count']
-                _rc = _rules['representation_code']
-                
-                _attr = Attribute(label=_label, count=_count, representation_code=_rc)
-                setattr(self, key, _attr)
-
-    def write_obname(self):
-        self.bytes += b'p'
-        self.bytes += self.obname
-
-    def write_attributes(self):
-        for key in list(self.__dict__.keys()):
-            if key not in NOT_TEMPLATE:
-                _attr = getattr(self, key)
-                if not _attr.value:
-                    self.bytes += write_absent_attribute()
-                else:
-                    self.bytes += _attr.get_as_bytes()
-
-    @property
-    def as_bytes(self):
-        self.bytes = b''
-        self.write_obname()
-        self.write_attributes()
-
-        return self.bytes
+# class DictionaryControlledObject:
+#     """Obsolete class"""
+#
+#     def __init__(self, object_name:str, *args, **kwargs):
+#
+#         self.origin_reference = None
+#         self.copy_number = 0
+#         self.object_name = object_name
+#
+#     @property
+#     def obname(self):
+#         return write_struct(RepresentationCode.OBNAME, (self.origin_reference,
+#                                                         self.copy_number,
+#                                                         self.object_name))
+#
+#     def create_attributes(self):
+#         for key in list(self.__dict__.keys()):
+#             if key not in NOT_TEMPLATE:
+#                 _rules = getattr(RP66, self.set_type.replace('-','_'))[key]
+#
+#                 _label = key.upper().replace('_', '-')
+#                 _count = _rules['count']
+#                 _rc = _rules['representation_code']
+#
+#                 _attr = Attribute(label=_label, count=_count, representation_code=_rc)
+#                 setattr(self, key, _attr)
+#
+#     def write_obname(self):
+#         self.bytes += b'p'
+#         self.bytes += self.obname
+#
+#     def write_attributes(self):
+#         for key in list(self.__dict__.keys()):
+#             if key not in NOT_TEMPLATE:
+#                 _attr = getattr(self, key)
+#                 if not _attr.value:
+#                     self.bytes += write_absent_attribute()
+#                 else:
+#                     self.bytes += _attr.get_as_bytes()
+#
+#     @property
+#     def as_bytes(self):
+#         self.bytes = b''
+#         self.write_obname()
+#         self.write_attributes()
+#
+#         return self.bytes
 
 
 class IFLR(object):
@@ -505,14 +514,15 @@ class IFLR(object):
 
     @property
     def segment_attributes(self) -> bytes:
-        _bits = str(int(self.is_eflr))\
-              + str(int(self.has_predecessor_segment))\
-              + str(int(self.has_successor_segment))\
-              + str(int(self.is_encrypted))\
-              + str(int(self.has_encryption_protocol))\
-              + str(int(self.has_checksum))\
-              + str(int(self.has_trailing_length))\
-              + str(int(self.has_padding))
+
+        _bits = f'{int(self.is_eflr)}' \
+                f'{int(self.has_predecessor_segment)}' \
+                f'{int(self.has_successor_segment)}' \
+                f'{int(self.is_encrypted)}' \
+                f'{int(self.has_encryption_protocol)}' \
+                f'{int(self.has_checksum)}' \
+                f'{int(self.has_trailing_length)}' \
+                f'{int(self.has_padding)}'
 
         return write_struct(RepresentationCode.USHORT, int(_bits, 2))
 
@@ -534,7 +544,7 @@ class IFLR(object):
                + write_struct(RepresentationCode.USHORT, self.iflr_type)
 
 
-    @property
+    @cached_property
     def as_bytes(self):
         _bytes = self.body_bytes # Create 
         _bytes = self.header_bytes + _bytes

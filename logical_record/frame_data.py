@@ -1,4 +1,5 @@
 import math
+from functools import cached_property
 
 from .utils.core import IFLR
 from .utils.enums import Enum
@@ -38,7 +39,7 @@ class FrameData(IFLR):
         self.set_type = 'FDATA'
 
 
-    @property
+    @cached_property
     def body_bytes(self):
 
         _body = b''
