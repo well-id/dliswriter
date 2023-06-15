@@ -37,7 +37,6 @@ instances.
 """
 
 
-
 def validate_units(value: str) -> str:
     """Validates the user input for UNITS data type according to RP66 V1 specifications.
 
@@ -172,7 +171,6 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
         Exception: If representation_code is STATUS and value is not 1 or 0. 
 
     """
-    
 
     if representation_code == RepresentationCode.ASCII:
         return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')

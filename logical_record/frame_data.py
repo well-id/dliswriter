@@ -1,6 +1,8 @@
 import math
 from functools import cached_property
 
+import numpy as np
+
 from .utils.core import IFLR
 from .utils.enums import Enum
 from .utils.common import write_struct
@@ -32,12 +34,23 @@ class FrameData(IFLR):
 
         super().__init__()
 
-        self.frame = frame
-        self.frame_number = frame_number # UVARI
-        self.slots = slots # np.ndarray
+        self._frame = frame
+        self._frame_number = frame_number  # UVARI
+        self._slots = slots  # np.ndarray
         self.iflr_type = 0
         self.set_type = 'FDATA'
 
+    @property
+    def frame(self):
+        return self._frame
+
+    @property
+    def frame_number(self) -> int:
+        return self._frame_number
+
+    @property
+    def slots(self) -> np.ndarray:
+        return self._slots
 
     @cached_property
     def body_bytes(self):

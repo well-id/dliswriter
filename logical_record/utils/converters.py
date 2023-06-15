@@ -62,7 +62,6 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
         'DICT': 11
     }
 
-
     if logical_record_type not in list(logical_record_type_dictionary.keys()):
 
         error_message = (f'Provided Logical Record Type "{logical_record_type}" could not be found\n'
@@ -72,6 +71,7 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
         raise Exception(error_message)
 
     return logical_record_type_dictionary[logical_record_type]
+
 
 @lru_cache
 def get_representation_code(key: Union[RepresentationCode, RepresentationCodeNumber],
