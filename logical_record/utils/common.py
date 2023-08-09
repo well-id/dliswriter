@@ -26,7 +26,8 @@ NOT_TEMPLATE = [
     'is_dictionary_controlled',
     'dictionary_controlled_objects',
     'split_size',
-    'vr_dict'
+    'vr_dict',
+    'data'
 ]
 """list: A list of attributes to be neglected while creating Attribute instances for EFLR objects.
 
