@@ -1,7 +1,7 @@
 from datetime import datetime
 from pathlib import Path
 import numpy as np
-import pandas as pd
+import h5py
 
 from file import DLISFile
 from logical_record.storage_unit_label import StorageUnitLabel
@@ -30,21 +30,15 @@ origin.company.value = 'Test company'
 
 
 # DATA (fake)
-n_points = int(3e4)
-df_surf = pd.DataFrame({
-    'time': np.arange(n_points),
-    'depth': 10 * (np.arange(n_points) % 5),
-    'rpm': 10 * np.sin(np.linspace(0, 1e4*np.pi, n_points)),
-})
-
-df_surf.index = df_surf.time
+base_data_path = Path(__file__).resolve().parent.parent
+data = h5py.File(base_data_path/'resources/mock_data.hdf5')['/contents/']
 
 # CHANNELS & FRAME
 frame = Frame('MAIN')
 frame.channels.value = [
-    make_channel('posix time', unit='s', data=df_surf.time),
-    make_channel('depth', unit='m', data=df_surf.depth),
-    make_channel('surface rpm', unit='rpm', data=df_surf.rpm),
+    make_channel('posix time', unit='s', data=data['time']),
+    make_channel('depth', unit='m', data=data['depth']),
+    make_channel('surface rpm', unit='rpm', data=data['rpm']),
 ]
 
 frame.index_type.value = 'TIME'
@@ -54,10 +48,11 @@ frame.spacing.units = Units.s
 # Create FrameData objects
 frame_data_objects = []
 
-print(f'Making frames for {df_surf.shape[0]} rows.')
+n_points = data["time"].shape[0]
+print(f'Making frames for {n_points} rows.')
 
-for i in range(df_surf.shape[0]):
-    slots = np.array([v.data.iloc[i] for v in frame.channels.value])
+for i in range(n_points):
+    slots = np.array([v.data[i] for v in frame.channels.value])
     frame_data = FrameData(frame=frame, frame_number=i + 1, slots=slots)
     frame_data_objects.append(frame_data)
 
@@ -74,5 +69,5 @@ logical_records = [
 ]
 logical_records.extend(frame_data_objects)
 
-save_path = Path(__file__).resolve().parent/'outputs'
+save_path = base_data_path/'outputs'
 dlis_file.write_dlis(logical_records, save_path/'mwe_fake_dlis.DLIS')
