@@ -3,50 +3,18 @@ from pathlib import Path
 import numpy as np
 import h5py
 import pandas as pd
-from typing import Union
 from line_profiler_pycharm import profile
 
 from file import DLISFile
-from logical_record.utils.converters import get_representation_code
 from logical_record.storage_unit_label import StorageUnitLabel
 from logical_record.file_header import FileHeader
 from logical_record.origin import Origin
 from logical_record.axis import Axis
-from logical_record.channel import Channel
+from logical_record.channel import Channel, make_channel
 from logical_record.frame import Frame
 from logical_record.frame_data import FrameData
 from logical_record.utils.enums import Units
 from logical_record.utils.enums import RepresentationCode
-
-def make_channel(name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
-                 unit: Union[Units, str] = None, element_limit: int = None, data=None) -> Channel:
-    """
-
-    Args:
-        name:
-        dimension:
-        long_name:
-        repr_code:
-        unit:
-        element_limit:
-        data:
-
-    Returns:
-        channel:
-    """
-
-    channel = Channel(name)
-    channel.long_name.value = long_name or name
-    channel.representation_code.value = get_representation_code(
-        repr_code if repr_code is not None else RepresentationCode.FDOUBL)
-    channel.dimension.value = [dimension]
-    channel.element_limit.value = [element_limit if element_limit is not None else dimension]
-    channel.data = data
-
-    if unit is not None:
-        channel.units.value = unit
-
-    return channel
 
 
 # STORAGE UNIT LABEL
