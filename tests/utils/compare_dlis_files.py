@@ -3,17 +3,19 @@ def read_binary(fname):
         contents = f.read()
     return contents
 
-def compare(f1, f2):
+def compare(f1, f2, verbose=True):
     data1 = read_binary(f1)
     data2 = read_binary(f2)
 
     if len(data1) != len(data2):
-        print("Lengths of the files don't match")
+        if verbose:
+            print("Lengths of the files don't match")
         return False
 
     nonmatching_indices = [i for i in range(len(data1)) if data1[i] != data2[i]]
     if nonmatching_indices:
-        print(f"Files do not match at indices: {nonmatching_indices}")
+        if verbose:
+            print(f"Files do not match at indices: {nonmatching_indices}")
         return False
     return True
 
