@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import h5py
 from argparse import ArgumentParser
+import os
 
 from logical_record.file import DLISFile
 from logical_record.storage_unit_label import StorageUnitLabel
@@ -97,5 +98,7 @@ if __name__ == '__main__':
         output_file_name = 'mwe_fake_dlis.DLIS'
     if len(Path(output_file_name).parts) == 1 and not output_file_name.startswith('./'):
         output_file_name = base_data_path/'outputs'/output_file_name
+        os.makedirs(output_file_name.parent, exist_ok=True)
+
 
     write_dlis_file(data_file_name=input_file_name, dlis_file_name=output_file_name)

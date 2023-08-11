@@ -22,7 +22,7 @@ def create_data_file(n_points, fpath):
 
 if __name__ == '__main__':
     parser = ArgumentParser("Creating HFD5 file with mock well data")
-    parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e4)
+    parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
     parser_args = parser.parse_args()
 
@@ -30,5 +30,6 @@ if __name__ == '__main__':
         file_name = 'mock_data.hdf5'
     if len(Path(file_name).parts) == 1 and not file_name.startswith('./'):
         file_name = Path(__file__).resolve().parent.parent / 'resources' / file_name
+        os.makedirs(file_name.parent, exist_ok=True)
 
     create_data_file(n_points=int(parser_args.n_points), fpath=file_name)
