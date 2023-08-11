@@ -5,7 +5,7 @@ import h5py
 import pandas as pd
 from line_profiler_pycharm import profile
 
-from file import DLISFile
+from logical_record.file import DLISFile
 from logical_record.storage_unit_label import StorageUnitLabel
 from logical_record.file_header import FileHeader
 from logical_record.origin import Origin

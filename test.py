@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from pathlib import Path
 
-from file import DLISFile
+from logical_record.file import DLISFile
 from logical_record.utils.converters import get_representation_code
 from logical_record.storage_unit_label import StorageUnitLabel
 from logical_record.file_header import FileHeader

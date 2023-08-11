@@ -1,7 +1,7 @@
 import io
 from datetime import datetime
 
-from file import DLISFile
+from logical_record.file import DLISFile
 from logical_record.utils.common import read_struct
 from logical_record.utils.common import write_struct
 from logical_record.utils.converters import get_representation_code

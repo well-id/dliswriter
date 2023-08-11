@@ -1087,7 +1087,7 @@ Below example uses the same variable names used in previous steps to create each
 For example *sul* is the name that we used when creating the StorageUnitLabel object.
 
 ```python
-from file import DLISFile
+from logical_record.file import DLISFile
 
 dlis_file = DLISFile(file_path='./output/test.DLIS',
                      storage_unit_label=sul,
