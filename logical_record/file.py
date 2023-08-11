@@ -1,9 +1,11 @@
 import numpy as np
+import logging
+from functools import lru_cache
 
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
-import logging
-from functools import lru_cache
+from logical_record.utils.bytearray_utils import insert_and_shift
+
 
 FORMAT = '[%(levelname)s] %(asctime)s: %(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT)
@@ -192,6 +194,15 @@ class DLISFile(object):
         vr_dict = self.create_visible_record_dictionary(logical_records)
         logger.info('visible record dictionary created')
 
+        # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
+        total_vr_length = 4 * len(vr_dict)
+        total_header_length = 4 * sum(int(bool(val['split'])) for val in vr_dict.values())
+        total_added_length = total_vr_length + total_header_length
+        logger.debug(f"Total expected visible record length to be added is {total_vr_length} "
+                     f"and total expected header length to be added is {total_header_length}"
+                     f"extending raw bytes (current size: {len(raw_bytes)}) by {total_added_length} zeroes")
+        raw_bytes += bytearray(total_added_length)
+
         for vr_position, val in vr_dict.items():
 
             vr_length = val['length']
@@ -233,19 +244,39 @@ class DLISFile(object):
         logger.info(f'{splits} splits created.')
         return raw_bytes
 
+    @staticmethod
+    def check_length(bytes_to_check, expected_length=4):
+        if (nb := len(bytes_to_check)) != expected_length:
+            raise ValueError(f"Expected {expected_length} bytes, got {nb}")
+
     def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
         # Inserting Visible Record Bytes to the specified position
-        raw_bytes[vr_position:vr_position] = self.visible_record_bytes(vr_length)
+
+        bytes_to_insert = self.visible_record_bytes(vr_length)
+
+        self.check_length(bytes_to_insert)
+
+        insert_and_shift(
+            byte_arr=raw_bytes,
+            insert_position=vr_position,
+            bytes_to_insert=bytes_to_insert
+        )
 
     def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
-        raw_bytes[second_lrs_position-4:second_lrs_position-4] = header_bytes_to_insert
+
+        self.check_length(header_bytes_to_insert)
+
+        insert_and_shift(
+            byte_arr=raw_bytes,
+            insert_position=second_lrs_position - 4,
+            bytes_to_insert=header_bytes_to_insert
+        )
 
     def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
 
-        if (lhb := len(header_bytes_to_replace)) != 4:
-            raise ValueError(f"Expected 4 bytes, got {lhb}")
+        self.check_length(header_bytes_to_replace)
 
         raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
 
