@@ -216,7 +216,7 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
+                self.replace_header_bytes_in_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -241,8 +241,12 @@ class DLISFile(object):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
         raw_bytes[second_lrs_position-4:second_lrs_position-4] = header_bytes_to_insert
 
-    def insert_header_bytes_into_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
+    def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
+
+        if (lhb := len(header_bytes_to_replace)) != 4:
+            raise ValueError(f"Expected 4 bytes, got {lhb}")
+
         raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
