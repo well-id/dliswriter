@@ -46,6 +46,11 @@ def make_channels_and_frame(data_file_name, key='contents'):
         make_channel('surface rpm', unit='rpm', data=data['rpm']),
     ]
 
+    if 'image' in data.keys():
+        frame.channels.value.append(
+            make_channel('image', unit='m', data=data['image'].astype(float), dimension=5, element_limit=5)
+        )
+
     frame.index_type.value = 'TIME'
     frame.spacing.representation_code = RepresentationCode.FDOUBL
     frame.spacing.units = Units.s
@@ -57,7 +62,7 @@ def make_channels_and_frame(data_file_name, key='contents'):
     print(f'Making frames for {n_points} rows.')
 
     for i in range(n_points):
-        slots = np.array([v.data[i] for v in frame.channels.value])
+        slots = np.concatenate([v.data[i:i+1].flatten() for v in frame.channels.value])
         frame_data = FrameData(frame=frame, frame_number=i + 1, slots=slots)
         frame_data_objects.append(frame_data)
 
