@@ -3,6 +3,7 @@ from pathlib import Path
 import numpy as np
 import h5py
 import os
+from line_profiler_pycharm import profile
 
 from logical_record.file import DLISFile
 from logical_record.storage_unit_label import StorageUnitLabel
@@ -37,7 +38,7 @@ def make_origin():
 def load_h5_data(data_file_name, key='contents'):
     return h5py.File(data_file_name)[f'/{key}/']
 
-
+@profile
 def make_channels_and_frame(data):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
@@ -69,7 +70,7 @@ def make_channels_and_frame(data):
 
     return frame, frame_data_objects
 
-
+@profile
 def write_dlis_file(data, dlis_file_name):
     # CREATE THE FILE
     dlis_file = DLISFile(
