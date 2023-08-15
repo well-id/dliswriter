@@ -34,10 +34,11 @@ def make_origin():
     return origin
 
 
-def make_channels_and_frame(data_file_name, key='contents'):
-    # DATA
-    data = h5py.File(data_file_name)[f'/{key}/']
+def load_h5_data(data_file_name, key='contents'):
+    return h5py.File(data_file_name)[f'/{key}/']
 
+
+def make_channels_and_frame(data):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
@@ -62,14 +63,14 @@ def make_channels_and_frame(data_file_name, key='contents'):
     print(f'Making frames for {n_points} rows.')
 
     for i in range(n_points):
-        slots = np.concatenate([v.data[i:i+1].flatten() for v in frame.channels.value])
+        slots = np.concatenate([np.stack(v.data[i:i+1]).flatten() for v in frame.channels.value])
         frame_data = FrameData(frame=frame, frame_number=i + 1, slots=slots)
         frame_data_objects.append(frame_data)
 
     return frame, frame_data_objects
 
 
-def write_dlis_file(data_file_name, dlis_file_name):
+def write_dlis_file(data, dlis_file_name):
     # CREATE THE FILE
     dlis_file = DLISFile(
         storage_unit_label=StorageUnitLabel(),
@@ -77,7 +78,7 @@ def write_dlis_file(data_file_name, dlis_file_name):
         origin=make_origin()
     )
 
-    frame, frame_data_objects = make_channels_and_frame(data_file_name)
+    frame, frame_data_objects = make_channels_and_frame(data)
 
     logical_records = [
         *frame.channels.value,
@@ -105,5 +106,4 @@ if __name__ == '__main__':
         output_file_name = base_data_path/'outputs'/output_file_name
         os.makedirs(output_file_name.parent, exist_ok=True)
 
-
-    write_dlis_file(data_file_name=input_file_name, dlis_file_name=output_file_name)
+    write_dlis_file(data=load_h5_data(input_file_name), dlis_file_name=output_file_name)

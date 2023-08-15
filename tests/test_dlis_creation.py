@@ -2,7 +2,7 @@ import os
 import pytest
 from pathlib import Path
 
-from tests.utils.mwe_dlis_creation import write_dlis_file
+from tests.utils.mwe_dlis_creation import write_dlis_file, load_h5_data
 from tests.utils.compare_dlis_files import compare
 
 
@@ -30,6 +30,6 @@ def new_dlis_path(base_data_path):
 
 
 def test_correct_dlis_contents(reference_dlis_path, new_dlis_path, h5_data_file_path):
-    write_dlis_file(data_file_name=h5_data_file_path, dlis_file_name=new_dlis_path)
+    write_dlis_file(data=load_h5_data(h5_data_file_path), dlis_file_name=new_dlis_path)
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
 

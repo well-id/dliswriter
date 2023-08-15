@@ -4,19 +4,37 @@ import h5py
 from pathlib import Path
 from argparse import ArgumentParser
 
+import pandas as pd
+
+
+def create_data(n_points: int, add_2d: bool = False) -> pd.DataFrame:
+    data_dict = {
+        'time': np.arange(n_points),
+        'depth': 10 * (np.arange(n_points) % 5),
+        'rpm': 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
+    }
+
+    if add_2d:
+        data_dict['image'] = (np.arange(n_points * 5) % 11).reshape(n_points, 5)
+
+    df = pd.DataFrame(zip(*data_dict.values()), columns=data_dict.keys())
+    df.index = df.time
+
+    return df
+
 
 def create_data_file(n_points, fpath, add_2d=False):
     if fpath.exists():
         raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
 
+    df = create_data(n_points, add_2d=add_2d)
+
     h5_file = h5py.File(fpath, 'w')
     group = h5_file.create_group('contents')
-    group.create_dataset('time', (n_points,), float, np.arange(n_points))
-    group.create_dataset('depth', (n_points,), float, 10 * (np.arange(n_points) % 5))
-    group.create_dataset('rpm', (n_points,), float, 10 * np.sin(np.linspace(0, 1e4*np.pi, n_points)))
 
-    if add_2d:
-        group.create_dataset('image', (n_points, 5), float, (np.arange(n_points * 5) % 11).reshape(n_points, 5))
+    for col_name in df.columns:
+        col = np.stack(df[col_name])
+        group.create_dataset(col_name, col.shape, col.dtype, col)
 
     h5_file.flush()
     h5_file.close()
