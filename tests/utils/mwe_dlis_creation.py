@@ -3,6 +3,8 @@ from pathlib import Path
 import numpy as np
 import h5py
 import os
+
+import pandas as pd
 from line_profiler_pycharm import profile
 
 from logical_record.file import DLISFile
@@ -39,6 +41,16 @@ def load_h5_data(data_file_name, key='contents'):
     return h5py.File(data_file_name)[f'/{key}/']
 
 @profile
+def flatten_dataframe(data: pd.DataFrame):
+    for c in data.columns:
+        c0 = data[c][0]
+        if isinstance(c0, (list, np.ndarray)):
+            new_names = [c + str(i+1) for i in range(len(c0))]
+            data[new_names] = pd.DataFrame(data[c].to_list(), index=data.index)
+            data.drop(columns=[c], inplace=True)
+
+
+@profile
 def make_channels_and_frame(data):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
@@ -63,9 +75,9 @@ def make_channels_and_frame(data):
     n_points = data["time"].shape[0]
     print(f'Making frames for {n_points} rows.')
 
+    flatten_dataframe(data)
     for i in range(n_points):
-        slots = np.concatenate([np.stack(v.data[i:i+1]).flatten() for v in frame.channels.value])
-        frame_data = FrameData(frame=frame, frame_number=i + 1, slots=slots)
+        frame_data = FrameData(frame=frame, frame_number=i + 1, slots=data.loc[i])
         frame_data_objects.append(frame_data)
 
     return frame, frame_data_objects
@@ -91,7 +103,7 @@ def write_dlis_file(data, dlis_file_name):
 
 
 if __name__ == '__main__':
-    output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis'
+    output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
     os.makedirs(output_file_name.parent, exist_ok=True)
 
-    write_dlis_file(data=create_data(int(10e3)), dlis_file_name=output_file_name)
+    write_dlis_file(data=create_data(int(10e3), add_2d=True), dlis_file_name=output_file_name)
