@@ -50,7 +50,7 @@ def make_channels_and_frame(data):
 
     if 'image' in data.keys():
         frame.channels.value.append(
-            make_channel('image', unit='m', data=data['image'].astype(float), dimension=5, element_limit=5)
+            make_channel('image', unit='m', data=np.stack(data['image']), dimension=5, element_limit=5)
         )
 
     frame.index_type.value = 'TIME'
