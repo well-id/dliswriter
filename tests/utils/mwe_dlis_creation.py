@@ -2,7 +2,6 @@ from datetime import datetime
 from pathlib import Path
 import numpy as np
 import h5py
-from argparse import ArgumentParser
 import os
 
 from logical_record.file import DLISFile
@@ -13,6 +12,7 @@ from logical_record.frame import Frame
 from logical_record.frame_data import FrameData
 from logical_record.utils.enums import Units, RepresentationCode
 from logical_record.channel import make_channel
+from tests.utils.make_mock_data_hdf5 import create_data
 
 
 def make_origin():
@@ -90,20 +90,7 @@ def write_dlis_file(data, dlis_file_name):
 
 
 if __name__ == '__main__':
-    parser = ArgumentParser("DLIS file creation - minimal working example")
-    parser.add_argument('-ifn', '--input-file-name', help='HDF5 data file to create the DLIS from')
-    parser.add_argument('-ofn', '--output-file-name', help='Name for the output DLIS file')
+    output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis'
+    os.makedirs(output_file_name.parent, exist_ok=True)
 
-    parser_args = parser.parse_args()
-
-    base_data_path = Path(__file__).resolve().parent.parent
-
-    input_file_name = parser_args.input_file_name or base_data_path/'resources/mock_data.hdf5'
-
-    if (output_file_name := parser_args.output_file_name) is None:
-        output_file_name = 'mwe_fake_dlis.DLIS'
-    if len(Path(output_file_name).parts) == 1 and not output_file_name.startswith('./'):
-        output_file_name = base_data_path/'outputs'/output_file_name
-        os.makedirs(output_file_name.parent, exist_ok=True)
-
-    write_dlis_file(data=load_h5_data(input_file_name), dlis_file_name=output_file_name)
+    write_dlis_file(data=create_data(int(10e3)), dlis_file_name=output_file_name)
