@@ -4,6 +4,7 @@ from time import sleep
 from pathlib import Path
 import os
 from argparse import ArgumentParser
+import logging
 
 from tests.utils.make_mock_data_hdf5 import create_data
 from tests.utils.mwe_dlis_creation import write_dlis_file, load_h5_data
@@ -19,7 +20,13 @@ parser.add_argument('-ne', '--n-execs', type=int, default=1,
                     help='Number of times the writer will be executed (for computing better statistics)')
 parser.add_argument('--keep-output', action='store_true', default=False,
                     help='Do not remove the output DLIS file (created in the current working directory).')
+parser.add_argument('--hide-logs', action='store_true', default=False,
+                    help="Hide the logs coming from DLIS writer")
 parser_args = parser.parse_args()
+
+
+if parser_args.hide_logs:
+    logging.getLogger('logical_record').setLevel(logging.WARNING)
 
 
 if (ifn := parser_args.input_file_name) is None:
