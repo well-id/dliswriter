@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from functools import lru_cache
+from line_profiler_pycharm import profile
 
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
@@ -80,6 +81,7 @@ class DLISFile(object):
                 for obj in logical_record.dictionary_controlled_objects:
                     obj.origin_reference = val
 
+    @profile
     def raw_bytes(self, logical_records):
         """Writes bytes of entire file without Visible Record objects and splits"""
         logger.info('Writing raw bytes...')
@@ -110,6 +112,7 @@ class DLISFile(object):
 
         return raw_bytes
 
+    @profile
     def create_visible_record_dictionary(self, logical_records):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
@@ -183,6 +186,7 @@ class DLISFile(object):
 
         return q
 
+    @profile
     def add_visible_records(self, logical_records, raw_bytes):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
@@ -249,6 +253,7 @@ class DLISFile(object):
         if (nb := len(bytes_to_check)) != expected_length:
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
+    @profile
     def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
         # Inserting Visible Record Bytes to the specified position
 
@@ -262,6 +267,7 @@ class DLISFile(object):
             bytes_to_insert=bytes_to_insert
         )
 
+    @profile
     def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
 
@@ -273,6 +279,7 @@ class DLISFile(object):
             bytes_to_insert=header_bytes_to_insert
         )
 
+    @profile
     def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
         # Replacing the header bytes of the first split part of the Logical Record Segment
 
@@ -304,6 +311,7 @@ class DLISFile(object):
 
         logger.info(f"Data written to file: '{filename}'")
 
+    @profile
     def write_dlis(self, logical_records, filename):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
         self.validate()
