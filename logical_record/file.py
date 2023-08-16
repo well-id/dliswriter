@@ -198,6 +198,8 @@ class DLISFile(object):
         vr_dict = self.create_visible_record_dictionary(logical_records)
         logger.info('visible record dictionary created')
 
+        end_data_position = len(raw_bytes)
+
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
         total_vr_length = 4 * len(vr_dict)
         total_header_length = 4 * sum(int(bool(val['split'])) for val in vr_dict.values())
@@ -214,7 +216,8 @@ class DLISFile(object):
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position)
+            self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position, end_data_position=end_data_position)
+            end_data_position = max(vr_position + 4, end_data_position + 4)
 
             if lrs_to_split:
                 splits += 1
@@ -243,7 +246,9 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position)
+                self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position,
+                                                    end_data_position=end_data_position)
+                end_data_position = max(second_lrs_position + 4, end_data_position + 4)
 
         logger.info(f'{splits} splits created.')
         return raw_bytes
@@ -254,7 +259,7 @@ class DLISFile(object):
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
     @profile
-    def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position):
+    def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position, **kwargs):
         # Inserting Visible Record Bytes to the specified position
 
         bytes_to_insert = self.visible_record_bytes(vr_length)
@@ -264,11 +269,12 @@ class DLISFile(object):
         insert_and_shift(
             byte_arr=raw_bytes,
             insert_position=vr_position,
-            bytes_to_insert=bytes_to_insert
+            bytes_to_insert=bytes_to_insert,
+            **kwargs
         )
 
     @profile
-    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position):
+    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position, **kwargs):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
 
         self.check_length(header_bytes_to_insert)
@@ -276,7 +282,8 @@ class DLISFile(object):
         insert_and_shift(
             byte_arr=raw_bytes,
             insert_position=second_lrs_position - 4,
-            bytes_to_insert=header_bytes_to_insert
+            bytes_to_insert=header_bytes_to_insert,
+            **kwargs
         )
 
     @profile
