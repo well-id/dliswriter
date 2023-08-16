@@ -66,5 +66,47 @@ def test_cannot_insert_tail_too_short(bt_arr, bts, pos):
         insert_and_shift(bt_arr, bts, pos)
 
 
+@pytest.mark.parametrize(('bt_arr', 'bts', 'pos', 'ref_bt_arr', 'end_data_pos'), (
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8]), 0, bytearray([8, 1, 2, 3, 0, 0]), 3),
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8]), 2, bytearray([1, 2, 8, 3, 0, 0]), 3),
+        (bytearray([1, 2, 3, 4, 0, 0, 0]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 3, 4, 0]), 4),
+))
+def test_insert_with_data_end_specified(bt_arr, bts, pos, ref_bt_arr, end_data_pos):
+    insert_and_shift(bt_arr, bts, pos, end_data_position=end_data_pos)
+    assert bt_arr == ref_bt_arr
 
+
+@pytest.mark.parametrize(('bt_arr', 'bts', 'pos', 'ref_bt_arr', 'end_data_pos'), (
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8]), 0, bytearray([8, 2, 3, 0, 0, 0]), 0),
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8]), 2, bytearray([1, 2, 8, 0, 0, 0]), 2),
+        (bytearray([1, 2, 3, 4, 5, 0, 0]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 5, 0, 0]), 1),
+        (bytearray([1, 2, 3, 4, 0, 0, 0]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 3, 0, 0]), 3),
+))
+def test_insert_with_data_end_incorrectly_specified(bt_arr, bts, pos, ref_bt_arr, end_data_pos):
+    insert_and_shift(bt_arr, bts, pos, end_data_position=end_data_pos)
+    assert bt_arr == ref_bt_arr
+
+
+@pytest.mark.parametrize(('bt_arr', 'bts', 'pos', 'end_data_pos'), (
+        (bytearray([1, 2, 3]), bytearray([8]), 0, 3),
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8]), 0, 6),
+        (bytearray([1, 2, 3, 0, 0, 0]), bytearray([8, 9, 10]), 3, 4),
+        (bytearray([1, 2, 3, 4, 5]), bytearray([8, 9]), 2, 5),
+        (bytearray([1, 2, 3, 4, 0, 0, 0]), bytearray([8, 9]), 4, 6),
+))
+def test_insert_fail_with_data_end_too_large(bt_arr, bts, pos, end_data_pos):
+    with pytest.raises(ValueError, match=" impossible without discarding relevant data"):
+        insert_and_shift(bt_arr, bts, pos, end_data_position=end_data_pos)
+
+
+@pytest.mark.parametrize(('bt_arr', 'bts', 'pos', 'ref_bt_arr', 'end_data_pos'), (
+        (bytearray([1, 2, 3]), bytearray([8]), 0, bytearray([8, 1, 2]), 2),
+        (bytearray([1, 2, 3]), bytearray([8]), 0, bytearray([8, 1, 3]), 1),
+        (bytearray([1, 2, 3, 4, 5, 6]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 5, 6]), 2),
+        (bytearray([1, 2, 3, 4, 5, 6]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 3, 6]), 3),
+        (bytearray([1, 2, 3, 4, 5, 6]), bytearray([8, 9]), 2, bytearray([1, 2, 8, 9, 3, 4]), 4),
+))
+def test_array_tail_too_short_overriden_by_end_data_pos(bt_arr, bts, pos, ref_bt_arr, end_data_pos):
+    insert_and_shift(bt_arr, bts, pos, end_data_position=end_data_pos)
+    assert bt_arr == ref_bt_arr
 
