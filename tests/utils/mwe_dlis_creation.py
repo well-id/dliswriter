@@ -38,7 +38,8 @@ def make_origin():
 
 
 def load_h5_data(data_file_name, key='contents'):
-    return h5py.File(data_file_name)[f'/{key}/']
+    h5_data = h5py.File(data_file_name, 'r')[f'/{key}/']
+    return pd.DataFrame({k: h5_data.get(k)[:].tolist() for k in h5_data.keys()})
 
 @profile
 def flatten_dataframe(data: pd.DataFrame):
@@ -106,4 +107,4 @@ if __name__ == '__main__':
     output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
     os.makedirs(output_file_name.parent, exist_ok=True)
 
-    write_dlis_file(data=create_data(int(10e3), add_2d=True), dlis_file_name=output_file_name)
+    write_dlis_file(data=create_data(int(5e3), add_2d=True), dlis_file_name=output_file_name)

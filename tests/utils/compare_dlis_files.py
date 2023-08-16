@@ -7,9 +7,9 @@ def compare(f1, f2, verbose=True):
     data1 = read_binary(f1)
     data2 = read_binary(f2)
 
-    if len(data1) != len(data2):
+    if (l1 := len(data1)) != (l2 := len(data2)):
         if verbose:
-            print("Lengths of the files don't match")
+            print(f"Lengths of the files don't match ({l1} vs {l2})")
         return False
 
     nonmatching_indices = [i for i in range(len(data1)) if data1[i] != data2[i]]
