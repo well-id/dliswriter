@@ -2,6 +2,7 @@ import numpy as np
 import logging
 from functools import lru_cache
 from line_profiler_pycharm import profile
+from progressbar import progressbar
 
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
@@ -192,32 +193,35 @@ class DLISFile(object):
         received from self.create_visible_record_dictionary()
 
         """
-        logger.info('Adding visible records...')
+
         splits = 0
 
+        logger.info("Creating visible record dictionary...")
         vr_dict = self.create_visible_record_dictionary(logical_records)
         logger.info('visible record dictionary created')
-
-        end_data_position = len(raw_bytes)
 
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
         total_vr_length = 4 * len(vr_dict)
         total_header_length = 4 * sum(int(bool(val['split'])) for val in vr_dict.values())
         total_added_length = total_vr_length + total_header_length
-        logger.debug(f"Total expected visible record length to be added is {total_vr_length} "
-                     f"and total expected header length to be added is {total_header_length}"
-                     f"extending raw bytes (current size: {len(raw_bytes)}) by {total_added_length} zeroes")
-        raw_bytes += bytearray(total_added_length)
 
-        for vr_position, val in vr_dict.items():
+        total_len = len(raw_bytes) + total_added_length
+        empty_bytes = bytearray(total_len)
+        empty_header_bytes = bytearray(total_len)
+        inserted_bytes_indices = np.zeros(total_vr_length, dtype=int)
+        inserted_header_bytes_indices = np.zeros(total_header_length, dtype=int)
+        mask = np.zeros(total_len, dtype=bool)
+        header_mask = np.zeros(total_len, dtype=bool)
+
+        logger.info('Adding visible records...')
+        for vr_position, val in progressbar(vr_dict.items()):
 
             vr_length = val['length']
             lrs_to_split = val['split']
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            self.insert_visible_record_bytes(raw_bytes, vr_length, vr_position, end_data_position=end_data_position)
-            end_data_position = max(vr_position + 4, end_data_position + 4)
+            self.insert_visible_record_bytes(empty_bytes, vr_length, vr_position, mask=mask)
 
             if lrs_to_split:
                 splits += 1
@@ -234,7 +238,7 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.replace_header_bytes_in_raw(raw_bytes, header_bytes_to_replace, updated_lrs_position)
+                self.replace_header_bytes_in_raw(empty_header_bytes, header_bytes_to_replace, updated_lrs_position, mask=header_mask)
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -246,11 +250,23 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw_2(raw_bytes, header_bytes_to_insert, second_lrs_position,
-                                                    end_data_position=end_data_position)
-                end_data_position = max(second_lrs_position + 4, end_data_position + 4)
+                self.insert_header_bytes_into_raw_2(empty_bytes, header_bytes_to_insert, second_lrs_position-4, mask=mask)
 
-        logger.info(f'{splits} splits created.')
+                print('\n', vr_position, updated_lrs_position, second_lrs_position-4)
+            else:
+                print('\n', vr_position)
+
+        raw_bytes = np.frombuffer(raw_bytes, dtype=np.uint8)
+        empty_bytes = np.frombuffer(empty_bytes, dtype=np.uint8)
+        empty_header_bytes = np.frombuffer(empty_header_bytes, dtype=np.uint8)
+
+        empty_bytes[~mask] = raw_bytes
+        empty_bytes[header_mask] = empty_header_bytes[header_mask]
+
+        raw_bytes = empty_bytes.tobytes()
+
+        logger.info(f"{splits} splits created.")
+
         return raw_bytes
 
     @staticmethod
@@ -259,40 +275,37 @@ class DLISFile(object):
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
     @profile
+    def simple_insert(self, bt_arr, bt_to_insert, pos, mask=None, index_list: list = None, **kwargs):
+        self.check_length(bt_to_insert)
+
+        if mask is not None:
+            if mask[pos]:
+                mask[pos+4:pos+8] = mask[pos:pos+4]
+                bt_arr[pos+4:pos+8] = bt_arr[pos:pos+4]
+            mask[pos:pos + 4] = True
+        bt_arr[pos:pos + 4] = bt_to_insert
+
     def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position, **kwargs):
         # Inserting Visible Record Bytes to the specified position
 
         bytes_to_insert = self.visible_record_bytes(vr_length)
 
-        self.check_length(bytes_to_insert)
+        self.simple_insert(raw_bytes, bt_to_insert=bytes_to_insert, pos=vr_position, **kwargs)
 
-        insert_and_shift(
-            byte_arr=raw_bytes,
-            insert_position=vr_position,
-            bytes_to_insert=bytes_to_insert,
-            **kwargs
-        )
-
-    @profile
-    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, second_lrs_position, **kwargs):
+    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, position, **kwargs):
         # INSERTING the header bytes of the second split part of the Logical Record Segment
 
-        self.check_length(header_bytes_to_insert)
+        self.simple_insert(raw_bytes, bt_to_insert=header_bytes_to_insert, pos=position, **kwargs)
 
-        insert_and_shift(
-            byte_arr=raw_bytes,
-            insert_position=second_lrs_position - 4,
-            bytes_to_insert=header_bytes_to_insert,
-            **kwargs
-        )
-
-    @profile
-    def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position):
+    def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position, mask=None, **kwargs):
         # Replacing the header bytes of the first split part of the Logical Record Segment
 
         self.check_length(header_bytes_to_replace)
 
         raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
+        if mask is not None:
+            mask[updated_lrs_position:updated_lrs_position+4] = True
+        # self.simple_insert(raw_bytes, bt_to_insert=header_bytes_to_replace, pos=updated_lrs_position, **kwargs)
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
