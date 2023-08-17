@@ -205,8 +205,8 @@ class DLISFile(object):
         total_added_length = total_vr_length + total_header_length
 
         total_len = len(raw_bytes) + total_added_length
-        empty_bytes = bytearray(total_len)
-        empty_header_bytes = bytearray(total_len)
+        empty_bytes = np.zeros(total_len, dtype=np.uint8)
+        empty_header_bytes = np.zeros(total_len, dtype=np.uint8)
         mask = np.zeros(total_len, dtype=bool)
         header_mask = np.zeros(total_len, dtype=bool)
 
@@ -264,18 +264,13 @@ class DLISFile(object):
                     mask=mask
                 )
 
-        raw_bytes = np.frombuffer(raw_bytes, dtype=np.uint8)
-        empty_bytes = np.frombuffer(empty_bytes, dtype=np.uint8)
-        empty_header_bytes = np.frombuffer(empty_header_bytes, dtype=np.uint8)
+        logger.info(f"{splits} splits created.")
 
         empty_bytes[~mask] = raw_bytes
         empty_bytes[header_mask] = empty_header_bytes[header_mask]
 
-        raw_bytes = empty_bytes.tobytes()
-
-        logger.info(f"{splits} splits created.")
-
-        return raw_bytes
+        raw_bytes_with_vr = empty_bytes.tobytes()
+        return raw_bytes_with_vr
 
     @staticmethod
     def check_length(bytes_to_check, expected_length=4):
@@ -291,7 +286,7 @@ class DLISFile(object):
                 mask[position + 4:position + 8] = mask[position:position + 4]
                 byte_array[position + 4:position + 8] = byte_array[position:position + 4]
             mask[position:position + 4] = True
-        byte_array[position:position + 4] = bytes_to_insert
+        byte_array[position:position + 4] = np.frombuffer(bytes_to_insert, dtype=np.uint8)
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
