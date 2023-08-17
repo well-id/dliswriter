@@ -218,7 +218,12 @@ class DLISFile(object):
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
-            self.insert_visible_record_bytes(empty_bytes, vr_length, vr_position, mask=mask)
+            self.insert_bytes(
+                empty_bytes,
+                bytes_to_insert=self.visible_record_bytes(vr_length),
+                position=vr_position,
+                mask=mask
+            )
 
             if lrs_to_split:
                 splits += 1
@@ -235,7 +240,12 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.replace_header_bytes_in_raw(empty_header_bytes, header_bytes_to_replace, updated_lrs_position, mask=header_mask)
+                self.insert_bytes(
+                    empty_header_bytes,
+                    bytes_to_insert=header_bytes_to_replace,
+                    position=updated_lrs_position,
+                    mask=header_mask
+                )
 
                 # SECOND PART OF THE SPLIT
                 second_lrs_position = vr_position + vr_length + 4
@@ -247,7 +257,12 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
-                self.insert_header_bytes_into_raw_2(empty_bytes, header_bytes_to_insert, second_lrs_position-4, mask=mask)
+                self.insert_bytes(
+                    empty_bytes,
+                    bytes_to_insert=header_bytes_to_insert,
+                    position=second_lrs_position - 4,
+                    mask=mask
+                )
 
         raw_bytes = np.frombuffer(raw_bytes, dtype=np.uint8)
         empty_bytes = np.frombuffer(empty_bytes, dtype=np.uint8)
@@ -268,35 +283,15 @@ class DLISFile(object):
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
     @profile
-    def simple_insert(self, bt_arr, bt_to_insert, pos, mask=None):
-        self.check_length(bt_to_insert)
+    def insert_bytes(self, byte_array, bytes_to_insert, position, mask=None):
+        self.check_length(bytes_to_insert)
 
         if mask is not None:
-            if mask[pos]:
-                mask[pos+4:pos+8] = mask[pos:pos+4]
-                bt_arr[pos+4:pos+8] = bt_arr[pos:pos+4]
-            mask[pos:pos + 4] = True
-        bt_arr[pos:pos + 4] = bt_to_insert
-
-    def insert_visible_record_bytes(self, raw_bytes, vr_length, vr_position, **kwargs):
-        # Inserting Visible Record Bytes to the specified position
-
-        bytes_to_insert = self.visible_record_bytes(vr_length)
-        self.simple_insert(raw_bytes, bt_to_insert=bytes_to_insert, pos=vr_position, **kwargs)
-
-    def insert_header_bytes_into_raw_2(self, raw_bytes, header_bytes_to_insert, position, **kwargs):
-        # INSERTING the header bytes of the second split part of the Logical Record Segment
-
-        self.simple_insert(raw_bytes, bt_to_insert=header_bytes_to_insert, pos=position, **kwargs)
-
-    def replace_header_bytes_in_raw(self, raw_bytes, header_bytes_to_replace, updated_lrs_position, mask=None):
-        # Replacing the header bytes of the first split part of the Logical Record Segment
-
-        self.check_length(header_bytes_to_replace)
-
-        raw_bytes[updated_lrs_position:updated_lrs_position + 4] = header_bytes_to_replace
-        if mask is not None:
-            mask[updated_lrs_position:updated_lrs_position+4] = True
+            if mask[position]:
+                mask[position + 4:position + 8] = mask[position:position + 4]
+                byte_array[position + 4:position + 8] = byte_array[position:position + 4]
+            mask[position:position + 4] = True
+        byte_array[position:position + 4] = bytes_to_insert
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
