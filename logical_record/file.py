@@ -193,18 +193,16 @@ class DLISFile(object):
 
         """
 
-        splits = 0
-
         logger.info("Creating visible record dictionary...")
         vr_dict = self.create_visible_record_dictionary(logical_records)
         logger.info('visible record dictionary created')
 
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
         total_vr_length = 4 * len(vr_dict)
-        total_header_length = 4 * sum(int(bool(val['split'])) for val in vr_dict.values())
-        total_added_length = total_vr_length + total_header_length
+        splits = sum(int(bool(val['split'])) for val in vr_dict.values())
+        total_header_length = 4 * splits
 
-        total_len = len(raw_bytes) + total_added_length
+        total_len = len(raw_bytes) + total_vr_length + total_header_length
         empty_bytes = np.zeros(total_len, dtype=np.uint8)
         empty_header_bytes = np.zeros(total_len, dtype=np.uint8)
         mask = np.zeros(total_len, dtype=bool)
@@ -226,7 +224,6 @@ class DLISFile(object):
             )
 
             if lrs_to_split:
-                splits += 1
                 # FIRST PART OF THE SPLIT
                 updated_lrs_position = self.pos[lrs_to_split] \
                                        + (number_of_prior_splits * 4) \
@@ -278,14 +275,14 @@ class DLISFile(object):
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
     @profile
-    def insert_bytes(self, byte_array, bytes_to_insert, position, mask=None):
+    def insert_bytes(self, byte_array, bytes_to_insert, position, mask):
         self.check_length(bytes_to_insert)
 
-        if mask is not None:
-            if mask[position]:
-                mask[position + 4:position + 8] = mask[position:position + 4]
-                byte_array[position + 4:position + 8] = byte_array[position:position + 4]
-            mask[position:position + 4] = True
+        if mask[position]:
+            mask[position + 4:position + 8] = mask[position:position + 4]
+            byte_array[position + 4:position + 8] = byte_array[position:position + 4]
+
+        mask[position:position + 4] = True
         byte_array[position:position + 4] = np.frombuffer(bytes_to_insert, dtype=np.uint8)
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
