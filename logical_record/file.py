@@ -187,7 +187,7 @@ class DLISFile(object):
         return q
 
     @profile
-    def add_visible_records(self, logical_records, raw_bytes):
+    def add_visible_records(self, logical_records: list, raw_bytes: bytearray) -> bytearray:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -198,15 +198,30 @@ class DLISFile(object):
         logger.info('visible record dictionary created')
 
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
-        total_vr_length = 4 * len(vr_dict)
-        splits = sum(int(bool(val['split'])) for val in vr_dict.values())
-        total_header_length = 4 * splits
+        total_vr_length = 4 * len(vr_dict)  # bytes added due to inserting visible record bytes (first part of the loop)
+        splits = sum(int(bool(val['split'])) for val in vr_dict.values())  # how many splits are done (not for all vr's)
+        total_header_length = 4 * splits  # bytes added due to inserting 'header bytes' (see 'second part of the split')
 
-        total_len = len(raw_bytes) + total_vr_length + total_header_length
-        empty_bytes = np.zeros(total_len, dtype=np.uint8)
-        empty_header_bytes = np.zeros(total_len, dtype=np.uint8)
-        mask = np.zeros(total_len, dtype=bool)
-        header_mask = np.zeros(total_len, dtype=bool)
+        raw_bytes_length = len(raw_bytes)
+
+        # expected total length of the raw_bytes array after the vr and header bytes are inserted
+        total_len = raw_bytes_length + total_vr_length + total_header_length
+
+        # New approach: instead of inserting the bytes (changing the length of the raw_bytes at every iteration),
+        # prepare arrays which will only hold the inserted bytes already at the correct positions;
+        # otherwise, these arrays are filled with zeros.
+        # Also keep 'mask' arrays, marking the positions at which the 'inserted' bytes are placed.
+        # When the loop is finished, re-map the original raw_bytes onto the non-occupied positions in the new array.
+        # Note: there are actually two types of operations done here (as it was in the original code): inserting
+        # and replacing bytes. In the loop, first, a visible record is *inserted*, then (if a split is done)
+        # header bytes are *replaced* (see 'first part of the split'), and finally more bytes are *inserted*
+        # (see 'second part of the split'). To preserve the correct positions of the bytes, bytes coming from the two
+        # types of operations are kept in two separate arrays (with corresponding masks): bytes_inserted
+        # and bytes_replaced.
+        bytes_inserted = np.zeros(total_len, dtype=np.uint8)
+        bytes_replaced = np.zeros(total_len, dtype=np.uint8)
+        mask_bytes_inserted = np.zeros(total_len, dtype=bool)
+        mask_bytes_replaced = np.zeros(total_len, dtype=bool)
 
         logger.info('Adding visible records...')
         for vr_position, val in progressbar(vr_dict.items()):
@@ -216,11 +231,12 @@ class DLISFile(object):
             number_of_prior_splits = val['number_of_prior_splits']
             number_of_prior_vr = val['number_of_prior_vr']
 
+            # 'inserting' visible record bytes (changed array length in the original code)
             self.insert_bytes(
-                empty_bytes,
+                bytes_inserted,
                 bytes_to_insert=self.visible_record_bytes(vr_length),
                 position=vr_position,
-                mask=mask
+                mask=mask_bytes_inserted
             )
 
             if lrs_to_split:
@@ -237,11 +253,12 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
+                # replacing header bytes (no change in the array length in the original code)
                 self.insert_bytes(
-                    empty_header_bytes,
+                    bytes_replaced,
                     bytes_to_insert=header_bytes_to_replace,
                     position=updated_lrs_position,
-                    mask=header_mask
+                    mask=mask_bytes_replaced
                 )
 
                 # SECOND PART OF THE SPLIT
@@ -254,36 +271,86 @@ class DLISFile(object):
                     add_extra_padding=False
                 )
 
+                # 'inserting' header bytes (changed array length in the original code)
                 self.insert_bytes(
-                    empty_bytes,
+                    bytes_inserted,
                     bytes_to_insert=header_bytes_to_insert,
                     position=second_lrs_position - 4,
-                    mask=mask
+                    mask=mask_bytes_inserted
                 )
 
         logger.info(f"{splits} splits created.")
 
-        empty_bytes[~mask] = raw_bytes
-        empty_bytes[header_mask] = empty_header_bytes[header_mask]
+        # use the bytes_inserted as the destination array
+        # map the original raw_bytes on the unoccupied positions in bytes_inserted
+        # first check that the empty bytes counts are correct
+        if (unoccupied_length := (total_len - mask_bytes_inserted.sum())) != raw_bytes_length:
+            raise RuntimeError("Error in inserting visible record bytes: the number of unoccupied bytes in the array "
+                               f"{unoccupied_length} does not match the number of the raw bytes {raw_bytes_length})")
+        bytes_inserted[~mask_bytes_inserted] = raw_bytes
 
-        raw_bytes_with_vr = empty_bytes.tobytes()
+        # apply the replaced header bytes
+        bytes_inserted[mask_bytes_replaced] = bytes_replaced[mask_bytes_replaced]
+
+        # convert the combined array (numpy) back to bytearray for compatibility with other parts of the code
+        raw_bytes_with_vr = bytes_inserted.tobytes()
         return raw_bytes_with_vr
 
     @staticmethod
-    def check_length(bytes_to_check, expected_length=4):
+    def check_length(bytes_to_check: bytes, expected_length: int = 4) -> None:
+        """Check that the length of bytes to be inserted/replaced matches the expected length.
+
+        Args:
+            bytes_to_check:     The bytes to be inserted/replaced.
+            expected_length:    Expected number of bytes.
+
+        Raises:
+            ValueError if the actual length of the bytes does not match the expected one.
+
+
+        Note:
+            The performance-upgrade modifications are based on the assumptions that the number of inserted/replaced
+            bytes is always 4. This method has been put in place to make it easier to catch and understand the error
+            on the off chance the aforementioned assumption is not always valid.
+        """
+
         if (nb := len(bytes_to_check)) != expected_length:
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
     @profile
-    def insert_bytes(self, byte_array, bytes_to_insert, position, mask):
-        self.check_length(bytes_to_insert)
+    def insert_bytes(self, array_of_bytes: np.ndarray, bytes_to_insert: bytes, position: int, mask: np.ndarray) -> None:
+        """Insert (or replace) bytes at the given position in the byte array.
+
+        Additionally, mark the positions at which the bytes were put in the corresponding mask array.
+
+        Args:
+            array_of_bytes:     Uint8 array into which the bytes should be inserted.
+            bytes_to_insert:    Bytes that will be inserted into the array.
+            position:           Position in the array_of_bytes (index) at which the first of the bytes will be placed.
+            mask:               Boolean array of length corresponding to array_of_bytes, in which the indices at which
+                                    the bytes are inserted will be marked by True.
+
+        Note:
+            In the original code, bytes were frequently inserted twice into the same position. This resulted in
+            shifting the earlier inserted bytes by 4 indices to the right (while the array length changed).
+            In this implementation, the length of the array is constant and the shifting is achieved by manually moving
+            the 4 bytes already present at the given position to the right by 4 indices. This is done both in the
+            array of bytes and the mask array, and only if the mask value at the concerned position is already True
+            at the entry to the method.
+        """
+
+        self.check_length(bytes_to_insert)  # the code below is based on the assumption that we *always* insert 4 bytes
 
         if mask[position]:
+            # shift the bytes already at the requested position to the right by 4 indices
+            # (assumed length of the inserted bytes is always 4, and otherwise the arrays are filled with zeros)
             mask[position + 4:position + 8] = mask[position:position + 4]
-            byte_array[position + 4:position + 8] = byte_array[position:position + 4]
+            array_of_bytes[position + 4:position + 8] = array_of_bytes[position:position + 4]
 
+        # insert the new bytes at the requested positions and mark these positions in the mask array
         mask[position:position + 4] = True
-        byte_array[position:position + 4] = np.frombuffer(bytes_to_insert, dtype=np.uint8)
+        array_of_bytes[position:position + 4] = np.frombuffer(bytes_to_insert, dtype=np.uint8)
+        # operations done in-place - no return value
 
     def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
         """Recalculates the Logical Record Segment's position
