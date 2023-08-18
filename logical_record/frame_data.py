@@ -1,10 +1,7 @@
 import math
-from functools import cached_property
-
-import numpy as np
+from line_profiler_pycharm import profile
 
 from .utils.core import IFLR
-from .utils.enums import Enum
 from .utils.common import write_struct
 from .utils.converters import get_representation_code_from_value
 from .utils.enums import RepresentationCode
@@ -40,6 +37,8 @@ class FrameData(IFLR):
         self.iflr_type = 0
         self.set_type = 'FDATA'
 
+        self._body_bytes = None
+
     @property
     def frame(self):
         return self._frame
@@ -49,28 +48,27 @@ class FrameData(IFLR):
         return self._frame_number
 
     @property
-    def slots(self) -> np.ndarray:
-        return self._slots
-
-    @cached_property
     def body_bytes(self):
+        if self._body_bytes is None:
+            self._body_bytes = self._compute_body_bytes()
+        return self._body_bytes
 
-        _body = b''
-        _body += self.frame.obname
-        _body += write_struct(RepresentationCode.UVARI, self.frame_number)
+    @profile
+    def _compute_body_bytes(self):
+        body = b''
+        body += self.frame.obname
+        body += write_struct(RepresentationCode.UVARI, self.frame_number)
         
         j = 0
-        _channels = self.frame.channels.value
-        for _channel in _channels:
-            _representation_code = get_representation_code_from_value(_channel.representation_code.value)
-            _dimension = _channel.dimension.value
+        slots = self._slots
+        for channel in self.frame.channels.value:
+            representation_code = get_representation_code_from_value(channel.representation_code.value)
 
-            for i in range(j, j+math.prod(_dimension)):
-                _data = self.slots[i]
-                _body += write_struct(_representation_code, _data)
+            for i in range(j, j+math.prod(channel.dimension.value)):
+                body += write_struct(representation_code, slots[i])
                 j += 1
 
-        return _body
+        return body
 
 
 class NoFormatFrameData(IFLR):

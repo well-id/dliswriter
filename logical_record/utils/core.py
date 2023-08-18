@@ -550,10 +550,10 @@ class IFLR(object):
 
     @profile
     def represent_as_bytes(self):
-        _bytes = self.body_bytes # Create 
+        _bytes = self.body_bytes  # Create
         _bytes = self.header_bytes + _bytes
         if self.has_padding:
-            _bytes += write_struct(RepresentationCode.USHORT, 1) # Padding
+            _bytes += write_struct(RepresentationCode.USHORT, 1)  # Padding
 
         return _bytes
 
