@@ -1,8 +1,10 @@
+import os
 import numpy as np
 import logging
 from functools import lru_cache
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
+from typing import Union
 
 from logical_record.utils.common import write_struct
 from logical_record.utils.enums import RepresentationCode
@@ -75,8 +77,8 @@ class DLISFile(object):
         assert self.visible_record_length <= 16384, 'Maximum visible record length is 16384 bytes'
         assert self.visible_record_length % 2 == 0, 'Visible record length must be an even number'
 
-    @profile
     @log_progress("Assigning origin reference")
+    @profile
     def assign_origin_reference(self, logical_records):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
@@ -93,38 +95,33 @@ class DLISFile(object):
                 for obj in logical_record.dictionary_controlled_objects:
                     obj.origin_reference = val
 
-    @profile
     @log_progress("Writing raw bytes...")
-    def raw_bytes(self, logical_records):
+    @profile
+    def raw_bytes(self, logical_records) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         all_records = [self.storage_unit_label, self.file_header, self.origin] + logical_records
 
         n = len(all_records)
         all_records_bytes = [None] * n
-        all_lengths = [None] * n
-        all_positions = [0] + [None] * n
+        all_positions = np.zeros(n+1, dtype=int)
         current_pos = 0
         for i, lr in progressbar(enumerate(all_records), max_value=n):
-            b = lr.as_bytes # grows with data size more than row number
+            b = lr.as_bytes  # grows with data size more than row number
             all_records_bytes[i] = b
-            all_lengths[i] = len(b)
-            current_pos += all_lengths[i]
+            current_pos += len(b)
             all_positions[i+1] = current_pos
-        # all_records_bytes = [lr.as_bytes for lr in all_records]
 
-        all_lengths = [len(lr) for lr in all_records_bytes]
-        all_positions = np.concatenate(([0], np.cumsum(all_lengths)))#[sum(all_lengths[:i]) for i in range(n+1)] # 92% time spent here for 1 line
-        raw_bytes = bytearray(bytes(all_positions[-1]*2))
+        raw_bytes = bytearray(all_positions[-1]*2)
 
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
             self.pos[all_records[i]] = all_positions[i]
 
-        return raw_bytes
+        return np.frombuffer(raw_bytes, dtype=np.uint8)
 
-    @profile
     @log_progress("Creating visible record dictionary...")
+    @profile
     def create_visible_record_dictionary(self, logical_records):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
@@ -198,9 +195,9 @@ class DLISFile(object):
 
         return q
 
-    @profile
     @log_progress("Adding visible records...")
-    def add_visible_records(self, vr_dict: dict, raw_bytes: bytearray) -> bytes:
+    @profile
+    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray) -> np.ndarray:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -211,10 +208,8 @@ class DLISFile(object):
         splits = sum(int(bool(val['split'])) for val in vr_dict.values())  # how many splits are done (not for all vr's)
         total_header_length = 4 * splits  # bytes added due to inserting 'header bytes' (see 'second part of the split')
 
-        raw_bytes_length = len(raw_bytes)
-
         # expected total length of the raw_bytes array after the vr and header bytes are inserted
-        total_len = raw_bytes_length + total_vr_length + total_header_length
+        total_len = raw_bytes.size + total_vr_length + total_header_length
 
         # New approach: instead of inserting the bytes (changing the length of the raw_bytes at every iteration),
         # prepare arrays which will only hold the inserted bytes already at the correct positions;
@@ -292,17 +287,15 @@ class DLISFile(object):
         # use the bytes_inserted as the destination array
         # map the original raw_bytes on the unoccupied positions in bytes_inserted
         # first check that the empty bytes counts are correct
-        if (unoccupied_length := (total_len - mask_bytes_inserted.sum())) != raw_bytes_length:
+        if (unoccupied_length := (total_len - mask_bytes_inserted.sum())) != raw_bytes.size:
             raise RuntimeError("Error in inserting visible record bytes: the number of unoccupied bytes in the array "
-                               f"{unoccupied_length} does not match the number of the raw bytes {raw_bytes_length})")
+                               f"{unoccupied_length} does not match the number of the raw bytes {raw_bytes.size})")
         bytes_inserted[~mask_bytes_inserted] = raw_bytes
 
         # apply the replaced header bytes
         bytes_inserted[mask_bytes_replaced] = bytes_replaced[mask_bytes_replaced]
 
-        # convert the combined array (numpy) back to bytes for compatibility with other parts of the code
-        raw_bytes_with_vr = bytes_inserted.tobytes()
-        return raw_bytes_with_vr
+        return bytes_inserted  # this is the array containing all the bytes combined now
 
     @staticmethod
     def check_length(bytes_to_check: bytes, expected_length: int = 4) -> None:
@@ -376,7 +369,7 @@ class DLISFile(object):
 
     @staticmethod
     @log_progress("Writing to file...")
-    def write_bytes_to_file(raw_bytes, filename):
+    def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike]):
         """Writes the bytes to a DLIS file"""
 
         with open(filename, 'wb') as f:
@@ -385,13 +378,13 @@ class DLISFile(object):
         logger.info(f"Data written to file: '{filename}'")
 
     @profile
-    def write_dlis(self, logical_records, filename):
+    def write_dlis(self, logical_records, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.validate()
         self.assign_origin_reference(logical_records)
         raw_bytes = self.raw_bytes(logical_records)
         vr_dict = self.create_visible_record_dictionary(logical_records)
-        raw_bytes = self.add_visible_records(vr_dict, raw_bytes)
-        self.write_bytes_to_file(raw_bytes, filename)
+        all_bytes = self.add_visible_records(vr_dict, raw_bytes)
+        self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
