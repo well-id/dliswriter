@@ -1,6 +1,5 @@
-import math
 from functools import cached_property
-import numpy as np
+from typing import Union, List, Tuple
 
 from .common import NOT_TEMPLATE
 from .rp66 import RP66
@@ -8,9 +7,12 @@ from .common import write_struct
 from .common import write_absent_attribute
 from .converters import get_representation_code_value
 from .converters import get_logical_record_type
-from .custom_types import AttributeValue
 from .enums import RepresentationCode
 from .enums import Units
+
+
+# custom type
+AttributeValue = Union[int, float, str, List[int], List[float], List[str], Tuple[int], Tuple[float], Tuple[str]]
 
 
 class Attribute(object):

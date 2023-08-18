@@ -1,8 +1,6 @@
 from functools import lru_cache
 from enum import IntEnum
 
-from .custom_types import LogicalRecordType
-from .custom_types import LogicalRecordTypeCode
 from .enums import RepresentationCode
 
 
@@ -85,20 +83,20 @@ def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False
     return ((required_length - len(str(value))) * ' ' + str(value)).encode('ascii')
 
 
-def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRecordTypeCode:
+def get_logical_record_type(logical_record_type: str) -> int:
     """Converts EFLR logical record type which is a string to corresponding int code.
 
     Args:
-        logical_record_type:    One of the EFLR logical record types in RP66 V1
+        logical_record_type: One of the EFLR logical record types in RP66 V1.
 
     Returns:
-        Corresponding code
+        Corresponding code value.
 
     Raises:
-        ValueError: If logical_record_type is not one of the types in RP66 V1 spec
+        ValueError: If logical_record_type is not one of the types in RP66 V1 spec.
 
-    .. _RP66 V1 Appendix A.2:
-        http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2
+    Note:
+        RP66 V1 Appendix A.2: http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2
 
     """
 
@@ -110,7 +108,7 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
         error_message += ''.join('\t' + lrt + '\n' for lrt in LogicalRecordTypeEnum.get_all_codes())
         raise ValueError(error_message)
 
-    return lrt_code
+    return lrt_code.value
 
 
 def get_representation_code_value(code: RepresentationCode) -> int:
