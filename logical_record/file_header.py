@@ -51,11 +51,10 @@ class FileHeader(object):
         # ATTRIBUTES
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
         _body_bytes += write_struct(RepresentationCode.USHORT, 10)
-        _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify='right')
+        _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify_left=False)
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
         _body_bytes += write_struct(RepresentationCode.USHORT, 65)
-        _body_bytes += get_ascii_bytes(self._id, 65, justify='left')
-
+        _body_bytes += get_ascii_bytes(self._id, 65, justify_left=True)
 
         _bytes = _header_bytes + _body_bytes
         

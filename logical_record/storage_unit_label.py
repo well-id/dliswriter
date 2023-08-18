@@ -52,7 +52,7 @@ class StorageUnitLabel(object):
         _susn_as_bytes = get_ascii_bytes(self.storage_unit_sequence_number, 4)
 
         # DLIS Version
-        _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify='left')
+        _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
 
         # Storage Unit Structure
         _sus_as_bytes = get_ascii_bytes(self.storage_unit_structure, 6)
@@ -61,6 +61,6 @@ class StorageUnitLabel(object):
         _mrl_as_bytes = get_ascii_bytes(self.max_record_length, 5)
 
         # Storage Set Identifier
-        _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify='left')
+        _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
 
         return _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
