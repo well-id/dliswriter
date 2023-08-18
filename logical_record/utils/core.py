@@ -1,3 +1,4 @@
+from abc import abstractmethod
 from line_profiler_pycharm import profile
 from typing import Union, List, Tuple
 
@@ -510,6 +511,11 @@ class IFLR(object):
         self.has_checksum = False
         self.has_trailing_length = False
         self.has_padding = False
+
+    @property
+    @abstractmethod
+    def body_bytes(self):
+        pass
 
     @property
     def segment_attributes(self) -> bytes:
