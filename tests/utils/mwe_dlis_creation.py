@@ -3,7 +3,8 @@ from pathlib import Path
 import numpy as np
 import h5py
 import os
-
+from progressbar import progressbar
+import logging
 import pandas as pd
 from line_profiler_pycharm import profile
 
@@ -16,6 +17,9 @@ from logical_record.frame_data import FrameData
 from logical_record.utils.enums import Units, RepresentationCode
 from logical_record.channel import make_channel
 from tests.utils.make_mock_data_hdf5 import create_data
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_origin():
@@ -74,10 +78,10 @@ def make_channels_and_frame(data):
     frame_data_objects = []
 
     n_points = data["time"].shape[0]
-    print(f'Making frames for {n_points} rows.')
+    logger.info(f'Making frames for {n_points} rows.')
 
     flatten_dataframe(data)
-    for i in range(n_points):
+    for i in progressbar(range(n_points)):
         frame_data = FrameData(frame=frame, frame_number=i + 1, slots=data.loc[i])
         frame_data_objects.append(frame_data)
 
@@ -107,4 +111,4 @@ if __name__ == '__main__':
     output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
     os.makedirs(output_file_name.parent, exist_ok=True)
 
-    write_dlis_file(data=create_data(int(5e3), add_2d=True), dlis_file_name=output_file_name)
+    write_dlis_file(data=create_data(int(10e3), add_2d=True), dlis_file_name=output_file_name)
