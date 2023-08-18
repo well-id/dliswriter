@@ -1,7 +1,8 @@
 import re
-from struct import Struct
 from datetime import datetime
 from typing import Any
+from functools import lru_cache
+
 from .enums import RepresentationCode
 
 
@@ -158,6 +159,7 @@ def read_struct(representation_code: RepresentationCode, packed_value: bytes) ->
     return representation_code.value.unpack(packed_value)[0]
 
 
+@lru_cache(maxsize=65536)
 def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     """Converts the value to bytes according to the RP66 V1 spec.
 
