@@ -1,4 +1,4 @@
-from functools import cached_property
+from line_profiler_pycharm import profile
 from typing import Union, List, Tuple
 
 from .common import NOT_TEMPLATE
@@ -298,7 +298,7 @@ class EFLR(object):
         _bytes = b''
         if self.is_dictionary_controlled:
             for obj in self.dictionary_controlled_objects:
-                _bytes += obj.as_bytes
+                _bytes += obj.represent_as_bytes()
         else:   
             for key in list(self.__dict__.keys()):
                 if key not in NOT_TEMPLATE:
@@ -368,7 +368,7 @@ class EFLR(object):
     def size(self) -> bytes:
         """Calculates the size of the Logical Record Segment"""
         try:
-            return len(self.as_bytes)
+            return len(self.represent_as_bytes())
         except:
             raise Exception(f'\n\n{self}\n\n')
 
@@ -377,8 +377,8 @@ class EFLR(object):
         """Writes padding bytes"""
         return write_struct(RepresentationCode.USHORT, 1)
 
-    @cached_property
-    def as_bytes(self):
+    @profile
+    def represent_as_bytes(self):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
         
         self.bytes = b''
@@ -527,7 +527,7 @@ class IFLR(object):
 
     @property
     def size(self):
-        return len(self.as_bytes)
+        return len(self.represent_as_bytes())
 
     @property
     def header_bytes(self) -> bytes:
@@ -542,8 +542,8 @@ class IFLR(object):
                + self.segment_attributes\
                + write_struct(RepresentationCode.USHORT, self.iflr_type)
 
-    @cached_property
-    def as_bytes(self):
+    @profile
+    def represent_as_bytes(self):
         _bytes = self.body_bytes # Create 
         _bytes = self.header_bytes + _bytes
         if self.has_padding:

@@ -107,7 +107,7 @@ class DLISFile(object):
         all_positions = np.zeros(n+1, dtype=int)
         current_pos = 0
         for i, lr in progressbar(enumerate(all_records), max_value=n):
-            b = lr.as_bytes  # grows with data size more than row number
+            b = lr.represent_as_bytes()  # grows with data size more than row number
             all_records_bytes[i] = b
             current_pos += len(b)
             all_positions[i+1] = current_pos

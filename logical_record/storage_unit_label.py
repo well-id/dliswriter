@@ -1,3 +1,6 @@
+from line_profiler_pycharm import profile
+from functools import lru_cache
+
 from .utils.converters import get_ascii_bytes
 
 
@@ -39,9 +42,9 @@ class StorageUnitLabel(object):
         self.max_record_length = max_record_length # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
         self.storage_set_identifier = storage_set_identifier
 
-
-    @property
-    def as_bytes(self):
+    @lru_cache(maxsize=4096)
+    @profile
+    def represent_as_bytes(self):
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 
         Returns:

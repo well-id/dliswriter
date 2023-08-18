@@ -1,3 +1,5 @@
+from line_profiler_pycharm import profile
+
 from .utils.converters import get_ascii_bytes
 from .utils.common import write_struct
 from .utils.enums import RepresentationCode
@@ -19,8 +21,8 @@ class FileHeader(object):
 
         self.set_type = 'FILE-HEADER'
 
-    @property
-    def as_bytes(self):
+    @profile
+    def represent_as_bytes(self):
         # HEADER
         _length = write_struct(RepresentationCode.UNORM, 124)
         _attributes = write_struct(RepresentationCode.USHORT, int('10000000', 2))
