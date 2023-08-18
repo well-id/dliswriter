@@ -1,6 +1,5 @@
 from functools import lru_cache
-from typing import Union
-from enum import IntEnum, Enum
+from enum import IntEnum
 
 from .custom_types import LogicalRecordType
 from .custom_types import LogicalRecordTypeCode
@@ -103,8 +102,9 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
 
     """
 
-    lrt_code = getattr(LogicalRecordTypeEnum, logical_record_type, None)
-    if lrt_code is None:
+    try:
+        lrt_code = LogicalRecordTypeEnum[logical_record_type]
+    except KeyError:
         error_message = (f'Provided Logical Record Type "{logical_record_type}" could not be found\n'
                          'Description must be exactly one of the following:\n')
         error_message += ''.join('\t' + lrt + '\n' for lrt in LogicalRecordTypeEnum.get_all_codes())
@@ -113,47 +113,58 @@ def get_logical_record_type(logical_record_type: LogicalRecordType) -> LogicalRe
     return lrt_code
 
 
-@lru_cache
-def get_representation_code(key: Union[RepresentationCode, int],
-                            from_value: bool = False) -> Union[int, RepresentationCode]:
-    """Converts RP66 V1 representation code to corresponding number or vice-versa.
+def get_representation_code_value(code: RepresentationCode) -> int:
+    """Converts RP66 V1 representation code to corresponding number.
 
     Args:
-        key: One of the representation code names or numbers specified in RP66 V1 Appendix B
-        from_value: When True, converts number to code, when False, converts code to number
+        code: One of the representation code names or numbers specified in RP66 V1 Appendix B
 
     Returns:
-        Depending on from_value attribute, either a Representation Code or the corresponding number
+        Number corresponding to the given RepresentationCode.
 
     Raises:
-        ValueError: If key is not in representation_code_dictionary keys or values
-                        depending on the from_value attribute.
+        ValueError: If the provided code name is not found in the code-to-number converter enum.
 
-    .. _RP66 V1 Appendix B Representation Codes:
-        http://w3.energistics.org/rp66/v1/rp66v1_appb.html
+    Note:
+        _RP66 V1 Appendix B Representation Codes: http://w3.energistics.org/rp66/v1/rp66v1_appb.html
 
     """
 
-    code_names = RepresentationCodeConversionEnum.get_all_code_names()
-    code_values = RepresentationCodeConversionEnum.get_all_code_values()
+    try:
+        code_value = RepresentationCodeConversionEnum[code.name]
 
-    if isinstance(key, Enum):
-        key = key.name
-
-    if not from_value and key not in code_names:
-        error_message = (f'Provided representation code "{key}" could not be found\n'
+    except KeyError:
+        error_message = (f'Provided representation code "{code.name}" could not be found\n'
                          f'Key must be exactly one of the following:\n')
-        error_message += ''.join('\t' + key + '\n' for key in code_names)
+        error_message += ''.join('\t' + key + '\n' for key in RepresentationCodeConversionEnum.get_all_code_names())
         raise ValueError(error_message)
 
-    if from_value and key not in code_values:
-        error_message = f'Provided description "{key}" could not be found\nKey must be exactly one of the following:\n'
-        error_message += ''.join('\t' + key + '\n' for key in code_values)
+    return code_value.value
+
+
+def get_representation_code_from_value(code_value: int) -> RepresentationCode:
+    """Converts a number to the corresponding RP66 V1 representation code.
+
+    Args:
+        code_value: One of the representation code names or numbers specified in RP66 V1 Appendix B
+
+    Returns:
+        The Representation Code corresponding to the given code_value.
+
+    Raises:
+        ValueError: If the given number does not correspond to any member of the code-to-number converter enum.
+
+    Note:
+        _RP66 V1 Appendix B Representation Codes: http://w3.energistics.org/rp66/v1/rp66v1_appb.html
+
+    """
+
+    try:
+        conv_code = RepresentationCodeConversionEnum(code_value)
+
+    except ValueError:
+        error_message = f'Provided value "{code_value}" could not be found\nKey must be exactly one of the following:\n'
+        error_message += ''.join('\t' + key + '\n' for key in RepresentationCodeConversionEnum.get_all_code_values())
         raise ValueError(error_message)
 
-    if from_value:
-        target_code_name = RepresentationCodeConversionEnum(key).name
-        return getattr(RepresentationCode, target_code_name)  # a RepresentationCode member
-
-    else:
-        return getattr(RepresentationCodeConversionEnum, key).value  # int - representation code value
+    return RepresentationCode[conv_code.name]

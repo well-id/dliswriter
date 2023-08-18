@@ -6,7 +6,7 @@ from .common import NOT_TEMPLATE
 from .rp66 import RP66
 from .common import write_struct
 from .common import write_absent_attribute
-from .converters import get_representation_code
+from .converters import get_representation_code_value
 from .converters import get_logical_record_type
 from .custom_types import AttributeValue
 from .enums import RepresentationCode
@@ -84,9 +84,8 @@ class Attribute(object):
             else:
                 self.characteristics += '0'
 
-
         if self.representation_code and for_template:
-            self.bytes += write_struct(RepresentationCode.USHORT, get_representation_code(self.representation_code))
+            self.bytes += write_struct(RepresentationCode.USHORT, get_representation_code_value(self.representation_code))
             self.characteristics += '1'
         else:
             self.characteristics += '0'

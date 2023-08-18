@@ -6,7 +6,7 @@ import numpy as np
 from .utils.core import IFLR
 from .utils.enums import Enum
 from .utils.common import write_struct
-from .utils.converters import get_representation_code
+from .utils.converters import get_representation_code_from_value
 from .utils.enums import RepresentationCode
 
 
@@ -62,8 +62,7 @@ class FrameData(IFLR):
         j = 0
         _channels = self.frame.channels.value
         for _channel in _channels:
-            _representation_code = get_representation_code(_channel.representation_code.value,
-                                                           from_value=True)
+            _representation_code = get_representation_code_from_value(_channel.representation_code.value)
             _dimension = _channel.dimension.value
 
             for i in range(j, j+math.prod(_dimension)):
