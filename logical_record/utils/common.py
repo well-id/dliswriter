@@ -225,6 +225,18 @@ def _write_struct_default(representation_code, value):
     return representation_code.value.pack(value)
 
 
+_struct_dict = {
+    RepresentationCode.ASCII: _write_struct_ascii,
+    RepresentationCode.UVARI: _write_struct_uvari,
+    RepresentationCode.IDENT: _write_struct_ident,
+    RepresentationCode.DTIME: _write_struct_dtime,
+    RepresentationCode.OBNAME: _write_struct_obname,
+    RepresentationCode.UNITS: _write_struct_units,
+    RepresentationCode.OBJREF: _write_struct_objref,
+    RepresentationCode.STATUS: _write_struct_status
+}
+
+
 @lru_cache(maxsize=65536)
 def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     """Converts the value to bytes according to the RP66 V1 spec.
@@ -241,32 +253,10 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
 
     """
 
-    if representation_code == RepresentationCode.ASCII:
-        return _write_struct_ascii(value)
+    if func := _struct_dict.get(representation_code, None):
+        return func(value)
 
-    elif representation_code == RepresentationCode.UVARI:
-        return _write_struct_uvari(value)
-    
-    elif representation_code == RepresentationCode.IDENT:
-        return _write_struct_ident(value)
-
-    elif representation_code == RepresentationCode.DTIME:
-        return _write_struct_dtime(value)
-
-    elif representation_code == RepresentationCode.OBNAME:
-        return _write_struct_obname(value)
-
-    elif representation_code == RepresentationCode.UNITS:
-        return _write_struct_units(value)
-
-    elif representation_code == RepresentationCode.OBJREF:
-        return _write_struct_objref(value)
-
-    elif representation_code == RepresentationCode.STATUS:
-        return _write_struct_status(value)
-
-    else:
-        return _write_struct_default(representation_code, value)
+    return _write_struct_default(representation_code, value)
 
 
 def write_absent_attribute() -> bytes:
