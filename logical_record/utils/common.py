@@ -159,6 +159,72 @@ def read_struct(representation_code: RepresentationCode, packed_value: bytes) ->
     return representation_code.value.unpack(packed_value)[0]
 
 
+def _write_struct_ascii(value):
+    return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')
+
+
+def _write_struct_uvari(value):
+    if value > 127:
+        if value > 16383:
+            value = '{0:08b}'.format(value)
+            value = '11' + (30 - len(value)) * '0' + value
+            return RepresentationCode.ULONG.value.pack(int(value, 2))
+        else:
+            value = '{0:08b}'.format(value)
+            value = '10' + (14 - len(value)) * '0' + value
+            return RepresentationCode.UNORM.value.pack(int(value, 2))
+
+    return write_struct(RepresentationCode.USHORT, int('{0:08b}'.format(value), 2))
+
+
+def _write_struct_ident(value):
+    return write_struct(RepresentationCode.USHORT, len(str(value))) + str(value).encode('ascii')
+
+
+def _write_struct_dtime(value):
+    return get_datetime(value)
+
+
+def _write_struct_obname(value):
+    try:
+        origin_reference = write_struct(RepresentationCode.UVARI, value[0])
+        copy_number = write_struct(RepresentationCode.USHORT, value[1])
+        name = write_struct(RepresentationCode.IDENT, value[2])
+
+        obname = origin_reference + copy_number + name
+
+    except TypeError:
+        if type(value) == list or type(value) == tuple:
+            obname = b''
+            for val in value:
+                obname += val.obname
+        else:
+            obname = value.obname
+
+    return obname
+
+
+def _write_struct_units(value):
+    return write_struct(RepresentationCode.IDENT, validate_units(value))
+
+
+def _write_struct_objref(value):
+    return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
+
+
+def _write_struct_status(value):
+    if value not in [0, 1]:
+        error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
+                         " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
+        raise Exception(error_message)
+
+    return write_struct(RepresentationCode.USHORT, value)
+
+
+def _write_struct_default(representation_code, value):
+    return representation_code.value.pack(value)
+
+
 @lru_cache(maxsize=65536)
 def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     """Converts the value to bytes according to the RP66 V1 spec.
@@ -176,61 +242,31 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     """
 
     if representation_code == RepresentationCode.ASCII:
-        return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')
+        return _write_struct_ascii(value)
 
     elif representation_code == RepresentationCode.UVARI:
-        if value > 127:
-            if value > 16383:
-                value = '{0:08b}'.format(value)
-                value = '11' + (30 - len(value)) * '0' + value
-                return RepresentationCode.ULONG.value.pack(int(value,2))
-            else:
-                value = '{0:08b}'.format(value)
-                value = '10' + (14 - len(value)) * '0' + value
-                return RepresentationCode.UNORM.value.pack(int(value,2))
-                
-        return write_struct(RepresentationCode.USHORT,int('{0:08b}'.format(value),2))
+        return _write_struct_uvari(value)
     
     elif representation_code == RepresentationCode.IDENT:
-        return write_struct(RepresentationCode.USHORT, len(str(value))) + str(value).encode('ascii')
+        return _write_struct_ident(value)
 
     elif representation_code == RepresentationCode.DTIME:
-        return get_datetime(value)
+        return _write_struct_dtime(value)
 
     elif representation_code == RepresentationCode.OBNAME:
-        try:
-            origin_reference = write_struct(RepresentationCode.UVARI, value[0])
-            copy_number = write_struct(RepresentationCode.USHORT, value[1])
-            name = write_struct(RepresentationCode.IDENT, value[2])
-
-            obname = origin_reference + copy_number + name
-
-        except TypeError:
-            if type(value) == list or type(value) == tuple:
-                obname = b''
-                for val in value:
-                    obname += val.obname
-            else:
-                obname = value.obname
-
-        return obname 
+        return _write_struct_obname(value)
 
     elif representation_code == RepresentationCode.UNITS:
-        return write_struct(RepresentationCode.IDENT, validate_units(value))
+        return _write_struct_units(value)
 
     elif representation_code == RepresentationCode.OBJREF:
-        return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
+        return _write_struct_objref(value)
 
     elif representation_code == RepresentationCode.STATUS:
-        if value not in [0, 1]:
-            error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
-                             " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
-            raise Exception(error_message)
-
-        return write_struct(RepresentationCode.USHORT, value)
+        return _write_struct_status(value)
 
     else:
-        return representation_code.value.pack(value)
+        return _write_struct_default(representation_code, value)
 
 
 def write_absent_attribute() -> bytes:
