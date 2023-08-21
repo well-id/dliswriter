@@ -45,19 +45,18 @@ UNORM_OFFSET = 32768        #: offset added to values packed as UNORM; '10' and 
 ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30 zeros
 
 
-def validate_units(value: str) -> str:
+#: regex used in validating units
+UNITS_REGEX = re.compile(r'[a-zA-Z\d\s\-.,/()]*')
+
+
+def validate_units(value: str) -> None:
     """Validates the user input for UNITS data type according to RP66 V1 specifications.
 
     Args:
         value: A string representing measurement units provided by the user.
 
-    Returns:
-        Value itself if regex check is successful.
-
     Raises:
-        Exception: If the value provided does not fit with RP66 V1 specification.
-
-    
+        ValueError: If the value provided does not fit with RP66 V1 specification.
 
     Quote:
         Syntactically, Representation Code UNITS is similar to Representation Codes IDENT and ASCII.
@@ -80,20 +79,9 @@ def validate_units(value: str) -> str:
         http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_27
 
     """
-    
-    regex_checked = ''.join(re.findall(r'[a-zA-Z\d\s\-.,/()]', value))
 
-    if regex_checked == value:
-        return value
-    else:
-        message = '''{}
-
-        \n
-        UNITS must comply with the RP66 V1 specification.
-
-        Value "{}" does not comply with the rules printed above.
-        '''.format(validate_units.__doc__, value)
-        raise Exception(message)
+    if not UNITS_REGEX.fullmatch(value):
+        raise ValueError(f"Value {value} does not must comply with the RP66 V1 specification for units.")
 
 
 def get_datetime(date_time: datetime) -> bytes:
@@ -186,12 +174,10 @@ def _write_struct_ident(value):
     return write_struct(RepresentationCode.USHORT, len(value)) + value.encode('ascii')
 
 
-@profile
 def _write_struct_dtime(value):
     return get_datetime(value)
 
 
-@profile
 def _write_struct_obname(value):
     try:
         origin_reference = write_struct(RepresentationCode.UVARI, value[0])
@@ -211,9 +197,10 @@ def _write_struct_obname(value):
     return obname
 
 
-@profile
 def _write_struct_units(value):
-    return write_struct(RepresentationCode.IDENT, validate_units(value))
+    validate_units(value)
+
+    return write_struct(RepresentationCode.IDENT, value)
 
 
 @profile
