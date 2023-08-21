@@ -2,7 +2,6 @@ import re
 from datetime import datetime
 from typing import Any
 from functools import lru_cache
-from line_profiler_pycharm import profile
 
 from .enums import RepresentationCode
 
@@ -203,12 +202,10 @@ def _write_struct_units(value):
     return write_struct(RepresentationCode.IDENT, value)
 
 
-@profile
 def _write_struct_objref(value):
     return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
 
 
-@profile
 def _write_struct_status(value):
     if value not in [0, 1]:
         error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
@@ -218,7 +215,6 @@ def _write_struct_status(value):
     return write_struct(RepresentationCode.USHORT, value)
 
 
-@profile
 def _write_struct_default(representation_code, value):
     return representation_code.value.pack(value)
 
