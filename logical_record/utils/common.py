@@ -40,6 +40,11 @@ instances.
 """
 
 
+# offsets used in writing structs for UVARI representation code (see '_write_struct_uvari' function)
+UNORM_OFFSET = 32768        #: offset added to values packed as UNORM; '10' and 14 zeros
+ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30 zeros
+
+
 def validate_units(value: str) -> str:
     """Validates the user input for UNITS data type according to RP66 V1 specifications.
 
@@ -170,19 +175,10 @@ def _write_struct_uvari(value):
         return write_struct(RepresentationCode.USHORT, value)
 
     if value < 16384:
-        value = _transform_uvari_value(value, '10', 14)
-        return RepresentationCode.UNORM.value.pack(value)
+        return RepresentationCode.UNORM.value.pack(value + UNORM_OFFSET)
 
     # >= 16384
-    value = _transform_uvari_value(value, '11', 30)
-    return RepresentationCode.ULONG.value.pack(value)
-
-
-@profile
-def _transform_uvari_value(value, prefix, expected_length):
-    value = f'{value:08b}'
-    value = f"{prefix}{(expected_length - len(value)) * '0'}{value}"
-    return int(value, 2)
+    return RepresentationCode.ULONG.value.pack(value + ULONG_OFFSET)
 
 
 @profile
