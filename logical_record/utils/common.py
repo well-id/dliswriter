@@ -167,17 +167,22 @@ def _write_struct_ascii(value):
 @profile
 def _write_struct_uvari(value):
     if value < 128:
-        return write_struct(RepresentationCode.USHORT, int('{0:08b}'.format(value), 2))
+        return write_struct(RepresentationCode.USHORT, value)
 
     if value < 16384:
-        value = '{0:08b}'.format(value)
-        value = '10' + (14 - len(value)) * '0' + value
-        return RepresentationCode.UNORM.value.pack(int(value, 2))
+        value = _transform_uvari_value(value, '10', 14)
+        return RepresentationCode.UNORM.value.pack(value)
 
     # >= 16384
-    value = '{0:08b}'.format(value)
-    value = '11' + (30 - len(value)) * '0' + value
-    return RepresentationCode.ULONG.value.pack(int(value, 2))
+    value = _transform_uvari_value(value, '11', 30)
+    return RepresentationCode.ULONG.value.pack(value)
+
+
+@profile
+def _transform_uvari_value(value, prefix, expected_length):
+    value = f'{value:08b}'
+    value = f"{prefix}{(expected_length - len(value)) * '0'}{value}"
+    return int(value, 2)
 
 
 @profile
