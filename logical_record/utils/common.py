@@ -164,12 +164,12 @@ def read_struct(representation_code: RepresentationCode, packed_value: bytes) ->
     """
     return representation_code.value.unpack(packed_value)[0]
 
-@profile
+
 def _write_struct_ascii(value):
-    return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')
+    value = str(value)
+    return write_struct(RepresentationCode.UVARI, len(value)) + value.encode('ascii')
 
 
-@profile
 def _write_struct_uvari(value):
     if value < 128:
         return write_struct(RepresentationCode.USHORT, value)
@@ -181,9 +181,9 @@ def _write_struct_uvari(value):
     return RepresentationCode.ULONG.value.pack(value + ULONG_OFFSET)
 
 
-@profile
 def _write_struct_ident(value):
-    return write_struct(RepresentationCode.USHORT, len(str(value))) + str(value).encode('ascii')
+    value = str(value)
+    return write_struct(RepresentationCode.USHORT, len(value)) + value.encode('ascii')
 
 
 @profile
