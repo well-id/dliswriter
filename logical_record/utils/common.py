@@ -2,6 +2,7 @@ import re
 from datetime import datetime
 from typing import Any
 from functools import lru_cache
+from line_profiler_pycharm import profile
 
 from .enums import RepresentationCode
 
@@ -158,33 +159,38 @@ def read_struct(representation_code: RepresentationCode, packed_value: bytes) ->
     """
     return representation_code.value.unpack(packed_value)[0]
 
-
+@profile
 def _write_struct_ascii(value):
     return write_struct(RepresentationCode.UVARI, len(str(value))) + str(value).encode('ascii')
 
 
+@profile
 def _write_struct_uvari(value):
-    if value > 127:
-        if value > 16383:
-            value = '{0:08b}'.format(value)
-            value = '11' + (30 - len(value)) * '0' + value
-            return RepresentationCode.ULONG.value.pack(int(value, 2))
-        else:
-            value = '{0:08b}'.format(value)
-            value = '10' + (14 - len(value)) * '0' + value
-            return RepresentationCode.UNORM.value.pack(int(value, 2))
+    if value < 128:
+        return write_struct(RepresentationCode.USHORT, int('{0:08b}'.format(value), 2))
 
-    return write_struct(RepresentationCode.USHORT, int('{0:08b}'.format(value), 2))
+    if value < 16384:
+        value = '{0:08b}'.format(value)
+        value = '10' + (14 - len(value)) * '0' + value
+        return RepresentationCode.UNORM.value.pack(int(value, 2))
+
+    # >= 16384
+    value = '{0:08b}'.format(value)
+    value = '11' + (30 - len(value)) * '0' + value
+    return RepresentationCode.ULONG.value.pack(int(value, 2))
 
 
+@profile
 def _write_struct_ident(value):
     return write_struct(RepresentationCode.USHORT, len(str(value))) + str(value).encode('ascii')
 
 
+@profile
 def _write_struct_dtime(value):
     return get_datetime(value)
 
 
+@profile
 def _write_struct_obname(value):
     try:
         origin_reference = write_struct(RepresentationCode.UVARI, value[0])
@@ -204,14 +210,17 @@ def _write_struct_obname(value):
     return obname
 
 
+@profile
 def _write_struct_units(value):
     return write_struct(RepresentationCode.IDENT, validate_units(value))
 
 
+@profile
 def _write_struct_objref(value):
     return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
 
 
+@profile
 def _write_struct_status(value):
     if value not in [0, 1]:
         error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
@@ -221,6 +230,7 @@ def _write_struct_status(value):
     return write_struct(RepresentationCode.USHORT, value)
 
 
+@profile
 def _write_struct_default(representation_code, value):
     return representation_code.value.pack(value)
 
