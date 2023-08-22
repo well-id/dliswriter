@@ -100,10 +100,9 @@ class NoFormatFrameData(IFLR):
 
 class MultiFrameData:
     def __init__(self, frame: Frame, data: pd.DataFrame):
-        self.flatten_dataframe(data)
 
         self._frame = frame
-        self._data = data
+        self._data = self.flatten_dataframe(data)
 
         self.origin_reference = None
 
@@ -117,11 +116,12 @@ class MultiFrameData:
     def frame(self):
         return self._frame
 
+    @profile
     def _make_frame_data(self, idx: int):
         return FrameData(
                 frame=self._frame,
                 frame_number=idx + 1,
-                slots=self._data.iloc[idx],
+                slots=self._data[idx],
                 origin_reference=self.origin_reference
         )
 
@@ -151,5 +151,7 @@ class MultiFrameData:
                 new_names = [c + str(i + 1) for i in range(len(c0))]
                 data[new_names] = pd.DataFrame(data[c].to_list(), index=data.index)
                 data.drop(columns=[c], inplace=True)
+
+        return data.to_numpy()
 
 
