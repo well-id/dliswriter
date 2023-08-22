@@ -1,53 +1,24 @@
-from abc import abstractmethod
+from abc import ABC
 from functools import lru_cache
 from line_profiler_pycharm import profile
 
 from ..common import write_struct
 from ..enums import RepresentationCode
+from ..core.iflr_eflr_base import IflrAndEflrBase
 
 
-class IFLR:
+class IFLR(IflrAndEflrBase, ABC):
     """Similar to EFLR object with is_eflr=False
 
     Methods docstrings are not added as they are the same with EFLR.
     """
 
+    is_eflr = False
+
     def __init__(self):
+        super().__init__()
 
-        self.logical_record_type = None
         self.iflr_type = None
-
-        self.is_eflr = False
-        self.has_predecessor_segment = False
-        self.has_successor_segment = False
-        self.is_encrypted = False
-        self.has_encryption_protocol = False
-        self.has_checksum = False
-        self.has_trailing_length = False
-        self.has_padding = False
-
-    @property
-    @abstractmethod
-    def body_bytes(self):
-        pass
-
-    @property
-    def segment_attributes(self) -> bytes:
-
-        _bits = f'{int(self.is_eflr)}' \
-                f'{int(self.has_predecessor_segment)}' \
-                f'{int(self.has_successor_segment)}' \
-                f'{int(self.is_encrypted)}' \
-                f'{int(self.has_encryption_protocol)}' \
-                f'{int(self.has_checksum)}' \
-                f'{int(self.has_trailing_length)}' \
-                f'{int(self.has_padding)}'
-
-        return write_struct(RepresentationCode.USHORT, int(_bits, 2))
-
-    @property
-    def size(self):
-        return len(self.represent_as_bytes())
 
     @property
     def header_bytes(self) -> bytes:
@@ -102,6 +73,3 @@ class IFLR:
             self.has_padding = not self.has_padding
 
         return _length + _attributes + write_struct(RepresentationCode.USHORT, self.iflr_type)
-
-    def __repr__(self):
-        return self.set_type

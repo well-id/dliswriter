@@ -7,9 +7,10 @@ from ..common import write_struct, write_absent_attribute
 from ..converters import get_logical_record_type
 from ..enums import RepresentationCode
 from ..core.attribute import Attribute
+from ..core.iflr_eflr_base import IflrAndEflrBase
 
 
-class EFLR:
+class EFLR(IflrAndEflrBase):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
@@ -19,7 +20,10 @@ class EFLR:
 
     """
 
+    is_eflr = True
+
     def __init__(self, object_name: str, set_name: str = None, *args, **kwargs):
+        super().__init__()
 
         self.object_name = object_name
         self.set_name = set_name
@@ -28,16 +32,6 @@ class EFLR:
         self.copy_number = 0
 
         self.segment_length = None
-        self.logical_record_type = None
-
-        self.is_eflr = True
-        self.has_predecessor_segment = False
-        self.has_successor_segment = False
-        self.is_encrypted = False
-        self.has_encryption_protocol = False
-        self.has_checksum = False
-        self.has_trailing_length = False
-        self.has_padding = False
 
         self.set_type = None
 
@@ -145,25 +139,6 @@ class EFLR:
         return _bytes
 
     @property
-    def segment_attributes(self) -> bytes:
-        """Writes the logical record segment attributes.
-
-        .._RP66 V1 Logical Record Segment Header:
-            http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_2_2_1
-
-        """
-        _bits = str(int(self.is_eflr)) \
-                + str(int(self.has_predecessor_segment)) \
-                + str(int(self.has_successor_segment)) \
-                + str(int(self.is_encrypted)) \
-                + str(int(self.has_encryption_protocol)) \
-                + str(int(self.has_checksum)) \
-                + str(int(self.has_trailing_length)) \
-                + str(int(self.has_padding))
-
-        return write_struct(RepresentationCode.USHORT, int(_bits, 2))
-
-    @property
     def header_bytes(self) -> bytes:
         """Writes Logical Record Segment Header
 
@@ -196,12 +171,6 @@ class EFLR:
             d = self.object_component
             c = self.objects
             return a + b + d + c
-
-    @property
-    def size(self) -> bytes:
-        """Calculates the size of the Logical Record Segment"""
-
-        return len(self.represent_as_bytes())
 
     @property
     def padding_bytes(self) -> bytes:
@@ -269,8 +238,4 @@ class EFLR:
 
         return _length + _attributes + write_struct(RepresentationCode.USHORT,
                                                     get_logical_record_type(self.logical_record_type))
-
-    def __repr__(self):
-        """String representation of this object"""
-        return self.set_type
 
