@@ -4,7 +4,6 @@ import numpy as np
 import h5py
 import os
 import logging
-import pandas as pd
 from line_profiler_pycharm import profile
 
 from logical_record.file import DLISFile
@@ -42,11 +41,35 @@ def make_origin():
 
 def load_h5_data(data_file_name, key='contents'):
     h5_data = h5py.File(data_file_name, 'r')[f'/{key}/']
-    return pd.DataFrame({k: h5_data.get(k)[:].tolist() for k in h5_data.keys()})
+
+    dtype = []
+    arrays = []
+    n_rows = None
+    for key in h5_data.keys():
+        key_data = h5_data.get(key)[:]
+        arrays.append(key_data)
+
+        dt = (key, key_data.dtype)
+        if key_data.ndim > 1:
+            dt = (*dt, key_data.shape[-1])
+        dtype.append(dt)
+
+        if n_rows is None:
+            n_rows = key_data.shape[0]
+        else:
+            if n_rows != key_data.shape[0]:
+                raise RuntimeError(
+                    "Datasets in the file have different lengths; the data cannot be transformed to DLIS format")
+
+    full_data = np.zeros(n_rows, dtype=dtype)
+    for key, arr in zip(h5_data.keys(), arrays):
+        full_data[key] = arr
+
+    return full_data
 
 
 @profile
-def make_channels_and_frame(data):
+def make_channels_and_frame(data: np.ndarray):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
@@ -55,9 +78,10 @@ def make_channels_and_frame(data):
         make_channel('surface rpm', unit='rpm', data=data['rpm']),
     ]
 
-    if 'image' in data.keys():
+    if 'image' in data.dtype.names:
+        n_cols = data['image'].shape[-1]
         frame.channels.value.append(
-            make_channel('image', unit='m', data=np.stack(data['image']), dimension=5, element_limit=5)
+            make_channel('image', unit='m', data=data['image'], dimension=n_cols, element_limit=n_cols)
         )
 
     frame.index_type.value = 'TIME'

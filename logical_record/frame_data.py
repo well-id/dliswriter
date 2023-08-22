@@ -1,5 +1,4 @@
 import math
-import pandas as pd
 import numpy as np
 from line_profiler_pycharm import profile
 
@@ -99,10 +98,10 @@ class NoFormatFrameData(IFLR):
 
 
 class MultiFrameData:
-    def __init__(self, frame: Frame, data: pd.DataFrame):
+    def __init__(self, frame: Frame, data: np.ndarray):
 
         self._frame = frame
-        self._data = self.flatten_dataframe(data)
+        self._data = self.flatten_structured_array(data)
 
         self.origin_reference = None
 
@@ -144,14 +143,18 @@ class MultiFrameData:
         return self._make_frame_data(item)
 
     @staticmethod
-    def flatten_dataframe(data: pd.DataFrame):
-        for c in data.columns:
-            c0 = data[c][0]
-            if isinstance(c0, (list, np.ndarray)):
-                new_names = [c + str(i + 1) for i in range(len(c0))]
-                data[new_names] = pd.DataFrame(data[c].to_list(), index=data.index)
-                data.drop(columns=[c], inplace=True)
+    def flatten_structured_array(data: np.ndarray, channel_names: list = None):
+        dtype_names = data.dtype.names
 
-        return data.to_numpy()
+        if dtype_names is None:
+            return data
 
+        if channel_names is not None:
+            if any(cn not in dtype_names for cn in channel_names):
+                raise ValueError(f"Channel names and data dtype names do not match: "
+                                 f"\n{channel_names}\nvs\n{dtype_names}")
+            names = channel_names
+        else:
+            names = data.dtype.names
 
+        return np.concatenate([np.atleast_2d(data[key].T) for key in names]).T
