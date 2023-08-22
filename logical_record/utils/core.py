@@ -1,4 +1,5 @@
 from abc import abstractmethod
+from functools import lru_cache
 from line_profiler_pycharm import profile
 from typing import Union, List, Tuple
 
@@ -368,16 +369,15 @@ class EFLR(object):
     @property
     def size(self) -> bytes:
         """Calculates the size of the Logical Record Segment"""
-        try:
-            return len(self.represent_as_bytes())
-        except:
-            raise Exception(f'\n\n{self}\n\n')
+
+        return len(self.represent_as_bytes())
 
     @property
     def padding_bytes(self) -> bytes:
         """Writes padding bytes"""
         return write_struct(RepresentationCode.USHORT, 1)
 
+    @lru_cache()
     @profile
     def represent_as_bytes(self):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
@@ -548,6 +548,7 @@ class IFLR(object):
                + self.segment_attributes\
                + write_struct(RepresentationCode.USHORT, self.iflr_type)
 
+    @lru_cache()
     @profile
     def represent_as_bytes(self):
         _bytes = self.body_bytes  # Create
