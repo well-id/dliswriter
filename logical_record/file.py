@@ -2,6 +2,7 @@ import os
 import numpy as np
 import logging
 from functools import lru_cache
+from itertools import chain
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union
@@ -79,7 +80,7 @@ class DLISFile(object):
 
     @log_progress("Assigning origin reference")
     @profile
-    def assign_origin_reference(self, logical_records):
+    def assign_origin_reference(self, meta_logical_records, data_logical_records):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
         val = self.origin.file_set_number.value
@@ -87,7 +88,7 @@ class DLISFile(object):
 
         self.file_header.origin_reference = val
         self.origin.origin_reference = val
-        for logical_record in logical_records:
+        for logical_record in (*meta_logical_records, data_logical_records):
             logical_record.origin_reference = val
 
             if hasattr(logical_record, 'is_dictionary_controlled') \
@@ -97,12 +98,16 @@ class DLISFile(object):
 
     @log_progress("Writing raw bytes...")
     @profile
-    def raw_bytes(self, logical_records) -> np.ndarray:
+    def raw_bytes(self, meta_logical_records, data_logical_records) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        all_records = [self.storage_unit_label, self.file_header, self.origin] + logical_records
+        all_records = chain(
+            (self.storage_unit_label, self.file_header, self.origin),
+            meta_logical_records,
+            data_logical_records
+        )
 
-        n = len(all_records)
+        n = 3 + len(meta_logical_records) + len(data_logical_records)
         all_records_bytes = [None] * n
         all_positions = np.zeros(n+1, dtype=int)
         current_pos = 0
@@ -111,18 +116,18 @@ class DLISFile(object):
             all_records_bytes[i] = b
             current_pos += len(b)
             all_positions[i+1] = current_pos
+            self.pos[lr] = all_positions[i]
 
         raw_bytes = bytearray(all_positions[-1]*2)
 
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
-            self.pos[all_records[i]] = all_positions[i]
 
         return np.frombuffer(raw_bytes, dtype=np.uint8)
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, logical_records):
+    def create_visible_record_dictionary(self, meta_logical_records, data_logical_records):
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -131,8 +136,15 @@ class DLISFile(object):
 
         """
 
-        all_lrs = [self.file_header, self.origin] + logical_records
-        n_lrs = len(all_lrs)
+        meta_logical_records = [self.file_header, self.origin] + meta_logical_records
+        n_meta_lrs = len(meta_logical_records)
+        n_lrs = n_meta_lrs + len(data_logical_records)
+
+        def get_lrs(i):
+            if i < n_meta_lrs:
+                return meta_logical_records[i]
+            return data_logical_records[i - n_meta_lrs]
+
         visible_record_length = self.visible_record_length
 
         q = {}
@@ -156,7 +168,7 @@ class DLISFile(object):
                 }
                 break
 
-            lrs = all_lrs[_idx]
+            lrs = get_lrs(_idx)
             lrs_size = lrs.size
 
             _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
@@ -378,13 +390,13 @@ class DLISFile(object):
         logger.info(f"Data written to file: '{filename}'")
 
     @profile
-    def write_dlis(self, logical_records, filename: Union[str, bytes, os.PathLike]):
+    def write_dlis(self, meta_logical_records, data_logical_records, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.validate()
-        self.assign_origin_reference(logical_records)
-        raw_bytes = self.raw_bytes(logical_records)
-        vr_dict = self.create_visible_record_dictionary(logical_records)
+        self.assign_origin_reference(meta_logical_records, data_logical_records)
+        raw_bytes = self.raw_bytes(meta_logical_records, data_logical_records)
+        vr_dict = self.create_visible_record_dictionary(meta_logical_records, data_logical_records)
         all_bytes = self.add_visible_records(vr_dict, raw_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')

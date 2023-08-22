@@ -3,7 +3,6 @@ from pathlib import Path
 import numpy as np
 import h5py
 import os
-from progressbar import progressbar
 import logging
 import pandas as pd
 from line_profiler_pycharm import profile
@@ -13,7 +12,7 @@ from logical_record.storage_unit_label import StorageUnitLabel
 from logical_record.file_header import FileHeader
 from logical_record.origin import Origin
 from logical_record.frame import Frame
-from logical_record.frame_data import FrameData
+from logical_record.frame_data import MultiFrameData
 from logical_record.utils.enums import Units, RepresentationCode
 from logical_record.channel import make_channel
 from tests.utils.make_mock_data_hdf5 import create_data
@@ -45,15 +44,6 @@ def load_h5_data(data_file_name, key='contents'):
     h5_data = h5py.File(data_file_name, 'r')[f'/{key}/']
     return pd.DataFrame({k: h5_data.get(k)[:].tolist() for k in h5_data.keys()})
 
-@profile
-def flatten_dataframe(data: pd.DataFrame):
-    for c in data.columns:
-        c0 = data[c][0]
-        if isinstance(c0, (list, np.ndarray)):
-            new_names = [c + str(i+1) for i in range(len(c0))]
-            data[new_names] = pd.DataFrame(data[c].to_list(), index=data.index)
-            data.drop(columns=[c], inplace=True)
-
 
 @profile
 def make_channels_and_frame(data):
@@ -74,18 +64,11 @@ def make_channels_and_frame(data):
     frame.spacing.representation_code = RepresentationCode.FDOUBL
     frame.spacing.units = Units.s
 
-    # Create FrameData objects
-    frame_data_objects = []
+    n_points = data.shape[0]
+    logger.info(f'Preparing frames for {n_points} rows.')
+    multi_frame_data = MultiFrameData(frame, data)
 
-    n_points = data["time"].shape[0]
-    logger.info(f'Making frames for {n_points} rows.')
-
-    flatten_dataframe(data)
-    for i in progressbar(range(n_points)):
-        frame_data = FrameData(frame=frame, frame_number=i + 1, slots=data.loc[i])
-        frame_data_objects.append(frame_data)
-
-    return frame, frame_data_objects
+    return frame, multi_frame_data
 
 @profile
 def write_dlis_file(data, dlis_file_name):
@@ -96,15 +79,14 @@ def write_dlis_file(data, dlis_file_name):
         origin=make_origin()
     )
 
-    frame, frame_data_objects = make_channels_and_frame(data)
+    frame, data_logical_records = make_channels_and_frame(data)
 
-    logical_records = [
+    meta_logical_records = [
         *frame.channels.value,
         frame
     ]
-    logical_records.extend(frame_data_objects)
 
-    dlis_file.write_dlis(logical_records, dlis_file_name)
+    dlis_file.write_dlis(meta_logical_records, data_logical_records, dlis_file_name)
 
 
 if __name__ == '__main__':
