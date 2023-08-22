@@ -20,3 +20,7 @@ class Frame(EFLR):
 
         self.create_attributes()
 
+    @property
+    def key(self):
+        return hash(type(self))
+

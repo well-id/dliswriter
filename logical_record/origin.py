@@ -31,3 +31,7 @@ class Origin(EFLR):
         self.name_space_version = None
 
         self.create_attributes()
+
+    @property
+    def key(self):
+        return hash(type(self))

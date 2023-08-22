@@ -27,6 +27,10 @@ class Channel(EFLR):
         self.create_attributes()
         self.data = None
 
+    @property
+    def key(self):
+        return hash(type(self)), self.long_name.value
+
 
 def make_channel(name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
                  unit: Union[Units, str] = None, element_limit: int = None, data=None) -> Channel:
@@ -57,4 +61,3 @@ def make_channel(name: str, dimension: int = 1, long_name: str = None, repr_code
         channel.units.value = unit
 
     return channel
-

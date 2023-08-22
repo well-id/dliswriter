@@ -62,6 +62,10 @@ class FileHeader(object):
         
         return _bytes
 
+    @property
+    def key(self):
+        return hash(type(self))
+
 
     @property
     def size(self):

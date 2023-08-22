@@ -41,13 +41,9 @@ class FrameData(IFLR):
 
         self.origin_reference = origin_reference
 
-    def __hash__(self):
-        return hash(type(self)) + hash(self.frame_number)
-
-    def __eq__(self, other):
-        if not isinstance(other, type(self)):
-            return False
-        return self._frame_number == other.frame_number
+    @property
+    def key(self):
+        return hash(type(self)), self._frame_number
 
     @property
     def frame(self):

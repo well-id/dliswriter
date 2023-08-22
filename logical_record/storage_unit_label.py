@@ -42,6 +42,10 @@ class StorageUnitLabel(object):
         self.max_record_length = max_record_length # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
         self.storage_set_identifier = storage_set_identifier
 
+    @property
+    def key(self):
+        return hash(type(self))
+
     @lru_cache(maxsize=4096)
     @profile
     def represent_as_bytes(self):

@@ -116,7 +116,7 @@ class DLISFile(object):
             all_records_bytes[i] = b
             current_pos += len(b)
             all_positions[i+1] = current_pos
-            self.pos[lr] = all_positions[i]
+            self.pos[lr.key] = all_positions[i]
 
         raw_bytes = bytearray(all_positions[-1]*2)
 
@@ -256,7 +256,7 @@ class DLISFile(object):
 
             if lrs_to_split:
                 # FIRST PART OF THE SPLIT
-                updated_lrs_position = self.pos[lrs_to_split] \
+                updated_lrs_position = self.pos[lrs_to_split.key] \
                                        + (number_of_prior_splits * 4) \
                                        + (number_of_prior_vr * 4)
 
@@ -377,7 +377,7 @@ class DLISFile(object):
             Recalculated position of the Logical Record Segment in the entire file
 
         """
-        return self.pos[lrs] + (number_of_vr * 4) + (number_of_splits * 4)
+        return self.pos[lrs.key] + (number_of_vr * 4) + (number_of_splits * 4)
 
     @staticmethod
     @log_progress("Writing to file...")
