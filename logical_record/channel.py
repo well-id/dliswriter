@@ -29,7 +29,7 @@ class Channel(EFLR):
 
     @property
     def key(self):
-        return hash(type(self)), self.long_name.value
+        return hash(type(self)), self.object_name
 
 
 def make_channel(name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,

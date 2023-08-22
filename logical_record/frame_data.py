@@ -98,10 +98,13 @@ class NoFormatFrameData(IFLR):
 
 
 class MultiFrameData:
-    def __init__(self, frame: Frame, data: np.ndarray):
+    def __init__(self, frame: Frame, data: np.ndarray, channel_name_mapping: dict = None):
 
+        channels = [c.object_name for c in frame.channels.value]
+        data = self.flatten_structured_array(data, channel_order=channels, channel_name_mapping=channel_name_mapping)
+
+        self._data = data
         self._frame = frame
-        self._data = self.flatten_structured_array(data)
 
         self.origin_reference = None
 
@@ -143,18 +146,22 @@ class MultiFrameData:
         return self._make_frame_data(item)
 
     @staticmethod
-    def flatten_structured_array(data: np.ndarray, channel_names: list = None):
+    def flatten_structured_array(data: np.ndarray, channel_order: list = None, channel_name_mapping: dict = None):
         dtype_names = data.dtype.names
 
         if dtype_names is None:
             return data
 
-        if channel_names is not None:
-            if any(cn not in dtype_names for cn in channel_names):
+        if channel_order is not None:
+            if channel_name_mapping is None:
+                channel_name_mapping = {key: key for key in channel_order}
+
+            if any(cn not in dtype_names for cn in channel_name_mapping.values()):
                 raise ValueError(f"Channel names and data dtype names do not match: "
-                                 f"\n{channel_names}\nvs\n{dtype_names}")
-            names = channel_names
+                                 f"\n{list(channel_name_mapping.values())}\nvs\n{dtype_names}")
+            names = channel_order
         else:
             names = data.dtype.names
+            channel_name_mapping = {key: key for key in names}
 
-        return np.concatenate([np.atleast_2d(data[key].T) for key in names]).T
+        return np.concatenate([np.atleast_2d(data[channel_name_mapping[key]].T) for key in names]).T
