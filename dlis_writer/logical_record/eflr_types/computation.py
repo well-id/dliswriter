@@ -3,11 +3,11 @@ from dlis_writer.logical_record.core import EFLR
 
 class Computation(EFLR):
     set_type = 'COMPUTATION'
+    logical_record_type = 'STATIC'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'STATIC'
 
         self.long_name = None
         self.properties = None

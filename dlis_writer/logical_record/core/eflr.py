@@ -17,6 +17,7 @@ class EFLR(IflrAndEflrBase):
     """
 
     is_eflr = True
+    logical_record_type: str = NotImplemented
 
     def __init__(self, object_name: str, set_name: str = None, *args, **kwargs):
         super().__init__()

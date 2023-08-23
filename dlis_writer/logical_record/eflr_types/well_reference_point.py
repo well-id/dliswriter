@@ -3,11 +3,11 @@ from dlis_writer.logical_record.core import EFLR
 
 class WellReferencePoint(EFLR):
     set_type = 'WELL-REFERENCE'
+    logical_record_type = 'OLR'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'OLR'
 
         self.permanent_datum = None
         self.vertical_zero = None

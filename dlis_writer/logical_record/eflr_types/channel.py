@@ -7,11 +7,11 @@ from dlis_writer.utils.enums import RepresentationCode, Units
 
 class Channel(EFLR):
     set_type = 'CHANNEL'
+    logical_record_type = 'CHANNL'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'CHANNL'
 
         self.long_name = None
         self.properties = None

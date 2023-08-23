@@ -11,8 +11,6 @@ class IflrAndEflrBase(LogicalRecordBase):
     is_eflr = NotImplemented
 
     def __init__(self):
-        self.logical_record_type = None
-
         self.has_predecessor_segment = False
         self.has_successor_segment = False
         self.is_encrypted = False

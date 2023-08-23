@@ -3,11 +3,11 @@ from dlis_writer.logical_record.core import EFLR
 
 class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
+    logical_record_type = 'STATIC'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'STATIC'
 
         self.phase = None
         self.measurement_source = None
@@ -30,11 +30,11 @@ class CalibrationMeasurement(EFLR):
 
 class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
+    logical_record_type = 'STATIC'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'STATIC'
 
         self.label = None
         self.coefficients = None
@@ -47,11 +47,11 @@ class CalibrationCoefficient(EFLR):
 
 class Calibration(EFLR):
     set_type = 'CALIBRATION'
+    logical_record_type = 'STATIC'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'STATIC'
 
         self.calibrated_channels = None
         self.uncalibrated_channels = None

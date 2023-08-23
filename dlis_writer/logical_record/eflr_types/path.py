@@ -3,11 +3,11 @@ from dlis_writer.logical_record.core import EFLR
 
 class Path(EFLR):
     set_type = 'PATH'
+    logical_record_type = 'FRAME'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
-        self.logical_record_type = 'FRAME'
 
         self.frame_type = None
         self.well_reference_point = None
