@@ -20,14 +20,14 @@ class IFLR(IflrAndEflrBase, ABC):
 
     @property
     def header_bytes(self) -> bytes:
-        self.segment_length = len(self.body_bytes) + 4
-        if self.segment_length % 2 != 0:
-            self.segment_length += 1
+        segment_length = len(self.body_bytes) + 4
+        if segment_length % 2 != 0:
+            segment_length += 1
             self.has_padding = True
         else:
             self.has_padding = False
 
-        return write_struct(RepresentationCode.UNORM, self.segment_length) \
+        return write_struct(RepresentationCode.UNORM, segment_length) \
             + self.segment_attributes \
             + self._write_struct_for_lr_type()
 

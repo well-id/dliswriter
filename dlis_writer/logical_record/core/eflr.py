@@ -27,8 +27,6 @@ class EFLR(IflrAndEflrBase):
         self.origin_reference = None
         self.copy_number = 0
 
-        self.segment_length = None
-
         self.set_type = None
 
         self.is_dictionary_controlled = False
@@ -142,14 +140,14 @@ class EFLR(IflrAndEflrBase):
             http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_2_2_1
 
         """
-        self.segment_length = len(self.bytes) + 4
-        if self.segment_length % 2 != 0:
-            self.segment_length += 1
+        segment_length = len(self.bytes) + 4
+        if segment_length % 2 != 0:
+            segment_length += 1
             self.has_padding = True
         else:
             self.has_padding = False
 
-        return write_struct(RepresentationCode.UNORM, self.segment_length) \
+        return write_struct(RepresentationCode.UNORM, segment_length) \
             + self.segment_attributes \
             + self._write_struct_for_lr_type()
 
