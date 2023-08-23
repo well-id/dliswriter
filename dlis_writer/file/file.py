@@ -140,14 +140,7 @@ class DLISFile(object):
 
         """
 
-        meta_logical_records = [self.file_header, self.origin] + meta_logical_records
-        n_meta_lrs = len(meta_logical_records)
-        n_lrs = n_meta_lrs + len(data_logical_records)
-
-        def get_lrs(i):
-            if i < n_meta_lrs:
-                return meta_logical_records[i]
-            return data_logical_records[i - n_meta_lrs]
+        all_records = chain([self.file_header, self.origin], meta_logical_records, data_logical_records)
 
         visible_record_length = self.visible_record_length
 
@@ -155,19 +148,16 @@ class DLISFile(object):
 
         _vr_length = 4
         _number_of_vr = 1
-        _idx = 0
         vr_offset = 0
         number_of_splits = 0
+
+        lrs = next(all_records)
 
         while True:
 
             vr_position = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
             vr_position += vr_offset
-            if _idx == n_lrs:
-                q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
-                break
 
-            lrs = get_lrs(_idx)
             lrs_size = lrs.size
 
             _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
@@ -176,7 +166,10 @@ class DLISFile(object):
             # NO NEED TO SPLIT KEEP ON
             if (_vr_length + lrs_size) <= visible_record_length:
                 _vr_length += lrs_size
-                _idx += 1
+                try:
+                    lrs = next(all_records)
+                except StopIteration:
+                    break
 
             # NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif position_diff < 16:
@@ -189,8 +182,15 @@ class DLISFile(object):
                 q[vr_position] = VRFields(visible_record_length, lrs, number_of_splits, _number_of_vr)
                 _vr_length = 8 + lrs_size - position_diff
                 _number_of_vr += 1
-                _idx += 1
                 number_of_splits += 1
+
+                try:
+                    lrs = next(all_records)
+                except StopIteration:
+                    break
+
+        # last vr
+        q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
 
         return q
 
