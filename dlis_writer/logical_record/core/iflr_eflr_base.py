@@ -54,18 +54,31 @@ class IflrAndEflrBase(LogicalRecordBase):
     def represent_as_bytes(self):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
-        self.bytes = b''
-        self.bytes += self.body_bytes
-        self.bytes = self.header_bytes + self.bytes
+        bts = b''
+        bts += self.body_bytes
+        bts = self.make_header_bytes(bts) + bts
         if self.has_padding:
-            self.bytes += write_struct(RepresentationCode.USHORT, 1)
+            bts += write_struct(RepresentationCode.USHORT, 1)
 
-        return self.bytes
+        return bts
 
-    @property
-    @abstractmethod
-    def header_bytes(self) -> bytes:
-        pass
+    def make_header_bytes(self, bts: bytes) -> bytes:
+        """Writes Logical Record Segment Header
+
+        .._RP66 V1 Logical Record Segment Header:
+            http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_2_2_1
+
+        """
+        segment_length = len(bts) + 4
+        if segment_length % 2 != 0:
+            segment_length += 1
+            self.has_padding = True
+        else:
+            self.has_padding = False
+
+        return write_struct(RepresentationCode.UNORM, segment_length) \
+            + self.segment_attributes \
+            + self._write_struct_for_lr_type()
 
     def split(self, is_first: bool, is_last: bool, segment_length: int, add_extra_padding: bool) -> bytes:
         """Creates header bytes to be inserted into split position

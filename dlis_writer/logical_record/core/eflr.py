@@ -131,25 +131,6 @@ class EFLR(IflrAndEflrBase):
         return _bytes
 
     @property
-    def header_bytes(self) -> bytes:
-        """Writes Logical Record Segment Header
-
-        .._RP66 V1 Logical Record Segment Header:
-            http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_2_2_1
-
-        """
-        segment_length = len(self.bytes) + 4
-        if segment_length % 2 != 0:
-            segment_length += 1
-            self.has_padding = True
-        else:
-            self.has_padding = False
-
-        return write_struct(RepresentationCode.UNORM, segment_length) \
-            + self.segment_attributes \
-            + self._write_struct_for_lr_type()
-
-    @property
     def body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
         if self.is_dictionary_controlled:
