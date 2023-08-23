@@ -9,6 +9,8 @@ from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBas
 class FileHeader(LogicalRecordBase):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
+    set_type = 'FILE-HEADER'
+
     def __init__(self,
                  sequence_number:int=1,
                  _id:str='DEFAULT FHLR'):
@@ -19,8 +21,6 @@ class FileHeader(LogicalRecordBase):
         self.origin_reference = None
         self.copy_number = 0
         self.object_name = '0'
-
-        self.set_type = 'FILE-HEADER'
 
     @profile
     def represent_as_bytes(self):

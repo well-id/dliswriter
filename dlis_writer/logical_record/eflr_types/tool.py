@@ -2,12 +2,12 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class Tool(EFLR):
+    set_type = 'TOOL'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'STATIC'
-        self.set_type = 'TOOL'
 
         self.description = None
         self.trademark_name = None

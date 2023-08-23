@@ -30,6 +30,8 @@ class StorageUnitLabel(LogicalRecordBase):
 
     """
 
+    set_type = NotImplemented  # TODO
+
     def __init__(self,
                  storage_unit_sequence_number:int=1, # It indicates the order in which the current Storage Unit appears in a Storage Set.
                  storage_set_identifier:str='DEFAULT STORAGE SET', # ID of the storage set (eg. "Default Storage Set")

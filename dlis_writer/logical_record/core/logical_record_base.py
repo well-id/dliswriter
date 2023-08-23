@@ -4,6 +4,8 @@ from abc import abstractmethod
 class LogicalRecordBase:
     """Base for all logical record classes."""
 
+    set_type: str = NotImplemented
+
     @property
     @abstractmethod
     def size(self) -> int:

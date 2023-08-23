@@ -2,12 +2,12 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class Origin(EFLR):
-    
+    set_type = 'ORIGIN'
+
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'OLR'
-        self.set_type = 'ORIGIN'
 
         self.file_id = None
         self.file_set_name = None

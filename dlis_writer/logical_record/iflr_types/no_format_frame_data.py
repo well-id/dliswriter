@@ -2,6 +2,7 @@ from dlis_writer.logical_record.core import IFLR
 
 
 class NoFormatFrameData(IFLR):
+    set_type = 'NOFORMAT'
 
     def __init__(self):
 
@@ -10,8 +11,6 @@ class NoFormatFrameData(IFLR):
 
         self.no_format_object = None
         self.data = None
-
-        self.set_type = 'NOFORMAT'
 
     @property
     def body_bytes(self):

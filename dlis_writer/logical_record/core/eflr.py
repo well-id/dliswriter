@@ -27,8 +27,6 @@ class EFLR(IflrAndEflrBase):
         self.origin_reference = None
         self.copy_number = 0
 
-        self.set_type = None
-
         self.is_dictionary_controlled = False
         self.dictionary_controlled_objects = None
 

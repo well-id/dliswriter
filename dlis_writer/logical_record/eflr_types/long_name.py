@@ -2,12 +2,12 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class LongName(EFLR):
+    set_type = 'LONG-NAME'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'LNAME'
-        self.set_type = 'LONG-NAME'
 
         self.general_modifier = None
         self.quantity = None

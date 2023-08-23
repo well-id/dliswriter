@@ -2,12 +2,12 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class Message(EFLR):
+    set_type = 'MESSAGE'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'SCRIPT'
-        self.set_type = 'MESSAGE'
 
         self._type = None
         self.time = None
@@ -21,12 +21,12 @@ class Message(EFLR):
 
 
 class Comment(EFLR):
-    
+    set_type = 'COMMENT'
+
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'SCRIPT'
-        self.set_type = 'COMMENT'
 
         self.text = None
 

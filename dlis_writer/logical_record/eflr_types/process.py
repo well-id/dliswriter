@@ -2,12 +2,12 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class Process(EFLR):
+    set_type = 'PROCESS'
 
     def __init__(self, *args, **kwargs):
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'STATIC'
-        self.set_type = 'PROCESS'
 
         self.description = None
         self.trademark_name = None

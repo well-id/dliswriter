@@ -2,6 +2,7 @@ from dlis_writer.logical_record.core import EFLR
 
 
 class Zone(EFLR):
+    set_type = 'ZONE'
 
     def __init__(self, *args, **kwargs):
         """
@@ -18,12 +19,11 @@ class Zone(EFLR):
 
         :minimum -> Dependng on the 'domain' attribute, this is either
         min-depth (dtype: float) or the earlieast time (dtype: datetime.datetime)
-		
-		"""
+
+        """
 
         super().__init__(*args, **kwargs)
         self.logical_record_type = 'STATIC'
-        self.set_type = 'ZONE'
 
         self.description = None
         self.domain = None

@@ -8,6 +8,7 @@ from dlis_writer.utils.enums import RepresentationCode
 
 
 class FrameData(IFLR):
+    set_type = 'FDATA'
 
     def __init__(self, frame, frame_number: int, slots, origin_reference=None):
 
@@ -32,7 +33,6 @@ class FrameData(IFLR):
         self._frame_number = frame_number  # UVARI
         self._slots = slots  # np.ndarray
         self.iflr_type = 0
-        self.set_type = 'FDATA'
 
         self._body_bytes = None
 
