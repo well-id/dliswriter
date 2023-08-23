@@ -146,26 +146,30 @@ class DLISFile(object):
 
         q = {}
 
-        _vr_length = 4
-        _number_of_vr = 1
+        vr_length = 4
+        number_of_vr = 1
         vr_offset = 0
         number_of_splits = 0
 
         lrs = next(all_records)
 
+        def compute_positions():
+            _vr_position = (visible_record_length * (number_of_vr - 1)) + 80  # DON'T TOUCH THIS
+            _vr_position += vr_offset
+
+            _lrs_size = lrs.size
+
+            _lrs_position = self.get_lrs_position(lrs, number_of_vr, number_of_splits)
+            _position_diff = _vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
+
+            return _vr_position, _lrs_size, _position_diff
+
         while True:
-
-            vr_position = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
-            vr_position += vr_offset
-
-            lrs_size = lrs.size
-
-            _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
-            position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
+            vr_position, lrs_size, position_diff = compute_positions()
 
             # NO NEED TO SPLIT KEEP ON
-            if (_vr_length + lrs_size) <= visible_record_length:
-                _vr_length += lrs_size
+            if (vr_length + lrs_size) <= visible_record_length:
+                vr_length += lrs_size
                 try:
                     lrs = next(all_records)
                 except StopIteration:
@@ -173,15 +177,15 @@ class DLISFile(object):
 
             # NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif position_diff < 16:
-                q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
-                _vr_length = 4
-                _number_of_vr += 1
+                q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
+                vr_length = 4
+                number_of_vr += 1
                 vr_offset -= position_diff
 
             else:
-                q[vr_position] = VRFields(visible_record_length, lrs, number_of_splits, _number_of_vr)
-                _vr_length = 8 + lrs_size - position_diff
-                _number_of_vr += 1
+                q[vr_position] = VRFields(visible_record_length, lrs, number_of_splits, number_of_vr)
+                vr_length = 8 + lrs_size - position_diff
+                number_of_vr += 1
                 number_of_splits += 1
 
                 try:
@@ -190,7 +194,7 @@ class DLISFile(object):
                     break
 
         # last vr
-        q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
+        q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
 
         return q
 
