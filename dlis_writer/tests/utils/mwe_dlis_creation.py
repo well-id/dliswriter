@@ -13,7 +13,7 @@ from dlis_writer.logical_record.eflr_types.origin import Origin
 from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.iflr_types.multi_frame_data import MultiFrameData
 from dlis_writer.utils.enums import Units, RepresentationCode
-from dlis_writer.logical_record.eflr_types.channel import make_channel
+from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
 
 
@@ -73,9 +73,9 @@ def make_channels_and_frame(data: np.ndarray):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
-        make_channel('posix time', unit='s', data=data['time']),
-        make_channel('depth', unit='m', data=data['depth']),
-        make_channel('surface rpm', unit='rpm', data=data['rpm']),
+        Channel.create('posix time', unit='s', data=data['time']),
+        Channel.create('depth', unit='m', data=data['depth']),
+        Channel.create('surface rpm', unit='rpm', data=data['rpm']),
     ]
 
     channel_name_mapping = {'posix time': 'time', 'depth': 'depth', 'surface rpm': 'rpm'}
@@ -83,7 +83,7 @@ def make_channels_and_frame(data: np.ndarray):
     if 'image' in data.dtype.names:
         n_cols = data['image'].shape[-1]
         frame.channels.value.append(
-            make_channel('image', unit='m', data=data['image'], dimension=n_cols, element_limit=n_cols)
+            Channel.create('image', unit='m', data=data['image'], dimension=n_cols, element_limit=n_cols)
         )
         channel_name_mapping['image'] = 'image'
 

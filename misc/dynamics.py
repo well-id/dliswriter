@@ -9,7 +9,7 @@ from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 from dlis_writer.logical_record.misc.file_header import FileHeader
 from dlis_writer.logical_record.eflr_types.origin import Origin
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.eflr_types.channel import make_channel
+from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.iflr_types.frame_data import FrameData
 from dlis_writer.utils.enums import Units
@@ -86,24 +86,24 @@ df_down_new.loc[df_down_new.index > 1676818621.920601] = np.nan
 
 # CHANNELS
 
-time_channel = make_channel('posix time', unit='s', data=df_surf_new.time)
+time_channel = Channel.create('posix time', unit='s', data=df_surf_new.time)
 
-depth_channel = make_channel('depth', unit='m', data=df_surf_new.depth)
-hole_depth_channel = make_channel('hole depth', unit='m', data=df_surf_new.hole_depth)
-rpm_s_channel = make_channel('surface rpm', unit='rpm', data=df_surf_new.rpm)
-rpm_mag_channel = make_channel('downhole mag rpm', unit='rpm', data=df_down_new.rpm)
-rpm_mag_filter_channel = make_channel('downhole mag rpm (filtered)', unit='rpm', data=df_down_new.rpm_filtered)
-rpm_gyro_channel = make_channel('downhole gyro rpm', unit='rpm', data=df_down_new.gyro_rpm)
-x_channel = make_channel('x accel', unit='g', data=df_down_new.x)
-y_channel = make_channel('y accel', unit='g', data=df_down_new.y)
-z_channel = make_channel('z channel', unit='g', data=df_down_new.z)
-spp_channel = make_channel('SPP', unit='psi', data=df_surf_new.spp)
-torque_channel = make_channel('Torque', unit='kNm', data=df_surf_new.torque)
-wob_channel = make_channel('WOB', unit='Tons', data=df_surf_new.wob)
-hookload_channel = make_channel('Hookload', unit='Tons', data=df_surf_new.hookload)
-rop_channel = make_channel('ROP', unit=r'm/h', data=df_surf_new.rop)
-flow_channel = make_channel('Flow In', unit='m3/h', data=df_surf_new.flow)
-block_channel = make_channel('Block Position', unit='m', data=df_surf_new.block)
+depth_channel = Channel.create('depth', unit='m', data=df_surf_new.depth)
+hole_depth_channel = Channel.create('hole depth', unit='m', data=df_surf_new.hole_depth)
+rpm_s_channel = Channel.create('surface rpm', unit='rpm', data=df_surf_new.rpm)
+rpm_mag_channel = Channel.create('downhole mag rpm', unit='rpm', data=df_down_new.rpm)
+rpm_mag_filter_channel = Channel.create('downhole mag rpm (filtered)', unit='rpm', data=df_down_new.rpm_filtered)
+rpm_gyro_channel = Channel.create('downhole gyro rpm', unit='rpm', data=df_down_new.gyro_rpm)
+x_channel = Channel.create('x accel', unit='g', data=df_down_new.x)
+y_channel = Channel.create('y accel', unit='g', data=df_down_new.y)
+z_channel = Channel.create('z channel', unit='g', data=df_down_new.z)
+spp_channel = Channel.create('SPP', unit='psi', data=df_surf_new.spp)
+torque_channel = Channel.create('Torque', unit='kNm', data=df_surf_new.torque)
+wob_channel = Channel.create('WOB', unit='Tons', data=df_surf_new.wob)
+hookload_channel = Channel.create('Hookload', unit='Tons', data=df_surf_new.hookload)
+rop_channel = Channel.create('ROP', unit=r'm/h', data=df_surf_new.rop)
+flow_channel = Channel.create('Flow In', unit='m3/h', data=df_surf_new.flow)
+block_channel = Channel.create('Block Position', unit='m', data=df_surf_new.block)
 
 
 # FRAME

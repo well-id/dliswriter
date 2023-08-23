@@ -1,4 +1,5 @@
 from typing import Union
+from typing_extensions import Self
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.converters import get_representation_code_value
@@ -31,33 +32,34 @@ class Channel(EFLR):
     def key(self):
         return hash(type(self)), self.object_name
 
+    @classmethod
+    def create(cls, name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
+               unit: Union[Units, str] = None, element_limit: int = None, data=None) -> Self:
+        """
 
-def make_channel(name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
-                 unit: Union[Units, str] = None, element_limit: int = None, data=None) -> Channel:
-    """
+        Args:
+            name:
+            dimension:
 
-    Args:
-        name:
-        dimension:
-        long_name:
-        repr_code:
-        unit:
-        element_limit:
-        data:
+            long_name:
+            repr_code:
+            unit:
+            element_limit:
+            data:
 
-    Returns:
-        channel:
-    """
+        Returns:
+            channel:
+        """
 
-    channel = Channel(name)
-    channel.long_name.value = long_name or name
-    channel.representation_code.value = get_representation_code_value(
-        repr_code if repr_code is not None else RepresentationCode.FDOUBL)
-    channel.dimension.value = [dimension]
-    channel.element_limit.value = [element_limit if element_limit is not None else dimension]
-    channel.data = data
+        channel = Channel(name)
+        channel.long_name.value = long_name or name
+        channel.representation_code.value = get_representation_code_value(
+            repr_code if repr_code is not None else RepresentationCode.FDOUBL)
+        channel.dimension.value = [dimension]
+        channel.element_limit.value = [element_limit if element_limit is not None else dimension]
+        channel.data = data
 
-    if unit is not None:
-        channel.units.value = unit
+        if unit is not None:
+            channel.units.value = unit
 
-    return channel
+        return channel
