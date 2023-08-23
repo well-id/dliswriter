@@ -3,9 +3,10 @@ from line_profiler_pycharm import profile
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
 
 
-class FileHeader:
+class FileHeader(LogicalRecordBase):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     def __init__(self,
@@ -61,11 +62,6 @@ class FileHeader:
         _bytes = _header_bytes + _body_bytes
         
         return _bytes
-
-    @property
-    def key(self):
-        return hash(type(self))
-
 
     @property
     def size(self):

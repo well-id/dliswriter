@@ -2,9 +2,10 @@ from line_profiler_pycharm import profile
 from functools import lru_cache
 
 from dlis_writer.utils.converters import get_ascii_bytes
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
 
 
-class StorageUnitLabel:
+class StorageUnitLabel(LogicalRecordBase):
     """Represents  the Storage Unit Label in RP66 V1
     
     This is the first part of a logical file.
@@ -42,10 +43,6 @@ class StorageUnitLabel:
         self.max_record_length = max_record_length # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
         self.storage_set_identifier = storage_set_identifier
 
-    @property
-    def key(self):
-        return hash(type(self))
-
     @lru_cache(maxsize=4096)
     @profile
     def represent_as_bytes(self):
@@ -71,3 +68,7 @@ class StorageUnitLabel:
         _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
 
         return _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
+
+    @property
+    def size(self):
+        raise RuntimeError(f"Size of {type(self)} is undefined")  # TODO: verify (probably never needed)

@@ -19,8 +19,3 @@ class Frame(EFLR):
         self.index_max = None
 
         self.create_attributes()
-
-    @property
-    def key(self):
-        return hash(type(self))
-

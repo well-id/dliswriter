@@ -4,9 +4,10 @@ from line_profiler_pycharm import profile
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
 
 
-class IflrAndEflrBase:
+class IflrAndEflrBase(LogicalRecordBase):
     is_eflr = NotImplemented
 
     def __init__(self):
