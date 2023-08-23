@@ -114,16 +114,16 @@ class DLISFile(object):
         for i, lr in progressbar(enumerate(all_records), max_value=n):
             b = lr.represent_as_bytes()  # grows with data size more than row number
             all_records_bytes[i] = b
-            current_pos += len(b)
+            current_pos += b.size
             all_positions[i+1] = current_pos
             self.pos[lr.key] = all_positions[i]
 
-        raw_bytes = bytearray(all_positions[-1]*2)
+        raw_bytes = np.zeros(all_positions[-1]*2, dtype=np.uint8)
 
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
 
-        return np.frombuffer(raw_bytes, dtype=np.uint8)
+        return raw_bytes
 
     @log_progress("Creating visible record dictionary...")
     @profile

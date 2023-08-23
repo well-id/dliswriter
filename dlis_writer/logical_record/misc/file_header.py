@@ -1,3 +1,4 @@
+import numpy as np
 from line_profiler_pycharm import profile
 
 from dlis_writer.utils.converters import get_ascii_bytes
@@ -23,7 +24,7 @@ class FileHeader(LogicalRecordBase):
         self.object_name = '0'
 
     @profile
-    def represent_as_bytes(self):
+    def represent_as_bytes(self) -> np.ndarray:
         # HEADER
         _length = write_struct(RepresentationCode.UNORM, 124)
         _attributes = write_struct(RepresentationCode.USHORT, int('10000000', 2))
@@ -61,7 +62,7 @@ class FileHeader(LogicalRecordBase):
 
         _bytes = _header_bytes + _body_bytes
         
-        return _bytes
+        return np.frombuffer(_bytes, dtype=np.uint8)
 
     @property
     def size(self):

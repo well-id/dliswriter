@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+import numpy as np
+
 
 class LogicalRecordBase:
     """Base for all logical record classes."""
@@ -16,6 +18,6 @@ class LogicalRecordBase:
         return hash(type(self))
 
     @abstractmethod
-    def represent_as_bytes(self) -> bytes:
+    def represent_as_bytes(self) -> np.ndarray:
         pass
 

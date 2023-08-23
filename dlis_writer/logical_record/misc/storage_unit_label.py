@@ -1,3 +1,4 @@
+import numpy as np
 from line_profiler_pycharm import profile
 from functools import lru_cache
 
@@ -47,7 +48,7 @@ class StorageUnitLabel(LogicalRecordBase):
 
     @lru_cache(maxsize=4096)
     @profile
-    def represent_as_bytes(self):
+    def represent_as_bytes(self) -> np.ndarray:
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 
         Returns:
@@ -69,7 +70,8 @@ class StorageUnitLabel(LogicalRecordBase):
         # Storage Set Identifier
         _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
 
-        return _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
+        bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
+        return np.frombuffer(bts, dtype=np.uint8)
 
     @property
     def size(self):

@@ -1,5 +1,7 @@
 from abc import abstractmethod
 from functools import lru_cache
+
+import numpy as np
 from line_profiler_pycharm import profile
 
 from dlis_writer.utils.common import write_struct
@@ -46,20 +48,19 @@ class IflrAndEflrBase(LogicalRecordBase):
     def size(self) -> int:
         """Calculates the size of the Logical Record Segment"""
 
-        return len(self.represent_as_bytes())
+        return self.represent_as_bytes().size
 
     @lru_cache()
     @profile
-    def represent_as_bytes(self):
+    def represent_as_bytes(self) -> np.ndarray:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
-        bts = b''
-        bts += self.make_body_bytes()
+        bts = self.make_body_bytes()
         bts = self.make_header_bytes(bts) + bts
         if self.has_padding:
             bts += write_struct(RepresentationCode.USHORT, 1)
 
-        return bts
+        return np.frombuffer(bts, dtype=np.uint8)
 
     def make_header_bytes(self, bts: bytes) -> bytes:
         """Writes Logical Record Segment Header
