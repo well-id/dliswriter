@@ -1,9 +1,10 @@
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
 class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
-    logical_record_type = 'STATIC'
+    logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, *args, **kwargs):
 
@@ -30,7 +31,7 @@ class CalibrationMeasurement(EFLR):
 
 class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
-    logical_record_type = 'STATIC'
+    logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, *args, **kwargs):
 
@@ -47,7 +48,7 @@ class CalibrationCoefficient(EFLR):
 
 class Calibration(EFLR):
     set_type = 'CALIBRATION'
-    logical_record_type = 'STATIC'
+    logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, *args, **kwargs):
 

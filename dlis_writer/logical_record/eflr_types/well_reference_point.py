@@ -1,9 +1,10 @@
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
 class WellReferencePoint(EFLR):
     set_type = 'WELL-REFERENCE'
-    logical_record_type = 'OLR'
+    logical_record_type = LogicalRecordType.OLR
 
     def __init__(self, *args, **kwargs):
 

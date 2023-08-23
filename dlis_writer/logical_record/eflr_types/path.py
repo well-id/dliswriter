@@ -1,9 +1,10 @@
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
 class Path(EFLR):
     set_type = 'PATH'
-    logical_record_type = 'FRAME'
+    logical_record_type = LogicalRecordType.FRAME
 
     def __init__(self, *args, **kwargs):
 

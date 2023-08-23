@@ -1,7 +1,6 @@
 from dlis_writer.utils.common import NOT_TEMPLATE, write_struct, write_absent_attribute
 from dlis_writer.utils.rp66 import RP66
-from dlis_writer.utils.converters import get_logical_record_type
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
 from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase
 
@@ -17,7 +16,7 @@ class EFLR(IflrAndEflrBase):
     """
 
     is_eflr = True
-    logical_record_type: str = NotImplemented
+    logical_record_type: LogicalRecordType = NotImplemented
 
     def __init__(self, object_name: str, set_name: str = None, *args, **kwargs):
         super().__init__()
@@ -166,4 +165,4 @@ class EFLR(IflrAndEflrBase):
             return a + b + d + c
 
     def _write_struct_for_lr_type(self):
-        return write_struct(RepresentationCode.USHORT, get_logical_record_type(self.logical_record_type))
+        return write_struct(RepresentationCode.USHORT, self.logical_record_type.value)

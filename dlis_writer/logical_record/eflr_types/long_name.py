@@ -1,9 +1,10 @@
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
 class LongName(EFLR):
     set_type = 'LONG-NAME'
-    logical_record_type = 'LNAME'
+    logical_record_type = LogicalRecordType.LNAME
 
     def __init__(self, *args, **kwargs):
 

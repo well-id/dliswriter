@@ -4,25 +4,6 @@ from enum import IntEnum
 from dlis_writer.utils.enums import RepresentationCode
 
 
-class LogicalRecordTypeEnum(IntEnum):
-    FHLR = 0
-    OLR = 1
-    AXIS = 2
-    CHANNL = 3
-    FRAME = 4
-    STATIC = 5
-    SCRIPT = 6
-    UPDATE = 7
-    UDI = 8
-    LNAME = 9
-    SPEC = 10
-    DICT = 11
-
-    @classmethod
-    def get_all_codes(cls):
-        return cls._member_names_
-
-
 class RepresentationCodeConversionEnum(IntEnum):
     FSHORT = 1
     FSINGL = 2
@@ -81,34 +62,6 @@ def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False
     if justify_left:
         return (str(value) + (required_length - len(str(value))) * ' ').encode('ascii')
     return ((required_length - len(str(value))) * ' ' + str(value)).encode('ascii')
-
-
-def get_logical_record_type(logical_record_type: str) -> int:
-    """Converts EFLR logical record type which is a string to corresponding int code.
-
-    Args:
-        logical_record_type: One of the EFLR logical record types in RP66 V1.
-
-    Returns:
-        Corresponding code value.
-
-    Raises:
-        ValueError: If logical_record_type is not one of the types in RP66 V1 spec.
-
-    Note:
-        RP66 V1 Appendix A.2: http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2
-
-    """
-
-    try:
-        lrt_code = LogicalRecordTypeEnum[logical_record_type]
-    except KeyError:
-        error_message = (f'Provided Logical Record Type "{logical_record_type}" could not be found\n'
-                         'Description must be exactly one of the following:\n')
-        error_message += ''.join('\t' + lrt + '\n' for lrt in LogicalRecordTypeEnum.get_all_codes())
-        raise ValueError(error_message)
-
-    return lrt_code.value
 
 
 def get_representation_code_value(code: RepresentationCode) -> int:

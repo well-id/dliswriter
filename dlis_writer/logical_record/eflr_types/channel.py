@@ -2,12 +2,12 @@ from typing import Union
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.converters import get_representation_code_value
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
 
 
 class Channel(EFLR):
     set_type = 'CHANNEL'
-    logical_record_type = 'CHANNL'
+    logical_record_type = LogicalRecordType.CHANNL
 
     def __init__(self, *args, **kwargs):
 

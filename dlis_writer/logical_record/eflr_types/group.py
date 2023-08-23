@@ -1,9 +1,10 @@
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
 class Group(EFLR):
     set_type = 'GROUP'
-    logical_record_type = 'STATIC'
+    logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, *args, **kwargs):
 

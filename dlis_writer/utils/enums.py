@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import Enum, IntEnum
 from struct import Struct
 
 
@@ -151,3 +151,18 @@ class RepresentationCode(Enum):
     ATTREF = 'ATTREF'
     STATUS = Struct('>B')
     UNITS = 'UNITS'
+
+
+class LogicalRecordType(IntEnum):
+    FHLR = 0
+    OLR = 1
+    AXIS = 2
+    CHANNL = 3
+    FRAME = 4
+    STATIC = 5
+    SCRIPT = 6
+    UPDATE = 7
+    UDI = 8
+    LNAME = 9
+    SPEC = 10
+    DICT = 11
