@@ -3,9 +3,10 @@ import numpy as np
 import logging
 from functools import lru_cache
 from itertools import chain
+from collections import namedtuple
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
-from typing import Union
+from typing import Union, Dict
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -24,6 +25,9 @@ def log_progress(message):
             return result
         return wrapper
     return decorator
+
+
+VRFields = namedtuple('VRFields', field_names=('length', 'split', 'number_of_prior_splits', 'number_of_prior_vr'))
 
 
 class DLISFile(object):
@@ -127,7 +131,7 @@ class DLISFile(object):
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, meta_logical_records, data_logical_records):
+    def create_visible_record_dictionary(self, meta_logical_records, data_logical_records) -> Dict[int, VRFields]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -160,12 +164,7 @@ class DLISFile(object):
             vr_position = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
             vr_position += vr_offset
             if _idx == n_lrs:
-                q[vr_position] = {
-                    'length': _vr_length,
-                    'split': None,
-                    'number_of_prior_splits': number_of_splits,
-                    'number_of_prior_vr': _number_of_vr
-                }
+                q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
                 break
 
             lrs = get_lrs(_idx)
@@ -181,25 +180,13 @@ class DLISFile(object):
 
             # NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif position_diff < 16:
-                q[vr_position] = {
-                    'length': _vr_length,
-                    'split': None,
-                    'number_of_prior_splits': number_of_splits,
-                    'number_of_prior_vr': _number_of_vr
-                }
-
+                q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
                 _vr_length = 4
                 _number_of_vr += 1
                 vr_offset -= position_diff
 
             else:
-                q[vr_position] = {
-                    'length': visible_record_length,
-                    'split': lrs,
-                    'number_of_prior_splits': number_of_splits,
-                    'number_of_prior_vr': _number_of_vr
-                }
-
+                q[vr_position] = VRFields(visible_record_length, lrs, number_of_splits, _number_of_vr)
                 _vr_length = 8 + lrs_size - position_diff
                 _number_of_vr += 1
                 _idx += 1
@@ -217,7 +204,7 @@ class DLISFile(object):
 
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
         total_vr_length = 4 * len(vr_dict)  # bytes added due to inserting visible record bytes (first part of the loop)
-        splits = sum(int(bool(val['split'])) for val in vr_dict.values())  # how many splits are done (not for all vr's)
+        splits = sum(int(bool(val.split)) for val in vr_dict.values())  # how many splits are done (not for all vr's)
         total_header_length = 4 * splits  # bytes added due to inserting 'header bytes' (see 'second part of the split')
 
         # expected total length of the raw_bytes array after the vr and header bytes are inserted
@@ -241,10 +228,7 @@ class DLISFile(object):
 
         for vr_position, val in progressbar(vr_dict.items()):
 
-            vr_length = val['length']
-            lrs_to_split = val['split']
-            number_of_prior_splits = val['number_of_prior_splits']
-            number_of_prior_vr = val['number_of_prior_vr']
+            vr_length = val.length
 
             # 'inserting' visible record bytes (changed array length in the original code)
             self.insert_bytes(
@@ -254,11 +238,10 @@ class DLISFile(object):
                 mask=mask_bytes_inserted
             )
 
-            if lrs_to_split:
+            if lrs_to_split := val.split:
                 # FIRST PART OF THE SPLIT
-                updated_lrs_position = self.pos[lrs_to_split.key] \
-                                       + (number_of_prior_splits * 4) \
-                                       + (number_of_prior_vr * 4)
+                pos_shift = 4 * (val.number_of_prior_vr + val.number_of_prior_splits)
+                updated_lrs_position = self.pos[lrs_to_split.key] + pos_shift
 
                 first_segment_length = vr_position + vr_length - updated_lrs_position
                 header_bytes_to_replace = lrs_to_split.split(
