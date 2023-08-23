@@ -19,9 +19,8 @@ class IflrAndEflrBase(LogicalRecordBase):
         self.has_trailing_length = False
         self.has_padding = False
 
-    @property
     @abstractmethod
-    def body_bytes(self):
+    def make_body_bytes(self) -> bytes:
         pass
 
     @property
@@ -55,7 +54,7 @@ class IflrAndEflrBase(LogicalRecordBase):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
         bts = b''
-        bts += self.body_bytes
+        bts += self.make_body_bytes()
         bts = self.make_header_bytes(bts) + bts
         if self.has_padding:
             bts += write_struct(RepresentationCode.USHORT, 1)

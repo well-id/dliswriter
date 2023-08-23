@@ -130,20 +130,18 @@ class EFLR(IflrAndEflrBase):
 
         return _bytes
 
-    @property
-    def body_bytes(self) -> bytes:
+    def make_body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
+
+        a = self.set_component
+        b = self.template
+        c = self.objects
+
         if self.is_dictionary_controlled:
-            a = self.set_component
-            b = self.template
-            c = self.objects
             return a + b + c
-        else:
-            a = self.set_component
-            b = self.template
-            d = self.object_component
-            c = self.objects
-            return a + b + d + c
+
+        d = self.object_component
+        return a + b + d + c
 
     def _write_struct_for_lr_type(self):
         return write_struct(RepresentationCode.USHORT, self.logical_record_type.value)

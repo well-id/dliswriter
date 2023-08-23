@@ -1,4 +1,5 @@
 import math
+from functools import lru_cache
 from line_profiler_pycharm import profile
 
 from dlis_writer.logical_record.core import IFLR
@@ -34,8 +35,6 @@ class FrameData(IFLR):
         self._slots = slots  # np.ndarray
         self.iflr_type = 0
 
-        self._body_bytes = None
-
         self.origin_reference = origin_reference
 
     @property
@@ -50,14 +49,9 @@ class FrameData(IFLR):
     def frame_number(self) -> int:
         return self._frame_number
 
-    @property
-    def body_bytes(self):
-        if self._body_bytes is None:
-            self._body_bytes = self._compute_body_bytes()
-        return self._body_bytes
-
+    @lru_cache()
     @profile
-    def _compute_body_bytes(self):
+    def make_body_bytes(self) -> bytes:
         body = b''
         body += self.frame.obname
         body += write_struct(RepresentationCode.UVARI, self.frame_number)
