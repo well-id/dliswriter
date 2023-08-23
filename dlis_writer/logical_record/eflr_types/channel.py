@@ -26,15 +26,28 @@ class Channel(EFLR):
         self.maximum_value = None
 
         self.create_attributes()
-        self.data = None
+
+        self._dataset_name: str = None
 
     @property
     def key(self):
         return hash(type(self)), self.object_name
 
+    @property
+    def name(self):
+        return self.object_name
+
+    @property
+    def dataset_name(self):
+        return self._dataset_name if self._dataset_name is not None else self.name
+
+    @dataset_name.setter
+    def dataset_name(self, name: str):
+        self._dataset_name = name
+
     @classmethod
     def create(cls, name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
-               unit: Union[Units, str] = None, element_limit: int = None, data=None) -> Self:
+               unit: Union[Units, str] = None, element_limit: int = None, dataset_name: str = None) -> Self:
         """
 
         Args:
@@ -45,7 +58,6 @@ class Channel(EFLR):
             repr_code:
             unit:
             element_limit:
-            data:
 
         Returns:
             channel:
@@ -57,7 +69,8 @@ class Channel(EFLR):
             repr_code if repr_code is not None else RepresentationCode.FDOUBL)
         channel.dimension.value = [dimension]
         channel.element_limit.value = [element_limit if element_limit is not None else dimension]
-        channel.data = data
+
+        channel.dataset_name = dataset_name
 
         if unit is not None:
             channel.units.value = unit

@@ -6,10 +6,10 @@ from dlis_writer.logical_record.iflr_types.frame_data import FrameData
 
 
 class MultiFrameData:
-    def __init__(self, frame: Frame, data: np.ndarray, channel_name_mapping: dict = None):
+    def __init__(self, frame: Frame, data: np.ndarray):
 
-        channels = [c.object_name for c in frame.channels.value]
-        data = self.flatten_structured_array(data, channel_order=channels, channel_name_mapping=channel_name_mapping)
+        channels = [c for c in frame.channels.value]
+        data = self.flatten_structured_array(data, channels=channels)
 
         self._data = data
         self._frame = frame
@@ -54,20 +54,19 @@ class MultiFrameData:
         return self._make_frame_data(item)
 
     @staticmethod
-    def flatten_structured_array(data: np.ndarray, channel_order: list = None, channel_name_mapping: dict = None):
+    def flatten_structured_array(data: np.ndarray, channels: list = None):
         dtype_names = data.dtype.names
 
         if dtype_names is None:
             return data
 
-        if channel_order is not None:
-            if channel_name_mapping is None:
-                channel_name_mapping = {key: key for key in channel_order}
+        if channels is not None:
+            channel_name_mapping = {ch.name: ch.dataset_name for ch in channels}
 
             if any(cn not in dtype_names for cn in channel_name_mapping.values()):
                 raise ValueError(f"Channel names and data dtype names do not match: "
                                  f"\n{list(channel_name_mapping.values())}\nvs\n{dtype_names}")
-            names = channel_order
+            names = list(channel_name_mapping.keys())
         else:
             names = data.dtype.names
             channel_name_mapping = {key: key for key in names}

@@ -73,19 +73,16 @@ def make_channels_and_frame(data: np.ndarray):
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
-        Channel.create('posix time', unit='s', data=data['time']),
-        Channel.create('depth', unit='m', data=data['depth']),
-        Channel.create('surface rpm', unit='rpm', data=data['rpm']),
+        Channel.create('posix time', unit='s', dataset_name='time'),
+        Channel.create('depth', unit='m'),
+        Channel.create('surface rpm', unit='rpm', dataset_name='rpm'),
     ]
-
-    channel_name_mapping = {'posix time': 'time', 'depth': 'depth', 'surface rpm': 'rpm'}
 
     if 'image' in data.dtype.names:
         n_cols = data['image'].shape[-1]
         frame.channels.value.append(
-            Channel.create('image', unit='m', data=data['image'], dimension=n_cols, element_limit=n_cols)
+            Channel.create('image', unit='m', dimension=n_cols, element_limit=n_cols)
         )
-        channel_name_mapping['image'] = 'image'
 
     frame.index_type.value = 'TIME'
     frame.spacing.representation_code = RepresentationCode.FDOUBL
@@ -93,7 +90,7 @@ def make_channels_and_frame(data: np.ndarray):
 
     n_points = data.shape[0]
     logger.info(f'Preparing frames for {n_points} rows.')
-    multi_frame_data = MultiFrameData(frame, data, channel_name_mapping=channel_name_mapping)
+    multi_frame_data = MultiFrameData(frame, data)
 
     return frame, multi_frame_data
 
