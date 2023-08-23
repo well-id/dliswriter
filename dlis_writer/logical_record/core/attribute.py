@@ -39,12 +39,13 @@ class Attribute:
         self.units = units
         self.value = value
 
-    def write_component(self, for_template: bool, characteristics: str) -> str:
+    def write_component(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
         """Writes component of Attribute as specified in RP66 V1
 
         Args:
             for_template: When True it creates the component only for the template part
                 of Logical Record Segment in the DLIS file.
+            bts: TODO
             characteristics: TODO
 
         .._RP66 V1 Component Structure:
@@ -53,7 +54,7 @@ class Attribute:
         """
 
         if self.label and for_template:
-            self.bytes += write_struct(RepresentationCode.IDENT, self.label)
+            bts += write_struct(RepresentationCode.IDENT, self.label)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -63,7 +64,7 @@ class Attribute:
 
         elif self.count and not for_template and self.count != 1:
 
-            self.bytes += write_struct(RepresentationCode.UVARI, self.count)
+            bts += write_struct(RepresentationCode.UVARI, self.count)
             characteristics += '1'
         else:
             if self.value:
@@ -72,7 +73,7 @@ class Attribute:
                 else:
                     pass
                 if self.count is not None and self.count > 1:
-                    self.bytes += write_struct(RepresentationCode.UVARI, self.count)
+                    bts += write_struct(RepresentationCode.UVARI, self.count)
                     characteristics += '1'
                 else:
                     characteristics += '0'
@@ -80,29 +81,29 @@ class Attribute:
                 characteristics += '0'
 
         if self.representation_code and for_template:
-            self.bytes += write_struct(RepresentationCode.USHORT,
-                                       get_representation_code_value(self.representation_code))
+            bts += write_struct(RepresentationCode.USHORT, get_representation_code_value(self.representation_code))
             characteristics += '1'
         else:
             characteristics += '0'
 
         if self.units and for_template:
             if type(self.units) == Units:
-                self.bytes += write_struct(RepresentationCode.UNITS, self.units.value)
+                bts += write_struct(RepresentationCode.UNITS, self.units.value)
             else:
-                self.bytes += write_struct(RepresentationCode.UNITS, self.units)
+                bts += write_struct(RepresentationCode.UNITS, self.units)
             characteristics += '1'
         else:
             characteristics += '0'
 
-        return characteristics
+        return bts, characteristics
 
-    def write_values(self, for_template: bool, characteristics: str) -> str:
+    def write_values(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
         """Writes value(s) passed to value attribute of this object
 
         Args:
             for_template: When True it creates the component only for the template part
                 of Logical Record Segment in the DLIS file.
+            bts: TODO
             characteristics: TODO
 
         .._RP66 V1 Component Structure:
@@ -114,9 +115,9 @@ class Attribute:
             if type(self.value) == list or type(self.value) == tuple:
                 for val in self.value:
                     if 'logical_record' in str(type(val)):
-                        self.bytes += val.obname
+                        bts += val.obname
                     else:
-                        self.bytes += write_struct(self.representation_code, val)
+                        bts += write_struct(self.representation_code, val)
             else:
                 try:
                     if type(self.value) == Units:
@@ -124,7 +125,7 @@ class Attribute:
                     else:
                         value = self.value
 
-                    self.bytes += write_struct(self.representation_code, value)
+                    bts += write_struct(self.representation_code, value)
                 except:
                     raise Exception(f'{self.representation_code} ----- {self.value}')
 
@@ -133,21 +134,23 @@ class Attribute:
         else:
             characteristics += '0'
 
-        return characteristics
+        return bts, characteristics
 
-    def write_characteristics(self, for_template: bool, characteristics: str):
+    def write_characteristics(self, for_template: bool, bts: bytes, characteristics: str) -> bytes:
         """Writes component descriptor as specified in RP66 V1
 
         Args:
             for_template: When True it creates the component only for the template part
                 of Logical Record Segment in the DLIS file.
+            bts: TODO
             characteristics: TODO
 
         .._RP66 V1 Component Descriptor:
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
         """
 
-        self.bytes = write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + self.bytes
+        bts = write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
+        return bts
 
     def get_as_bytes(self, for_template=False) -> bytes:
         """Converts attribute object to bytes as specified in RP66 V1.
@@ -161,11 +164,11 @@ class Attribute:
 
         """
 
-        self.bytes = b''
+        bts = b''
         characteristics = '001'
 
-        characteristics = self.write_component(for_template, characteristics)
-        characteristics = self.write_values(for_template, characteristics)
-        self.write_characteristics(for_template, characteristics)
+        bts, characteristics = self.write_component(for_template, bts, characteristics)
+        bts, characteristics = self.write_values(for_template, bts, characteristics)
+        bts = self.write_characteristics(for_template, bts, characteristics)
 
-        return self.bytes
+        return bts
