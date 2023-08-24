@@ -49,11 +49,12 @@ def make_channels_and_frame(data: np.ndarray) -> FrameDataCapsule:
         Channel.create('surface rpm', unit='rpm', dataset_name='rpm'),
     ]
 
-    if 'image' in data.dtype.names:
-        n_cols = data['image'].shape[-1]
-        frame.channels.value.append(
-            Channel.create('image', unit='m', dimension=n_cols, element_limit=n_cols)
-        )
+    for name in data.dtype.names:
+        if name.startswith('image'):
+            n_cols = data[name].shape[-1]
+            frame.channels.value.append(
+                Channel.create(name, unit='m', dimension=n_cols, element_limit=n_cols)
+            )
 
     frame.index_type.value = 'TIME'
     frame.spacing.representation_code = RepresentationCode.FDOUBL
