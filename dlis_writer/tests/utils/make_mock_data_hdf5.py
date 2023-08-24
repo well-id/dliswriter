@@ -3,9 +3,15 @@ import os
 import h5py
 from pathlib import Path
 from argparse import ArgumentParser
+from typing import Union, Iterable
+from collections import abc
 
 
-def create_data(n_points: int, add_2d: bool = False) -> np.ndarray:
+def _make_image(n_points, n_cols, divider=11):
+    return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols)
+
+
+def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> np.ndarray:
     data_dict = {
         'time': 0.1 * np.arange(n_points),
         'depth': 10 * (np.arange(n_points) % 5),
@@ -14,9 +20,15 @@ def create_data(n_points: int, add_2d: bool = False) -> np.ndarray:
 
     dtype = [(key, val.dtype) for key, val in data_dict.items()]
 
-    if add_2d:
-        data_dict['image'] = (np.arange(n_points * 5) % 11).reshape(n_points, 5)
-        dtype.append(('image', data_dict['image'].dtype, 5))
+    if image_cols:
+        if not isinstance(image_cols, abc.Iterable):
+            image_cols = image_cols,
+
+        for i, nc in enumerate(image_cols):
+            im = _make_image(n_points, nc)
+            im_name = f'image{i}' if len(image_cols) > 1 else 'image'
+            data_dict[im_name] = im
+            dtype.append((im_name, im.dtype, nc))
 
     data_array = np.zeros(n_points, dtype=dtype)
     for key, arr in data_dict.items():
@@ -25,11 +37,11 @@ def create_data(n_points: int, add_2d: bool = False) -> np.ndarray:
     return data_array
 
 
-def create_data_file(n_points, fpath, add_2d=False):
+def create_data_file(n_points, fpath, image_cols=None):
     if fpath.exists():
         raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
 
-    data_array = create_data(n_points, add_2d=add_2d)
+    data_array = create_data(n_points, image_cols=image_cols)
 
     h5_file = h5py.File(fpath, 'w')
     group = h5_file.create_group('contents')
@@ -48,7 +60,8 @@ if __name__ == '__main__':
     parser = ArgumentParser("Creating HFD5 file with mock well data")
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
-    parser.add_argument('--add-2d', action='store_true', default=False, help='Add 2D data entry')
+    parser.add_argument('--image-cols', nargs='+', type=int, default=(),
+                        help='Add 2D data entries with specified numbers of columns')
     parser_args = parser.parse_args()
 
     if (file_name := parser_args.file_name) is None:
@@ -57,4 +70,4 @@ if __name__ == '__main__':
         file_name = Path(__file__).resolve().parent.parent / 'resources' / file_name
         os.makedirs(file_name.parent, exist_ok=True)
 
-    create_data_file(n_points=int(parser_args.n_points), fpath=file_name, add_2d=parser_args.add_2d)
+    create_data_file(n_points=int(parser_args.n_points), fpath=file_name, image_cols=parser_args.image_cols)

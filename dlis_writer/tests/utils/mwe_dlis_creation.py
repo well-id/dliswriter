@@ -78,4 +78,4 @@ if __name__ == '__main__':
     output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
     os.makedirs(output_file_name.parent, exist_ok=True)
 
-    write_dlis_file(data=create_data(int(10e3), add_2d=True), dlis_file_name=output_file_name)
+    write_dlis_file(data=create_data(int(10e3), image_cols=5), dlis_file_name=output_file_name)
