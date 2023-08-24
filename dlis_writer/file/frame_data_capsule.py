@@ -2,8 +2,7 @@ import numpy as np
 from itertools import chain
 from typing import List
 
-from dlis_writer.logical_record.eflr_types.frame import Frame
-from dlis_writer.logical_record.eflr_types.channel import Channel
+from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.file.multi_frame_data import MultiFrameData
 
 

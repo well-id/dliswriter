@@ -2,9 +2,8 @@ import numpy as np
 from typing import List
 from line_profiler_pycharm import profile
 
-from dlis_writer.logical_record.eflr_types.frame import Frame
-from dlis_writer.logical_record.eflr_types.channel import Channel
-from dlis_writer.logical_record.iflr_types.frame_data import FrameData
+from dlis_writer.logical_record.eflr_types import Frame, Channel
+from dlis_writer.logical_record.iflr_types import FrameData
 
 
 class MultiFrameData:
