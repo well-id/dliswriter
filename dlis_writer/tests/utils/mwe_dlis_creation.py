@@ -4,6 +4,8 @@ import numpy as np
 import os
 import logging
 from argparse import ArgumentParser
+from timeit import timeit
+from datetime import timedelta
 from line_profiler_pycharm import profile
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
@@ -101,8 +103,15 @@ if __name__ == '__main__':
     else:
         data = load_hdf5(input_file_name)
 
-    write_dlis_file(data=data, dlis_file_name=output_file_name)
+    exec_time = timeit(lambda: write_dlis_file(data=data, dlis_file_name=output_file_name), number=1)
+    logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
 
     if (reference_file_name := pargs.reference_file_name) is not None:
         logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
-        compare(output_file_name, reference_file_name, verbose=True)
+        equal = compare(output_file_name, reference_file_name, verbose=True)
+
+        if equal:
+            logger.info("Files are equal")
+        else:
+            logger.warning("Files are NOT equal")
+
