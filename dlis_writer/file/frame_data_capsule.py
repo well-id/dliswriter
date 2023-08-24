@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import chain
 from typing import List
 
 from dlis_writer.logical_record.eflr_types.frame import Frame
@@ -30,4 +31,11 @@ class FrameDataCapsule:
     @origin_reference.setter
     def origin_reference(self, val):
         self._data.origin_reference = val
+
+    def __len__(self):
+        return len(self.channels) + 1 + len(self.data)
+
+    def __iter__(self):
+        return chain(self.channels, (self.frame,), self.data)
+
 

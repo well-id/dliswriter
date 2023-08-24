@@ -89,7 +89,7 @@ class DLISFile:
 
         self.file_header.origin_reference = val
         self.origin.origin_reference = val
-        for logical_record in (*data_capsule.channels, data_capsule.frame, data_capsule.data):
+        for logical_record in progressbar(data_capsule):
             logical_record.origin_reference = val
 
             if hasattr(logical_record, 'is_dictionary_controlled') \
@@ -102,14 +102,9 @@ class DLISFile:
     def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        all_records = chain(
-            (self.storage_unit_label, self.file_header, self.origin),
-            data_capsule.channels,
-            (data_capsule.frame,),
-            data_capsule.data
-        )
+        all_records = chain((self.storage_unit_label, self.file_header, self.origin), data_capsule)
 
-        n = 3 + len(data_capsule.channels) + 1 + len(data_capsule.data)
+        n = 3 + len(data_capsule)
         all_records_bytes = [None] * n
         all_positions = np.zeros(n+1, dtype=int)
         current_pos = 0
@@ -138,13 +133,8 @@ class DLISFile:
 
         """
 
-        all_records = chain(
-            (self.file_header, self.origin),
-            data_capsule.channels,
-            (data_capsule.frame,),
-            data_capsule.data
-        )
-        n = 2 + len(data_capsule.channels) + 1 + len(data_capsule.data)
+        all_records = chain((self.file_header, self.origin), data_capsule)
+        n = 2 + len(data_capsule)
 
         visible_record_length = self.visible_record_length
 
