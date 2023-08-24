@@ -30,16 +30,13 @@ def log_progress(message):
 VRFields = namedtuple('VRFields', field_names=('length', 'split', 'number_of_prior_splits', 'number_of_prior_vr'))
 
 
-class DLISFile(object):
+class DLISFile:
     """Top level object that creates DLIS file from given list of logical record segment bodies
 
     Attributes:
-        file_path: Absolute or relative path of output DLIS file
         storage_unit_label: A logical_record.storage_unit_label.StorageUnitLabel instance
         file_header: A logical_record.file_header.FileHeader instance
         origin: A logical_record.origin.Origin instance
-        logical_records: List containing ALL logical record segments in the DLIS file
-        visible_records: List of visible records that are created on the fly
         visible_record_length: Maximum length of each visible record
 
     .._RP66 V1 Maximum Visible Record Length:
@@ -52,13 +49,12 @@ class DLISFile(object):
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
         self.origin = origin
-        self.visible_records = []
 
         self.visible_record_length = visible_record_length if visible_record_length else 8192
         self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
 
     @lru_cache
-    def visible_record_bytes(self, length: int) -> bytes:
+    def create_visible_record_as_bytes(self, length: int) -> bytes:
         """Create Visible Record object as bytes
         
         Args:
@@ -102,7 +98,7 @@ class DLISFile(object):
 
     @log_progress("Writing raw bytes...")
     @profile
-    def raw_bytes(self, meta_logical_records, data_logical_records) -> np.ndarray:
+    def create_raw_bytes(self, meta_logical_records, data_logical_records) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         all_records = chain(
@@ -145,21 +141,21 @@ class DLISFile(object):
 
         visible_record_length = self.visible_record_length
 
-        q = {}
+        q = {}          # dictionary to contain all visible records information
 
         vr_length = 4
-        number_of_vr = 1
+        n_vrs = 1       #: number of visible records
         vr_offset = 0
-        number_of_splits = 0
+        n_splits = 0    #: number of created splits
         vr_position = 0
 
         def process_iteration(_lrs):
-            nonlocal vr_position, vr_length, vr_offset, number_of_vr, number_of_splits
+            nonlocal vr_position, vr_length, vr_offset, n_vrs, n_splits
 
-            vr_position = (visible_record_length * (number_of_vr - 1)) + 80  # DON'T TOUCH THIS
+            vr_position = (visible_record_length * (n_vrs - 1)) + 80  # DON'T TOUCH THIS
             vr_position += vr_offset
             _lrs_size = _lrs.size
-            _lrs_position = self.get_lrs_position(_lrs, number_of_vr, number_of_splits)
+            _lrs_position = self.pos[lrs.key] + 4 * (n_vrs + n_splits)
             _position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
 
             # option A: NO NEED TO SPLIT KEEP ON
@@ -168,18 +164,18 @@ class DLISFile(object):
 
             # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif _position_diff < 16:
-                q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
+                q[vr_position] = VRFields(vr_length, None, n_splits, n_vrs)
                 vr_length = 4
-                number_of_vr += 1
+                n_vrs += 1
                 vr_offset -= _position_diff
                 process_iteration(_lrs)  # need to do A, B, or C for the same lrs again
 
             # option C
             else:
-                q[vr_position] = VRFields(visible_record_length, _lrs, number_of_splits, number_of_vr)
+                q[vr_position] = VRFields(visible_record_length, _lrs, n_splits, n_vrs)
                 vr_length = 8 + _lrs_size - _position_diff
-                number_of_vr += 1
-                number_of_splits += 1
+                n_vrs += 1
+                n_splits += 1
 
         # note: this is a for-loop, but with a recursive element inside
         # some lrs-es need to be processed multiple times (see option B in process_iteration)
@@ -187,7 +183,7 @@ class DLISFile(object):
             process_iteration(lrs)
 
         # last vr
-        q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
+        q[vr_position] = VRFields(vr_length, None, n_splits, n_vrs)
 
         return q
 
@@ -230,7 +226,7 @@ class DLISFile(object):
             # 'inserting' visible record bytes (changed array length in the original code)
             self.insert_bytes(
                 bytes_inserted,
-                bytes_to_insert=self.visible_record_bytes(vr_length),
+                bytes_to_insert=self.create_visible_record_as_bytes(vr_length),
                 position=vr_position,
                 mask=mask_bytes_inserted
             )
@@ -345,20 +341,6 @@ class DLISFile(object):
         array_of_bytes[position:position + 4] = np.frombuffer(bytes_to_insert, dtype=np.uint8)
         # operations done in-place - no return value
 
-    def get_lrs_position(self, lrs, number_of_vr: int, number_of_splits: int):
-        """Recalculates the Logical Record Segment's position
-
-        Args:
-            lrs: A logical_record.utils.core.EFLR or logical_record.utils.core.IFLR instance
-            number_of_vr: Number of visible records created prior to lrs' position
-            number_of_splits: Number of splits occured prior to lrs' position
-
-        Returns:
-            Recalculated position of the Logical Record Segment in the entire file
-
-        """
-        return self.pos[lrs.key] + (number_of_vr * 4) + (number_of_splits * 4)
-
     @staticmethod
     @log_progress("Writing to file...")
     def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike]):
@@ -375,7 +357,7 @@ class DLISFile(object):
 
         self.validate()
         self.assign_origin_reference(meta_logical_records, data_logical_records)
-        raw_bytes = self.raw_bytes(meta_logical_records, data_logical_records)
+        raw_bytes = self.create_raw_bytes(meta_logical_records, data_logical_records)
         vr_dict = self.create_visible_record_dictionary(meta_logical_records, data_logical_records)
         all_bytes = self.add_visible_records(vr_dict, raw_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
