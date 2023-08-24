@@ -13,6 +13,7 @@ from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import Origin, Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5
+from dlis_writer.utils.logging import install_logger
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
 from dlis_writer.tests.utils.compare_dlis_files import compare
 
@@ -80,6 +81,8 @@ def write_dlis_file(data, dlis_file_name):
 
 
 if __name__ == '__main__':
+    install_logger(logger)
+
     parser = ArgumentParser("DLIS file creation - minimal working example")
     pg = parser.add_mutually_exclusive_group()
     pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)

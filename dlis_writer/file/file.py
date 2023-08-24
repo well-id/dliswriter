@@ -22,7 +22,7 @@ def log_progress(message):
         def wrapper(*args, **kwargs):
             logger.info(message)
             result = func(*args, **kwargs)
-            logger.info("Done")
+            logger.debug("Done")
             return result
         return wrapper
     return decorator
@@ -267,7 +267,7 @@ class DLISFile:
                     mask=mask_bytes_inserted
                 )
 
-        logger.info(f"{splits} splits created")
+        logger.debug(f"{splits} splits created")
 
         # use the bytes_inserted as the destination array
         # map the original raw_bytes on the unoccupied positions in bytes_inserted
