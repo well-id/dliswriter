@@ -10,7 +10,7 @@ from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 from dlis_writer.logical_record.misc.file_header import FileHeader
 from dlis_writer.logical_record.eflr_types.origin import Origin
 from dlis_writer.logical_record.eflr_types.frame import Frame
-from dlis_writer.logical_record.iflr_types.multi_frame_data import FrameDataCapsule
+from dlis_writer.file.frame_data_capsule import FrameDataCapsule
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data

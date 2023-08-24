@@ -63,30 +63,3 @@ class MultiFrameData:
             channel_name_mapping = {key: key for key in names}
 
         return np.concatenate([np.atleast_2d(data[channel_name_mapping[key]].T) for key in names]).T
-
-
-class FrameDataCapsule:
-    def __init__(self, frame: Frame, data: np.ndarray):
-        self._frame: Frame = frame
-        self._data: MultiFrameData = MultiFrameData(frame, data)
-
-    @property
-    def frame(self) -> Frame:
-        return self._frame
-
-    @property
-    def channels(self) -> List[Channel]:
-        return self.frame.channels.value
-
-    @property
-    def data(self) -> MultiFrameData:
-        return self._data
-
-    @property
-    def origin_reference(self):
-        return self._data.origin_reference
-
-    @origin_reference.setter
-    def origin_reference(self, val):
-        self._data.origin_reference = val
-

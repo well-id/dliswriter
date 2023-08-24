@@ -10,7 +10,7 @@ from typing import Union, Dict
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.iflr_types.multi_frame_data import FrameDataCapsule
+from dlis_writer.file.frame_data_capsule import FrameDataCapsule
 
 
 logger = logging.getLogger(__name__)
