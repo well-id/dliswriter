@@ -1,8 +1,6 @@
 from abc import abstractmethod
 from functools import lru_cache
-
 import numpy as np
-from line_profiler_pycharm import profile
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -51,7 +49,6 @@ class IflrAndEflrBase(LogicalRecordBase):
         return self.represent_as_bytes().size
 
     @lru_cache()
-    @profile
     def represent_as_bytes(self) -> np.ndarray:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 

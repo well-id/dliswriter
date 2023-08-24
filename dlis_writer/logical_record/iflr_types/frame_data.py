@@ -1,6 +1,5 @@
 import math
 from functools import lru_cache
-from line_profiler_pycharm import profile
 
 from dlis_writer.logical_record.core import IFLR
 from dlis_writer.utils.common import write_struct
@@ -50,7 +49,6 @@ class FrameData(IFLR):
         return self._frame_number
 
     @lru_cache()
-    @profile
     def make_body_bytes(self) -> bytes:
         body = b''
         body += self.frame.obname

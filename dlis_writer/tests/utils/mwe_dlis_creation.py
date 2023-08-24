@@ -40,7 +40,6 @@ def make_origin():
     return origin
 
 
-@profile
 def make_channels_and_frame(data: np.ndarray) -> FrameDataCapsule:
     # CHANNELS & FRAME
     frame = Frame('MAIN')

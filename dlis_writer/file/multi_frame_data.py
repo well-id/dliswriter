@@ -16,7 +16,6 @@ class MultiFrameData:
 
         self._i = 0
 
-    @profile
     def _make_frame_data(self, idx: int):
         return FrameData(
             frame=self._frame,

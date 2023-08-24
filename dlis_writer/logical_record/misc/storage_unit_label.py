@@ -1,5 +1,4 @@
 import numpy as np
-from line_profiler_pycharm import profile
 from functools import lru_cache
 
 from dlis_writer.utils.converters import get_ascii_bytes
@@ -47,7 +46,6 @@ class StorageUnitLabel(LogicalRecordBase):
         self.storage_set_identifier = storage_set_identifier
 
     @lru_cache(maxsize=4096)
-    @profile
     def represent_as_bytes(self) -> np.ndarray:
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 

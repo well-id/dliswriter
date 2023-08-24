@@ -80,7 +80,6 @@ class DLISFile:
         assert self.visible_record_length % 2 == 0, 'Visible record length must be an even number'
 
     @log_progress("Assigning origin reference")
-    @profile
     def assign_origin_reference(self, data_capsule: FrameDataCapsule):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
@@ -98,7 +97,6 @@ class DLISFile:
                     obj.origin_reference = val
 
     @log_progress("Writing raw bytes...")
-    @profile
     def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
@@ -123,7 +121,6 @@ class DLISFile:
         return raw_bytes
 
     @log_progress("Creating visible record dictionary...")
-    @profile
     def create_visible_record_dictionary(self, data_capsule: FrameDataCapsule) -> Dict[int, VRFields]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
@@ -303,7 +300,6 @@ class DLISFile:
         if (nb := len(bytes_to_check)) != expected_length:
             raise ValueError(f"Expected {expected_length} bytes, got {nb}")
 
-    @profile
     def insert_bytes(self, array_of_bytes: np.ndarray, bytes_to_insert: bytes, position: int, mask: np.ndarray) -> None:
         """Insert (or replace) bytes at the given position in the byte array.
 
