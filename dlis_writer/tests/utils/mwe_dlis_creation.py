@@ -3,12 +3,14 @@ from pathlib import Path
 import numpy as np
 import os
 import logging
+from argparse import ArgumentParser
 from line_profiler_pycharm import profile
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import Origin, Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
+from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
 
 
@@ -75,7 +77,25 @@ def write_dlis_file(data, dlis_file_name):
 
 
 if __name__ == '__main__':
-    output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
-    os.makedirs(output_file_name.parent, exist_ok=True)
+    parser = ArgumentParser("DLIS file creation - minimal working example")
+    pg = parser.add_mutually_exclusive_group()
+    pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
+    pg.add_argument('-ifn', '--input-file-name', help='Input file name')
 
-    write_dlis_file(data=create_data(int(10e3), image_cols=5), dlis_file_name=output_file_name)
+    parser.add_argument('-fn', '--file-name', help='Output file name')
+    parser.add_argument('--image-cols', nargs='+', type=int, default=(5,),
+                        help='Add 2D data entries with specified numbers of columns '
+                             '(ignored if input file name is specified)')
+
+    pargs = parser.parse_args()
+
+    if (output_file_name := pargs.file_name) is None:
+        output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
+        os.makedirs(output_file_name.parent, exist_ok=True)
+
+    if (input_file_name := pargs.input_file_name) is None:
+        data = create_data(int(pargs.n_points), image_cols=pargs.image_cols)
+    else:
+        data = load_hdf5(input_file_name)
+
+    write_dlis_file(data=data, dlis_file_name=output_file_name)
