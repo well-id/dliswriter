@@ -1,42 +1,33 @@
 import numpy as np
+from typing import List
 from line_profiler_pycharm import profile
 
 from dlis_writer.logical_record.eflr_types.frame import Frame
+from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.iflr_types.frame_data import FrameData
 
 
 class MultiFrameData:
     def __init__(self, frame: Frame, data: np.ndarray):
 
-        channels = [c for c in frame.channels.value]
-        data = self.flatten_structured_array(data, channels=channels)
-
-        self._data = data
+        self._data_array: np.ndarray = self.flatten_structured_array(data, channels=frame.channels.value)
         self._frame = frame
 
         self.origin_reference = None
 
         self._i = 0
 
-    @property
-    def data(self):
-        return self._data
-
-    @property
-    def frame(self):
-        return self._frame
-
     @profile
     def _make_frame_data(self, idx: int):
         return FrameData(
             frame=self._frame,
             frame_number=idx + 1,
-            slots=self._data[idx],
+            slots=self._data_array[idx],
             origin_reference=self.origin_reference
         )
 
     def __len__(self):
-        return self._data.shape[0]
+        return self._data_array.shape[0]
 
     def __iter__(self):
         self._i = 0
@@ -53,12 +44,8 @@ class MultiFrameData:
     def __getitem__(self, item: int):
         return self._make_frame_data(item)
 
-    @property
-    def channels(self):
-        return self.frame.channels.value
-
     @staticmethod
-    def flatten_structured_array(data: np.ndarray, channels: list = None):
+    def flatten_structured_array(data: np.ndarray, channels: List[Channel] = None):
         dtype_names = data.dtype.names
 
         if dtype_names is None:
@@ -76,3 +63,30 @@ class MultiFrameData:
             channel_name_mapping = {key: key for key in names}
 
         return np.concatenate([np.atleast_2d(data[channel_name_mapping[key]].T) for key in names]).T
+
+
+class FrameDataCapsule:
+    def __init__(self, frame: Frame, data: np.ndarray):
+        self._frame: Frame = frame
+        self._data: MultiFrameData = MultiFrameData(frame, data)
+
+    @property
+    def frame(self) -> Frame:
+        return self._frame
+
+    @property
+    def channels(self) -> List[Channel]:
+        return self.frame.channels.value
+
+    @property
+    def data(self) -> MultiFrameData:
+        return self._data
+
+    @property
+    def origin_reference(self):
+        return self._data.origin_reference
+
+    @origin_reference.setter
+    def origin_reference(self, val):
+        self._data.origin_reference = val
+

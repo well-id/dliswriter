@@ -10,7 +10,7 @@ from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 from dlis_writer.logical_record.misc.file_header import FileHeader
 from dlis_writer.logical_record.eflr_types.origin import Origin
 from dlis_writer.logical_record.eflr_types.frame import Frame
-from dlis_writer.logical_record.iflr_types.multi_frame_data import MultiFrameData
+from dlis_writer.logical_record.iflr_types.multi_frame_data import FrameDataCapsule
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
@@ -39,7 +39,7 @@ def make_origin():
 
 
 @profile
-def make_channels_and_frame(data: np.ndarray) -> MultiFrameData:
+def make_channels_and_frame(data: np.ndarray) -> FrameDataCapsule:
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
@@ -58,11 +58,10 @@ def make_channels_and_frame(data: np.ndarray) -> MultiFrameData:
     frame.spacing.representation_code = RepresentationCode.FDOUBL
     frame.spacing.units = Units.s
 
-    n_points = data.shape[0]
-    logger.info(f'Preparing frames for {n_points} rows.')
-    multi_frame_data = MultiFrameData(frame, data)
+    logger.info(f'Preparing frames for {data.shape[0]} rows.')
+    data_capsule = FrameDataCapsule(frame, data)
 
-    return multi_frame_data
+    return data_capsule
 
 
 @profile
@@ -74,9 +73,9 @@ def write_dlis_file(data, dlis_file_name):
         origin=make_origin()
     )
 
-    multi_frame_data = make_channels_and_frame(data)
+    data_capsule = make_channels_and_frame(data)
 
-    dlis_file.write_dlis(multi_frame_data, dlis_file_name)
+    dlis_file.write_dlis(data_capsule, dlis_file_name)
 
 
 if __name__ == '__main__':

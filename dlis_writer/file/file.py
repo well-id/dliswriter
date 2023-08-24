@@ -10,7 +10,7 @@ from typing import Union, Dict
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.iflr_types.multi_frame_data import MultiFrameData
+from dlis_writer.logical_record.iflr_types.multi_frame_data import FrameDataCapsule
 
 
 logger = logging.getLogger(__name__)
@@ -81,7 +81,7 @@ class DLISFile:
 
     @log_progress("Assigning origin reference")
     @profile
-    def assign_origin_reference(self, multi_frame_data: MultiFrameData):
+    def assign_origin_reference(self, data_capsule: FrameDataCapsule):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
         val = self.origin.file_set_number.value
@@ -89,7 +89,7 @@ class DLISFile:
 
         self.file_header.origin_reference = val
         self.origin.origin_reference = val
-        for logical_record in (*multi_frame_data.channels, multi_frame_data.frame, multi_frame_data):
+        for logical_record in (*data_capsule.channels, data_capsule.frame, data_capsule.data):
             logical_record.origin_reference = val
 
             if hasattr(logical_record, 'is_dictionary_controlled') \
@@ -99,17 +99,17 @@ class DLISFile:
 
     @log_progress("Writing raw bytes...")
     @profile
-    def create_raw_bytes(self, multi_frame_data: MultiFrameData) -> np.ndarray:
+    def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         all_records = chain(
             (self.storage_unit_label, self.file_header, self.origin),
-            multi_frame_data.channels,
-            (multi_frame_data.frame, ),
-            multi_frame_data
+            data_capsule.channels,
+            (data_capsule.frame,),
+            data_capsule.data
         )
 
-        n = 3 + len(multi_frame_data.channels) + 1 + len(multi_frame_data)
+        n = 3 + len(data_capsule.channels) + 1 + len(data_capsule.data)
         all_records_bytes = [None] * n
         all_positions = np.zeros(n+1, dtype=int)
         current_pos = 0
@@ -129,7 +129,7 @@ class DLISFile:
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, multi_frame_data: MultiFrameData) -> Dict[int, VRFields]:
+    def create_visible_record_dictionary(self, data_capsule: FrameDataCapsule) -> Dict[int, VRFields]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -140,11 +140,11 @@ class DLISFile:
 
         all_records = chain(
             (self.file_header, self.origin),
-            multi_frame_data.channels,
-            (multi_frame_data.frame, ),
-            multi_frame_data
+            data_capsule.channels,
+            (data_capsule.frame,),
+            data_capsule.data
         )
-        n = 2 + len(multi_frame_data.channels) + 1 + len(multi_frame_data)
+        n = 2 + len(data_capsule.channels) + 1 + len(data_capsule.data)
 
         visible_record_length = self.visible_record_length
 
@@ -359,13 +359,13 @@ class DLISFile:
         logger.info(f"Data written to file: '{filename}'")
 
     @profile
-    def write_dlis(self, multi_frame_data, filename: Union[str, bytes, os.PathLike]):
+    def write_dlis(self, data_capsule: FrameDataCapsule, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.validate()
-        self.assign_origin_reference(multi_frame_data)
-        raw_bytes = self.create_raw_bytes(multi_frame_data)
-        vr_dict = self.create_visible_record_dictionary(multi_frame_data)
+        self.assign_origin_reference(data_capsule)
+        raw_bytes = self.create_raw_bytes(data_capsule)
+        vr_dict = self.create_visible_record_dictionary(data_capsule)
         all_bytes = self.add_visible_records(vr_dict, raw_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
