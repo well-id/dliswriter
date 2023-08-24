@@ -12,6 +12,7 @@ from dlis_writer.logical_record.eflr_types import Origin, Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
+from dlis_writer.tests.utils.compare_dlis_files import compare
 
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,8 @@ if __name__ == '__main__':
     pg.add_argument('-ifn', '--input-file-name', help='Input file name')
 
     parser.add_argument('-fn', '--file-name', help='Output file name')
+    parser.add_argument('-ref', '--reference-file-name',
+                        help="Another DLIS file to compare the created one against (at binary level)")
     parser.add_argument('--image-cols', nargs='+', type=int, default=(5,),
                         help='Add 2D data entries with specified numbers of columns '
                              '(ignored if input file name is specified)')
@@ -99,3 +102,7 @@ if __name__ == '__main__':
         data = load_hdf5(input_file_name)
 
     write_dlis_file(data=data, dlis_file_name=output_file_name)
+
+    if (reference_file_name := pargs.reference_file_name) is not None:
+        logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
+        compare(output_file_name, reference_file_name, verbose=True)
