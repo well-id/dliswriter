@@ -90,7 +90,7 @@ if __name__ == '__main__':
     parser.add_argument('-fn', '--file-name', help='Output file name')
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
-    parser.add_argument('--image-cols', nargs='+', type=int, default=(5,),
+    parser.add_argument('--image-cols', nargs='+', type=int, default=(),
                         help='Add 2D data entries with specified numbers of columns '
                              '(ignored if input file name is specified)')
 
