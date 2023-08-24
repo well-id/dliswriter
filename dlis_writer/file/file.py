@@ -104,7 +104,7 @@ class DLISFile:
 
         n = 3 + len(data_capsule)
         all_records_bytes = [None] * n
-        all_positions = np.zeros(n+1, dtype=int)
+        all_positions = [0] + [None] * n
         current_pos = 0
         for i, lr in progressbar(enumerate(all_records), max_value=n):
             b = lr.represent_as_bytes()  # grows with data size more than row number
