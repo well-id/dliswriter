@@ -141,6 +141,7 @@ class DLISFile(object):
         """
 
         all_records = chain([self.file_header, self.origin], meta_logical_records, data_logical_records)
+        n = 2 + len(meta_logical_records) + len(data_logical_records)
 
         visible_record_length = self.visible_record_length
 
@@ -151,47 +152,38 @@ class DLISFile(object):
         vr_offset = 0
         number_of_splits = 0
 
-        lrs = next(all_records)
+        def process_iteration(_lrs):
+            nonlocal vr_length, vr_offset, number_of_vr, number_of_splits
 
-        def compute_positions():
             _vr_position = (visible_record_length * (number_of_vr - 1)) + 80  # DON'T TOUCH THIS
             _vr_position += vr_offset
-
-            _lrs_size = lrs.size
-
-            _lrs_position = self.get_lrs_position(lrs, number_of_vr, number_of_splits)
+            _lrs_size = _lrs.size
+            _lrs_position = self.get_lrs_position(_lrs, number_of_vr, number_of_splits)
             _position_diff = _vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
 
-            return _vr_position, _lrs_size, _position_diff
+            # option A: NO NEED TO SPLIT KEEP ON
+            if (vr_length + _lrs_size) <= visible_record_length:
+                vr_length += _lrs_size
 
-        while True:
-            vr_position, lrs_size, position_diff = compute_positions()
-
-            # NO NEED TO SPLIT KEEP ON
-            if (vr_length + lrs_size) <= visible_record_length:
-                vr_length += lrs_size
-                try:
-                    lrs = next(all_records)
-                except StopIteration:
-                    break
-
-            # NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
-            elif position_diff < 16:
-                q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
+            # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
+            elif _position_diff < 16:
+                q[_vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
                 vr_length = 4
                 number_of_vr += 1
-                vr_offset -= position_diff
+                vr_offset -= _position_diff
+                _vr_position = process_iteration(_lrs)  # need to do A, B, or C for the same lrs again
 
+            # option C
             else:
-                q[vr_position] = VRFields(visible_record_length, lrs, number_of_splits, number_of_vr)
-                vr_length = 8 + lrs_size - position_diff
+                q[_vr_position] = VRFields(visible_record_length, _lrs, number_of_splits, number_of_vr)
+                vr_length = 8 + _lrs_size - _position_diff
                 number_of_vr += 1
                 number_of_splits += 1
 
-                try:
-                    lrs = next(all_records)
-                except StopIteration:
-                    break
+            return _vr_position
+
+        for lrs in progressbar(all_records, max_value=n):
+            vr_position = process_iteration(lrs)
 
         # last vr
         q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
