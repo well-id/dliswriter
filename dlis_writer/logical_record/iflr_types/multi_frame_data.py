@@ -53,6 +53,10 @@ class MultiFrameData:
     def __getitem__(self, item: int):
         return self._make_frame_data(item)
 
+    @property
+    def channels(self):
+        return self.frame.channels.value
+
     @staticmethod
     def flatten_structured_array(data: np.ndarray, channels: list = None):
         dtype_names = data.dtype.names

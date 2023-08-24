@@ -39,7 +39,7 @@ def make_origin():
 
 
 @profile
-def make_channels_and_frame(data: np.ndarray):
+def make_channels_and_frame(data: np.ndarray) -> MultiFrameData:
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     frame.channels.value = [
@@ -62,7 +62,7 @@ def make_channels_and_frame(data: np.ndarray):
     logger.info(f'Preparing frames for {n_points} rows.')
     multi_frame_data = MultiFrameData(frame, data)
 
-    return frame, multi_frame_data
+    return multi_frame_data
 
 
 @profile
@@ -74,14 +74,9 @@ def write_dlis_file(data, dlis_file_name):
         origin=make_origin()
     )
 
-    frame, data_logical_records = make_channels_and_frame(data)
+    multi_frame_data = make_channels_and_frame(data)
 
-    meta_logical_records = [
-        *frame.channels.value,
-        frame
-    ]
-
-    dlis_file.write_dlis(meta_logical_records, data_logical_records, dlis_file_name)
+    dlis_file.write_dlis(multi_frame_data, dlis_file_name)
 
 
 if __name__ == '__main__':
