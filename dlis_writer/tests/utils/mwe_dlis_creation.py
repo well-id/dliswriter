@@ -1,7 +1,6 @@
 from datetime import datetime
 from pathlib import Path
 import numpy as np
-import h5py
 import os
 import logging
 from line_profiler_pycharm import profile
@@ -39,35 +38,6 @@ def make_origin():
     return origin
 
 
-def load_h5_data(data_file_name, key='contents'):
-    h5_data = h5py.File(data_file_name, 'r')[f'/{key}/']
-
-    dtype = []
-    arrays = []
-    n_rows = None
-    for key in h5_data.keys():
-        key_data = h5_data.get(key)[:]
-        arrays.append(key_data)
-
-        dt = (key, key_data.dtype)
-        if key_data.ndim > 1:
-            dt = (*dt, key_data.shape[-1])
-        dtype.append(dt)
-
-        if n_rows is None:
-            n_rows = key_data.shape[0]
-        else:
-            if n_rows != key_data.shape[0]:
-                raise RuntimeError(
-                    "Datasets in the file have different lengths; the data cannot be transformed to DLIS format")
-
-    full_data = np.zeros(n_rows, dtype=dtype)
-    for key, arr in zip(h5_data.keys(), arrays):
-        full_data[key] = arr
-
-    return full_data
-
-
 @profile
 def make_channels_and_frame(data: np.ndarray):
     # CHANNELS & FRAME
@@ -93,6 +63,7 @@ def make_channels_and_frame(data: np.ndarray):
     multi_frame_data = MultiFrameData(frame, data)
 
     return frame, multi_frame_data
+
 
 @profile
 def write_dlis_file(data, dlis_file_name):

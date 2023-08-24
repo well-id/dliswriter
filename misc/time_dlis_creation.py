@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 import logging
 
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
-from dlis_writer.tests.utils.mwe_dlis_creation import write_dlis_file, load_h5_data
+from dlis_writer.tests.utils.mwe_dlis_creation import write_dlis_file, load_hdf5
 
 
 parser = ArgumentParser("Timing DLIS writer execution")
@@ -33,7 +33,7 @@ if (ifn := parser_args.input_file_name) is None:
     n_samples = int(parser_args.n_points)
     data = create_data(n_samples, add_2d=parser_args.add_2d)
 else:
-    data = load_h5_data(parser_args.input_file_name)
+    data = load_hdf5(parser_args.input_file_name)
     n_samples = data.shape[0]
 
 n_execs = parser_args.n_execs
