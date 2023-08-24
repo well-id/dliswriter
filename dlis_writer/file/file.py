@@ -151,15 +151,16 @@ class DLISFile(object):
         number_of_vr = 1
         vr_offset = 0
         number_of_splits = 0
+        vr_position = 0
 
         def process_iteration(_lrs):
-            nonlocal vr_length, vr_offset, number_of_vr, number_of_splits
+            nonlocal vr_position, vr_length, vr_offset, number_of_vr, number_of_splits
 
-            _vr_position = (visible_record_length * (number_of_vr - 1)) + 80  # DON'T TOUCH THIS
-            _vr_position += vr_offset
+            vr_position = (visible_record_length * (number_of_vr - 1)) + 80  # DON'T TOUCH THIS
+            vr_position += vr_offset
             _lrs_size = _lrs.size
             _lrs_position = self.get_lrs_position(_lrs, number_of_vr, number_of_splits)
-            _position_diff = _vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
+            _position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
 
             # option A: NO NEED TO SPLIT KEEP ON
             if (vr_length + _lrs_size) <= visible_record_length:
@@ -167,23 +168,23 @@ class DLISFile(object):
 
             # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif _position_diff < 16:
-                q[_vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
+                q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
                 vr_length = 4
                 number_of_vr += 1
                 vr_offset -= _position_diff
-                _vr_position = process_iteration(_lrs)  # need to do A, B, or C for the same lrs again
+                process_iteration(_lrs)  # need to do A, B, or C for the same lrs again
 
             # option C
             else:
-                q[_vr_position] = VRFields(visible_record_length, _lrs, number_of_splits, number_of_vr)
+                q[vr_position] = VRFields(visible_record_length, _lrs, number_of_splits, number_of_vr)
                 vr_length = 8 + _lrs_size - _position_diff
                 number_of_vr += 1
                 number_of_splits += 1
 
-            return _vr_position
-
+        # note: this is a for-loop, but with a recursive element inside
+        # some lrs-es need to be processed multiple times (see option B in process_iteration)
         for lrs in progressbar(all_records, max_value=n):
-            vr_position = process_iteration(lrs)
+            process_iteration(lrs)
 
         # last vr
         q[vr_position] = VRFields(vr_length, None, number_of_splits, number_of_vr)
