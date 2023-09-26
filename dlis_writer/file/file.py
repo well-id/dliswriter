@@ -52,14 +52,14 @@ class PositionedArray:
         if self._pos + n > self._max_pos:
             raise RuntimeError("No more space in the array")
 
-        if self._pos and self._idx[self._pos - 4] == idx:
+        if self._pos and self._idx[self._pos - n] == idx:
             # shift the bytes already at the requested position to the right by 4 indices
             # (assumed length of the inserted bytes is always 4, and otherwise the arrays are filled with zeros)
-            self._idx[self._pos - 4:self._pos] += 4
+            self._idx[self._pos - n:self._pos] += n
 
-        self._idx[self._pos:self._pos + 4] = idx + np.arange(4)
-        self._bytes[self._pos:self._pos + 4] = np.frombuffer(items, dtype=np.uint8)
-        self._pos += 4
+        self._idx[self._pos:self._pos + n] = idx + np.arange(n)
+        self._bytes[self._pos:self._pos + n] = np.frombuffer(items, dtype=np.uint8)
+        self._pos += n
 
 
 class DLISFile:
