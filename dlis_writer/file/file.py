@@ -46,6 +46,10 @@ class PositionedArray:
     def idx(self):
         return self._idx
 
+    @property
+    def full(self):
+        return self._pos == self._max_pos
+
     def insert_items(self, idx: int, items: bytes):
         n = len(items)
 
@@ -302,9 +306,9 @@ class DLISFile:
 
         # map the original raw_bytes on the unoccupied positions in bytes_inserted
         # first check that the empty bytes counts are correct
-        if (unoccupied_length := raw_mask.sum()) != raw_bytes.size:
-            raise RuntimeError("Error in inserting visible record bytes: the number of unoccupied bytes in the array "
-                               f"{unoccupied_length} does not match the number of the raw bytes {raw_bytes.size})")
+        if not bytes_inserted.full:
+            raise RuntimeError("Error in inserting visible record bytes: the number of inserted bytes is lower "
+                               "than expected")
         all_bytes[raw_mask] = raw_bytes
 
         # apply the inserted bytes
