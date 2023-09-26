@@ -34,31 +34,32 @@ VRFields = namedtuple('VRFields', field_names=('length', 'split', 'number_of_pri
 class PositionedArray:
     def __init__(self, n):
         self._bytes = np.zeros(n, dtype=np.uint8)
-        self._mask = np.zeros(n, dtype=bool)
-        self._max_pos = self._bytes.size
+        self._idx = np.zeros(n, dtype=np.uint64)
+        self._max_pos = n
+        self._pos = 0
 
     @property
     def bytes(self):
         return self._bytes
 
     @property
-    def mask(self):
-        return self._mask
+    def idx(self):
+        return self._idx
 
-    def insert_items(self, pos: int, items: bytes):
+    def insert_items(self, idx: int, items: bytes):
         n = len(items)
-        if pos + n > self._max_pos:
+
+        if self._pos + n > self._max_pos:
             raise RuntimeError("No more space in the array")
 
-        if self._mask[pos]:
+        if self._pos and self._idx[self._pos - 4] == idx:
             # shift the bytes already at the requested position to the right by 4 indices
             # (assumed length of the inserted bytes is always 4, and otherwise the arrays are filled with zeros)
-            self._mask[pos + 4:pos + 8] = self._mask[pos:pos + 4]
-            self._bytes[pos + 4:pos + 8] = self._bytes[pos:pos + 4]
+            self._idx[self._pos - 4:self._pos] += 4
 
-        # insert the new bytes at the requested positions and mark these positions in the mask array
-        self.mask[pos:pos + 4] = True
-        self._bytes[pos:pos + 4] = np.frombuffer(items, dtype=np.uint8)
+        self._idx[self._pos:self._pos + 4] = idx + np.arange(4)
+        self._bytes[self._pos:self._pos + 4] = np.frombuffer(items, dtype=np.uint8)
+        self._pos += 4
 
 
 class DLISFile:
@@ -227,6 +228,9 @@ class DLISFile:
         # expected total length of the raw_bytes array after the vr and header bytes are inserted
         total_len = raw_bytes.size + total_vr_length + total_header_length
 
+        inserted_len = total_vr_length + total_header_length
+        replaced_len = total_header_length
+
         # New approach: instead of inserting the bytes (changing the length of the raw_bytes at every iteration),
         # prepare arrays which will only hold the inserted bytes already at the correct positions;
         # otherwise, these arrays are filled with zeros.
@@ -238,8 +242,8 @@ class DLISFile:
         # (see 'second part of the split'). To preserve the correct positions of the bytes, bytes coming from the two
         # types of operations are kept in two separate arrays (with corresponding masks): bytes_inserted
         # and bytes_replaced.
-        bytes_inserted = PositionedArray(total_len)
-        bytes_replaced = PositionedArray(total_len)
+        bytes_inserted = PositionedArray(inserted_len)
+        bytes_replaced = PositionedArray(replaced_len)
 
         for vr_position, val in progressbar(vr_dict.items()):
 
@@ -291,18 +295,25 @@ class DLISFile:
 
         logger.debug(f"{splits} splits created")
 
-        # use the bytes_inserted as the destination array
+        # destination array
+        all_bytes = np.zeros(total_len, dtype=np.uint8)
+        raw_mask = np.ones(total_len, dtype=bool)
+        raw_mask[bytes_inserted.idx] = False
+
         # map the original raw_bytes on the unoccupied positions in bytes_inserted
         # first check that the empty bytes counts are correct
-        if (unoccupied_length := (total_len - bytes_inserted.mask.sum())) != raw_bytes.size:
+        if (unoccupied_length := raw_mask.sum()) != raw_bytes.size:
             raise RuntimeError("Error in inserting visible record bytes: the number of unoccupied bytes in the array "
                                f"{unoccupied_length} does not match the number of the raw bytes {raw_bytes.size})")
-        bytes_inserted.bytes[~bytes_inserted.mask] = raw_bytes
+        all_bytes[raw_mask] = raw_bytes
+
+        # apply the inserted bytes
+        all_bytes[bytes_inserted.idx] = bytes_inserted.bytes
 
         # apply the replaced header bytes
-        bytes_inserted.bytes[bytes_replaced.mask] = bytes_replaced.bytes[bytes_replaced.mask]
+        all_bytes[bytes_replaced.idx] = bytes_replaced.bytes
 
-        return bytes_inserted.bytes  # this is the array containing all the bytes combined now
+        return all_bytes
 
     @staticmethod
     def check_length(bytes_to_check: bytes, expected_length: int = 4) -> None:
@@ -346,7 +357,7 @@ class DLISFile:
 
         self.check_length(bytes_to_insert)  # the code below is based on the assumption that we *always* insert 4 bytes
 
-        array_of_bytes.insert_items(pos=position, items=bytes_to_insert)
+        array_of_bytes.insert_items(idx=position, items=bytes_to_insert)
         # operations done in-place - no return value
 
     @staticmethod
