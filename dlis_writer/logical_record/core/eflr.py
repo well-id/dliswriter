@@ -30,23 +30,26 @@ class EFLR(IflrAndEflrBase):
         self.is_dictionary_controlled = False
         self.dictionary_controlled_objects = None
 
+        self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
+
     def create_attributes(self):
         """Creates Attribute instances for each attribute in the __dict__ except NO_TEMPLATE elements"""
 
         for key in list(self.__dict__.keys()):
             if key not in NOT_TEMPLATE:
-                _rules = getattr(RP66, self.set_type.replace('-', '_'))[key]
+                attr = self._create_attribute(key)
+                setattr(self, key, attr)
 
-                if key[0] == '_':
-                    _label = key[1:].upper().replace('_', '-')
-                else:
-                    _label = key.upper().replace('_', '-')
+    def _create_attribute(self, key):
+        rules = self._rp66_rules[key]
 
-                _count = _rules['count']
-                _rc = _rules['representation_code']
+        attr = Attribute(
+            label=key.strip('_').upper().replace('_', '-'),
+            count=rules['count'],
+            representation_code=rules['representation_code']
+        )
 
-                _attr = Attribute(label=_label, count=_count, representation_code=_rc)
-                setattr(self, key, _attr)
+        return attr
 
     @property
     def obname(self) -> bytes:

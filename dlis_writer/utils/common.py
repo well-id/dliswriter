@@ -28,7 +28,8 @@ NOT_TEMPLATE = [
     'dictionary_controlled_objects',
     'split_size',
     'vr_dict',
-    '_dataset_name'
+    '_dataset_name',
+    '_rp66_rules'
 ]
 """list: A list of attributes to be neglected while creating Attribute instances for EFLR objects.
 
