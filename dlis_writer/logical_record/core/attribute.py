@@ -70,7 +70,7 @@ class Attribute:
             characteristics += '1'
         else:
             if self.value:
-                if type(self.value) == list or type(self.value) == tuple:
+                if isinstance(self.value, (list, tuple)):
                     self.count = len(self.value)
                 else:
                     pass
@@ -89,7 +89,7 @@ class Attribute:
             characteristics += '0'
 
         if self.units and for_template:
-            if type(self.units) == Units:
+            if isinstance(self.units, Units):
                 bts += write_struct(RepresentationCode.UNITS, self.units.value)
             else:
                 bts += write_struct(RepresentationCode.UNITS, self.units)
@@ -114,15 +114,15 @@ class Attribute:
 
         if self.value and not for_template:
 
-            if type(self.value) == list or type(self.value) == tuple:
+            if isinstance(self.value, (list, tuple)):
                 for val in self.value:
-                    if 'logical_record' in str(type(val)):
+                    if 'logical_record' in val.__class__.__name__:
                         bts += val.obname
                     else:
                         bts += write_struct(self.representation_code, val)
             else:
                 try:
-                    if type(self.value) == Units:
+                    if isinstance(self.value, Units):
                         value = self.value.value
                     else:
                         value = self.value
