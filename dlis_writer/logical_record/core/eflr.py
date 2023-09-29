@@ -1,4 +1,4 @@
-from dlis_writer.utils.common import NOT_TEMPLATE, write_struct, write_absent_attribute
+from dlis_writer.utils.common import NOT_TEMPLATE, write_struct
 from dlis_writer.utils.rp66 import RP66
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
@@ -32,6 +32,7 @@ class EFLR(IflrAndEflrBase):
 
     def create_attributes(self):
         """Creates Attribute instances for each attribute in the __dict__ except NO_TEMPLATE elements"""
+
         for key in list(self.__dict__.keys()):
             if key not in NOT_TEMPLATE:
                 _rules = getattr(RP66, self.set_type.replace('-', '_'))[key]
@@ -57,12 +58,13 @@ class EFLR(IflrAndEflrBase):
         .._RP66 V1 OBNAME Representation Code:
             http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_23
         """
-        return write_struct(RepresentationCode.OBNAME, (self.origin_reference,
-                                                        self.copy_number,
-                                                        self.object_name))
 
-    @property
-    def set_component(self) -> bytes:
+        return write_struct(
+            RepresentationCode.OBNAME,
+            (self.origin_reference, self.copy_number, self.object_name)
+        )
+
+    def make_set_component(self) -> bytes:
         """Creates component role Set
 
         Returns:
@@ -71,6 +73,7 @@ class EFLR(IflrAndEflrBase):
         .._RP66 Component Descriptor:
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
         """
+
         _bytes = write_struct(RepresentationCode.IDENT, self.set_type)
         if self.set_name:
             _bytes = b'\xf8' + _bytes + write_struct(RepresentationCode.IDENT, self.set_name)
@@ -79,8 +82,7 @@ class EFLR(IflrAndEflrBase):
 
         return _bytes
 
-    @property
-    def template(self) -> bytes:
+    def make_template(self) -> bytes:
         """Creates template from EFLR object's attributes
 
         Returns:
@@ -90,24 +92,21 @@ class EFLR(IflrAndEflrBase):
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_2
 
         """
+
         _bytes = b''
-        for key in list(self.__dict__.keys()):
+        for key in self.__dict__.keys():
             if key not in NOT_TEMPLATE:
                 _attr = getattr(self, key)
                 _bytes += _attr.get_as_bytes(for_template=True)
 
         return _bytes
 
-    @property
-    def object_component(self) -> bytes:
+    def make_object_component(self) -> bytes:
         """Creates object component"""
-        _bytes = b'p'
-        _bytes += self.obname
 
-        return _bytes
+        return b'p' + self.obname
 
-    @property
-    def objects(self) -> bytes:
+    def make_objects(self) -> bytes:
         """Creates object bytes that follows the object component
 
         Note:
@@ -115,16 +114,17 @@ class EFLR(IflrAndEflrBase):
             Using Attribute instances' get_as_bytes method to create bytes.
 
         """
+
         _bytes = b''
         if self.is_dictionary_controlled:
             for obj in self.dictionary_controlled_objects:
                 _bytes += obj.represent_as_bytes()
         else:
-            for key in list(self.__dict__.keys()):
+            for key in self.__dict__.keys():
                 if key not in NOT_TEMPLATE:
                     _attr = getattr(self, key)
                     if not _attr.value:
-                        _bytes += write_absent_attribute()
+                        _bytes += b'\x00'
                     else:
                         _bytes += _attr.get_as_bytes()
 
@@ -133,14 +133,14 @@ class EFLR(IflrAndEflrBase):
     def make_body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
 
-        a = self.set_component
-        b = self.template
-        c = self.objects
+        a = self.make_set_component()
+        b = self.make_template()
+        c = self.make_objects()
 
         if self.is_dictionary_controlled:
             return a + b + c
 
-        d = self.object_component
+        d = self.make_object_component()
         return a + b + d + c
 
     def _write_struct_for_lr_type(self):

@@ -229,8 +229,3 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
         return func(value)
 
     return representation_code.value.pack(value)
-
-
-def write_absent_attribute() -> bytes:
-    """Returns absent attribute bytes as per RP66 V1 spec"""
-    return b'\x00'
