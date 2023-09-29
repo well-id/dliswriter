@@ -116,10 +116,7 @@ class Attribute:
 
             if isinstance(self.value, (list, tuple)):
                 for val in self.value:
-                    if 'logical_record' in val.__class__.__name__:
-                        bts += val.obname
-                    else:
-                        bts += write_struct(self.representation_code, val)
+                    bts += write_struct(self.representation_code, val)
             else:
                 try:
                     if isinstance(self.value, Units):
