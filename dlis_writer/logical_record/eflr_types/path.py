@@ -10,16 +10,14 @@ class Path(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.frame_type = None
-        self.well_reference_point = None
-        self.value = None
-        self.borehole_depth = None
-        self.vertical_depth = None
-        self.radial_drift = None
-        self.angular_drift = None
-        self.time = None
-        self.depth_offset = None
-        self.measure_point_offset = None
-        self.tool_zero_offset = None
-
-        self.create_attributes()
+        self.frame_type = self._create_attribute('frame_type')
+        self.well_reference_point = self._create_attribute('well_reference_point')
+        self.value = self._create_attribute('value')
+        self.borehole_depth = self._create_attribute('borehole_depth')
+        self.vertical_depth = self._create_attribute('vertical_depth')
+        self.radial_drift = self._create_attribute('radial_drift')
+        self.angular_drift = self._create_attribute('angular_drift')
+        self.time = self._create_attribute('time')
+        self.depth_offset = self._create_attribute('depth_offset')
+        self.measure_point_offset = self._create_attribute('measure_point_offset')
+        self.tool_zero_offset = self._create_attribute('tool_zero_offset')

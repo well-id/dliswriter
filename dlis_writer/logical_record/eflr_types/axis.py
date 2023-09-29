@@ -10,8 +10,6 @@ class Axis(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.axis_id = None
-        self.coordinates = None
-        self.spacing = None
-
-        self.create_attributes()
+        self.axis_id = self._create_attribute('axis_id')
+        self.coordinates = self._create_attribute('coordinates')
+        self.spacing = self._create_attribute('spacing')

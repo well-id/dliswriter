@@ -10,12 +10,10 @@ class Tool(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.description = None
-        self.trademark_name = None
-        self.generic_name = None
-        self.parts = None
-        self.status = None
-        self.channels = None
-        self.parameters = None
-
-        self.create_attributes()
+        self.description = self._create_attribute('description')
+        self.trademark_name = self._create_attribute('trademark_name')
+        self.generic_name = self._create_attribute('generic_name')
+        self.parts = self._create_attribute('parts')
+        self.status = self._create_attribute('status')
+        self.channels = self._create_attribute('channels')
+        self.parameters = self._create_attribute('parameters')

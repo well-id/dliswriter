@@ -1,4 +1,4 @@
-from dlis_writer.utils.common import NOT_TEMPLATE, write_struct
+from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.rp66 import RP66
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
@@ -31,14 +31,7 @@ class EFLR(IflrAndEflrBase):
         self.dictionary_controlled_objects = None
 
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
-
-    def create_attributes(self):
-        """Creates Attribute instances for each attribute in the __dict__ except NO_TEMPLATE elements"""
-
-        for key in list(self.__dict__.keys()):
-            if key not in NOT_TEMPLATE:
-                attr = self._create_attribute(key)
-                setattr(self, key, attr)
+        self._attributes: dict[str, Attribute] = {}
 
     def _create_attribute(self, key):
         rules = self._rp66_rules[key]
@@ -48,6 +41,8 @@ class EFLR(IflrAndEflrBase):
             count=rules['count'],
             representation_code=rules['representation_code']
         )
+
+        self._attributes[key] = attr
 
         return attr
 
@@ -97,10 +92,8 @@ class EFLR(IflrAndEflrBase):
         """
 
         _bytes = b''
-        for key in self.__dict__.keys():
-            if key not in NOT_TEMPLATE:
-                _attr = getattr(self, key)
-                _bytes += _attr.get_as_bytes(for_template=True)
+        for attr in self._attributes.values():
+            _bytes += attr.get_as_bytes(for_template=True)
 
         return _bytes
 
@@ -123,13 +116,11 @@ class EFLR(IflrAndEflrBase):
             for obj in self.dictionary_controlled_objects:
                 _bytes += obj.represent_as_bytes()
         else:
-            for key in self.__dict__.keys():
-                if key not in NOT_TEMPLATE:
-                    _attr = getattr(self, key)
-                    if not _attr.value:
-                        _bytes += b'\x00'
-                    else:
-                        _bytes += _attr.get_as_bytes()
+            for attr in self._attributes.values():
+                if not attr.value:
+                    _bytes += b'\x00'
+                else:
+                    _bytes += attr.get_as_bytes()
 
         return _bytes
 

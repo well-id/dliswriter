@@ -6,40 +6,6 @@ from functools import lru_cache
 from dlis_writer.utils.enums import RepresentationCode
 
 
-NOT_TEMPLATE = [
-    'origin_reference',
-    'copy_number',
-    'object_name',
-    'logical_record_type',
-    'segment_length',
-    'is_eflr',
-    'has_predecessor_segment',
-    'has_successor_segment',
-    'is_encrypted',
-    'has_encryption_protocol',
-    'has_checksum',
-    'has_trailing_length',
-    'has_padding',
-    'set_type',
-    'set_name',
-    'attributes',
-    'bytes',
-    'is_dictionary_controlled',
-    'dictionary_controlled_objects',
-    'split_size',
-    'vr_dict',
-    '_dataset_name',
-    '_rp66_rules'
-]
-"""list: A list of attributes to be neglected while creating Attribute instances for EFLR objects.
-
-When creating attributes for EFLR objects, __dict__ is used to get a list of all attributes.
-And for each element in that list, an instance of Attribute class is created. NOT_TEMPLATE
-is a list of attributes that won't be in the Template and so neglected when creating Attribute
-instances.
-"""
-
-
 # offsets used in writing structs for UVARI representation code (see '_write_struct_uvari' function)
 UNORM_OFFSET = 32768        #: offset added to values packed as UNORM; '10' and 14 zeros
 ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30 zeros

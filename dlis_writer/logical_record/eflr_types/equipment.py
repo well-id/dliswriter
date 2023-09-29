@@ -10,22 +10,20 @@ class Equipment(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.trademark_name = None
-        self.status = None
-        self._type = None
-        self.serial_number = None
-        self.location = None
-        self.height = None
-        self.length = None
-        self.minimum_diameter = None
-        self.maximum_diameter = None
-        self.volume = None
-        self.weight = None
-        self.hole_size = None
-        self.pressure = None
-        self.temperature = None
-        self.vertical_depth = None
-        self.radial_drift = None
-        self.angular_drift = None
-
-        self.create_attributes()
+        self.trademark_name = self._create_attribute('trademark_name')
+        self.status = self._create_attribute('status')
+        self._type = self._create_attribute('_type')
+        self.serial_number = self._create_attribute('serial_number')
+        self.location = self._create_attribute('location')
+        self.height = self._create_attribute('height')
+        self.length = self._create_attribute('length')
+        self.minimum_diameter = self._create_attribute('minimum_diameter')
+        self.maximum_diameter = self._create_attribute('maximum_diameter')
+        self.volume = self._create_attribute('volume')
+        self.weight = self._create_attribute('weight')
+        self.hole_size = self._create_attribute('hole_size')
+        self.pressure = self._create_attribute('pressure')
+        self.temperature = self._create_attribute('temperature')
+        self.vertical_depth = self._create_attribute('vertical_depth')
+        self.radial_drift = self._create_attribute('radial_drift')
+        self.angular_drift = self._create_attribute('angular_drift')

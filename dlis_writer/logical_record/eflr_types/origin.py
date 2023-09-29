@@ -10,25 +10,23 @@ class Origin(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.file_id = None
-        self.file_set_name = None
-        self.file_set_number = None
-        self.file_number = None
-        self.file_type = None
-        self.product = None
-        self.version = None
-        self.programs = None
-        self.creation_time = None
-        self.order_number = None
-        self.descent_number = None
-        self.run_number = None
-        self.well_id = None
-        self.well_name = None
-        self.field_name = None
-        self.producer_code = None
-        self.producer_name = None
-        self.company = None
-        self.name_space_name = None
-        self.name_space_version = None
-
-        self.create_attributes()
+        self.file_id = self._create_attribute('file_id')
+        self.file_set_name = self._create_attribute('file_set_name')
+        self.file_set_number = self._create_attribute('file_set_number')
+        self.file_number = self._create_attribute('file_number')
+        self.file_type = self._create_attribute('file_type')
+        self.product = self._create_attribute('product')
+        self.version = self._create_attribute('version')
+        self.programs = self._create_attribute('programs')
+        self.creation_time = self._create_attribute('creation_time')
+        self.order_number = self._create_attribute('order_number')
+        self.descent_number = self._create_attribute('descent_number')
+        self.run_number = self._create_attribute('run_number')
+        self.well_id = self._create_attribute('well_id')
+        self.well_name = self._create_attribute('well_name')
+        self.field_name = self._create_attribute('field_name')
+        self.producer_code = self._create_attribute('producer_code')
+        self.producer_name = self._create_attribute('producer_name')
+        self.company = self._create_attribute('company')
+        self.name_space_name = self._create_attribute('name_space_name')
+        self.name_space_version = self._create_attribute('name_space_version')

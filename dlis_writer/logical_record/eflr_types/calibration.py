@@ -10,23 +10,21 @@ class CalibrationMeasurement(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.phase = None
-        self.measurement_source = None
-        self._type = None
-        self.dimension = None
-        self.axis = None
-        self.measurement = None
-        self.sample_count = None
-        self.maximum_deviation = None
-        self.standard_deviation = None
-        self.begin_time = None
-        self.duration = None
-        self.reference = None
-        self.standard = None
-        self.plus_tolerance = None
-        self.minus_tolerance = None
-
-        self.create_attributes()
+        self.phase = self._create_attribute('phase')
+        self.measurement_source = self._create_attribute('measurement_source')
+        self._type = self._create_attribute('_type')
+        self.dimension = self._create_attribute('dimension')
+        self.axis = self._create_attribute('axis')
+        self.measurement = self._create_attribute('measurement')
+        self.sample_count = self._create_attribute('sample_count')
+        self.maximum_deviation = self._create_attribute('maximum_deviation')
+        self.standard_deviation = self._create_attribute('standard_deviation')
+        self.begin_time = self._create_attribute('begin_time')
+        self.duration = self._create_attribute('duration')
+        self.reference = self._create_attribute('reference')
+        self.standard = self._create_attribute('standard')
+        self.plus_tolerance = self._create_attribute('plus_tolerance')
+        self.minus_tolerance = self._create_attribute('minus_tolerance')
 
 
 class CalibrationCoefficient(EFLR):
@@ -37,13 +35,11 @@ class CalibrationCoefficient(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.label = None
-        self.coefficients = None
-        self.references = None
-        self.plus_tolerances = None
-        self.minus_tolerances = None
-
-        self.create_attributes()
+        self.label = self._create_attribute('label')
+        self.coefficients = self._create_attribute('coefficients')
+        self.references = self._create_attribute('references')
+        self.plus_tolerances = self._create_attribute('plus_tolerances')
+        self.minus_tolerances = self._create_attribute('minus_tolerances')
 
 
 class Calibration(EFLR):
@@ -54,11 +50,9 @@ class Calibration(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.calibrated_channels = None
-        self.uncalibrated_channels = None
-        self.coefficients = None
-        self.measurements = None
-        self.parameters = None
-        self.method = None
-
-        self.create_attributes()
+        self.calibrated_channels = self._create_attribute('calibrated_channels')
+        self.uncalibrated_channels = self._create_attribute('uncalibrated_channels')
+        self.coefficients = self._create_attribute('coefficients')
+        self.measurements = self._create_attribute('measurements')
+        self.parameters = self._create_attribute('parameters')
+        self.method = self._create_attribute('method')

@@ -14,18 +14,16 @@ class Channel(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.long_name = None
-        self.properties = None
-        self.representation_code = None
-        self.units = None
-        self.dimension = None
-        self.axis = None
-        self.element_limit = None
-        self.source = None
-        self.minimum_value = None
-        self.maximum_value = None
-
-        self.create_attributes()
+        self.long_name = self._create_attribute('long_name')
+        self.properties = self._create_attribute('properties')
+        self.representation_code = self._create_attribute('representation_code')
+        self.units = self._create_attribute('units')
+        self.dimension = self._create_attribute('dimension')
+        self.axis = self._create_attribute('axis')
+        self.element_limit = self._create_attribute('element_limit')
+        self.source = self._create_attribute('source')
+        self.minimum_value = self._create_attribute('minimum_value')
+        self.maximum_value = self._create_attribute('maximum_value')
 
         self._dataset_name: str = None
 

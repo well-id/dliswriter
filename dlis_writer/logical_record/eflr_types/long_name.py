@@ -10,21 +10,19 @@ class LongName(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.general_modifier = None
-        self.quantity = None
-        self.quantity_modifier = None
-        self.altered_form = None
-        self.entity = None
-        self.entity_modifier = None
-        self.entity_number = None
-        self.entity_part = None
-        self.entity_part_number = None
-        self.generic_source = None
-        self.source_part = None
-        self.source_part_number = None
-        self.conditions = None
-        self.standard_symbol = None
-        self.private_symbol = None
-
-        self.create_attributes()
+        self.general_modifier = self._create_attribute('general_modifier')
+        self.quantity = self._create_attribute('quantity')
+        self.quantity_modifier = self._create_attribute('quantity_modifier')
+        self.altered_form = self._create_attribute('altered_form')
+        self.entity = self._create_attribute('entity')
+        self.entity_modifier = self._create_attribute('entity_modifier')
+        self.entity_number = self._create_attribute('entity_number')
+        self.entity_part = self._create_attribute('entity_part')
+        self.entity_part_number = self._create_attribute('entity_part_number')
+        self.generic_source = self._create_attribute('generic_source')
+        self.source_part = self._create_attribute('source_part')
+        self.source_part_number = self._create_attribute('source_part_number')
+        self.conditions = self._create_attribute('conditions')
+        self.standard_symbol = self._create_attribute('standard_symbol')
+        self.private_symbol = self._create_attribute('private_symbol')
 

@@ -10,7 +10,5 @@ class NoFormat(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.consumer_name = None
-        self.description = None
-
-        self.create_attributes()
+        self.consumer_name = self._create_attribute('consumer_name')
+        self.description = self._create_attribute('description')

@@ -10,8 +10,6 @@ class Splice(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.output_channels = None
-        self.input_channels = None
-        self.zones = None
-
-        self.create_attributes()
+        self.output_channels = self._create_attribute('output_channels')
+        self.input_channels = self._create_attribute('input_channels')
+        self.zones = self._create_attribute('zones')

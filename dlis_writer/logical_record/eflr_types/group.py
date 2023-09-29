@@ -10,9 +10,7 @@ class Group(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.description = None
-        self.object_type = None
-        self.object_list = None
-        self.group_list = None
-
-        self.create_attributes()
+        self.description = self._create_attribute('description')
+        self.object_type = self._create_attribute('object_type')
+        self.object_list = self._create_attribute('object_list')
+        self.group_list = self._create_attribute('group_list')

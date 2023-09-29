@@ -10,10 +10,8 @@ class Parameter(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.long_name = None
-        self.dimension = None
-        self.axis = None
-        self.zones = None
-        self.values = None
-
-        self.create_attributes()
+        self.long_name = self._create_attribute('long_name')
+        self.dimension = self._create_attribute('dimension')
+        self.axis = self._create_attribute('axis')
+        self.zones = self._create_attribute('zones')
+        self.values = self._create_attribute('values')

@@ -26,9 +26,7 @@ class Zone(EFLR):
 
         super().__init__(*args, **kwargs)
 
-        self.description = None
-        self.domain = None
-        self.maximum = None
-        self.minimum = None
-
-        self.create_attributes()
+        self.description = self._create_attribute('description')
+        self.domain = self._create_attribute('domain')
+        self.maximum = self._create_attribute('maximum')
+        self.minimum = self._create_attribute('minimum')
