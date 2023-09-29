@@ -83,7 +83,7 @@ def validate_units(value: str) -> None:
         raise ValueError(f"Value {value} does not must comply with the RP66 V1 specification for units.")
 
 
-def get_datetime(date_time: datetime) -> bytes:
+def _write_struct_dtime(date_time: datetime) -> bytes:
     """Converts datetime object to RP66 V1 DTIME.
 
     Args:
@@ -115,7 +115,7 @@ def get_datetime(date_time: datetime) -> bytes:
         >>> date_time = datetime(2022, 9, 13, 9, 54)
         >>> date_time
         datetime.datetime(2022, 9, 13, 9, 54)
-        >>> get_datetime(date_time)
+        >>> _write_struct_dtime(date_time)
         b'z\t\r\t6\x00\x00\x00'
 
     .. _RP66 V1 Appendix B.21:
@@ -128,38 +128,25 @@ def get_datetime(date_time: datetime) -> bytes:
     time_zone = '{0:04b}'.format(0) # Local Standard Time is set as default
     month = '{0:04b}'.format(date_time.month)
 
-    value += write_struct(RepresentationCode.USHORT, date_time.year - 1900)
-    value += write_struct(RepresentationCode.USHORT, int(time_zone + month, 2))
-    value += write_struct(RepresentationCode.USHORT, date_time.day)
-    value += write_struct(RepresentationCode.USHORT, date_time.hour)
-    value += write_struct(RepresentationCode.USHORT, date_time.minute)
-    value += write_struct(RepresentationCode.USHORT, date_time.second)
-    value += write_struct(RepresentationCode.UNORM, int(date_time.microsecond / 1000))
+    value += RepresentationCode.USHORT.value.pack(date_time.year - 1900)
+    value += RepresentationCode.USHORT.value.pack(int(time_zone + month, 2))
+    value += RepresentationCode.USHORT.value.pack(date_time.day)
+    value += RepresentationCode.USHORT.value.pack(date_time.hour)
+    value += RepresentationCode.USHORT.value.pack(date_time.minute)
+    value += RepresentationCode.USHORT.value.pack(date_time.second)
+    value += RepresentationCode.UNORM.value.pack(int(date_time.microsecond / 1000))
     
     return value
 
 
-def read_struct(representation_code: RepresentationCode, packed_value: bytes) -> Any:
-    """Reads bytes and unpacks according to the struct type.
-
-    Args:
-        representation_code: One of the representation codes from struct_type_dict.keys()
-        packed_value: Bytes as the same size with the representation_code.size
-
-    Returns:
-        Unpacked struct value. Might be int, float, str depending on the representation_code.
-    """
-    return representation_code.value.unpack(packed_value)[0]
-
-
 def _write_struct_ascii(value):
     value = str(value)
-    return write_struct(RepresentationCode.UVARI, len(value)) + value.encode('ascii')
+    return _write_struct_uvari(len(value)) + value.encode('ascii')
 
 
 def _write_struct_uvari(value):
     if value < 128:
-        return write_struct(RepresentationCode.USHORT, value)
+        return RepresentationCode.USHORT.value.pack(value)
 
     if value < 16384:
         return RepresentationCode.UNORM.value.pack(value + UNORM_OFFSET)
@@ -170,18 +157,14 @@ def _write_struct_uvari(value):
 
 def _write_struct_ident(value):
     value = str(value)
-    return write_struct(RepresentationCode.USHORT, len(value)) + value.encode('ascii')
-
-
-def _write_struct_dtime(value):
-    return get_datetime(value)
+    return RepresentationCode.USHORT.value.pack(len(value)) + value.encode('ascii')
 
 
 def _write_struct_obname(value):
     try:
-        origin_reference = write_struct(RepresentationCode.UVARI, value[0])
-        copy_number = write_struct(RepresentationCode.USHORT, value[1])
-        name = write_struct(RepresentationCode.IDENT, value[2])
+        origin_reference = _write_struct_uvari(value[0])
+        copy_number = RepresentationCode.USHORT.value.pack(value[1])
+        name = _write_struct_ident(value[2])
 
         obname = origin_reference + copy_number + name
 
@@ -199,11 +182,11 @@ def _write_struct_obname(value):
 def _write_struct_units(value):
     validate_units(value)
 
-    return write_struct(RepresentationCode.IDENT, value)
+    return _write_struct_ident(value)
 
 
 def _write_struct_objref(value):
-    return write_struct(RepresentationCode.IDENT, value.set_type) + value.obname
+    return _write_struct_ident(value.set_type) + value.obname
 
 
 def _write_struct_status(value):
@@ -212,11 +195,7 @@ def _write_struct_status(value):
                          " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
         raise Exception(error_message)
 
-    return write_struct(RepresentationCode.USHORT, value)
-
-
-def _write_struct_default(representation_code, value):
-    return representation_code.value.pack(value)
+    return RepresentationCode.USHORT.value.pack(value)
 
 
 _struct_dict = {
@@ -250,7 +229,7 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     if func := _struct_dict.get(representation_code, None):
         return func(value)
 
-    return _write_struct_default(representation_code, value)
+    return representation_code.value.pack(value)
 
 
 def write_absent_attribute() -> bytes:
