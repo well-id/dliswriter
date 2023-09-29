@@ -125,7 +125,7 @@ def _write_struct_dtime(date_time: datetime) -> bytes:
     
     value = b''
 
-    time_zone = '{0:04b}'.format(0) # Local Standard Time is set as default
+    time_zone = '{0:04b}'.format(0)  # Local Standard Time is set as default
     month = '{0:04b}'.format(date_time.month)
 
     value += RepresentationCode.USHORT.value.pack(date_time.year - 1900)
@@ -134,7 +134,7 @@ def _write_struct_dtime(date_time: datetime) -> bytes:
     value += RepresentationCode.USHORT.value.pack(date_time.hour)
     value += RepresentationCode.USHORT.value.pack(date_time.minute)
     value += RepresentationCode.USHORT.value.pack(date_time.second)
-    value += RepresentationCode.UNORM.value.pack(int(date_time.microsecond / 1000))
+    value += RepresentationCode.UNORM.value.pack(date_time.microsecond // 1000)
     
     return value
 
@@ -190,10 +190,9 @@ def _write_struct_objref(value):
 
 
 def _write_struct_status(value):
-    if value not in [0, 1]:
-        error_message = ("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
+    if not (value == 0 or value == 1):
+        raise ValueError("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
                          " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
-        raise Exception(error_message)
 
     return RepresentationCode.USHORT.value.pack(value)
 
