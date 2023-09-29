@@ -33,14 +33,6 @@ class RepresentationCodeConversionEnum(IntEnum):
     STATUS = 26
     UNITS = 27
 
-    @classmethod
-    def get_all_code_names(cls) -> list:
-        return cls._member_names_
-
-    @classmethod
-    def get_all_code_values(cls) -> list:
-        return list(cls._value2member_map_.keys())
-
 
 @lru_cache(maxsize=4096)
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:
@@ -73,24 +65,12 @@ def get_representation_code_value(code: RepresentationCode) -> int:
     Returns:
         Number corresponding to the given RepresentationCode.
 
-    Raises:
-        ValueError: If the provided code name is not found in the code-to-number converter enum.
-
     Note:
         _RP66 V1 Appendix B Representation Codes: http://w3.energistics.org/rp66/v1/rp66v1_appb.html
 
     """
 
-    try:
-        code_value = RepresentationCodeConversionEnum[code.name]
-
-    except KeyError:
-        error_message = (f'Provided representation code "{code.name}" could not be found\n'
-                         f'Key must be exactly one of the following:\n')
-        error_message += ''.join('\t' + key + '\n' for key in RepresentationCodeConversionEnum.get_all_code_names())
-        raise ValueError(error_message)
-
-    return code_value.value
+    return RepresentationCodeConversionEnum[code.name].value
 
 
 def get_representation_code_from_value(code_value: int) -> RepresentationCode:
@@ -102,20 +82,9 @@ def get_representation_code_from_value(code_value: int) -> RepresentationCode:
     Returns:
         The Representation Code corresponding to the given code_value.
 
-    Raises:
-        ValueError: If the given number does not correspond to any member of the code-to-number converter enum.
-
     Note:
         _RP66 V1 Appendix B Representation Codes: http://w3.energistics.org/rp66/v1/rp66v1_appb.html
 
     """
 
-    try:
-        conv_code = RepresentationCodeConversionEnum(code_value)
-
-    except ValueError:
-        error_message = f'Provided value "{code_value}" could not be found\nKey must be exactly one of the following:\n'
-        error_message += ''.join('\t' + key + '\n' for key in RepresentationCodeConversionEnum.get_all_code_values())
-        raise ValueError(error_message)
-
-    return RepresentationCode[conv_code.name]
+    return RepresentationCode[RepresentationCodeConversionEnum(code_value).name]
