@@ -1,4 +1,3 @@
-import re
 from datetime import datetime
 from typing import Any
 from functools import lru_cache
@@ -9,45 +8,6 @@ from dlis_writer.utils.enums import RepresentationCode
 # offsets used in writing structs for UVARI representation code (see '_write_struct_uvari' function)
 UNORM_OFFSET = 32768        #: offset added to values packed as UNORM; '10' and 14 zeros
 ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30 zeros
-
-
-#: regex used in validating units
-UNITS_REGEX = re.compile(r'[a-zA-Z\d\s\-.,/()]*')
-
-
-def validate_units(value: str) -> None:
-    """Validates the user input for UNITS data type according to RP66 V1 specifications.
-
-    Args:
-        value: A string representing measurement units provided by the user.
-
-    Raises:
-        ValueError: If the value provided does not fit with RP66 V1 specification.
-
-    Quote:
-        Syntactically, Representation Code UNITS is similar to Representation Codes IDENT and ASCII.
-        However, upper case and lower case are considered
-        distinct (e.g., "A" and "a" for Ampere and annum, respectively),
-        and permissible characters are restricted to the following ASCII codes:
-
-            --> lower case letters [a, b, c, ..., z]
-            --> upper case letters [A, B, C, ..., Z]
-            --> digits [0, 1, 2, ..., 9]
-            --> blank [ ]
-            --> hyphen or minus sign [-]
-            --> dot or period [.]
-            --> slash [/]
-            --> parentheses [(, )]
-
-    
-
-    .. _RP66 V1 Appendix B.27:
-        http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_27
-
-    """
-
-    if not UNITS_REGEX.fullmatch(value):
-        raise ValueError(f"Value {value} does not must comply with the RP66 V1 specification for units.")
 
 
 def _write_struct_dtime(date_time: datetime) -> bytes:
@@ -146,12 +106,6 @@ def _write_struct_obname(value):
     return obname
 
 
-def _write_struct_units(value):
-    validate_units(value)
-
-    return _write_struct_ident(value)
-
-
 def _write_struct_objref(value):
     return _write_struct_ident(value.set_type) + value.obname
 
@@ -170,7 +124,7 @@ _struct_dict = {
     RepresentationCode.IDENT: _write_struct_ident,
     RepresentationCode.DTIME: _write_struct_dtime,
     RepresentationCode.OBNAME: _write_struct_obname,
-    RepresentationCode.UNITS: _write_struct_units,
+    RepresentationCode.UNITS: _write_struct_ident,
     RepresentationCode.OBJREF: _write_struct_objref,
     RepresentationCode.STATUS: _write_struct_status
 }

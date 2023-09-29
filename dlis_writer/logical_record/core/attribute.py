@@ -31,16 +31,29 @@ class Attribute:
 
     def __init__(self, label: str, count: int = None,
                  representation_code: RepresentationCode = None,
-                 units: str = None,
+                 units: Units = None,
                  value: AttributeValue = None):
         """Initiate Attribute object."""
 
         self.label = label
         self.count = count
         self.representation_code = representation_code
-        self.units = units
+        self._units = units
         self.value = value
 
+    @property
+    def units(self) -> Units:
+        return self._units
+
+    @units.setter
+    def units(self, units: Union[str, Units]):
+
+        if not isinstance(units, Units):
+            units = Units[units]
+
+        self._units = units
+
+    @profile
     def write_component(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute as specified in RP66 V1
 
@@ -72,8 +85,7 @@ class Attribute:
             if self.value:
                 if isinstance(self.value, (list, tuple)):
                     self.count = len(self.value)
-                else:
-                    pass
+
                 if self.count is not None and self.count > 1:
                     bts += write_struct(RepresentationCode.UVARI, self.count)
                     characteristics += '1'
@@ -88,17 +100,16 @@ class Attribute:
         else:
             characteristics += '0'
 
-        if self.units and for_template:
-            if isinstance(self.units, Units):
-                bts += write_struct(RepresentationCode.UNITS, self.units.value)
-            else:
-                bts += write_struct(RepresentationCode.UNITS, self.units)
+        if self._units and for_template:
+            bts += write_struct(RepresentationCode.UNITS, self._units.value)
+
             characteristics += '1'
         else:
             characteristics += '0'
 
         return bts, characteristics
 
+    @profile
     def write_values(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object
 
