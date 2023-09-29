@@ -4,6 +4,8 @@ from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.converters import get_representation_code_value
 from dlis_writer.utils.enums import RepresentationCode, Units
 
+from line_profiler_pycharm import profile
+
 
 # custom type
 AttributeValue = Union[int, float, str, List[int], List[float], List[str], Tuple[int], Tuple[float], Tuple[str]]
@@ -31,7 +33,7 @@ class Attribute:
                  representation_code: RepresentationCode = None,
                  units: str = None,
                  value: AttributeValue = None):
-        """Initiates Attribute object"""
+        """Initiate Attribute object."""
 
         self.label = label
         self.count = count
@@ -40,7 +42,7 @@ class Attribute:
         self.value = value
 
     def write_component(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
-        """Writes component of Attribute as specified in RP66 V1
+        """Write component of Attribute as specified in RP66 V1
 
         Args:
             for_template: When True it creates the component only for the template part
@@ -98,7 +100,7 @@ class Attribute:
         return bts, characteristics
 
     def write_values(self, for_template: bool, bts: bytes, characteristics: str) -> (bytes, str):
-        """Writes value(s) passed to value attribute of this object
+        """Write value(s) passed to value attribute of this object
 
         Args:
             for_template: When True it creates the component only for the template part
@@ -136,22 +138,7 @@ class Attribute:
 
         return bts, characteristics
 
-    def write_characteristics(self, for_template: bool, bts: bytes, characteristics: str) -> bytes:
-        """Writes component descriptor as specified in RP66 V1
-
-        Args:
-            for_template: When True it creates the component only for the template part
-                of Logical Record Segment in the DLIS file.
-            bts: TODO
-            characteristics: TODO
-
-        .._RP66 V1 Component Descriptor:
-            http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
-        """
-
-        bts = write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
-        return bts
-
+    @profile
     def get_as_bytes(self, for_template=False) -> bytes:
         """Converts attribute object to bytes as specified in RP66 V1.
 
@@ -169,6 +156,5 @@ class Attribute:
 
         bts, characteristics = self.write_component(for_template, bts, characteristics)
         bts, characteristics = self.write_values(for_template, bts, characteristics)
-        bts = self.write_characteristics(for_template, bts, characteristics)
 
-        return bts
+        return write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
