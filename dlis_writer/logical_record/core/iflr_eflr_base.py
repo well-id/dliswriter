@@ -86,8 +86,20 @@ class SegmentAttributes:
         self._value[1] = not first  # has predecessor segment
         self._value[2] = first  # has successor segment
 
-    def reduce(self) -> int:
-        return sum(map(lambda x, y: x * y, self._value, self.weights))
+    def reduce(self, no_padding=False) -> int:
+        value = self._value
+
+        toggle_padding = no_padding and value[7]
+
+        if toggle_padding:
+            value[7] = False
+
+        s = sum(map(lambda x, y: x * y, value, self.weights))
+
+        if toggle_padding:
+            value[7] = True
+
+        return s
 
 
 class IflrAndEflrBase(LogicalRecordBase):
@@ -104,7 +116,7 @@ class IflrAndEflrBase(LogicalRecordBase):
     def make_body_bytes(self) -> bytes:
         pass
 
-    def _make_segment_attributes(self) -> bytes:
+    def _make_segment_attributes(self, **kwargs) -> bytes:
         """Writes the logical record segment attributes.
 
         .._RP66 V1 Logical Record Segment Header:
@@ -112,7 +124,7 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         """
 
-        return write_struct(RepresentationCode.USHORT, self.segment_attributes.reduce())
+        return write_struct(RepresentationCode.USHORT, self.segment_attributes.reduce(**kwargs))
 
     @cached_property
     def size(self) -> int:
@@ -172,19 +184,9 @@ class IflrAndEflrBase(LogicalRecordBase):
         assert segment_length % 2 == 0, 'Split segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Split segment length can not be larger than the whole segment'
 
-        toggle_padding = False
-
         self.segment_attributes.mark_order(first=is_first)
 
-        if is_first:
-            if self.segment_attributes.has_padding:
-                toggle_padding = True
-                self.segment_attributes.toggle_padding()
-
-        _attributes = self._make_segment_attributes()
-
-        if toggle_padding:
-            self.segment_attributes.toggle_padding()
+        _attributes = self._make_segment_attributes(no_padding=is_first)
 
         return write_struct(RepresentationCode.UNORM, segment_length) + _attributes + self.lr_type_struct
 
