@@ -81,7 +81,7 @@ class IflrAndEflrBase(LogicalRecordBase):
             + self.segment_attributes \
             + self._write_struct_for_lr_type()
 
-    def split(self, is_first: bool, is_last: bool, segment_length: int) -> bytes:
+    def split(self, is_first: bool, segment_length: int) -> bytes:
         """Creates header bytes to be inserted into split position
 
         When a Logical Record Segment overflows a Visible Record, it must be split.
@@ -90,8 +90,7 @@ class IflrAndEflrBase(LogicalRecordBase):
             2. Adding a header to the second part of the split
 
         Args:
-            is_first: Represents whether this is the first part of the split
-            is_last: Represents whether this is the last part of the split
+            is_first: Represents whether this is the first or the last part of the split
             segment_length: Length of the segment after split operation
 
         Returns:
@@ -99,7 +98,6 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         """
 
-        assert int(is_first) + int(is_last) != 2, 'Split segment can not be both FIRST and LAST'
         assert segment_length % 2 == 0, 'Split segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Split segment length can not be larger than the whole segment'
 
@@ -109,16 +107,14 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         if is_first:
             self.has_predecessor_segment = False
-        else:
-            self.has_predecessor_segment = True
-
-        if is_last:
-            self.has_successor_segment = False
-        else:
             self.has_successor_segment = True
             if self.has_padding:
                 toggle_padding = True
                 self.has_padding = not self.has_padding
+
+        else:
+            self.has_predecessor_segment = True
+            self.has_successor_segment = False
 
         _attributes = self.segment_attributes
 

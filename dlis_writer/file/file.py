@@ -266,7 +266,6 @@ class DLISFile:
                 first_segment_length = vr_position + vr_length - updated_lrs_position
                 header_bytes_to_replace = lrs_to_split.split(
                     is_first=True,
-                    is_last=False,
                     segment_length=first_segment_length
                 )
 
@@ -280,7 +279,6 @@ class DLISFile:
                 # SECOND PART OF THE SPLIT
                 header_bytes_to_insert = lrs_to_split.split(
                     is_first=False,
-                    is_last=True,
                     segment_length=lrs_to_split.size - first_segment_length + 4
                 )
 
