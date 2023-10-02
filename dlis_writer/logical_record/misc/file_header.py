@@ -65,6 +65,3 @@ class FileHeader(LogicalRecordBase):
     @property
     def size(self):
         return 124
-
-    def __repr__(self):
-        return self.set_type

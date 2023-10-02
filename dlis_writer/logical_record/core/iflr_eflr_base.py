@@ -190,10 +190,6 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         return write_struct(RepresentationCode.UNORM, segment_length) + _attributes + self.lr_type_struct
 
-    def __repr__(self):
-        """String representation of this object"""
-        return self.set_type
-
     @classmethod
     @abstractmethod
     def make_lr_type_struct(cls, lr_type):
