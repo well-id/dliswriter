@@ -146,7 +146,8 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
 
     """
 
-    if func := _struct_dict.get(representation_code, None):
+    func = _struct_dict.get(representation_code, None)
+    if func:
         return func(value)
 
     return representation_code.converter.pack(value)

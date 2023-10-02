@@ -80,17 +80,18 @@ class Attribute:
 
         # label
         characteristics += '0'
+        count = self.count
 
-        if self.count and self.count != 1:
-            bts += write_struct(RepresentationCode.UVARI, self.count)
+        if count and count != 1:
+            bts += write_struct(RepresentationCode.UVARI, count)
             characteristics += '1'
         else:
             if self.value:
                 if isinstance(self.value, (list, tuple)):
-                    self.count = len(self.value)
+                    count = len(self.value)
 
-                if self.count is not None and self.count > 1:
-                    bts += write_struct(RepresentationCode.UVARI, self.count)
+                if count is not None and count > 1:
+                    bts += write_struct(RepresentationCode.UVARI, count)
                     characteristics += '1'
                 else:
                     characteristics += '0'
@@ -105,13 +106,17 @@ class Attribute:
     def write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object."""
 
-        if self.value:
-            if isinstance(self.value, (list, tuple)):
-                for val in self.value:
-                    bts += write_struct(self.representation_code, val)
+        rc = self.representation_code
+        value = self.value
+
+        if value:
+            if isinstance(value, (list, tuple)):
+                for val in value:
+                    bts += write_struct(rc, val)
             else:
-                value = self.value.value if isinstance(self.value, Units) else self.value
-                bts += write_struct(self.representation_code, value)
+                if isinstance(value, Units):
+                    value = value.value
+                bts += write_struct(rc, value)
 
             characteristics += '1'
 
