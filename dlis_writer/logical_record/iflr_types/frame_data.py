@@ -1,13 +1,15 @@
 import math
 from functools import lru_cache
 
-from dlis_writer.logical_record.core import IFLR
+from dlis_writer.logical_record.core.iflr import IFLR, make_iflr_type_struct
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 
 
 class FrameData(IFLR):
     set_type = 'FDATA'
+    iflr_type = 0
+    iflr_type_struct = make_iflr_type_struct(iflr_type)
 
     def __init__(self, frame, frame_number: int, slots, origin_reference=None):
 
@@ -31,7 +33,6 @@ class FrameData(IFLR):
         self._frame = frame
         self._frame_number = frame_number  # UVARI
         self._slots = slots  # np.ndarray
-        self.iflr_type = 0
 
         self.origin_reference = origin_reference
 
