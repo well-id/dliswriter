@@ -50,6 +50,9 @@ class PositionedArray:
     def insert_items(self, idx: int, items: bytes):
         n = len(items)
 
+        if n != 4:
+            raise ValueError(f"Expected 4 bytes, got n")
+
         if self._pos + n > self._max_pos:
             raise RuntimeError("No more space in the array")
 
@@ -253,10 +256,9 @@ class DLISFile:
             vr_length = val[0]
 
             # 'inserting' visible record bytes (changed array length in the original code)
-            self.insert_bytes(
-                bytes_inserted,
-                bytes_to_insert=self.create_visible_record_as_bytes(vr_length),
-                position=vr_position
+            bytes_inserted.insert_items(
+                idx=vr_position,
+                items=self.create_visible_record_as_bytes(vr_length)
             )
 
             if lrs_to_split := val[1]:
@@ -270,10 +272,9 @@ class DLISFile:
                 )
 
                 # replacing header bytes (no change in the array length in the original code)
-                self.insert_bytes(
-                    bytes_replaced,
-                    bytes_to_insert=header_bytes_to_replace,
-                    position=updated_lrs_position
+                bytes_replaced.insert_items(
+                    idx=updated_lrs_position,
+                    items=header_bytes_to_replace
                 )
 
                 # SECOND PART OF THE SPLIT
@@ -283,10 +284,9 @@ class DLISFile:
                 )
 
                 # 'inserting' header bytes (changed array length in the original code)
-                self.insert_bytes(
-                    bytes_inserted,
-                    bytes_to_insert=header_bytes_to_insert,
-                    position=vr_position + vr_length
+                bytes_inserted.insert_items(
+                    idx=vr_position + vr_length,
+                    items=header_bytes_to_insert
                 )
 
         logger.debug(f"{splits} splits created")
@@ -310,51 +310,6 @@ class DLISFile:
         all_bytes[bytes_replaced.idx] = bytes_replaced.bytes
 
         return all_bytes
-
-    @staticmethod
-    def check_length(bytes_to_check: bytes, expected_length: int = 4) -> None:
-        """Check that the length of bytes to be inserted/replaced matches the expected length.
-
-        Args:
-            bytes_to_check:     The bytes to be inserted/replaced.
-            expected_length:    Expected number of bytes.
-
-        Raises:
-            ValueError if the actual length of the bytes does not match the expected one.
-
-
-        Note:
-            The performance-upgrade modifications are based on the assumptions that the number of inserted/replaced
-            bytes is always 4. This method has been put in place to make it easier to catch and understand the error
-            on the off chance the aforementioned assumption is not always valid.
-        """
-
-        if (nb := len(bytes_to_check)) != expected_length:
-            raise ValueError(f"Expected {expected_length} bytes, got {nb}")
-
-    def insert_bytes(self, array_of_bytes: PositionedArray, bytes_to_insert: bytes, position: int) -> None:
-        """Insert (or replace) bytes at the given position in the byte array.
-
-        Additionally, mark the positions at which the bytes were put in the corresponding mask array.
-
-        Args:
-            array_of_bytes:     Array into which the bytes should be inserted and the corresponding mask.
-            bytes_to_insert:    Bytes that will be inserted into the array.
-            position:           Position in the array_of_bytes (index) at which the first of the bytes will be placed.
-
-        Note:
-            In the original code, bytes were frequently inserted twice into the same position. This resulted in
-            shifting the earlier inserted bytes by 4 indices to the right (while the array length changed).
-            In this implementation, the length of the array is constant and the shifting is achieved by manually moving
-            the 4 bytes already present at the given position to the right by 4 indices. This is done both in the
-            array of bytes and the mask array, and only if the mask value at the concerned position is already True
-            at the entry to the method.
-        """
-
-        self.check_length(bytes_to_insert)  # the code below is based on the assumption that we *always* insert 4 bytes
-
-        array_of_bytes.insert_items(idx=position, items=bytes_to_insert)
-        # operations done in-place - no return value
 
     @staticmethod
     @log_progress("Writing to file...")
