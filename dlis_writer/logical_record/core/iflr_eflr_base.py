@@ -16,73 +16,77 @@ class SegmentAttributes:
         self._value = 8 * [False]
 
     @property
-    def is_eflr(self):
+    def is_eflr(self) -> bool:
         return self._value[0]
 
     @is_eflr.setter
-    def is_eflr(self, b):
+    def is_eflr(self, b: bool):
         self._value[0] = b
 
     @property
-    def has_predecessor_segment(self):
+    def has_predecessor_segment(self) -> bool:
         return self._value[1]
 
     @has_predecessor_segment.setter
-    def has_predecessor_segment(self, b):
+    def has_predecessor_segment(self, b: bool):
         self._value[1] = b
 
     @property
-    def has_successor_segment(self):
+    def has_successor_segment(self) -> bool:
         return self._value[2]
 
     @has_successor_segment.setter
-    def has_successor_segment(self, b):
+    def has_successor_segment(self, b: bool):
         self._value[2] = b
 
     @property
-    def is_encrypted(self):
+    def is_encrypted(self) -> bool:
         return self._value[3]
 
     @is_encrypted.setter
-    def is_encrypted(self, b):
+    def is_encrypted(self, b: bool):
         self._value[3] = b
 
     @property
-    def has_encryption_protocol(self):
+    def has_encryption_protocol(self) -> bool:
         return self._value[4]
 
     @has_encryption_protocol.setter
-    def has_encryption_protocol(self, b):
+    def has_encryption_protocol(self, b: bool):
         self._value[4] = b
 
     @property
-    def has_checksum(self):
+    def has_checksum(self) -> bool:
         return self._value[5]
 
     @has_checksum.setter
-    def has_checksum(self, b):
+    def has_checksum(self, b: bool):
         self._value[5] = b
 
     @property
-    def has_trailing_length(self):
+    def has_trailing_length(self) -> bool:
         return self._value[6]
 
     @has_trailing_length.setter
-    def has_trailing_length(self, b):
+    def has_trailing_length(self, b: bool):
         self._value[6] = b
 
     @property
-    def has_padding(self):
+    def has_padding(self) -> bool:
         return self._value[7]
 
     @has_padding.setter
-    def has_padding(self, b):
+    def has_padding(self, b: bool):
         self._value[7] = b
 
     def toggle_padding(self):
         self._value[7] = not self._value[7]
 
-    def reduce(self):
+    def mark_order(self, first: bool):
+        self._value[1] = not first  # has predecessor segment
+        self._value[2] = first  # has successor segment
+
+    def reduce(self) -> int:
         return sum(map(lambda x, y: x * y, self._value, self.weights))
 
 
@@ -168,27 +172,21 @@ class IflrAndEflrBase(LogicalRecordBase):
         assert segment_length % 2 == 0, 'Split segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Split segment length can not be larger than the whole segment'
 
-        _length = write_struct(RepresentationCode.UNORM, segment_length)
-
         toggle_padding = False
 
+        self.segment_attributes.mark_order(first=is_first)
+
         if is_first:
-            self.segment_attributes.has_predecessor_segment = False
-            self.segment_attributes.has_successor_segment = True
             if self.segment_attributes.has_padding:
                 toggle_padding = True
                 self.segment_attributes.toggle_padding()
-
-        else:
-            self.segment_attributes.has_predecessor_segment = True
-            self.segment_attributes.has_successor_segment = False
 
         _attributes = self._make_segment_attributes()
 
         if toggle_padding:
             self.segment_attributes.toggle_padding()
 
-        return _length + _attributes + self.lr_type_struct
+        return write_struct(RepresentationCode.UNORM, segment_length) + _attributes + self.lr_type_struct
 
     def __repr__(self):
         """String representation of this object"""
