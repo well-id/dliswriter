@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from functools import lru_cache
+from functools import cached_property
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
@@ -18,6 +18,8 @@ class IflrAndEflrBase(LogicalRecordBase):
         self.has_checksum = False
         self.has_trailing_length = False
         self.has_padding = False
+
+        self._bytes = None
 
     @abstractmethod
     def make_body_bytes(self) -> bytes:
@@ -42,22 +44,24 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         return write_struct(RepresentationCode.USHORT, int(_bits, 2))
 
-    @property
+    @cached_property
     def size(self) -> int:
         """Calculates the size of the Logical Record Segment"""
 
         return self.represent_as_bytes().size
 
-    @lru_cache()
     def represent_as_bytes(self) -> np.ndarray:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
-        bts = self.make_body_bytes()
-        bts = self.make_header_bytes(bts) + bts
-        if self.has_padding:
-            bts += write_struct(RepresentationCode.USHORT, 1)
+        if self._bytes is None:
+            bts = self.make_body_bytes()
+            bts = self.make_header_bytes(bts) + bts
+            if self.has_padding:
+                bts += write_struct(RepresentationCode.USHORT, 1)
 
-        return np.frombuffer(bts, dtype=np.uint8)
+            self._bytes = np.frombuffer(bts, dtype=np.uint8)
+
+        return self._bytes
 
     def make_header_bytes(self, bts: bytes) -> bytes:
         """Writes Logical Record Segment Header

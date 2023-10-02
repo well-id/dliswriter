@@ -132,6 +132,7 @@ class DLISFile:
                     obj.origin_reference = val
 
     @log_progress("Writing raw bytes...")
+    @profile
     def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
