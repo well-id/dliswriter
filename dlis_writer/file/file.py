@@ -28,9 +28,6 @@ def log_progress(message):
     return decorator
 
 
-VRFields = namedtuple('VRFields', field_names=('length', 'split', 'number_of_prior_splits', 'number_of_prior_vr'))
-
-
 class PositionedArray:
     def __init__(self, n):
         self._bytes = np.zeros(n, dtype=np.uint8)
@@ -92,7 +89,7 @@ class DLISFile:
     @lru_cache
     def create_visible_record_as_bytes(self, length: int) -> bytes:
         """Create Visible Record object as bytes
-        
+
         Args:
             length: Length of the visible record
 
@@ -157,7 +154,8 @@ class DLISFile:
         return raw_bytes
 
     @log_progress("Creating visible record dictionary...")
-    def create_visible_record_dictionary(self, data_capsule: FrameDataCapsule) -> Dict[int, VRFields]:
+    @profile
+    def create_visible_record_dictionary(self, data_capsule: FrameDataCapsule) -> Dict[int, tuple]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -194,7 +192,7 @@ class DLISFile:
 
             # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif _position_diff < 16:
-                q[vr_position] = VRFields(vr_length, None, n_splits, n_vrs)
+                q[vr_position] = (vr_length, None, n_splits, n_vrs)
                 vr_length = 4
                 n_vrs += 1
                 vr_offset -= _position_diff
@@ -202,7 +200,7 @@ class DLISFile:
 
             # option C
             else:
-                q[vr_position] = VRFields(visible_record_length, _lrs, n_splits, n_vrs)
+                q[vr_position] = (visible_record_length, _lrs, n_splits, n_vrs)
                 vr_length = 8 + _lrs_size - _position_diff
                 n_vrs += 1
                 n_splits += 1
@@ -213,7 +211,7 @@ class DLISFile:
             process_iteration(lrs)
 
         # last vr
-        q[vr_position] = VRFields(vr_length, None, n_splits, n_vrs)
+        q[vr_position] = (vr_length, None, n_splits, n_vrs)
 
         return q
 
@@ -227,7 +225,7 @@ class DLISFile:
 
         # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
         total_vr_length = 4 * len(vr_dict)  # bytes added due to inserting visible record bytes (first part of the loop)
-        splits = sum(int(bool(val.split)) for val in vr_dict.values())  # how many splits are done (not for all vr's)
+        splits = sum(int(bool(val[1])) for val in vr_dict.values())  # how many splits are done (not for all vr's)
         total_header_length = 4 * splits  # bytes added due to inserting 'header bytes' (see 'second part of the split')
 
         # expected total length of the raw_bytes array after the vr and header bytes are inserted
@@ -252,7 +250,7 @@ class DLISFile:
 
         for vr_position, val in progressbar(vr_dict.items()):
 
-            vr_length = val.length
+            vr_length = val[0]
 
             # 'inserting' visible record bytes (changed array length in the original code)
             self.insert_bytes(
@@ -261,9 +259,9 @@ class DLISFile:
                 position=vr_position
             )
 
-            if lrs_to_split := val.split:
+            if lrs_to_split := val[1]:
                 # FIRST PART OF THE SPLIT
-                pos_shift = 4 * (val.number_of_prior_vr + val.number_of_prior_splits)
+                pos_shift = 4 * (val[3] + val[2])
                 updated_lrs_position = self.pos[lrs_to_split.key] + pos_shift
 
                 first_segment_length = vr_position + vr_length - updated_lrs_position
