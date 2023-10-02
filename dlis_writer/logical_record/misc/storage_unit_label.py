@@ -1,5 +1,4 @@
 import numpy as np
-from functools import lru_cache
 
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
@@ -45,7 +44,8 @@ class StorageUnitLabel(LogicalRecordBase):
         self.max_record_length = max_record_length # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
         self.storage_set_identifier = storage_set_identifier
 
-    @lru_cache(maxsize=4096)
+        self._bytes = None
+
     def represent_as_bytes(self) -> np.ndarray:
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 
@@ -53,23 +53,26 @@ class StorageUnitLabel(LogicalRecordBase):
             Bytes of complete Storage Unit Label
         """
 
-        # Storage Unit Sequence Number
-        _susn_as_bytes = get_ascii_bytes(self.storage_unit_sequence_number, 4)
+        if self._bytes is None:
 
-        # DLIS Version
-        _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
+            # Storage Unit Sequence Number
+            _susn_as_bytes = get_ascii_bytes(self.storage_unit_sequence_number, 4)
 
-        # Storage Unit Structure
-        _sus_as_bytes = get_ascii_bytes(self.storage_unit_structure, 6)
+            # DLIS Version
+            _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
 
-        # Maximum Record Length
-        _mrl_as_bytes = get_ascii_bytes(self.max_record_length, 5)
+            # Storage Unit Structure
+            _sus_as_bytes = get_ascii_bytes(self.storage_unit_structure, 6)
 
-        # Storage Set Identifier
-        _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
+            # Maximum Record Length
+            _mrl_as_bytes = get_ascii_bytes(self.max_record_length, 5)
 
-        bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-        return np.frombuffer(bts, dtype=np.uint8)
+            # Storage Set Identifier
+            _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
+
+            bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
+            self._bytes = np.frombuffer(bts, dtype=np.uint8)
+        return self._bytes
 
     @property
     def size(self):
