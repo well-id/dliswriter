@@ -2,22 +2,96 @@ from abc import abstractmethod
 from functools import cached_property
 import numpy as np
 
+from line_profiler_pycharm import profile
+
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
+
+
+class SegmentAttributes:
+    weights = 2 ** np.arange(8, dtype=np.uint8)[::-1]
+
+    def __init__(self):
+        self._value = np.zeros(8, dtype=np.bool)
+
+    @property
+    def is_eflr(self):
+        return self._value[0]
+
+    @is_eflr.setter
+    def is_eflr(self, b):
+        self._value[0] = b
+
+    @property
+    def has_predecessor_segment(self):
+        return self._value[1]
+
+    @has_predecessor_segment.setter
+    def has_predecessor_segment(self, b):
+        self._value[1] = b
+
+    @property
+    def has_successor_segment(self):
+        return self._value[2]
+
+    @has_successor_segment.setter
+    def has_successor_segment(self, b):
+        self._value[2] = b
+
+    @property
+    def is_encrypted(self):
+        return self._value[3]
+
+    @is_encrypted.setter
+    def is_encrypted(self, b):
+        self._value[3] = b
+
+    @property
+    def has_encryption_protocol(self):
+        return self._value[4]
+
+    @has_encryption_protocol.setter
+    def has_encryption_protocol(self, b):
+        self._value[4] = b
+
+    @property
+    def has_checksum(self):
+        return self._value[5]
+
+    @has_checksum.setter
+    def has_checksum(self, b):
+        self._value[5] = b
+
+    @property
+    def has_trailing_length(self):
+        return self._value[6]
+
+    @has_trailing_length.setter
+    def has_trailing_length(self, b):
+        self._value[6] = b
+
+    @property
+    def has_padding(self):
+        return self._value[7]
+
+    @has_padding.setter
+    def has_padding(self, b):
+        self._value[7] = b
+
+    def toggle_padding(self):
+        self._value[7] = not self._value[7]
+
+    def reduce(self):
+        return (self._value * self.weights).sum()
 
 
 class IflrAndEflrBase(LogicalRecordBase):
     is_eflr = NotImplemented
 
     def __init__(self):
-        self.has_predecessor_segment = False
-        self.has_successor_segment = False
-        self.is_encrypted = False
-        self.has_encryption_protocol = False
-        self.has_checksum = False
-        self.has_trailing_length = False
-        self.has_padding = False
+        self.segment_attributes = SegmentAttributes()
+        self.segment_attributes.is_eflr = self.is_eflr
 
         self._bytes = None
 
@@ -25,24 +99,15 @@ class IflrAndEflrBase(LogicalRecordBase):
     def make_body_bytes(self) -> bytes:
         pass
 
-    @property
-    def segment_attributes(self) -> bytes:
+    def _make_segment_attributes(self) -> bytes:
         """Writes the logical record segment attributes.
 
         .._RP66 V1 Logical Record Segment Header:
             http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_2_2_1
 
         """
-        _bits = str(int(self.is_eflr)) \
-                + str(int(self.has_predecessor_segment)) \
-                + str(int(self.has_successor_segment)) \
-                + str(int(self.is_encrypted)) \
-                + str(int(self.has_encryption_protocol)) \
-                + str(int(self.has_checksum)) \
-                + str(int(self.has_trailing_length)) \
-                + str(int(self.has_padding))
 
-        return write_struct(RepresentationCode.USHORT, int(_bits, 2))
+        return write_struct(RepresentationCode.USHORT, self.segment_attributes.reduce())
 
     @cached_property
     def size(self) -> int:
@@ -56,7 +121,7 @@ class IflrAndEflrBase(LogicalRecordBase):
         if self._bytes is None:
             bts = self.make_body_bytes()
             bts = self.make_header_bytes(bts) + bts
-            if self.has_padding:
+            if self.segment_attributes.has_padding:
                 bts += write_struct(RepresentationCode.USHORT, 1)
 
             self._bytes = np.frombuffer(bts, dtype=np.uint8)
@@ -73,14 +138,15 @@ class IflrAndEflrBase(LogicalRecordBase):
         segment_length = len(bts) + 4
         if segment_length % 2 != 0:
             segment_length += 1
-            self.has_padding = True
+            self.segment_attributes.has_padding = True
         else:
-            self.has_padding = False
+            self.segment_attributes.has_padding = False
 
         return write_struct(RepresentationCode.UNORM, segment_length) \
-            + self.segment_attributes \
+            + self._make_segment_attributes() \
             + self._write_struct_for_lr_type()
 
+    @profile
     def split(self, is_first: bool, segment_length: int) -> bytes:
         """Creates header bytes to be inserted into split position
 
@@ -106,20 +172,20 @@ class IflrAndEflrBase(LogicalRecordBase):
         toggle_padding = False
 
         if is_first:
-            self.has_predecessor_segment = False
-            self.has_successor_segment = True
-            if self.has_padding:
+            self.segment_attributes.has_predecessor_segment = False
+            self.segment_attributes.has_successor_segment = True
+            if self.segment_attributes.has_padding:
                 toggle_padding = True
-                self.has_padding = not self.has_padding
+                self.segment_attributes.toggle_padding()
 
         else:
-            self.has_predecessor_segment = True
-            self.has_successor_segment = False
+            self.segment_attributes.has_predecessor_segment = True
+            self.segment_attributes.has_successor_segment = False
 
-        _attributes = self.segment_attributes
+        _attributes = self._make_segment_attributes()
 
         if toggle_padding:
-            self.has_padding = not self.has_padding
+            self.segment_attributes.toggle_padding()
 
         return _length + _attributes + self._write_struct_for_lr_type()
 
