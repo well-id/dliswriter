@@ -88,6 +88,7 @@ class SegmentAttributes:
 
 class IflrAndEflrBase(LogicalRecordBase):
     is_eflr = NotImplemented
+    lr_type_struct = NotImplemented
 
     def __init__(self):
         self.segment_attributes = SegmentAttributes()
@@ -144,7 +145,7 @@ class IflrAndEflrBase(LogicalRecordBase):
 
         return write_struct(RepresentationCode.UNORM, segment_length) \
             + self._make_segment_attributes() \
-            + self._write_struct_for_lr_type()
+            + self.lr_type_struct
 
     @profile
     def split(self, is_first: bool, segment_length: int) -> bytes:
@@ -187,12 +188,14 @@ class IflrAndEflrBase(LogicalRecordBase):
         if toggle_padding:
             self.segment_attributes.toggle_padding()
 
-        return _length + _attributes + self._write_struct_for_lr_type()
+        return _length + _attributes + self.lr_type_struct
 
     def __repr__(self):
         """String representation of this object"""
         return self.set_type
 
+    @classmethod
     @abstractmethod
-    def _write_struct_for_lr_type(self):
+    def make_lr_type_struct(cls, lr_type):
         pass
+

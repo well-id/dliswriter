@@ -1,10 +1,10 @@
-from dlis_writer.logical_record.core.iflr import IFLR, make_iflr_type_struct
+from dlis_writer.logical_record.core.iflr import IFLR
 
 
 class NoFormatFrameData(IFLR):
     set_type = 'NOFORMAT'
     iflr_type = 1
-    iflr_type_struct = make_iflr_type_struct(iflr_type)
+    lr_type_struct = IFLR.make_lr_type_struct(iflr_type)
 
     def __init__(self):
 

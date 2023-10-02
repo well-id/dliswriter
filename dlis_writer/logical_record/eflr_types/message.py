@@ -5,6 +5,7 @@ from dlis_writer.utils.enums import LogicalRecordType
 class Message(EFLR):
     set_type = 'MESSAGE'
     logical_record_type = LogicalRecordType.SCRIPT
+    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, *args, **kwargs):
 
@@ -22,6 +23,7 @@ class Message(EFLR):
 class Comment(EFLR):
     set_type = 'COMMENT'
     logical_record_type = LogicalRecordType.SCRIPT
+    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, *args, **kwargs):
 

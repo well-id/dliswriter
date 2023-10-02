@@ -1,7 +1,7 @@
 import math
 from functools import lru_cache
 
-from dlis_writer.logical_record.core.iflr import IFLR, make_iflr_type_struct
+from dlis_writer.logical_record.core.iflr import IFLR
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -9,7 +9,7 @@ from dlis_writer.utils.enums import RepresentationCode
 class FrameData(IFLR):
     set_type = 'FDATA'
     iflr_type = 0
-    iflr_type_struct = make_iflr_type_struct(iflr_type)
+    lr_type_struct = IFLR.make_lr_type_struct(iflr_type)
 
     def __init__(self, frame, frame_number: int, slots, origin_reference=None):
 

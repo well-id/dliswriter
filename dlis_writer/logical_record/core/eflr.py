@@ -137,5 +137,7 @@ class EFLR(IflrAndEflrBase):
         d = self.make_object_component()
         return a + b + d + c
 
-    def _write_struct_for_lr_type(self):
-        return write_struct(RepresentationCode.USHORT, self.logical_record_type.value)
+    @classmethod
+    def make_lr_type_struct(cls, logical_record_type):
+        return write_struct(RepresentationCode.USHORT, logical_record_type.value)
+
