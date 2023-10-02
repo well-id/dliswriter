@@ -267,8 +267,7 @@ class DLISFile:
                 header_bytes_to_replace = lrs_to_split.split(
                     is_first=True,
                     is_last=False,
-                    segment_length=first_segment_length,
-                    add_extra_padding=False
+                    segment_length=first_segment_length
                 )
 
                 # replacing header bytes (no change in the array length in the original code)
@@ -282,8 +281,7 @@ class DLISFile:
                 header_bytes_to_insert = lrs_to_split.split(
                     is_first=False,
                     is_last=True,
-                    segment_length=lrs_to_split.size - first_segment_length + 4,
-                    add_extra_padding=False
+                    segment_length=lrs_to_split.size - first_segment_length + 4
                 )
 
                 # 'inserting' header bytes (changed array length in the original code)
