@@ -192,7 +192,7 @@ class DLISFile:
 
             # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
             elif _position_diff < 16:
-                q[vr_position] = (vr_length, None, n_splits, n_vrs)
+                q[vr_position] = (vr_length, None, n_splits+n_vrs)
                 vr_length = 4
                 n_vrs += 1
                 vr_offset -= _position_diff
@@ -200,7 +200,7 @@ class DLISFile:
 
             # option C
             else:
-                q[vr_position] = (visible_record_length, _lrs, n_splits, n_vrs)
+                q[vr_position] = (visible_record_length, _lrs, n_splits+n_vrs)
                 vr_length = 8 + _lrs_size - _position_diff
                 n_vrs += 1
                 n_splits += 1
@@ -211,7 +211,7 @@ class DLISFile:
             process_iteration(lrs)
 
         # last vr
-        q[vr_position] = (vr_length, None, n_splits, n_vrs)
+        q[vr_position] = (vr_length, None, n_splits+n_vrs)
 
         return q
 
@@ -261,8 +261,7 @@ class DLISFile:
 
             if lrs_to_split := val[1]:
                 # FIRST PART OF THE SPLIT
-                pos_shift = 4 * (val[3] + val[2])
-                updated_lrs_position = self.pos[lrs_to_split.key] + pos_shift
+                updated_lrs_position = self.pos[lrs_to_split.key] + 4 * val[2]
 
                 first_segment_length = vr_position + vr_length - updated_lrs_position
                 header_bytes_to_replace = lrs_to_split.split(
@@ -280,12 +279,10 @@ class DLISFile:
                 )
 
                 # SECOND PART OF THE SPLIT
-                second_lrs_position = vr_position + vr_length + 4
-                second_segment_length = lrs_to_split.size - first_segment_length + 4
                 header_bytes_to_insert = lrs_to_split.split(
                     is_first=False,
                     is_last=True,
-                    segment_length=second_segment_length,
+                    segment_length=lrs_to_split.size - first_segment_length + 4,
                     add_extra_padding=False
                 )
 
@@ -293,7 +290,7 @@ class DLISFile:
                 self.insert_bytes(
                     bytes_inserted,
                     bytes_to_insert=header_bytes_to_insert,
-                    position=second_lrs_position - 4
+                    position=vr_position + vr_length
                 )
 
         logger.debug(f"{splits} splits created")
