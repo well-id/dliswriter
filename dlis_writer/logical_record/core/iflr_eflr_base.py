@@ -10,10 +10,10 @@ from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBas
 
 
 class SegmentAttributes:
-    weights = 2 ** np.arange(8, dtype=np.uint8)[::-1]
+    weights = [2 ** i for i in range(8)][::-1]
 
     def __init__(self):
-        self._value = np.zeros(8, dtype=np.bool)
+        self._value = 8 * [False]
 
     @property
     def is_eflr(self):
@@ -83,7 +83,7 @@ class SegmentAttributes:
         self._value[7] = not self._value[7]
 
     def reduce(self):
-        return (self._value * self.weights).sum()
+        return sum(map(lambda x, y: x * y, self._value, self.weights))
 
 
 class IflrAndEflrBase(LogicalRecordBase):
