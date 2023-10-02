@@ -1,8 +1,6 @@
-import io
 from datetime import datetime
 
 from dlis_writer.file.file import DLISFile
-from dlis_writer.utils.converters import get_representation_code_value
 from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 from dlis_writer.logical_record.misc.file_header import FileHeader
 from dlis_writer.logical_record.eflr_types.origin import Origin
@@ -122,35 +120,35 @@ long_name.private_symbol.value = 'SOME ASCII TEXT'
 depth_channel = Channel('DEPTH CHANNEL')
 depth_channel.long_name.value = 'DEPTH'
 depth_channel.properties.value = ['0309 AQLN PROP 1', 'PROP AQLN 2']
-depth_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+depth_channel.representation_code.value = RepresentationCode.FDOUBL
 depth_channel.units.value = Units.m
 depth_channel.dimension.value = [1]
 depth_channel.element_limit.value = [1]
 
 curve_1_channel = Channel('CURVE 1 CHANNEL')
 curve_1_channel.long_name.value = 'CURVE 1'
-curve_1_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+curve_1_channel.representation_code.value = RepresentationCode.FDOUBL
 curve_1_channel.units.value = Units.t
 curve_1_channel.dimension.value = [1]
 curve_1_channel.element_limit.value = [1]
 
 curve_2_channel = Channel('CURVE 2 CHANNEL')
 curve_2_channel.long_name.value = 'CURVE 2'
-curve_2_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+curve_2_channel.representation_code.value = RepresentationCode.FDOUBL
 curve_2_channel.units.value = Units.t
 curve_2_channel.dimension.value = [1]
 curve_2_channel.element_limit.value = [1]
 
 multi_dim_channel = Channel('MULTI DIM CHANNEL')
 multi_dim_channel.long_name.value = 'MULTI DIMENSIONAL'
-multi_dim_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+multi_dim_channel.representation_code.value = RepresentationCode.FDOUBL
 multi_dim_channel.units.value = Units.t
 multi_dim_channel.dimension.value = [2]
 multi_dim_channel.element_limit.value = [2]
 
 image_channel = Channel('IMG')
 image_channel.long_name.value = 'IMAGE CHANNEL'
-image_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+image_channel.representation_code.value = RepresentationCode.FDOUBL
 image_channel.dimension.value = [384]
 image_channel.element_limit.value = [384]
 

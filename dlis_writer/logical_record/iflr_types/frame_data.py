@@ -3,7 +3,6 @@ from functools import lru_cache
 
 from dlis_writer.logical_record.core import IFLR
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.converters import get_representation_code_from_value
 from dlis_writer.utils.enums import RepresentationCode
 
 
@@ -57,7 +56,7 @@ class FrameData(IFLR):
         j = 0
         slots = self._slots
         for channel in self.frame.channels.value:
-            representation_code = get_representation_code_from_value(channel.representation_code.value)
+            representation_code = channel.representation_code.value
 
             for i in range(j, j+math.prod(channel.dimension.value)):
                 body += write_struct(representation_code, slots[i])

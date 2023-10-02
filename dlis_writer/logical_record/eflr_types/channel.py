@@ -2,7 +2,6 @@ from typing import Union
 from typing_extensions import Self
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.converters import get_representation_code_value
 from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
 
 
@@ -63,8 +62,7 @@ class Channel(EFLR):
 
         channel = Channel(name)
         channel.long_name.value = long_name or name
-        channel.representation_code.value = get_representation_code_value(
-            repr_code if repr_code is not None else RepresentationCode.FDOUBL)
+        channel.representation_code.value = (repr_code if repr_code is not None else RepresentationCode.FDOUBL)
         channel.dimension.value = [dimension]
         channel.element_limit.value = [element_limit if element_limit is not None else dimension]
 

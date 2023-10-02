@@ -55,13 +55,13 @@ def _write_struct_dtime(date_time: datetime) -> bytes:
     time_zone = '{0:04b}'.format(0)  # Local Standard Time is set as default
     month = '{0:04b}'.format(date_time.month)
 
-    value += RepresentationCode.USHORT.value.pack(date_time.year - 1900)
-    value += RepresentationCode.USHORT.value.pack(int(time_zone + month, 2))
-    value += RepresentationCode.USHORT.value.pack(date_time.day)
-    value += RepresentationCode.USHORT.value.pack(date_time.hour)
-    value += RepresentationCode.USHORT.value.pack(date_time.minute)
-    value += RepresentationCode.USHORT.value.pack(date_time.second)
-    value += RepresentationCode.UNORM.value.pack(date_time.microsecond // 1000)
+    value += RepresentationCode.USHORT.converter.pack(date_time.year - 1900)
+    value += RepresentationCode.USHORT.converter.pack(int(time_zone + month, 2))
+    value += RepresentationCode.USHORT.converter.pack(date_time.day)
+    value += RepresentationCode.USHORT.converter.pack(date_time.hour)
+    value += RepresentationCode.USHORT.converter.pack(date_time.minute)
+    value += RepresentationCode.USHORT.converter.pack(date_time.second)
+    value += RepresentationCode.UNORM.converter.pack(date_time.microsecond // 1000)
     
     return value
 
@@ -73,24 +73,24 @@ def _write_struct_ascii(value):
 
 def _write_struct_uvari(value):
     if value < 128:
-        return RepresentationCode.USHORT.value.pack(value)
+        return RepresentationCode.USHORT.converter.pack(value)
 
     if value < 16384:
-        return RepresentationCode.UNORM.value.pack(value + UNORM_OFFSET)
+        return RepresentationCode.UNORM.converter.pack(value + UNORM_OFFSET)
 
     # >= 16384
-    return RepresentationCode.ULONG.value.pack(value + ULONG_OFFSET)
+    return RepresentationCode.ULONG.converter.pack(value + ULONG_OFFSET)
 
 
 def _write_struct_ident(value):
     value = str(value)
-    return RepresentationCode.USHORT.value.pack(len(value)) + value.encode('ascii')
+    return RepresentationCode.USHORT.converter.pack(len(value)) + value.encode('ascii')
 
 
 def _write_struct_obname(value):
     try:
         origin_reference = _write_struct_uvari(value[0])
-        copy_number = RepresentationCode.USHORT.value.pack(value[1])
+        copy_number = RepresentationCode.USHORT.converter.pack(value[1])
         name = _write_struct_ident(value[2])
 
         obname = origin_reference + copy_number + name
@@ -115,7 +115,7 @@ def _write_struct_status(value):
         raise ValueError("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
                          " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
 
-    return RepresentationCode.USHORT.value.pack(value)
+    return RepresentationCode.USHORT.converter.pack(value)
 
 
 _struct_dict = {
@@ -149,4 +149,4 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     if func := _struct_dict.get(representation_code, None):
         return func(value)
 
-    return representation_code.value.pack(value)
+    return representation_code.converter.pack(value)

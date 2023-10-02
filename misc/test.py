@@ -5,7 +5,6 @@ import pandas as pd
 from pathlib import Path
 
 from dlis_writer.file.file import DLISFile
-from dlis_writer.utils.converters import get_representation_code_value
 from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 from dlis_writer.logical_record.misc.file_header import FileHeader
 from dlis_writer.logical_record.eflr_types.origin import Origin
@@ -103,14 +102,14 @@ axis.spacing.units = Units.m
 # For each column create a Channel object defining properties of that column
 depth_channel = Channel('DEPTH CHANNEL')
 depth_channel.long_name.value = 'DEPTH'
-depth_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+depth_channel.representation_code.value = RepresentationCode.FDOUBL
 depth_channel.units.value = Units.m
 depth_channel.dimension.value = [1]
 depth_channel.element_limit.value = [1]
 
 pad0_channel = Channel('4DCALRITCP0')
 pad0_channel.long_name.value = '4DCAL Radii Img TC Pad 0'
-pad0_channel.representation_code.value = get_representation_code_value(RepresentationCode.FDOUBL)
+pad0_channel.representation_code.value = RepresentationCode.FDOUBL
 pad0_channel.dimension.value = [128]
 pad0_channel.element_limit.value = [128]
 pad0_channel.units.value = Units.in_

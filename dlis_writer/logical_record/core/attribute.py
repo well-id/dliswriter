@@ -1,10 +1,7 @@
 from typing import Union, List, Tuple
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.converters import get_representation_code_value
 from dlis_writer.utils.enums import RepresentationCode, Units
-
-from line_profiler_pycharm import profile
 
 
 # custom type
@@ -65,7 +62,7 @@ class Attribute:
         characteristics += '0'
 
         if self.representation_code:
-            bts += write_struct(RepresentationCode.USHORT, get_representation_code_value(self.representation_code))
+            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -105,7 +102,6 @@ class Attribute:
 
         return bts, characteristics
 
-    @profile
     def write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object."""
 
@@ -124,7 +120,6 @@ class Attribute:
 
         return bts, characteristics
 
-    @profile
     def get_as_bytes(self, for_template=False) -> bytes:
         """Converts attribute object to bytes as specified in RP66 V1.
 

@@ -108,7 +108,15 @@ class Units(Enum):
     us = 'microsecond'
 
 
-class RepresentationCode(Enum):
+class _ConverterEnum(int, Enum):
+    def __new__(cls, code: int, converter: Struct):
+        obj = super().__new__(cls, code)
+        obj._value_ = code
+        obj.converter = converter
+        return obj
+
+
+class RepresentationCode(_ConverterEnum):
     """Class serves as a lookup for RP66 V1 representation codes.
 
     Some representation codes can not be directly converted using Struct.
@@ -124,33 +132,33 @@ class RepresentationCode(Enum):
         http://w3.energistics.org/rp66/v1/rp66v1_appb.html
 
     """
-    FSHORT = Struct('>h')
-    FSINGL = Struct('>f')
-    FSING1 = Struct('>ff')
-    FSING2 = Struct('>fff')
-    ISINGL = Struct('>i')
-    VSINGL = Struct('>i')
-    FDOUBL = Struct('>d')
-    FDOUB1 = Struct('>dd')
-    FDOUB2 = Struct('>ddd')
-    CSINGL = Struct('>ff')
-    CDOUBL = Struct('>dd')
-    SSHORT = Struct('>b')
-    SNORM = Struct('>h')
-    SLONG = Struct('>i')
-    USHORT = Struct('>B')
-    UNORM = Struct('>H')
-    ULONG = Struct('>I')
-    UVARI = 'UVARI'
-    IDENT = 'IDENT'
-    ASCII = 'ASCII'
-    DTIME = Struct('>BBBBBBH')
-    ORIGIN = 'ORIGIN'
-    OBNAME = 'OBNAME'
-    OBJREF = 'OBJREF'
-    ATTREF = 'ATTREF'
-    STATUS = Struct('>B')
-    UNITS = 'UNITS'
+    FSHORT = 1, Struct('>h')
+    FSINGL = 2, Struct('>f')
+    FSING1 = 3, Struct('>ff')
+    FSING2 = 4, Struct('>fff')
+    ISINGL = 5, Struct('>i')
+    VSINGL = 6, Struct('>i')
+    FDOUBL = 7, Struct('>d')
+    FDOUB1 = 8, Struct('>dd')
+    FDOUB2 = 9, Struct('>ddd')
+    CSINGL = 10, Struct('>ff')
+    CDOUBL = 11, Struct('>dd')
+    SSHORT = 12, Struct('>b')
+    SNORM = 13, Struct('>h')
+    SLONG = 14, Struct('>i')
+    USHORT = 15, Struct('>B')
+    UNORM = 16, Struct('>H')
+    ULONG = 17, Struct('>I')
+    UVARI = 18, 'UVARI'
+    IDENT = 19, 'IDENT'
+    ASCII = 20, 'ASCII'
+    DTIME = 21, Struct('>BBBBBBH')
+    ORIGIN = 22, 'ORIGIN'
+    OBNAME = 23, 'OBNAME'
+    OBJREF = 24, 'OBJREF'
+    ATTREF = 25, 'ATTREF'
+    STATUS = 26, Struct('>B')
+    UNITS = 27, 'UNITS'
 
 
 class LogicalRecordType(IntEnum):
