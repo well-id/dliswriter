@@ -1,5 +1,5 @@
 import math
-from functools import lru_cache
+from functools import lru_cache, cached_property
 
 from dlis_writer.logical_record.core.iflr import IFLR
 from dlis_writer.utils.common import write_struct
@@ -36,7 +36,7 @@ class FrameData(IFLR):
 
         self.origin_reference = origin_reference
 
-    @property
+    @cached_property
     def key(self):
         return hash(type(self)), self._frame_number
 

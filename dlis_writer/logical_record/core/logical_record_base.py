@@ -1,6 +1,6 @@
 from abc import abstractmethod
-
 import numpy as np
+from functools import cached_property
 
 
 class LogicalRecordBase:
@@ -13,7 +13,7 @@ class LogicalRecordBase:
     def size(self) -> int:
         pass
 
-    @property
+    @cached_property
     def key(self):
         return hash(type(self))
 
