@@ -180,11 +180,15 @@ class DLISFile:
         n_splits = 0    #: number of created splits
         vr_position = 0
 
+        def calculate_vr_position():
+            vrp = (visible_record_length * (n_vrs - 1)) + 80  # DON'T TOUCH THIS
+            vrp += vr_offset
+            return vrp
+
         def process_iteration(_lrs):
             nonlocal vr_position, vr_length, vr_offset, n_vrs, n_splits
 
-            vr_position = (visible_record_length * (n_vrs - 1)) + 80  # DON'T TOUCH THIS
-            vr_position += vr_offset
+            vr_position = calculate_vr_position()
             _lrs_size = _lrs.size
             _lrs_position = self.pos[lrs.key] + 4 * (n_vrs + n_splits)
             _position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
@@ -214,7 +218,7 @@ class DLISFile:
             process_iteration(lrs)
 
         # last vr
-        q[vr_position] = (vr_length, None, n_splits+n_vrs)
+        q[calculate_vr_position()] = (vr_length, None, n_splits+n_vrs)
 
         return q
 
