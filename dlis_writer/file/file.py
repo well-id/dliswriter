@@ -149,7 +149,7 @@ class DLISFile:
             all_positions[i+1] = current_pos
             self.pos[lr.key] = all_positions[i]
 
-        raw_bytes = np.zeros(int(all_positions[-1]*2.0), dtype=np.uint8)  # avoid integer overflow :)
+        raw_bytes = np.zeros(all_positions[-1], dtype=np.uint8)
 
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
