@@ -153,11 +153,13 @@ class DLISFile(object):
 
         lrs = next(all_records)
 
+        def calculate_vr_position():
+            vrp = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
+            vrp += vr_offset
+            return vrp
+
         while True:
-
-            vr_position = (visible_record_length * (_number_of_vr - 1)) + 80  # DON'T TOUCH THIS
-            vr_position += vr_offset
-
+            vr_position = calculate_vr_position()
             lrs_size = lrs.size
 
             _lrs_position = self.get_lrs_position(lrs, _number_of_vr, number_of_splits)
@@ -190,7 +192,7 @@ class DLISFile(object):
                     break
 
         # last vr
-        q[vr_position] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
+        q[calculate_vr_position()] = VRFields(_vr_length, None, number_of_splits, _number_of_vr)
 
         return q
 
