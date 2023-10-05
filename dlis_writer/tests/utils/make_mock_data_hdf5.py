@@ -42,16 +42,23 @@ def create_data_file(n_points, fpath, image_cols=None):
         raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
 
     data_array = create_data(n_points, image_cols=image_cols)
+    exception = None
 
     h5_file = h5py.File(fpath, 'w')
-    group = h5_file.create_group('contents')
+    try:
+        group = h5_file.create_group('contents')
 
-    for key in data_array.dtype.names:
-        col = data_array[key]
-        group.create_dataset(key, col.shape, col.dtype, col)
+        for key in data_array.dtype.names:
+            col = data_array[key]
+            group.create_dataset(key, col.shape, col.dtype, col)
+    except Exception as exc:
+        exception = exc
+    finally:
+        h5_file.flush()
+        h5_file.close()
 
-    h5_file.flush()
-    h5_file.close()
+    if exception:
+        raise exception
 
     print(f"Fake data with {n_points} points saved to file '{fpath}'")
 
