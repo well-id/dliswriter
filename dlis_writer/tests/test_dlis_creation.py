@@ -27,7 +27,9 @@ def new_dlis_path(base_data_path):
     new_path = base_data_path/'outputs/new_fake_dlis.DLIS'
     os.makedirs(new_path.parent, exist_ok=True)
     yield new_path
-    os.remove(new_path)
+
+    if new_path.exists():  # does not exist if file creation failed
+        os.remove(new_path)
 
 
 def test_correct_dlis_contents(reference_dlis_path, new_dlis_path, h5_data_file_path):
