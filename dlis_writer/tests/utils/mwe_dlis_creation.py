@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
 from line_profiler_pycharm import profile
+from itertools import chain, repeat
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
@@ -58,7 +59,32 @@ def _define_index(frame, depth_based=False):
     return index_channel
 
 
-def make_channels_and_frame(data: np.ndarray, depth_based=False) -> FrameDataCapsule:
+def _add_image_channels(data, frame, repr_code):
+    images_in_data = [name for name in data.dtype.names if name.startswith('image')]
+
+    image_channel_units = chain(
+        (('amplitude', None), ('radius', Units.in_), ('radius_pooh', Units.in_)),
+        repeat((None, Units.in_))
+    )
+
+    for name in images_in_data:
+        channel_name, unit = next(image_channel_units)
+        n_cols = data[name].shape[1]
+
+        channel = Channel.create(
+            channel_name or name,
+            dataset_name=name,
+            dimension=n_cols,
+            element_limit=n_cols,
+            unit=unit,
+            repr_code=repr_code
+        )
+
+        frame.channels.value.append(channel)
+
+
+def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
+                            repr_code=RepresentationCode.FDOUBL) -> FrameDataCapsule:
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     index_channel = _define_index(frame, depth_based=depth_based)
@@ -68,17 +94,14 @@ def make_channels_and_frame(data: np.ndarray, depth_based=False) -> FrameDataCap
         Channel.create('surface rpm', unit='rpm', dataset_name='rpm'),
     ]
 
-    for name in data.dtype.names:
-        if name.startswith('image'):
-            n_cols = data[name].shape[-1]
-            frame.channels.value.append(
-                Channel.create(name, unit='m', dimension=n_cols, element_limit=n_cols)
-            )
+    _add_image_channels(data, frame, repr_code)
 
-    logger.info(f'Preparing frames for {data.shape[0]} rows.')
+    logger.info(f'Preparing frames for {data.shape[0]} rows with channels: '
+                f'{", ".join(c.name for c in frame.channels.value)}')
     data_capsule = FrameDataCapsule(frame, data)
 
     return data_capsule
+
 
 
 @profile
