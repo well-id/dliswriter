@@ -84,7 +84,7 @@ def _add_image_channels(data, frame, repr_code):
 
 
 def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
-                            repr_code=RepresentationCode.FDOUBL) -> FrameDataCapsule:
+                            double_precision=False) -> FrameDataCapsule:
     # CHANNELS & FRAME
     frame = Frame('MAIN')
     index_channel = _define_index(frame, depth_based=depth_based)
@@ -94,7 +94,8 @@ def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
         Channel.create('surface rpm', unit='rpm', dataset_name='rpm'),
     ]
 
-    _add_image_channels(data, frame, repr_code)
+    repr_code = RepresentationCode.FDOUBL if double_precision else RepresentationCode.FSINGL
+    _add_image_channels(data, frame, repr_code=repr_code)
 
     logger.info(f'Preparing frames for {data.shape[0]} rows with channels: '
                 f'{", ".join(c.name for c in frame.channels.value)}')
@@ -135,6 +136,8 @@ if __name__ == '__main__':
                         help='Number of columns for each of the added 2D data sets (ignored if input file specified)')
     parser.add_argument('--depth-based', action='store_true', default=False,
                         help="Make a depth-based HDF5 file (default is time-based)")
+    parser.add_argument('-dbl', '--double-precision', action='store_true', default=False,
+                        help="Save images in double precision (default: single)")
 
     pargs = parser.parse_args()
 
@@ -151,7 +154,8 @@ if __name__ == '__main__':
         write_dlis_file(
             data=data,
             dlis_file_name=output_file_name,
-            depth_based=pargs.depth_based
+            depth_based=pargs.depth_based,
+            double_precision=pargs.double_precision
         )
 
     exec_time = timeit(timed_func, number=1)
