@@ -1,9 +1,7 @@
 import os
 import numpy as np
 import logging
-from functools import lru_cache
 from itertools import chain
-from collections import namedtuple
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union, Dict
@@ -88,20 +86,6 @@ class DLISFile:
 
         self.visible_record_length = visible_record_length if visible_record_length else 8192
         self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
-
-    @lru_cache
-    def create_visible_record_as_bytes(self, length: int) -> bytes:
-        """Create Visible Record object as bytes
-
-        Args:
-            length: Length of the visible record
-
-        Returns:
-            Visible Record object bytes
-
-        """
-
-        return write_struct(RepresentationCode.UNORM, length) + self._vr_struct
 
     @log_progress("Validating...")
     def validate(self):
@@ -262,7 +246,7 @@ class DLISFile:
             # 'inserting' visible record bytes (changed array length in the original code)
             bytes_inserted.insert_items(
                 idx=vr_position,
-                items=self.create_visible_record_as_bytes(vr_length)
+                items=write_struct(RepresentationCode.UNORM, vr_length) + self._vr_struct
             )
 
             if lrs_to_split := val[1]:
