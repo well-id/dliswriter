@@ -61,11 +61,11 @@ def _make_image_channels(repr_code=RepresentationCode.FSINGL, n=3):
     return channels[:n]
 
 
-def _make_channels(include_images=True):
+def _make_channels(include_images=True, repr_code=RepresentationCode.FSINGL):
     rpm_channel = _make_rpm_channel()
     if not include_images:
         return [rpm_channel]
-    return [rpm_channel] + _make_image_channels()
+    return [rpm_channel] + _make_image_channels(repr_code=repr_code)
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, new_dlis_path):
@@ -121,3 +121,17 @@ def test_dlis_time_based(short_reference_data, new_dlis_path):
     assert chan.name == 'posix time'
     assert chan.units == 's'
     assert chan.reprc == 7
+
+
+@pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
+def test_repr_code(short_reference_data, new_dlis_path, code, value):
+    write_dlis_file(
+        data=short_reference_data,
+        channels=_make_channels(repr_code=code),
+        dlis_file_name=new_dlis_path
+    )
+
+    f = load_dlis(new_dlis_path)
+    for name in ('amplitude', 'radius', 'radius_pooh'):
+        chan = [c for c in f.channels if c.name == name][0]
+        assert chan.reprc == value
