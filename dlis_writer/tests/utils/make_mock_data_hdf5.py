@@ -3,15 +3,13 @@ import os
 import h5py
 from pathlib import Path
 from argparse import ArgumentParser
-from typing import Union, Iterable
-from collections import abc
 
 
 def make_image(n_points, n_cols, divider=11):
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> np.ndarray:
+def create_data(n_points: int, n_images: int = 0, n_cols: int = 128) -> np.ndarray:
     data_dict = {
         'time': 0.5 * np.arange(n_points),
         'depth': 2500 + 0.1 * np.arange(n_points),
@@ -20,15 +18,11 @@ def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> 
 
     dtype = [(key, val.dtype) for key, val in data_dict.items()]
 
-    if image_cols:
-        if not isinstance(image_cols, abc.Iterable):
-            image_cols = image_cols,
-
-        for i, nc in enumerate(image_cols):
-            im = make_image(n_points, nc, divider=int(10 + (nc-11) * np.random.rand()))
-            im_name = f'image{i}'
-            data_dict[im_name] = im
-            dtype.append((im_name, im.dtype, nc))
+    for i in range(n_images):
+        im = make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand()))
+        im_name = f'image{i}'
+        data_dict[im_name] = im
+        dtype.append((im_name, im.dtype, n_cols))
 
     data_array = np.zeros(n_points, dtype=dtype)
     for key, arr in data_dict.items():
@@ -37,11 +31,15 @@ def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> 
     return data_array
 
 
-def create_data_file(n_points, fpath, image_cols=None):
+def create_data_file(n_points, fpath, overwrite=False, **kwargs):
     if fpath.exists():
-        raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
+        if overwrite:
+            print(f"Removing existing HDF5 file at {fpath}")
+            os.remove(fpath)
+        else:
+            raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
 
-    data_array = create_data(n_points, image_cols=image_cols)
+    data_array = create_data(n_points, **kwargs)
     exception = None
 
     h5_file = h5py.File(fpath, 'w')
@@ -67,8 +65,11 @@ if __name__ == '__main__':
     parser = ArgumentParser("Creating HFD5 file with mock well data")
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
-    parser.add_argument('--image-cols', nargs='+', type=int, default=(),
-                        help='Add 2D data entries with specified numbers of columns')
+    parser.add_argument('-ni', '--n-images', type=int, default=0, help='Number of 2D data sets to add')
+    parser.add_argument('-nc', '--n-cols', type=int, default=128,
+                        help='Number of columns for each of the added 2D data sets')
+    parser.add_argument('--overwrite', action='store_true', default=False,
+                        help='Allow to overwrite existing hdf5 file of the same name')
     parser_args = parser.parse_args()
 
     if (file_name := parser_args.file_name) is None:
@@ -77,4 +78,10 @@ if __name__ == '__main__':
         file_name = Path(__file__).resolve().parent.parent / 'resources' / file_name
         os.makedirs(file_name.parent, exist_ok=True)
 
-    create_data_file(n_points=int(parser_args.n_points), fpath=file_name, image_cols=parser_args.image_cols)
+    create_data_file(
+        n_points=int(parser_args.n_points),
+        fpath=file_name,
+        n_images=parser_args.n_images,
+        n_cols=parser_args.n_cols,
+        overwrite=parser_args.overwrite
+    )
