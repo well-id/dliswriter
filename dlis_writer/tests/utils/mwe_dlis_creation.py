@@ -6,8 +6,6 @@ import logging
 from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
-from line_profiler_pycharm import profile
-from itertools import chain, repeat
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
@@ -60,23 +58,18 @@ def _define_index(frame, depth_based=False):
 
 
 def _add_image_channels(data, frame, repr_code):
-    images_in_data = [name for name in data.dtype.names if name.startswith('image')]
+    for name in data.dtype.names:
+        if not name.startswith('image'):
+            continue
 
-    image_channel_units = chain(
-        (('amplitude', None), ('radius', Units.in_), ('radius_pooh', Units.in_)),
-        repeat((None, Units.in_))
-    )
-
-    for name in images_in_data:
-        channel_name, unit = next(image_channel_units)
         n_cols = data[name].shape[1]
 
         channel = Channel.create(
-            channel_name or name,
+            name,
             dataset_name=name,
             dimension=n_cols,
             element_limit=n_cols,
-            unit=unit,
+            unit=Units.in_,
             repr_code=repr_code
         )
 
@@ -105,7 +98,6 @@ def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
 
 
 
-@profile
 def write_dlis_file(data, dlis_file_name, **kwargs):
     # CREATE THE FILE
     dlis_file = DLISFile(
