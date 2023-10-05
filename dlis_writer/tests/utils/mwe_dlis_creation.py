@@ -57,7 +57,13 @@ def _define_index(frame, depth_based=False):
     return index_channel
 
 
-def _add_image_channels(data, frame, repr_code):
+def make_channels(data, double_precision=False) -> list[Channel]:
+    repr_code = RepresentationCode.FDOUBL if double_precision else RepresentationCode.FSINGL
+
+    channels = [
+        Channel.create('surface rpm', unit='rpm', dataset_name='rpm')
+    ]
+
     for name in data.dtype.names:
         if not name.startswith('image'):
             continue
@@ -73,22 +79,20 @@ def _add_image_channels(data, frame, repr_code):
             repr_code=repr_code
         )
 
-        frame.channels.value.append(channel)
+        channels.append(channel)
+
+    return channels
 
 
-def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
-                            double_precision=False) -> FrameDataCapsule:
-    # CHANNELS & FRAME
+def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = False) -> FrameDataCapsule:
     frame = Frame('MAIN')
+
     index_channel = _define_index(frame, depth_based=depth_based)
 
     frame.channels.value = [
         index_channel,
-        Channel.create('surface rpm', unit='rpm', dataset_name='rpm'),
+        *channels
     ]
-
-    repr_code = RepresentationCode.FDOUBL if double_precision else RepresentationCode.FSINGL
-    _add_image_channels(data, frame, repr_code=repr_code)
 
     logger.info(f'Preparing frames for {data.shape[0]} rows with channels: '
                 f'{", ".join(c.name for c in frame.channels.value)}')
@@ -97,8 +101,7 @@ def make_channels_and_frame(data: np.ndarray, depth_based: bool = False,
     return data_capsule
 
 
-
-def write_dlis_file(data, dlis_file_name, **kwargs):
+def write_dlis_file(data, channels, dlis_file_name, **kwargs):
     # CREATE THE FILE
     dlis_file = DLISFile(
         storage_unit_label=StorageUnitLabel(),
@@ -106,7 +109,7 @@ def write_dlis_file(data, dlis_file_name, **kwargs):
         origin=make_origin()
     )
 
-    data_capsule = make_channels_and_frame(data, **kwargs)
+    data_capsule = prepare_data(data, channels, **kwargs)
 
     dlis_file.write_dlis(data_capsule, dlis_file_name)
 
@@ -143,11 +146,13 @@ if __name__ == '__main__':
         data = load_hdf5(input_file_name)
 
     def timed_func():
+        channels = make_channels(data, double_precision=pargs.double_precision)
+
         write_dlis_file(
             data=data,
+            channels=channels,
             dlis_file_name=output_file_name,
-            depth_based=pargs.depth_based,
-            double_precision=pargs.double_precision
+            depth_based=pargs.depth_based
         )
 
     exec_time = timeit(timed_func, number=1)
