@@ -91,9 +91,10 @@ if __name__ == '__main__':
     parser.add_argument('-fn', '--file-name', help='Output file name')
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
-    parser.add_argument('--image-cols', nargs='+', type=int, default=(),
-                        help='Add 2D data entries with specified numbers of columns '
-                             '(ignored if input file name is specified)')
+    parser.add_argument('-ni', '--n-images', type=int, default=0,
+                        help='Number of 2D data sets to add (ignored if input file is specified)')
+    parser.add_argument('-nc', '--n-cols', type=int, default=128,
+                        help='Number of columns for each of the added 2D data sets (ignored if input file specified)')
 
     pargs = parser.parse_args()
 
@@ -102,7 +103,7 @@ if __name__ == '__main__':
         os.makedirs(output_file_name.parent, exist_ok=True)
 
     if (input_file_name := pargs.input_file_name) is None:
-        data = create_data(int(pargs.n_points), image_cols=pargs.image_cols)
+        data = create_data(int(pargs.n_points), n_images=pargs.n_images, n_cols=pargs.n_cols)
     else:
         data = load_hdf5(input_file_name)
 
