@@ -7,14 +7,14 @@ from typing import Union, Iterable
 from collections import abc
 
 
-def _make_image(n_points, n_cols, divider=11):
-    return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols)
+def make_image(n_points, n_cols, divider=11):
+    return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
 def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> np.ndarray:
     data_dict = {
-        'time': 0.1 * np.arange(n_points),
-        'depth': 10 * (np.arange(n_points) % 5),
+        'time': 0.5 * np.arange(n_points),
+        'depth': 2500 + 0.1 * np.arange(n_points),
         'rpm': 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
     }
 
@@ -25,8 +25,8 @@ def create_data(n_points: int, image_cols: Union[int, Iterable[int]] = None) -> 
             image_cols = image_cols,
 
         for i, nc in enumerate(image_cols):
-            im = _make_image(n_points, nc)
-            im_name = f'image{i}' if len(image_cols) > 1 else 'image'
+            im = make_image(n_points, nc, divider=int(10 + (nc-11) * np.random.rand()))
+            im_name = f'image{i}'
             data_dict[im_name] = im
             dtype.append((im_name, im.dtype, nc))
 
