@@ -11,6 +11,7 @@ from dlis_writer.utils.enums import RepresentationCode, Units
 
 
 N_COLS = 128
+SHORT_N_ROWS = 100
 
 
 @pytest.fixture
@@ -25,7 +26,7 @@ def reference_data(base_data_path):
 
 @pytest.fixture
 def short_reference_data(reference_data):
-    return reference_data[:100]
+    return reference_data[:SHORT_N_ROWS]
 
 
 @pytest.fixture
@@ -133,5 +134,31 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value):
 
     f = load_dlis(new_dlis_path)
     for name in ('amplitude', 'radius', 'radius_pooh'):
-        chan = [c for c in f.channels if c.name == name][0]
+        chan = f.object("CHANNEL", name)
         assert chan.reprc == value
+
+
+def test_channel_properties(short_reference_data, new_dlis_path):
+    write_dlis_file(
+        data=short_reference_data,
+        channels=_make_channels(),
+        dlis_file_name=new_dlis_path
+    )
+
+    f = load_dlis(new_dlis_path)
+
+    for name in ('posix time', 'surface rpm'):
+        chan = f.object("CHANNEL", name)
+        assert chan.name == name
+        assert chan.element_limit == [1]
+        assert chan.dimension == [1]
+
+    for name in ('amplitude', 'radius', 'radius_pooh'):
+        chan = f.object("CHANNEL", name)
+        assert chan.name == name
+        assert chan.element_limit == [N_COLS]
+        assert chan.dimension == [N_COLS]
+
+    assert f.object("CHANNEL", 'amplitude').units is None
+    assert f.object("CHANNEL", 'radius').units == "inch"
+    assert f.object("CHANNEL", 'radius_pooh').units == "meter"
