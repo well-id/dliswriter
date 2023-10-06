@@ -31,13 +31,12 @@ File Header must be exactly 124 bytes.
 
 Recommended usage is to assign a max 65 characters *str* value to *_id* attribute, which represents the name of the logical file.
 
-
 ```python
 
 from logical_record.file_header import FileHeader
 
 file_header = FileHeader()
-file_header._id = 'LOGICAL FILE NAME'
+file_header.name = 'LOGICAL FILE NAME'
 
 ```
 

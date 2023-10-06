@@ -11,12 +11,10 @@ class FileHeader(LogicalRecordBase):
 
     set_type = 'FILE-HEADER'
 
-    def __init__(self,
-                 sequence_number:int=1,
-                 _id:str='DEFAULT FHLR'):
+    def __init__(self, sequence_number: int = 1, name: str = 'DEFAULT FHLR'):
 
         self.sequence_number = sequence_number
-        self._id = _id
+        self.name = name
         
         self.origin_reference = None
         self.copy_number = 0
@@ -46,9 +44,8 @@ class FileHeader(LogicalRecordBase):
 
         # OBJECT
         _body_bytes += write_struct(RepresentationCode.USHORT, int('01110000', 2))
-        _body_bytes += write_struct(RepresentationCode.OBNAME, (self.origin_reference,
-                                               self.copy_number,
-                                               self.object_name))
+        _body_bytes += write_struct(RepresentationCode.OBNAME,
+                                    (self.origin_reference, self.copy_number, self.object_name))
 
         # ATTRIBUTES
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
@@ -56,7 +53,7 @@ class FileHeader(LogicalRecordBase):
         _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify_left=False)
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
         _body_bytes += write_struct(RepresentationCode.USHORT, 65)
-        _body_bytes += get_ascii_bytes(self._id, 65, justify_left=True)
+        _body_bytes += get_ascii_bytes(self.name, 65, justify_left=True)
 
         _bytes = _header_bytes + _body_bytes
         
