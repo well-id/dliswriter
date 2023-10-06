@@ -188,3 +188,17 @@ def test_channel_curves(reference_data, new_dlis_path, n_points):
         for name in ('amplitude', 'radius', 'radius_pooh'):
             curve = _select_channel(f, name).curves()
             assert curve.shape == (n_points, N_COLS)
+
+        def check_contents(channel_name, data_name):
+            curve = _select_channel(f, channel_name).curves()
+            data = reference_data[data_name][:n_points]
+            assert pytest.approx(curve) == data
+
+        check_contents('posix time', 'time')
+        check_contents('surface rpm', 'rpm')
+        check_contents('amplitude', 'image0')
+        check_contents('radius', 'image1')
+        check_contents('radius_pooh', 'image2')
+
+
+
