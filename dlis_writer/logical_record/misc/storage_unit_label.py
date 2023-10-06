@@ -30,19 +30,20 @@ class StorageUnitLabel(LogicalRecordBase):
     """
 
     set_type = NotImplemented  # TODO
+    storage_unit_structure = 'RECORD'  # the only allowed value
+    dlis_version = 'V1.00'
+    max_record_length = 8192  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
 
-    def __init__(self,
-                 storage_unit_sequence_number:int=1, # It indicates the order in which the current Storage Unit appears in a Storage Set.
-                 storage_set_identifier:str='DEFAULT STORAGE SET', # ID of the storage set (eg. "Default Storage Set")
-                 dlis_version='V1.00',
-                 storage_unit_structure='RECORD',
-                 max_record_length=8192):
+    def __init__(self, sequence_number: int = 1, set_identifier: str = 'DEFAULT STORAGE SET'):
+        """Initialise StorageUnitLabel.
 
-        self.storage_unit_sequence_number = storage_unit_sequence_number
-        self.dlis_version = dlis_version
-        self.storage_unit_structure = storage_unit_structure # ONLY one value is allowed -> 'RECORD'
-        self.max_record_length = max_record_length # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
-        self.storage_set_identifier = storage_set_identifier
+        Args:
+            sequence_number     :   Indicates the order in which the current Storage Unit appears in a Storage Set.
+            set_identifier      :   ID of the storage set (eg. "Default Storage Set").
+        """
+
+        self.sequence_number = sequence_number
+        self.set_identifier = set_identifier
 
         self._bytes = None
 
@@ -56,7 +57,7 @@ class StorageUnitLabel(LogicalRecordBase):
         if self._bytes is None:
 
             # Storage Unit Sequence Number
-            _susn_as_bytes = get_ascii_bytes(self.storage_unit_sequence_number, 4)
+            _susn_as_bytes = get_ascii_bytes(self.sequence_number, 4)
 
             # DLIS Version
             _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
@@ -68,7 +69,7 @@ class StorageUnitLabel(LogicalRecordBase):
             _mrl_as_bytes = get_ascii_bytes(self.max_record_length, 5)
 
             # Storage Set Identifier
-            _ssi_as_bytes = get_ascii_bytes(self.storage_set_identifier, 60, justify_left=True)
+            _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
             self._bytes = np.frombuffer(bts, dtype=np.uint8)
