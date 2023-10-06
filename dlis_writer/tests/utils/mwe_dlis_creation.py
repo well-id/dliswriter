@@ -102,7 +102,8 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
 
     if (config_file_name := pargs.config) is None:
-        config_file_name = Path(__file__).resolve().parent.parent/'resources/mock_config_time_based.ini'
+        base = "time" if pargs.depth_based else "depth"
+        config_file_name = Path(__file__).resolve().parent.parent/f'resources/mock_config_{base}_based.ini'
 
     cfg = ConfigParser()
     cfg.read(config_file_name)
