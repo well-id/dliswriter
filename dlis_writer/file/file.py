@@ -5,10 +5,14 @@ from itertools import chain
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union, Dict
+from typing_extensions import Self
+from configparser import ConfigParser
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.file.frame_data_capsule import FrameDataCapsule
+from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
+from dlis_writer.logical_record.eflr_types import Origin
 
 
 logger = logging.getLogger(__name__)
@@ -77,7 +81,8 @@ class DLISFile:
         http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
     """
 
-    def __init__(self, storage_unit_label, file_header, origin, visible_record_length: int = None):
+    def __init__(self, storage_unit_label: StorageUnitLabel, file_header: FileHeader, origin: Origin,
+                 visible_record_length: int = None):
         """Initiates the object with given parameters"""
         self.pos = {}
         self.storage_unit_label = storage_unit_label
@@ -315,3 +320,12 @@ class DLISFile:
         all_bytes = self.add_visible_records(vr_dict, raw_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
+
+    @classmethod
+    def from_config(cls, config: ConfigParser) -> Self:
+        obj = cls(
+            storage_unit_label=StorageUnitLabel.from_config(config),
+            file_header=FileHeader.from_config(config),
+            origin=Origin.from_config(config)
+        )
+        return obj

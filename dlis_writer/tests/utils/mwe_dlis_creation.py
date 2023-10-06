@@ -1,4 +1,3 @@
-from datetime import datetime
 from pathlib import Path
 import numpy as np
 import os
@@ -9,8 +8,7 @@ from datetime import timedelta
 from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
-from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
-from dlis_writer.logical_record.eflr_types import Origin, Frame, Channel
+from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.utils.logging import install_logger
@@ -85,11 +83,7 @@ def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = 
 
 def write_dlis_file(data, channels, dlis_file_name, config, **kwargs):
     # CREATE THE FILE
-    dlis_file = DLISFile(
-        storage_unit_label=StorageUnitLabel.from_config(config),
-        file_header=FileHeader.from_config(config),
-        origin=Origin.from_config(config)
-    )
+    dlis_file = DLISFile.from_config(config)
 
     data_capsule = prepare_data(data, channels, **kwargs)
 
