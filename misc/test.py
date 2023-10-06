@@ -49,10 +49,10 @@ for i, im in enumerate(images):
     min_r[i] = np.nanmin(images[i])
 
 # STORAGE UNIT LABEL
-sul = StorageUnitLabel()
+sul = StorageUnitLabel('DEFAULT STORAGE SET')
 
 # FILE HEADER
-file_header = FileHeader()
+file_header = FileHeader('DEFAULT FHLR')
 
 # ORIGIN
 origin = Origin('DEFINING ORIGIN')

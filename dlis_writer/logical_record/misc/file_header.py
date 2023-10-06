@@ -11,10 +11,10 @@ class FileHeader(LogicalRecordBase):
 
     set_type = 'FILE-HEADER'
 
-    def __init__(self, sequence_number: int = 1, name: str = 'DEFAULT FHLR'):
+    def __init__(self, identifier: str, sequence_number: int = 1):
 
         self.sequence_number = sequence_number
-        self.name = name
+        self.identifier = identifier
         
         self.origin_reference = None
         self.copy_number = 0
@@ -53,7 +53,7 @@ class FileHeader(LogicalRecordBase):
         _body_bytes += get_ascii_bytes(self.sequence_number, 10, justify_left=False)
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
         _body_bytes += write_struct(RepresentationCode.USHORT, 65)
-        _body_bytes += get_ascii_bytes(self.name, 65, justify_left=True)
+        _body_bytes += get_ascii_bytes(self.identifier, 65, justify_left=True)
 
         _bytes = _header_bytes + _body_bytes
         

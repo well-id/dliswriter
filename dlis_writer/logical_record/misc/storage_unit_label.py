@@ -34,7 +34,7 @@ class StorageUnitLabel(LogicalRecordBase):
     dlis_version = 'V1.00'
     max_record_length = 8192  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
 
-    def __init__(self, sequence_number: int = 1, set_identifier: str = 'DEFAULT STORAGE SET'):
+    def __init__(self, set_identifier: str, sequence_number: int = 1):
         """Initialise StorageUnitLabel.
 
         Args:

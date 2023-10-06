@@ -104,8 +104,8 @@ def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = 
 def write_dlis_file(data, channels, dlis_file_name, **kwargs):
     # CREATE THE FILE
     dlis_file = DLISFile(
-        storage_unit_label=StorageUnitLabel(),
-        file_header=FileHeader(),
+        storage_unit_label=StorageUnitLabel('DEFAULT STORAGE SET'),
+        file_header=FileHeader('DEFAULT FHLR'),
         origin=make_origin()
     )
 

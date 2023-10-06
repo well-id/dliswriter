@@ -17,10 +17,10 @@ from dlis_writer.utils.enums import RepresentationCode
 
 
 # STORAGE UNIT LABEL
-sul = StorageUnitLabel()
+sul = StorageUnitLabel('DEFAULT STORAGE SET')
 
 # FILE HEADER
-file_header = FileHeader()
+file_header = FileHeader('DEFAULT FHLR')
 
 # ORIGIN
 origin = Origin('DEFINING ORIGIN')

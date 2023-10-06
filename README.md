@@ -36,7 +36,7 @@ Recommended usage is to assign a max 65 characters *str* value to *_id* attribut
 from logical_record.file_header import FileHeader
 
 file_header = FileHeader()
-file_header.name = 'LOGICAL FILE NAME'
+file_header.identifier = 'LOGICAL FILE NAME'
 
 ```
 

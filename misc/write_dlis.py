@@ -35,11 +35,11 @@ import pandas as pd
 
 
 # STORAGE UNIT LABEL
-sul = StorageUnitLabel()
+sul = StorageUnitLabel('DEFAULT STORAGE SET')
 
 
 # FILE HEADER
-file_header = FileHeader()
+file_header = FileHeader('DEFAULT FHLR')
 
 
 # ORIGIN
