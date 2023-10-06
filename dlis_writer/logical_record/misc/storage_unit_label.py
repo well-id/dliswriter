@@ -33,7 +33,6 @@ class StorageUnitLabel(LogicalRecordBase):
     storage_unit_structure = 'RECORD'  # the only allowed value
     dlis_version = 'V1.00'
     max_record_length = 8192  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
-    name_key = "set_identifier"
 
     def __init__(self, set_identifier: str, sequence_number: int = 1):
         """Initialise StorageUnitLabel.
@@ -45,7 +44,7 @@ class StorageUnitLabel(LogicalRecordBase):
 
         super().__init__()
 
-        self.sequence_number = sequence_number
+        self.sequence_number = int(sequence_number)
         self.set_identifier = set_identifier
 
         self._bytes = None

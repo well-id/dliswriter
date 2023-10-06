@@ -24,7 +24,6 @@ class EFLR(IflrAndEflrBase):
 
     is_eflr = True
     logical_record_type: LogicalRecordType = NotImplemented
-    name_key = "object_name"
 
     def __init__(self, object_name: str, set_name: str = None):
         super().__init__()

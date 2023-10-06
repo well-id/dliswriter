@@ -13,7 +13,6 @@ class LogicalRecordBase:
     """Base for all logical record classes."""
 
     set_type: str = NotImplemented
-    name_key: str = NotImplemented
 
     def __init__(self, *args, **kwargs):
         pass
@@ -36,12 +35,14 @@ class LogicalRecordBase:
 
         if (key := cls.__name__) not in config.sections():
             raise RuntimeError(f"Section '{key}' not present in the config")
+        
+        name_key = "name"
 
-        if cls.name_key not in config[key].keys():
-            raise RuntimeError(f"Required item '{cls.name_key}' not present in the config section '{key}'")
+        if name_key not in config[key].keys():
+            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
 
-        other_kwargs = {k: v for k, v in config[key].items() if k != cls.name_key}
+        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
-        obj = cls(config[key][cls.name_key], **other_kwargs)
+        obj = cls(config[key][name_key], **other_kwargs)
 
         return obj
