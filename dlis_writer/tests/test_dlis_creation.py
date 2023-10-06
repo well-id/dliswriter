@@ -49,6 +49,10 @@ def load_dlis(fname):
             pass
 
 
+def _select_channel(f, name):
+    return f.object("CHANNEL", name)
+
+
 def _make_rpm_channel():
     return Channel.create('surface rpm', unit='rpm', dataset_name='rpm')
 
@@ -138,7 +142,7 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value):
 
     with load_dlis(new_dlis_path) as f:
         for name in ('amplitude', 'radius', 'radius_pooh'):
-            chan = f.object("CHANNEL", name)
+            chan = _select_channel(f, name)
             assert chan.reprc == value
 
 
@@ -152,13 +156,13 @@ def test_channel_properties(short_reference_data, new_dlis_path):
     with load_dlis(new_dlis_path) as f:
 
         for name in ('posix time', 'surface rpm'):
-            chan = f.object("CHANNEL", name)
+            chan = _select_channel(f, name)
             assert chan.name == name
             assert chan.element_limit == [1]
             assert chan.dimension == [1]
 
         for name in ('amplitude', 'radius', 'radius_pooh'):
-            chan = f.object("CHANNEL", name)
+            chan = _select_channel(f, name)
             assert chan.name == name
             assert chan.element_limit == [N_COLS]
             assert chan.dimension == [N_COLS]
@@ -166,3 +170,21 @@ def test_channel_properties(short_reference_data, new_dlis_path):
         assert f.object("CHANNEL", 'amplitude').units is None
         assert f.object("CHANNEL", 'radius').units == "inch"
         assert f.object("CHANNEL", 'radius_pooh').units == "meter"
+
+
+@pytest.mark.parametrize('n_points', (10, 100, 128, 987))
+def test_channel_curves(reference_data, new_dlis_path, n_points):
+    write_dlis_file(
+        data=reference_data[:n_points],
+        channels=_make_channels(),
+        dlis_file_name=new_dlis_path
+    )
+
+    with load_dlis(new_dlis_path) as f:
+        for name in ('posix time', 'surface rpm'):
+            curve = _select_channel(f, name).curves()
+            assert curve.shape == (n_points,)
+
+        for name in ('amplitude', 'radius', 'radius_pooh'):
+            curve = _select_channel(f, name).curves()
+            assert curve.shape == (n_points, N_COLS)
