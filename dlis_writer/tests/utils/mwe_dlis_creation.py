@@ -19,28 +19,22 @@ from dlis_writer.tests.utils.compare_dlis_files import compare
 logger = logging.getLogger(__name__)
 
 
-def _define_index(frame, depth_based=False):
+def _define_index_channel(depth_based=False):
     rc = RepresentationCode.FDOUBL
 
     if depth_based:
-        logger.debug("Making a depth-based file")
-        frame.index_type.value = 'DEPTH'
-        frame.spacing.units = Units.s
         index_channel = Channel.create('depth', unit='m', repr_code=rc)
     else:
-        logger.debug("Making a time-based file")
-        frame.index_type.value = 'TIME'
-        frame.spacing.units = Units.m
         index_channel = Channel.create('posix time', unit='s', repr_code=rc, dataset_name='time')
 
-    frame.spacing.representation_code = RepresentationCode.FDOUBL
     return index_channel
 
 
-def make_channels(data, double_precision=False) -> list[Channel]:
+def make_channels(data, depth_based=False, double_precision=False) -> list[Channel]:
     repr_code = RepresentationCode.FDOUBL if double_precision else RepresentationCode.FSINGL
 
     channels = [
+        _define_index_channel(depth_based=depth_based),
         Channel.create('surface rpm', unit='rpm', dataset_name='rpm')
     ]
 
@@ -64,15 +58,9 @@ def make_channels(data, double_precision=False) -> list[Channel]:
     return channels
 
 
-def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = False) -> FrameDataCapsule:
-    frame = Frame('MAIN')
-
-    index_channel = _define_index(frame, depth_based=depth_based)
-
-    frame.channels.value = [
-        index_channel,
-        *channels
-    ]
+def prepare_data(data: np.ndarray, channels: list[Channel], config) -> FrameDataCapsule:
+    frame = Frame.from_config(config)
+    frame.channels.value = channels
 
     logger.info(f'Preparing frames for {data.shape[0]} rows with channels: '
                 f'{", ".join(c.name for c in frame.channels.value)}')
@@ -81,11 +69,11 @@ def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = 
     return data_capsule
 
 
-def write_dlis_file(data, channels, dlis_file_name, config, **kwargs):
+def write_dlis_file(data, channels, dlis_file_name, config):
     # CREATE THE FILE
     dlis_file = DLISFile.from_config(config)
 
-    data_capsule = prepare_data(data, channels, **kwargs)
+    data_capsule = prepare_data(data, channels, config=config)
 
     dlis_file.write_dlis(data_capsule, dlis_file_name)
 
@@ -114,10 +102,10 @@ if __name__ == '__main__':
     pargs = parser.parse_args()
 
     if (config_file_name := pargs.config) is None:
-        config_file_name = Path(__file__).resolve().parent.parent/'resources/mock_config.ini'
+        config_file_name = Path(__file__).resolve().parent.parent/'resources/mock_config_time_based.ini'
 
-    config = ConfigParser()
-    config.read(config_file_name)
+    cfg = ConfigParser()
+    cfg.read(config_file_name)
 
     if (output_file_name := pargs.file_name) is None:
         output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
@@ -129,14 +117,13 @@ if __name__ == '__main__':
         data = load_hdf5(input_file_name)
 
     def timed_func():
-        channels = make_channels(data, double_precision=pargs.double_precision)
+        channels = make_channels(data, double_precision=pargs.double_precision, depth_based=pargs.depth_based)
 
         write_dlis_file(
             data=data,
             channels=channels,
             dlis_file_name=output_file_name,
-            depth_based=pargs.depth_based,
-            config=config
+            config=cfg
         )
 
     exec_time = timeit(timed_func, number=1)

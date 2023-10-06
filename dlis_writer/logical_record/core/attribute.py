@@ -26,6 +26,8 @@ class Attribute:
 
     """
 
+    settables = ('count', 'representation_code', 'units', 'value')
+
     def __init__(self, label: str, count: int = None,
                  representation_code: RepresentationCode = None,
                  units: Units = None,
@@ -36,10 +38,26 @@ class Attribute:
 
         self.label = label
         self.count = count
-        self.representation_code = representation_code
+        self._representation_code = representation_code
         self._units = units
-        self.value = value
+        self._value = value
         self.converter = converter or (lambda v: v)  # to convert value from string retrieved from config file
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, val):
+        self._value = self.converter(val)
+
+    @property
+    def representation_code(self):
+        return self._representation_code
+
+    @representation_code.setter
+    def representation_code(self, rc):
+        self._representation_code = RepresentationCode(int(rc)) if rc is not None else rc
 
     @property
     def units(self) -> Units:

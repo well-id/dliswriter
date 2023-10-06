@@ -153,10 +153,16 @@ class EFLR(IflrAndEflrBase):
             return obj
 
         for attr_name, attr_value in config[attributes_key].items():
-            attr = obj.get_attribute(attr_name, None)
+            attr_name_main, *attr_parts = attr_name.split('.')
+            attr_part = attr_parts[0] if attr_parts else 'value'
+            if attr_part not in Attribute.settables:
+                raise ValueError(f"Cannot set {attr_part} of an Attribute object")
+
+            attr = obj.get_attribute(attr_name_main, None)
             if not attr:
                 logger.warning(f"{key} does not have attribute '{attr_name}'")
+
             logger.debug(f"Setting attribute '{attr_name}' of {key} to {repr(attr_value)}")
-            attr.value = attr.converter(attr_value)
+            setattr(attr, attr_part, attr_value)
 
         return obj
