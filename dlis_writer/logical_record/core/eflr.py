@@ -1,8 +1,15 @@
+from configparser import ConfigParser
+from typing_extensions import Self
+import logging
+
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.rp66 import RP66
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
 from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase
+
+
+logger = logging.getLogger(__name__)
 
 
 class EFLR(IflrAndEflrBase):
@@ -30,18 +37,22 @@ class EFLR(IflrAndEflrBase):
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
         self._attributes: dict[str, Attribute] = {}
 
-    def _create_attribute(self, key):
+    def _create_attribute(self, key, **kwargs):
         rules = self._rp66_rules[key]
 
         attr = Attribute(
             label=key.strip('_').upper().replace('_', '-'),
             count=rules['count'],
-            representation_code=rules['representation_code']
+            representation_code=rules['representation_code'],
+            **kwargs
         )
 
         self._attributes[key] = attr
 
         return attr
+
+    def get_attribute(self, name, fallback):
+        return self._attributes.get(name, fallback)
 
     @property
     def obname(self) -> bytes:
@@ -131,3 +142,26 @@ class EFLR(IflrAndEflrBase):
     def make_lr_type_struct(cls, logical_record_type):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
+    @classmethod
+    def from_config(cls, config: ConfigParser) -> Self:
+
+        if (key := cls.__name__) not in config.sections():
+            raise RuntimeError(f"Section '{key}' not present in the config")
+
+        if "name" not in config[key].keys():
+            raise RuntimeError(f"Required item 'name' not present in the config section '{key}'")
+
+        obj = cls(config[key]["name"], set_name=config[key].get("set_name", None))
+
+        if (attributes_key := f"{cls.__name__}.attributes") not in config.sections():
+            logger.info(f"No attributes of {key} defined in the config")
+            return obj
+
+        for attr_name, attr_value in config[attributes_key].items():
+            attr = obj.get_attribute(attr_name, None)
+            if not attr:
+                logger.warning(f"{key} does not have attribute '{attr_name}'")
+            logger.debug(f"Setting attribute '{attr_name}' of {key} to {repr(attr_value)}")
+            attr.value = attr.converter(attr_value)
+
+        return obj

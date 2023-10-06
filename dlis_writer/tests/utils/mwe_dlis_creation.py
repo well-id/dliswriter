@@ -6,6 +6,7 @@ import logging
 from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
+from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
@@ -18,25 +19,6 @@ from dlis_writer.tests.utils.compare_dlis_files import compare
 
 
 logger = logging.getLogger(__name__)
-
-
-def make_origin():
-    # ORIGIN
-    origin = Origin('DEFINING ORIGIN')
-    origin.file_id.value = 'WELL ID'
-    origin.file_set_name.value = 'Test file set name'
-    origin.file_set_number.value = 1
-    origin.file_number.value = 0
-
-    origin.creation_time.value = datetime(year=2050, month=3, day=2, hour=15, minute=30)
-
-    origin.run_number.value = 1
-    origin.well_id.value = 0
-    origin.well_name.value = 'Test well name'
-    origin.field_name.value = 'Test field name'
-    origin.company.value = 'Test company'
-
-    return origin
 
 
 def _define_index(frame, depth_based=False):
@@ -101,12 +83,12 @@ def prepare_data(data: np.ndarray, channels: list[Channel], depth_based: bool = 
     return data_capsule
 
 
-def write_dlis_file(data, channels, dlis_file_name, **kwargs):
+def write_dlis_file(data, channels, dlis_file_name, config, **kwargs):
     # CREATE THE FILE
     dlis_file = DLISFile(
         storage_unit_label=StorageUnitLabel('DEFAULT STORAGE SET'),
         file_header=FileHeader('DEFAULT FHLR'),
-        origin=make_origin()
+        origin=Origin.from_config(config)
     )
 
     data_capsule = prepare_data(data, channels, **kwargs)
@@ -122,6 +104,7 @@ if __name__ == '__main__':
     pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
     pg.add_argument('-ifn', '--input-file-name', help='Input file name')
 
+    parser.add_argument('-c', '--config', help="Path to config file specifying metadata")
     parser.add_argument('-fn', '--file-name', help='Output file name')
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
@@ -135,6 +118,12 @@ if __name__ == '__main__':
                         help="Save images in double precision (default: single)")
 
     pargs = parser.parse_args()
+
+    if (config_file_name := pargs.config) is None:
+        config_file_name = Path(__file__).resolve().parent.parent/'resources/mock_config.ini'
+
+    config = ConfigParser()
+    config.read(config_file_name)
 
     if (output_file_name := pargs.file_name) is None:
         output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
@@ -152,7 +141,8 @@ if __name__ == '__main__':
             data=data,
             channels=channels,
             dlis_file_name=output_file_name,
-            depth_based=pargs.depth_based
+            depth_based=pargs.depth_based,
+            config=config
         )
 
     exec_time = timeit(timed_func, number=1)

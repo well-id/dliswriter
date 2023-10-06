@@ -29,7 +29,9 @@ class Attribute:
     def __init__(self, label: str, count: int = None,
                  representation_code: RepresentationCode = None,
                  units: Units = None,
-                 value: AttributeValue = None):
+                 value: AttributeValue = None,
+                 converter: callable = None
+                 ):
         """Initiate Attribute object."""
 
         self.label = label
@@ -37,6 +39,7 @@ class Attribute:
         self.representation_code = representation_code
         self._units = units
         self.value = value
+        self.converter = converter or (lambda v: v)  # to convert value from string retrieved from config file
 
     @property
     def units(self) -> Units:
