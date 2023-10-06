@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 from typing import Union
 import os
+from configparser import ConfigParser
 
 
 def load_hdf5(data_file_name: Union[str, bytes, os.PathLike], key: str = 'contents') -> np.ndarray:
@@ -59,3 +60,8 @@ def load_hdf5(data_file_name: Union[str, bytes, os.PathLike], key: str = 'conten
 
     return full_data
 
+
+def load_config(fname):
+    cfg = ConfigParser()
+    cfg.read(fname)
+    return cfg

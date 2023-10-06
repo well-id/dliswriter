@@ -5,12 +5,11 @@ import logging
 from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
-from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
-from dlis_writer.utils.loaders import load_hdf5
+from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
 from dlis_writer.tests.utils.compare_dlis_files import compare
@@ -105,9 +104,6 @@ if __name__ == '__main__':
         base = "time" if pargs.depth_based else "depth"
         config_file_name = Path(__file__).resolve().parent.parent/f'resources/mock_config_{base}_based.ini'
 
-    cfg = ConfigParser()
-    cfg.read(config_file_name)
-
     if (output_file_name := pargs.file_name) is None:
         output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
         os.makedirs(output_file_name.parent, exist_ok=True)
@@ -124,7 +120,7 @@ if __name__ == '__main__':
             data=data,
             channels=channels,
             dlis_file_name=output_file_name,
-            config=cfg
+            config=load_config(config_file_name)
         )
 
     exec_time = timeit(timed_func, number=1)
