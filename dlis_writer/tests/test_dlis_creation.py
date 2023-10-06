@@ -1,6 +1,7 @@
 import os
 import pytest
 from pathlib import Path
+from contextlib import contextmanager
 from dlisio import dlis
 
 from dlis_writer.utils.loaders import load_hdf5
@@ -39,10 +40,13 @@ def new_dlis_path(base_data_path):
         os.remove(new_path)
 
 
+@contextmanager
 def load_dlis(fname):
     with dlis.load(fname) as (f, *tail):
-        pass
-    return f
+        try:
+            yield f
+        finally:
+            pass
 
 
 def _make_rpm_channel():
@@ -102,11 +106,11 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images):
         depth_based=True
     )
 
-    f = load_dlis(new_dlis_path)
-    chan = f.channels[0]
-    assert chan.name == 'depth'
-    assert chan.units == 'm'
-    assert chan.reprc == 7
+    with load_dlis(new_dlis_path) as f:
+        chan = f.channels[0]
+        assert chan.name == 'depth'
+        assert chan.units == 'm'
+        assert chan.reprc == 7
 
 
 def test_dlis_time_based(short_reference_data, new_dlis_path):
@@ -117,11 +121,11 @@ def test_dlis_time_based(short_reference_data, new_dlis_path):
         depth_based=False
     )
 
-    f = load_dlis(new_dlis_path)
-    chan = f.channels[0]
-    assert chan.name == 'posix time'
-    assert chan.units == 's'
-    assert chan.reprc == 7
+    with load_dlis(new_dlis_path) as f:
+        chan = f.channels[0]
+        assert chan.name == 'posix time'
+        assert chan.units == 's'
+        assert chan.reprc == 7
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
@@ -132,10 +136,10 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value):
         dlis_file_name=new_dlis_path
     )
 
-    f = load_dlis(new_dlis_path)
-    for name in ('amplitude', 'radius', 'radius_pooh'):
-        chan = f.object("CHANNEL", name)
-        assert chan.reprc == value
+    with load_dlis(new_dlis_path) as f:
+        for name in ('amplitude', 'radius', 'radius_pooh'):
+            chan = f.object("CHANNEL", name)
+            assert chan.reprc == value
 
 
 def test_channel_properties(short_reference_data, new_dlis_path):
@@ -145,20 +149,20 @@ def test_channel_properties(short_reference_data, new_dlis_path):
         dlis_file_name=new_dlis_path
     )
 
-    f = load_dlis(new_dlis_path)
+    with load_dlis(new_dlis_path) as f:
 
-    for name in ('posix time', 'surface rpm'):
-        chan = f.object("CHANNEL", name)
-        assert chan.name == name
-        assert chan.element_limit == [1]
-        assert chan.dimension == [1]
+        for name in ('posix time', 'surface rpm'):
+            chan = f.object("CHANNEL", name)
+            assert chan.name == name
+            assert chan.element_limit == [1]
+            assert chan.dimension == [1]
 
-    for name in ('amplitude', 'radius', 'radius_pooh'):
-        chan = f.object("CHANNEL", name)
-        assert chan.name == name
-        assert chan.element_limit == [N_COLS]
-        assert chan.dimension == [N_COLS]
+        for name in ('amplitude', 'radius', 'radius_pooh'):
+            chan = f.object("CHANNEL", name)
+            assert chan.name == name
+            assert chan.element_limit == [N_COLS]
+            assert chan.dimension == [N_COLS]
 
-    assert f.object("CHANNEL", 'amplitude').units is None
-    assert f.object("CHANNEL", 'radius').units == "inch"
-    assert f.object("CHANNEL", 'radius_pooh').units == "meter"
+        assert f.object("CHANNEL", 'amplitude').units is None
+        assert f.object("CHANNEL", 'radius').units == "inch"
+        assert f.object("CHANNEL", 'radius_pooh').units == "meter"
