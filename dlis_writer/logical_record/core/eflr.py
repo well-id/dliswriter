@@ -18,7 +18,7 @@ class EFLR(IflrAndEflrBase):
     is_eflr = True
     logical_record_type: LogicalRecordType = NotImplemented
 
-    def __init__(self, object_name: str, set_name: str = None, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None):
         super().__init__()
 
         self.object_name = object_name
@@ -26,9 +26,6 @@ class EFLR(IflrAndEflrBase):
 
         self.origin_reference = None
         self.copy_number = 0
-
-        self.is_dictionary_controlled = False
-        self.dictionary_controlled_objects = None
 
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
         self._attributes: dict[str, Attribute] = {}
@@ -112,15 +109,11 @@ class EFLR(IflrAndEflrBase):
         """
 
         _bytes = b''
-        if self.is_dictionary_controlled:
-            for obj in self.dictionary_controlled_objects:
-                _bytes += obj.represent_as_bytes()
-        else:
-            for attr in self._attributes.values():
-                if not attr.value:
-                    _bytes += b'\x00'
-                else:
-                    _bytes += attr.get_as_bytes()
+        for attr in self._attributes.values():
+            if not attr.value:
+                _bytes += b'\x00'
+            else:
+                _bytes += attr.get_as_bytes()
 
         return _bytes
 
@@ -130,11 +123,8 @@ class EFLR(IflrAndEflrBase):
         a = self.make_set_component()
         b = self.make_template()
         c = self.make_objects()
-
-        if self.is_dictionary_controlled:
-            return a + b + c
-
         d = self.make_object_component()
+
         return a + b + d + c
 
     @classmethod

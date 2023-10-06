@@ -110,11 +110,6 @@ class DLISFile:
         for logical_record in progressbar(data_capsule):
             logical_record.origin_reference = val
 
-            if hasattr(logical_record, 'is_dictionary_controlled') \
-                    and logical_record.dictionary_controlled_objects is not None:
-                for obj in logical_record.dictionary_controlled_objects:
-                    obj.origin_reference = val
-
     @log_progress("Writing raw bytes...")
     @profile
     def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
