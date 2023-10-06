@@ -10,8 +10,10 @@ class FileHeader(LogicalRecordBase):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     set_type = 'FILE-HEADER'
+    name_key = "identifier"
 
     def __init__(self, identifier: str, sequence_number: int = 1):
+        super().__init__()
 
         self.sequence_number = sequence_number
         self.identifier = identifier

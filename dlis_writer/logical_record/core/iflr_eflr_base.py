@@ -107,6 +107,8 @@ class IflrAndEflrBase(LogicalRecordBase):
     lr_type_struct = NotImplemented
 
     def __init__(self):
+        super().__init__()
+
         self.segment_attributes = SegmentAttributes()
         self.segment_attributes.is_eflr = self.is_eflr
 

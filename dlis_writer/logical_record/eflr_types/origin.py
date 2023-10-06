@@ -59,7 +59,7 @@ class Origin(EFLR):
 
     @classmethod
     def from_config(cls, config: ConfigParser) -> Self:
-        obj = super().from_config(config)
+        obj: Self = super().from_config(config)
         if "creation_time" not in config["Origin.attributes"].keys():
             logger.info("Creation time ('creation_time') not specified in the config; "
                         "setting it to the current date and time")

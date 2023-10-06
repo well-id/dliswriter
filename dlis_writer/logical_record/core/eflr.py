@@ -24,6 +24,7 @@ class EFLR(IflrAndEflrBase):
 
     is_eflr = True
     logical_record_type: LogicalRecordType = NotImplemented
+    name_key = "object_name"
 
     def __init__(self, object_name: str, set_name: str = None):
         super().__init__()
@@ -145,15 +146,10 @@ class EFLR(IflrAndEflrBase):
     @classmethod
     def from_config(cls, config: ConfigParser) -> Self:
 
-        if (key := cls.__name__) not in config.sections():
-            raise RuntimeError(f"Section '{key}' not present in the config")
+        obj: Self = super().from_config(config)
+        key = cls.__name__
 
-        if "name" not in config[key].keys():
-            raise RuntimeError(f"Required item 'name' not present in the config section '{key}'")
-
-        obj = cls(config[key]["name"], set_name=config[key].get("set_name", None))
-
-        if (attributes_key := f"{cls.__name__}.attributes") not in config.sections():
+        if (attributes_key := f"{key}.attributes") not in config.sections():
             logger.info(f"No attributes of {key} defined in the config")
             return obj
 
