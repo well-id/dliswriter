@@ -18,7 +18,7 @@ class Channel(EFLR):
         self.properties = self._create_attribute('properties', converter=lambda p: p.split(", "))
         self.representation_code = self._create_attribute('representation_code',
                                                           converter=lambda v: RepresentationCode(int(v)))
-        self.units = self._create_attribute('units', converter=self.convert_unit)
+        self.units = self._create_attribute('units', converter=Units.convert_unit)
         self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
         self.axis = self._create_attribute('axis')
         self.element_limit = self._create_attribute('element_limit', converter=self.convert_dimension_or_el_limit)
@@ -58,24 +58,6 @@ class Channel(EFLR):
         else:
             raise TypeError("Expected a list of integers, a single integer, or a str parsable to list of integers; "
                             f"got {type(dim)}: {dim}")
-
-    @staticmethod
-    def convert_unit(u):
-        if isinstance(u, Units):
-            return u
-
-        try:
-            return Units(u)
-        except ValueError:
-            pass
-
-        if isinstance(u, str):
-            try:
-                return Units[u]
-            except KeyError:
-                pass
-
-        raise ValueError(f"Unit '{u}' is not defined")
 
     @classmethod
     def create(cls, name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,

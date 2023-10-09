@@ -107,6 +107,24 @@ class Units(Enum):
     upsi = 'micropound per square inch'
     us = 'microsecond'
 
+    @classmethod
+    def convert_unit(cls, u):
+        if isinstance(u, cls):
+            return u
+
+        try:
+            return cls(u)
+        except ValueError:
+            pass
+
+        if isinstance(u, str):
+            try:
+                return cls[u]
+            except KeyError:
+                pass
+
+        raise ValueError(f"Unit '{u}' is not defined")
+
 
 class _ConverterEnum(int, Enum):
     def __new__(cls, code: int, converter: Struct):
