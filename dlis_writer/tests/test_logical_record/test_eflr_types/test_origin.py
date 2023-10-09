@@ -1,3 +1,4 @@
+import pytest
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 
@@ -56,3 +57,21 @@ def test_from_config_no_attributes():
     assert origin.well_name.value is None
 
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
+
+
+@pytest.mark.parametrize("dts", ("2050/03/21 15:30:00", "2003.12.31 09:30:00"))
+def test_parse_dtime(dts):
+    dt = Origin.parse_dtime(dts)
+    assert isinstance(dt, datetime)
+
+
+@pytest.mark.parametrize("dts", ("2050/21/03 15:30:00", "2050.03.02 15:30"))
+def test_parse_dtime_wrong_format(dts):
+    with pytest.raises(ValueError, match=".*does not conform to any of the allowed formats.*"):
+        Origin.parse_dtime(dts)
+
+
+@pytest.mark.parametrize("dts", (object(), timedelta(seconds=12)))
+def test_parse_dtime_wrong_type(dts):
+    with pytest.raises(TypeError, match="Expected a str.*"):
+        Origin.parse_dtime(dts)
