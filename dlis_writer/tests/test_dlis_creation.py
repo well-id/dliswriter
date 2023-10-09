@@ -274,3 +274,11 @@ def test_frame(short_dlis, config_time_based):
 
     assert frame.name == config_time_based['Frame']['name']
     assert frame.index_type == config_time_based['Frame.attributes']['index_type']
+
+
+def test_storage_unit_label(short_dlis, config_time_based):
+    sul = short_dlis.storage_label()
+    assert sul['id'].rstrip(' ') == config_time_based['StorageUnitLabel']['name']
+    assert sul['sequence'] == int(config_time_based['StorageUnitLabel']['sequence_number'])
+    assert sul['maxlen'] == 8192
+
