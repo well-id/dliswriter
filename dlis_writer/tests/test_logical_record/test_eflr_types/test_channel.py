@@ -16,9 +16,9 @@ def test_from_config(config_params):
     assert channel.properties.value == ["property1", "property 2 with multiple words"]
     assert channel.representation_code.value is RepresentationCode.FSINGL
     assert channel.units.value is Units.acre
-    assert channel.dimension.value == 12
+    assert channel.dimension.value == [12]
     assert channel.axis.value == 'some axis'
-    assert channel.element_limit.value == 12
+    assert channel.element_limit.value == [12]
     assert channel.source.value == 'some source'
     assert channel.minimum_value.value == 0.
     assert isinstance(channel.minimum_value.value, float)
@@ -31,7 +31,7 @@ def test_from_config_alternative_name(config_params):
     assert channel.object_name == "Channel 1"
     assert channel.name == "Channel 1"
 
-    assert channel.dimension.value == 10
+    assert channel.dimension.value == [10]
     assert channel.units.value == Units.in_
 
 
@@ -62,13 +62,13 @@ def test_multiple_channels_default_pattern(config_params):
     assert channels[1].name == "Channel 2"
     assert channels[2].name == "Channel 264"
 
-    assert channels[0].dimension.value == 10
+    assert channels[0].dimension.value == [10]
     assert channels[0].units.value == Units.in_
 
     assert channels[1].dimension.value is None
     assert channels[1].units.value is None
 
-    assert channels[2].element_limit.value == 128
+    assert channels[2].element_limit.value == [128]
     assert channels[2].units.value is None
 
 
@@ -78,7 +78,7 @@ def test_multiple_channels_custom_pattern(config_params):
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
 
-    assert channels[0].dimension.value == 10
+    assert channels[0].dimension.value == [10]
     assert channels[0].units.value == Units.in_
 
     assert channels[1].dimension.value is None
@@ -92,8 +92,8 @@ def test_multiple_channels_list(config_params):
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Some Channel"
 
-    assert channels[0].dimension.value == 10
+    assert channels[0].dimension.value == [10]
     assert channels[0].units.value == Units.in_
 
-    assert channels[1].dimension.value is 12
+    assert channels[1].dimension.value == [12]
     assert channels[1].units.value is Units.acre

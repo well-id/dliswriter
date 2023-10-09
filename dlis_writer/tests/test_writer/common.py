@@ -37,7 +37,7 @@ def select_channel(f, name):
 
 
 def _make_rpm_channel():
-    return Channel.create('surface rpm', unit='rpm', dataset_name='rpm')
+    return Channel.create('surface rpm', unit=None, dataset_name='rpm')
 
 
 def _make_image_channels(repr_code=RepresentationCode.FSINGL, n=3):
