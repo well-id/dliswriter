@@ -1,6 +1,8 @@
+import pytest
+
 from dlis_writer.logical_record.eflr_types import Channel
 from dlis_writer.utils.enums import RepresentationCode, Units
-from dlis_writer.tests.common import base_data_path, config_params
+from dlis_writer.tests.common import base_data_path, config_params, make_config_for_object
 
 
 def test_from_config(config_params):
@@ -33,8 +35,19 @@ def test_from_config_alternative_name(config_params):
     assert channel.units.value == Units.in_
 
 
-def test_properties():
-    pass  # TODO
+@pytest.mark.parametrize(("prop_str", "prop_val"), (
+        ("1, 2, 3", ["1", "2", "3"]),
+        ("1word, 2 words, 3 w ords", ["1word", "2 words", "3 w ords"]),
+        ("single_thing", ["single_thing"])
+))
+def test_properties(prop_str, prop_val):
+    config = make_config_for_object("Channel488")
+    config["Channel488"]["name"] = "ChanChan"
+    config["Channel488.attributes"]["properties"] = prop_str
+
+    channel = Channel.from_config(config, key="Channel488")
+    assert channel.name == "ChanChan"
+    assert channel.properties.value == prop_val
 
 
 def test_dimension_and_element_limit():
