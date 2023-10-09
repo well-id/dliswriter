@@ -152,9 +152,7 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
         assert chan.units == 'm'
         assert chan.reprc == 7
 
-        assert len(f.frames) == 1
-        frame = f.frames[0]
-        assert frame.index_type == 'DEPTH'
+        assert f.frames[0].index_type == 'DEPTH'
 
 
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
@@ -171,9 +169,7 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
         assert chan.units == 's'
         assert chan.reprc == 7
 
-        assert len(f.frames) == 1
-        frame = f.frames[0]
-        assert frame.index_type == 'TIME'
+        assert f.frames[0].index_type == 'TIME'
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
@@ -269,3 +265,12 @@ def test_origin(short_dlis, config_time_based):
     assert origin.order_nr is None
     assert origin.version is None
     assert origin.programs == []
+
+
+def test_frame(short_dlis, config_time_based):
+    assert len(short_dlis.frames) == 1
+
+    frame = short_dlis.frames[0]
+
+    assert frame.name == config_time_based['Frame']['name']
+    assert frame.index_type == config_time_based['Frame.attributes']['index_type']
