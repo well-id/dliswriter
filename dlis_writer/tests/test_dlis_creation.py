@@ -3,6 +3,7 @@ import pytest
 from pathlib import Path
 from contextlib import contextmanager
 from dlisio import dlis
+from datetime import datetime
 
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.tests.utils.mwe_dlis_creation import write_dlis_file
@@ -46,8 +47,8 @@ def new_dlis_path(base_data_path):
     os.makedirs(new_path.parent, exist_ok=True)
     yield new_path
 
-    if new_path.exists():  # does not exist if file creation failed
-        os.remove(new_path)
+    # if new_path.exists():  # does not exist if file creation failed
+    #     os.remove(new_path)
 
 
 @pytest.fixture(scope='session')
@@ -243,3 +244,28 @@ def test_file_header(short_dlis, config_time_based):
     assert header.id == config_time_based['FileHeader']['name']
     assert header.sequencenr == config_time_based['FileHeader']['sequence_number']
 
+
+def test_origin(short_dlis, config_time_based):
+    assert len(short_dlis.origins) == 1
+
+    origin = short_dlis.origins[0]
+    conf = config_time_based['Origin.attributes']
+
+    assert origin.name == config_time_based['Origin']['name']
+    assert origin.creation_time == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
+    assert origin.file_id == conf['file_id']
+    assert origin.file_set_name == conf['file_set_name']
+    assert origin.file_set_nr == int(conf['file_set_number'])
+    assert origin.file_nr == int(conf['file_number'])
+    assert origin.run_nr == [int(conf['run_number'])]
+    assert origin.well_id == int(conf['well_id'])
+    assert origin.well_name == conf['well_name']
+    assert origin.field_name == conf['field_name']
+    assert origin.company == conf['company']
+
+    # not set - absent from config
+    assert origin.producer_name is None
+    assert origin.product is None
+    assert origin.order_nr is None
+    assert origin.version is None
+    assert origin.programs == []
