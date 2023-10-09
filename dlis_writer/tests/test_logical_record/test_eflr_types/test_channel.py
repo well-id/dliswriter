@@ -33,7 +33,7 @@ def test_from_config_alternative_name(config_params):
     assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
 
-    assert channel.dimension.value == [10]
+    assert channel.dimension.value == [10, 10]
     assert channel.units.value == Units.in_
 
 
@@ -52,8 +52,41 @@ def test_properties(prop_str, prop_val):
     assert channel.properties.value == prop_val
 
 
-def test_dimension_and_element_limit():
-    pass  # TODO
+@pytest.mark.parametrize(('dimension', 'element_limit'), (("10", None), ("10, 10", None), (None, "1, 2, 3")))
+def test_dimension_and_element_limit(dimension, element_limit):
+    config = make_config_for_object("Channel")
+    config["Channel"]["name"] = "some channel"
+
+    if dimension is not None:
+        config["Channel.attributes"]["dimension"] = dimension
+
+    if element_limit is not None:
+        config["Channel.attributes"]["element_limit"] = element_limit
+
+    channel = Channel.from_config(config)
+    assert channel.dimension.value == channel.element_limit.value
+    assert channel.dimension.value is not None
+    assert channel.element_limit.value is not None
+
+
+def test_dimension_and_element_limit_not_specified():
+    config = make_config_for_object("Channel")
+    config["Channel"]["name"] = "some channel"
+
+    channel = Channel.from_config(config)
+    assert channel.dimension.value == [1]
+    assert channel.element_limit.value == [1]
+
+
+def test_dimension_and_element_limit_mismatch(caplog):
+    config = make_config_for_object("Channel")
+    config["Channel"]["name"] = "some channel"
+
+    config["Channel.attributes"]["dimension"] = "12"
+    config["Channel.attributes"]["element_limit"] = "12, 10"
+
+    Channel.from_config(config)
+    assert "For channel some channel, dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
 def test_multiple_channels_default_pattern(config_params):
@@ -64,12 +97,15 @@ def test_multiple_channels_default_pattern(config_params):
     assert channels[1].name == "Channel 2"
     assert channels[2].name == "Channel 264"
 
-    assert channels[0].dimension.value == [10]
+    assert channels[0].dimension.value == [10, 10]
+    assert channels[0].element_limit.value == [10, 10]
     assert channels[0].units.value == Units.in_
 
-    assert channels[1].dimension.value is None
+    assert channels[1].dimension.value == [1]
+    assert channels[1].element_limit.value == [1]
     assert channels[1].units.value is None
 
+    assert channels[2].dimension.value == [128]
     assert channels[2].element_limit.value == [128]
     assert channels[2].units.value is None
     assert channels[2].dataset_name == "amplitude"
@@ -81,10 +117,10 @@ def test_multiple_channels_custom_pattern(config_params):
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
 
-    assert channels[0].dimension.value == [10]
+    assert channels[0].dimension.value == [10, 10]
     assert channels[0].units.value == Units.in_
 
-    assert channels[1].dimension.value is None
+    assert channels[1].dimension.value == [1]
     assert channels[1].units.value is None
 
 
@@ -95,7 +131,7 @@ def test_multiple_channels_list(config_params):
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Some Channel"
 
-    assert channels[0].dimension.value == [10]
+    assert channels[0].dimension.value == [10, 10]
     assert channels[0].units.value == Units.in_
 
     assert channels[1].dimension.value == [12]

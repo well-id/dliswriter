@@ -1,9 +1,13 @@
 from typing import Union
 from typing_extensions import Self
 from configparser import ConfigParser
+import logging
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
+
+
+logger = logging.getLogger(__name__)
 
 
 class Channel(EFLR):
@@ -98,5 +102,17 @@ class Channel(EFLR):
         key = key or cls.__name__
         if 'dataset_name' in config[key].keys():
             obj.dataset_name = config[key]['dataset_name']
+
+        if not obj.element_limit.value and obj.dimension.value:
+            obj.element_limit.value = obj.dimension.value
+        elif not obj.dimension.value and obj.element_limit.value:
+            obj.dimension.value = obj.element_limit.value
+        elif not obj.element_limit.value and not obj.dimension.value:
+            obj.element_limit.value = [1]
+            obj.dimension.value = [1]
+        else:
+            if obj.element_limit.value != obj.dimension.value:
+                logger.warning(f"For channel {obj.name}, dimension is {obj.dimension.value} "
+                               f"and element limit is {obj.element_limit.value}")
 
         return obj
