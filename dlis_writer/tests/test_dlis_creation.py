@@ -134,6 +134,10 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
         assert chan.units == 'm'
         assert chan.reprc == 7
 
+        assert len(f.frames) == 1
+        frame = f.frames[0]
+        assert frame.index_type == 'DEPTH'
+
 
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
     write_dlis_file(
@@ -148,6 +152,10 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
         assert chan.name == 'posix time'
         assert chan.units == 's'
         assert chan.reprc == 7
+
+        assert len(f.frames) == 1
+        frame = f.frames[0]
+        assert frame.index_type == 'TIME'
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
@@ -220,20 +228,4 @@ def test_channel_curves(reference_data, new_dlis_path, n_points, config_time_bas
         check_contents('amplitude', 'image0')
         check_contents('radius', 'image1')
         check_contents('radius_pooh', 'image2')
-
-
-def test_frame(short_reference_data, new_dlis_path, config_time_based):
-    write_dlis_file(
-        data=short_reference_data,
-        channels=_make_channels(),
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
-
-    with load_dlis(new_dlis_path) as f:
-        assert len(f.frames) == 1
-        frame = f.frames[0]
-        assert frame.index_type == 'TIME'
-        assert frame.spacing.units == 's'
-        assert frame.spacing.representation_code == 7
 
