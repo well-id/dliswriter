@@ -10,22 +10,23 @@ class Channel(EFLR):
     logical_record_type = LogicalRecordType.CHANNL
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, dataset_name: str = None, **kwargs):
 
         super().__init__(*args, **kwargs)
 
         self.long_name = self._create_attribute('long_name')
-        self.properties = self._create_attribute('properties')
-        self.representation_code = self._create_attribute('representation_code')
-        self.units = self._create_attribute('units')
-        self.dimension = self._create_attribute('dimension')
+        self.properties = self._create_attribute('properties', converter=lambda p: p.split(", "))
+        self.representation_code = self._create_attribute('representation_code',
+                                                          converter=lambda v: RepresentationCode(int(v)))
+        self.units = self._create_attribute('units', converter=lambda u: Units[u])
+        self.dimension = self._create_attribute('dimension', converter=int)
         self.axis = self._create_attribute('axis')
-        self.element_limit = self._create_attribute('element_limit')
+        self.element_limit = self._create_attribute('element_limit', converter=int)
         self.source = self._create_attribute('source')
-        self.minimum_value = self._create_attribute('minimum_value')
-        self.maximum_value = self._create_attribute('maximum_value')
+        self.minimum_value = self._create_attribute('minimum_value', converter=float)
+        self.maximum_value = self._create_attribute('maximum_value', converter=float)
 
-        self._dataset_name: str = None
+        self._dataset_name: str = dataset_name
 
     @property
     def key(self):
