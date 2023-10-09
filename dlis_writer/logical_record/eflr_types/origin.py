@@ -43,6 +43,12 @@ class Origin(EFLR):
 
     @classmethod
     def parse_dtime(cls, dtime_string):
+        if isinstance(dtime_string, datetime):
+            return dtime_string
+
+        if not isinstance(dtime_string, str):
+            raise TypeError(f"Expected a str, got {type(dtime_string)}")
+
         for dtime_format in cls.dtime_formats:
             try:
                 dtime = datetime.strptime(dtime_string, dtime_format)
@@ -60,7 +66,7 @@ class Origin(EFLR):
     @classmethod
     def from_config(cls, config: ConfigParser) -> Self:
         obj: Self = super().from_config(config)
-        if "creation_time" not in config["Origin.attributes"].keys():
+        if not config.has_section("Origin.attributes") or "creation_time" not in config["Origin.attributes"].keys():
             logger.info("Creation time ('creation_time') not specified in the config; "
                         "setting it to the current date and time")
             obj.creation_time.value = datetime.now()

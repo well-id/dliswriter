@@ -1,4 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types import Origin
 from dlis_writer.tests.common import base_data_path, config_params
@@ -30,3 +31,28 @@ def test_from_config(config_params):
     assert origin.programs.value is None
 
 
+def test_from_config_no_dtime_in_attributes():
+    config = ConfigParser()
+    config.add_section('Origin')
+    config['Origin']['name'] = "Some origin name"
+
+    config.add_section('Origin.attributes')
+    config['Origin.attributes']['well_name'] = "Some well name"
+
+    origin = Origin.from_config(config)
+    assert origin.object_name == "Some origin name"
+    assert origin.well_name.value == "Some well name"
+
+    assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
+
+
+def test_from_config_no_attributes():
+    config = ConfigParser()
+    config.add_section('Origin')
+    config['Origin']['name'] = "Some origin name"
+
+    origin = Origin.from_config(config)
+    assert origin.object_name == "Some origin name"
+    assert origin.well_name.value is None
+
+    assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
