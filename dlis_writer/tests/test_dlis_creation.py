@@ -2,7 +2,6 @@ import os
 import pytest
 from pathlib import Path
 from contextlib import contextmanager
-from configparser import ConfigParser
 from dlisio import dlis
 
 from dlis_writer.utils.loaders import load_hdf5, load_config
@@ -16,27 +15,27 @@ N_COLS = 128
 SHORT_N_ROWS = 100
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def base_data_path():
     return Path(__file__).resolve().parent
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def reference_data(base_data_path):
     return load_hdf5(base_data_path / 'resources/mock_data.hdf5')
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def short_reference_data(reference_data):
     return reference_data[:SHORT_N_ROWS]
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def config_depth_based(base_data_path):
     return load_config(base_data_path/'resources/mock_config_depth_based.ini')
 
 
-@pytest.fixture
+@pytest.fixture(scope='session')
 def config_time_based(base_data_path):
     return load_config(base_data_path/'resources/mock_config_time_based.ini')
 
@@ -49,6 +48,24 @@ def new_dlis_path(base_data_path):
 
     if new_path.exists():  # does not exist if file creation failed
         os.remove(new_path)
+
+
+@pytest.fixture(scope='session')
+def short_dlis(short_reference_data, base_data_path, config_time_based):
+    dlis_path = base_data_path/'outputs/new_fake_dlis_shared.DLIS'
+
+    write_dlis_file(
+        data=short_reference_data,
+        channels=_make_channels(),
+        dlis_file_name=dlis_path,
+        config=config_time_based
+    )
+
+    with load_dlis(dlis_path) as f:
+        yield f
+
+    if dlis_path.exists():  # does not exist if file creation failed
+        os.remove(dlis_path)
 
 
 @contextmanager
@@ -173,31 +190,22 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time
             assert chan.reprc == value
 
 
-def test_channel_properties(short_reference_data, new_dlis_path, config_time_based):
-    write_dlis_file(
-        data=short_reference_data,
-        channels=_make_channels(),
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
+def test_channel_properties(short_dlis, config_time_based):
+    for name in ('posix time', 'surface rpm'):
+        chan = _select_channel(short_dlis, name)
+        assert chan.name == name
+        assert chan.element_limit == [1]
+        assert chan.dimension == [1]
 
-    with load_dlis(new_dlis_path) as f:
+    for name in ('amplitude', 'radius', 'radius_pooh'):
+        chan = _select_channel(short_dlis, name)
+        assert chan.name == name
+        assert chan.element_limit == [N_COLS]
+        assert chan.dimension == [N_COLS]
 
-        for name in ('posix time', 'surface rpm'):
-            chan = _select_channel(f, name)
-            assert chan.name == name
-            assert chan.element_limit == [1]
-            assert chan.dimension == [1]
-
-        for name in ('amplitude', 'radius', 'radius_pooh'):
-            chan = _select_channel(f, name)
-            assert chan.name == name
-            assert chan.element_limit == [N_COLS]
-            assert chan.dimension == [N_COLS]
-
-        assert f.object("CHANNEL", 'amplitude').units is None
-        assert f.object("CHANNEL", 'radius').units == "inch"
-        assert f.object("CHANNEL", 'radius_pooh').units == "meter"
+    assert short_dlis.object("CHANNEL", 'amplitude').units is None
+    assert short_dlis.object("CHANNEL", 'radius').units == "inch"
+    assert short_dlis.object("CHANNEL", 'radius_pooh').units == "meter"
 
 
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
@@ -228,4 +236,10 @@ def test_channel_curves(reference_data, new_dlis_path, n_points, config_time_bas
         check_contents('amplitude', 'image0')
         check_contents('radius', 'image1')
         check_contents('radius_pooh', 'image2')
+
+
+def test_file_header(short_dlis, config_time_based):
+    header = short_dlis.fileheader
+    assert header.id == config_time_based['FileHeader']['name']
+    assert header.sequencenr == config_time_based['FileHeader']['sequence_number']
 
