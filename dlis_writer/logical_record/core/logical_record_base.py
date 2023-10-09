@@ -31,9 +31,10 @@ class LogicalRecordBase:
         pass
 
     @classmethod
-    def from_config(cls, config: ConfigParser) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
+        key = key or cls.__name__
 
-        if (key := cls.__name__) not in config.sections():
+        if key not in config.sections():
             raise RuntimeError(f"Section '{key}' not present in the config")
         
         name_key = "name"

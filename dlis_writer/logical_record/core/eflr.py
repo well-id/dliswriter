@@ -1,3 +1,4 @@
+import re
 from configparser import ConfigParser
 from typing_extensions import Self
 import logging
@@ -143,10 +144,10 @@ class EFLR(IflrAndEflrBase):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
     @classmethod
-    def from_config(cls, config: ConfigParser) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
 
-        obj: Self = super().from_config(config)
-        key = cls.__name__
+        key = key or cls.__name__
+        obj: Self = super().from_config(config, key=key)
 
         if (attributes_key := f"{key}.attributes") not in config.sections():
             logger.info(f"No attributes of {key} defined in the config")
@@ -166,3 +167,13 @@ class EFLR(IflrAndEflrBase):
             setattr(attr, attr_part, attr_value)
 
         return obj
+
+    @classmethod
+    def all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
+        if not keys:
+            if key_pattern is None:
+                key_pattern = cls.__name__ + r"-\d+"
+            key_pattern = re.compile(key_pattern)
+            keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
+
+        return [cls.from_config(config, key) for key in keys]

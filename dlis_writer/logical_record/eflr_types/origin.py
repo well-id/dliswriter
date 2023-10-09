@@ -64,7 +64,7 @@ class Origin(EFLR):
         return dtime
 
     @classmethod
-    def from_config(cls, config: ConfigParser) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config)
         if not config.has_section("Origin.attributes") or "creation_time" not in config["Origin.attributes"].keys():
             logger.info("Creation time ('creation_time') not specified in the config; "

@@ -24,7 +24,7 @@ class Frame(EFLR):
         self.index_max = self._create_attribute('index_max', converter=int)
 
     @classmethod
-    def from_config(cls, config: ConfigParser) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
         if not config.has_section("Frame.attributes"):
             pass
         if any(s in config["Frame.attributes"].keys() for s in ("channels", "channels.value")):
