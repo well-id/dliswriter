@@ -1,5 +1,4 @@
 import pytest
-from pathlib import Path
 from contextlib import contextmanager
 from dlisio import dlis
 
@@ -7,14 +6,11 @@ from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.logical_record.eflr_types import Channel
 from dlis_writer.utils.enums import RepresentationCode, Units
 
+from dlis_writer.tests.common import base_data_path
+
 
 N_COLS = 128
 SHORT_N_ROWS = 100
-
-
-@pytest.fixture(scope='session')
-def base_data_path():
-    return Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture(scope='session')
