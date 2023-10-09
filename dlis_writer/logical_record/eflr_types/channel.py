@@ -1,5 +1,6 @@
 from typing import Union
 from typing_extensions import Self
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
@@ -89,3 +90,13 @@ class Channel(EFLR):
             channel.units.value = unit
 
         return channel
+
+    @classmethod
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().from_config(config, key=key)
+
+        key = key or cls.__name__
+        if 'dataset_name' in config[key].keys():
+            obj.dataset_name = config[key]['dataset_name']
+
+        return obj

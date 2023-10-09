@@ -10,6 +10,7 @@ def test_from_config(config_params):
 
     assert channel.object_name == config_params['Channel']['name']
     assert channel.name == config_params['Channel']['name']
+    assert channel.dataset_name == config_params["Channel"]["dataset_name"]
 
     conf = config_params['Channel.attributes']
     assert channel.long_name.value == conf["long_name"]
@@ -30,6 +31,7 @@ def test_from_config_alternative_name(config_params):
 
     assert channel.object_name == "Channel 1"
     assert channel.name == "Channel 1"
+    assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
 
     assert channel.dimension.value == [10]
     assert channel.units.value == Units.in_
@@ -70,6 +72,7 @@ def test_multiple_channels_default_pattern(config_params):
 
     assert channels[2].element_limit.value == [128]
     assert channels[2].units.value is None
+    assert channels[2].dataset_name == "amplitude"
 
 
 def test_multiple_channels_custom_pattern(config_params):
