@@ -47,8 +47,8 @@ def new_dlis_path(base_data_path):
     os.makedirs(new_path.parent, exist_ok=True)
     yield new_path
 
-    # if new_path.exists():  # does not exist if file creation failed
-    #     os.remove(new_path)
+    if new_path.exists():  # does not exist if file creation failed
+        os.remove(new_path)
 
 
 @pytest.fixture(scope='session')
