@@ -6,8 +6,8 @@ import os
 from argparse import ArgumentParser
 import logging
 
-from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
-from dlis_writer.tests.utils.mwe_dlis_creation import write_dlis_file, load_hdf5
+from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data
+from dlis_writer.writer.mwe_dlis_creation import write_dlis_file, load_hdf5
 
 
 parser = ArgumentParser("Timing DLIS writer execution")

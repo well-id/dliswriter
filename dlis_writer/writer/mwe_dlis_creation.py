@@ -11,8 +11,8 @@ from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.tests.utils.make_mock_data_hdf5 import create_data
-from dlis_writer.tests.utils.compare_dlis_files import compare
+from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data
+from dlis_writer.writer.utils.compare_dlis_files import compare
 
 
 logger = logging.getLogger(__name__)

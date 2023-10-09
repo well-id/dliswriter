@@ -4,10 +4,10 @@ import pytest
 from datetime import datetime
 
 from dlis_writer.utils.loaders import load_config
-from dlis_writer.tests.utils.mwe_dlis_creation import write_dlis_file
+from dlis_writer.writer.mwe_dlis_creation import write_dlis_file
 
-from dlis_writer.tests.common import base_data_path, reference_data, short_reference_data  # fixtures
-from dlis_writer.tests.common import N_COLS, load_dlis, select_channel, make_channels  # constants and functions
+from dlis_writer.tests.test_writer.common import base_data_path, reference_data, short_reference_data  # fixtures
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, make_channels  # constants and functions
 
 
 @pytest.fixture(scope='session')

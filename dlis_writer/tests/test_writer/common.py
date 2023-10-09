@@ -14,7 +14,7 @@ SHORT_N_ROWS = 100
 
 @pytest.fixture(scope='session')
 def base_data_path():
-    return Path(__file__).resolve().parent
+    return Path(__file__).resolve().parent.parent
 
 
 @pytest.fixture(scope='session')
