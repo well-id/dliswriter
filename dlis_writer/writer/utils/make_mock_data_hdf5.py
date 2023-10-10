@@ -9,12 +9,14 @@ def make_image(n_points, n_cols, divider=11):
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def create_data(n_points: int, n_images: int = 0, n_cols: int = 128) -> np.ndarray:
-    data_dict = {
-        'time': 0.5 * np.arange(n_points),
-        'depth': 2500 + 0.1 * np.arange(n_points),
-        'rpm': 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
-    }
+def create_data(n_points: int, n_images: int = 0, n_cols: int = 128, depth_based=False) -> np.ndarray:
+
+    if depth_based:
+        data_dict = {'depth': 2500 + 0.1 * np.arange(n_points)}
+    else:
+        data_dict = {'time':  0.5 * np.arange(n_points)}
+
+    data_dict['rpm'] = 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
 
     dtype = [(key, val.dtype) for key, val in data_dict.items()]
 
@@ -68,6 +70,8 @@ if __name__ == '__main__':
     parser.add_argument('-ni', '--n-images', type=int, default=0, help='Number of 2D data sets to add')
     parser.add_argument('-nc', '--n-cols', type=int, default=128,
                         help='Number of columns for each of the added 2D data sets')
+    parser.add_argument('--depth-based', action='store_true', default=False,
+                        help="Make a depth-based HDF5 file (default is time-based)")
     parser.add_argument('--overwrite', action='store_true', default=False,
                         help='Allow to overwrite existing hdf5 file of the same name')
     parser_args = parser.parse_args()
@@ -83,5 +87,6 @@ if __name__ == '__main__':
         fpath=file_name,
         n_images=parser_args.n_images,
         n_cols=parser_args.n_cols,
-        overwrite=parser_args.overwrite
+        overwrite=parser_args.overwrite,
+        depth_based=parser_args.depth_based
     )

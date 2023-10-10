@@ -9,7 +9,7 @@ from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.eflr_types import Frame, Channel
-from dlis_writer.utils.enums import Units, RepresentationCode
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data
@@ -19,33 +19,17 @@ from dlis_writer.writer.utils.compare_dlis_files import compare
 logger = logging.getLogger(__name__)
 
 
-def _define_index_channel(depth_based=False):
-    rc = RepresentationCode.FDOUBL
-
-    if depth_based:
-        index_channel = Channel.create('depth', unit='m', repr_code=rc)
-    else:
-        index_channel = Channel.create('posix time', unit='s', repr_code=rc, dataset_name='time')
-
-    return index_channel
-
-
-def prepare_config(config_fname, data, depth_based=False):
+def prepare_config(config_fname, data):
     config = load_config(config_fname)
-    _add_channel_config(data, config=config, depth_based=depth_based)
-    _add_index_config(config=config, depth_based=depth_based)
+    _add_channel_config(data, config=config)
+    _add_index_config(config=config, depth_based="Channel-depth" in config.sections())
     return config
 
 
 def _add_channel_config(data: np.ndarray, config: ConfigParser,
-                        repr_code: RepresentationCode = None, depth_based=False):
+                        repr_code: RepresentationCode = None):
 
-    channel_names = list(data.dtype.names)
-    channel_names.remove('depth')
-    channel_names.remove('time')
-    channel_names = ['depth' if depth_based else 'time'] + channel_names
-
-    for name in channel_names:
+    for name in data.dtype.names:
         section = f"Channel-{name}"
         config.add_section(section)
         config[section]['name'] = name
@@ -110,12 +94,17 @@ if __name__ == '__main__':
         os.makedirs(output_file_name.parent, exist_ok=True)
 
     if (input_file_name := pargs.input_file_name) is None:
-        data = create_data(int(pargs.n_points), n_images=pargs.n_images, n_cols=pargs.n_cols)
+        data = create_data(
+            int(pargs.n_points),
+            n_images=pargs.n_images,
+            n_cols=pargs.n_cols,
+            depth_based=pargs.depth_based
+        )
     else:
         data = load_hdf5(input_file_name)
 
     def timed_func():
-        cfg = prepare_config(config_file_name, data=data, depth_based=pargs.depth_based)
+        cfg = prepare_config(config_file_name, data=data)
         channels = Channel.all_from_config(cfg)
 
         write_dlis_file(
