@@ -66,3 +66,14 @@ def make_channels(include_images=True, repr_code=RepresentationCode.FSINGL, dept
         return [index_channel, rpm_channel]
     return [index_channel, rpm_channel] + _make_image_channels(repr_code=repr_code)
 
+
+def make_channels_from_config(config, include_images=True, repr_code=RepresentationCode.FSINGL, **kwargs):
+    channels = Channel.all_from_config(config, **kwargs)
+
+    for chan in channels[2:]:
+        chan.representation_code.value = repr_code
+
+    if include_images:
+        return channels
+    return channels[:2]
+

@@ -148,6 +148,7 @@ class EFLR(IflrAndEflrBase):
 
         key = key or cls.__name__
         obj: Self = super().from_config(config, key=key)
+        rep = f"{cls.__name__} '{obj.object_name}'"
 
         if (attributes_key := f"{key}.attributes") not in config.sections():
             logger.info(f"No attributes of {key} defined in the config")
@@ -163,7 +164,7 @@ class EFLR(IflrAndEflrBase):
             if not attr:
                 logger.warning(f"{key} does not have attribute '{attr_name}'")
 
-            logger.debug(f"Setting attribute '{attr_name}' of {key} to {repr(attr_value)}")
+            logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
 
         return obj

@@ -104,15 +104,30 @@ class Channel(EFLR):
             obj.dataset_name = config[key]['dataset_name']
 
         if not obj.element_limit.value and obj.dimension.value:
+            logger.debug(f"Setting element limit of channel '{obj.name}' to the same value "
+                         f"as dimension: {obj.dimension.value}")
             obj.element_limit.value = obj.dimension.value
         elif not obj.dimension.value and obj.element_limit.value:
+            logger.debug(f"Setting dimension of channel '{obj.name}' to the same value "
+                         f"as element limit: {obj.element_limit.value}")
             obj.dimension.value = obj.element_limit.value
         elif not obj.element_limit.value and not obj.dimension.value:
+            logger.debug(f"Setting dimension and element limit of channel '{obj.name}' to [1]")
             obj.element_limit.value = [1]
             obj.dimension.value = [1]
         else:
             if obj.element_limit.value != obj.dimension.value:
-                logger.warning(f"For channel {obj.name}, dimension is {obj.dimension.value} "
+                logger.warning(f"For channel '{obj.name}', dimension is {obj.dimension.value} "
                                f"and element limit is {obj.element_limit.value}")
+
+        if not obj.long_name.value:
+            logger.debug(f"Long name of channel '{obj.name}' not specified; setting it to to the channel's name")
+            obj.long_name.value = obj.name
+
+        if not obj.representation_code.value:
+            rc = RepresentationCode.FDOUBL
+            logger.debug(f"Representation code of channel '{obj.name}' not specified; "
+                         f"setting it to to {rc.name} ({rc.value})")
+            obj.representation_code.value = rc
 
         return obj

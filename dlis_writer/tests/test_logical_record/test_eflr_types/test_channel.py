@@ -86,7 +86,7 @@ def test_dimension_and_element_limit_mismatch(caplog):
     config["Channel.attributes"]["element_limit"] = "12, 10"
 
     Channel.from_config(config)
-    assert "For channel some channel, dimension is [12] and element limit is [12, 10]" in caplog.text
+    assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
 def test_multiple_channels_default_pattern(config_params):
