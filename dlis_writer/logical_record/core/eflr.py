@@ -143,29 +143,32 @@ class EFLR(IflrAndEflrBase):
     def make_lr_type_struct(cls, logical_record_type):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
-    @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
+    def set_attributes(self, **kwargs):
+        rep = f"{self.__class__.__name__} '{self.object_name}'"
 
-        key = key or cls.__name__
-        obj: Self = super().from_config(config, key=key)
-        rep = f"{cls.__name__} '{obj.object_name}'"
-
-        if (attributes_key := f"{key}.attributes") not in config.sections():
-            logger.info(f"No attributes of {key} defined in the config")
-            return obj
-
-        for attr_name, attr_value in config[attributes_key].items():
+        for attr_name, attr_value in kwargs.items():
             attr_name_main, *attr_parts = attr_name.split('.')
             attr_part = attr_parts[0] if attr_parts else 'value'
             if attr_part not in Attribute.settables:
                 raise ValueError(f"Cannot set {attr_part} of an Attribute object")
 
-            attr = obj.get_attribute(attr_name_main, None)
+            attr = self.get_attribute(attr_name_main, None)
             if not attr:
-                logger.warning(f"{key} does not have attribute '{attr_name}'")
+                logger.warning(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
 
             logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
+
+    @classmethod
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
+
+        key = key or cls.__name__
+        obj: Self = super().from_config(config, key=key)
+
+        if (attributes_key := f"{key}.attributes") not in config.sections():
+            logger.info(f"No attributes of {key} defined in the config")
+        else:
+            obj.set_attributes(**config[attributes_key])
 
         return obj
 
