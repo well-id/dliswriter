@@ -7,9 +7,9 @@ class WellReferencePoint(EFLR):
     logical_record_type = LogicalRecordType.OLR
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.permanent_datum = self._create_attribute('permanent_datum')
         self.vertical_zero = self._create_attribute('vertical_zero')
@@ -22,3 +22,5 @@ class WellReferencePoint(EFLR):
         self.coordinate_2_value = self._create_attribute('coordinate_2_value')
         self.coordinate_3_name = self._create_attribute('coordinate_3_name')
         self.coordinate_3_value = self._create_attribute('coordinate_3_value')
+
+        self.set_attributes(**kwargs)

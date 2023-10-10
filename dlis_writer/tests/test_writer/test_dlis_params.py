@@ -57,9 +57,9 @@ def test_origin(short_dlis, config_params):
     assert len(short_dlis.origins) == 1
 
     origin = short_dlis.origins[0]
-    conf = config_params['Origin.attributes']
+    conf = config_params['Origin']
 
-    assert origin.name == config_params['Origin']['name']
+    assert origin.name == conf['name']
     assert origin.creation_time == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
     assert origin.file_id == conf['file_id']
     assert origin.file_set_name == conf['file_set_name']
@@ -85,7 +85,7 @@ def test_frame(short_dlis, config_params):
     frame = short_dlis.frames[0]
 
     assert frame.name == config_params['Frame']['name']
-    assert frame.index_type == config_params['Frame.attributes']['index_type']
+    assert frame.index_type == config_params['Frame']['index_type']
 
 
 def test_storage_unit_label(short_dlis, config_params):

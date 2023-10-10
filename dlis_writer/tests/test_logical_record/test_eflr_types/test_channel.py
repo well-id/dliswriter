@@ -8,11 +8,12 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config_
 def test_from_config(config_params):
     channel = Channel.from_config(config_params)
 
-    assert channel.object_name == config_params['Channel']['name']
-    assert channel.name == config_params['Channel']['name']
-    assert channel.dataset_name == config_params["Channel"]["dataset_name"]
+    conf = config_params['Channel']
 
-    conf = config_params['Channel.attributes']
+    assert channel.object_name == conf['name']
+    assert channel.name == conf['name']
+    assert channel.dataset_name == conf["dataset_name"]
+
     assert channel.long_name.value == conf["long_name"]
     assert channel.properties.value == ["property1", "property 2 with multiple words"]
     assert channel.representation_code.value is RepresentationCode.FSINGL
@@ -45,7 +46,7 @@ def test_from_config_alternative_name(config_params):
 def test_properties(prop_str, prop_val):
     config = make_config_for_object("Channel488")
     config["Channel488"]["name"] = "ChanChan"
-    config["Channel488.attributes"]["properties"] = prop_str
+    config["Channel488"]["properties"] = prop_str
 
     channel = Channel.from_config(config, key="Channel488")
     assert channel.name == "ChanChan"
@@ -58,10 +59,10 @@ def test_dimension_and_element_limit(dimension, element_limit):
     config["Channel"]["name"] = "some channel"
 
     if dimension is not None:
-        config["Channel.attributes"]["dimension"] = dimension
+        config["Channel"]["dimension"] = dimension
 
     if element_limit is not None:
-        config["Channel.attributes"]["element_limit"] = element_limit
+        config["Channel"]["element_limit"] = element_limit
 
     channel = Channel.from_config(config)
     assert channel.dimension.value == channel.element_limit.value
@@ -82,8 +83,8 @@ def test_dimension_and_element_limit_mismatch(caplog):
     config = make_config_for_object("Channel")
     config["Channel"]["name"] = "some channel"
 
-    config["Channel.attributes"]["dimension"] = "12"
-    config["Channel.attributes"]["element_limit"] = "12, 10"
+    config["Channel"]["dimension"] = "12"
+    config["Channel"]["element_limit"] = "12, 10"
 
     Channel.from_config(config)
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text

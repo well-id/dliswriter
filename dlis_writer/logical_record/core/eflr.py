@@ -160,19 +160,6 @@ class EFLR(IflrAndEflrBase):
             setattr(attr, attr_part, attr_value)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
-
-        key = key or cls.__name__
-        obj: Self = super().from_config(config, key=key)
-
-        if (attributes_key := f"{key}.attributes") not in config.sections():
-            logger.info(f"No attributes of {key} defined in the config")
-        else:
-            obj.set_attributes(**config[attributes_key])
-
-        return obj
-
-    @classmethod
     def all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
         if not keys:
             if key_pattern is None:

@@ -7,9 +7,11 @@ class NoFormat(EFLR):
     logical_record_type = LogicalRecordType.UDI
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.consumer_name = self._create_attribute('consumer_name')
         self.description = self._create_attribute('description')
+
+        self.set_attributes(**kwargs)

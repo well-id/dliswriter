@@ -7,9 +7,8 @@ class Message(EFLR):
     logical_record_type = LogicalRecordType.SCRIPT
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self._type = self._create_attribute('_type')
         self.time = self._create_attribute('time')
@@ -19,14 +18,17 @@ class Message(EFLR):
         self.angular_drift = self._create_attribute('angular_drift')
         self.text = self._create_attribute('text')
 
+        self.set_attributes(**kwargs)
+
 
 class Comment(EFLR):
     set_type = 'COMMENT'
     logical_record_type = LogicalRecordType.SCRIPT
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.text = self._create_attribute('text')
+
+        self.set_attributes(**kwargs)

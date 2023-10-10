@@ -7,9 +7,9 @@ class Path(EFLR):
     logical_record_type = LogicalRecordType.FRAME
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.frame_type = self._create_attribute('frame_type')
         self.well_reference_point = self._create_attribute('well_reference_point')
@@ -22,3 +22,5 @@ class Path(EFLR):
         self.depth_offset = self._create_attribute('depth_offset')
         self.measure_point_offset = self._create_attribute('measure_point_offset')
         self.tool_zero_offset = self._create_attribute('tool_zero_offset')
+
+        self.set_attributes(**kwargs)

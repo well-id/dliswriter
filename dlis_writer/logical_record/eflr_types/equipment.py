@@ -7,9 +7,8 @@ class Equipment(EFLR):
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.trademark_name = self._create_attribute('trademark_name')
         self.status = self._create_attribute('status')
@@ -28,3 +27,5 @@ class Equipment(EFLR):
         self.vertical_depth = self._create_attribute('vertical_depth')
         self.radial_drift = self._create_attribute('radial_drift')
         self.angular_drift = self._create_attribute('angular_drift')
+
+        self.set_attributes(**kwargs)

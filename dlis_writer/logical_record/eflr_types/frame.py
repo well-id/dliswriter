@@ -10,9 +10,9 @@ class Frame(EFLR):
     logical_record_type = LogicalRecordType.FRAME
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.description = self._create_attribute('description')
         self.channels = self._create_attribute('channels')
@@ -23,11 +23,11 @@ class Frame(EFLR):
         self.index_min = self._create_attribute('index_min', converter=int)
         self.index_max = self._create_attribute('index_max', converter=int)
 
+        self.set_attributes(**kwargs)
+
     @classmethod
     def from_config(cls, config: ConfigParser, key=None) -> Self:
-        if not config.has_section("Frame.attributes"):
-            pass
-        if any(s in config["Frame.attributes"].keys() for s in ("channels", "channels.value")):
+        if any(s in config["Frame"].keys() for s in ("channels", "channels.value")):
             raise RuntimeError("Frame channels cannot be defined from the 'Frame.attributes' config section")
 
         return super().from_config(config)

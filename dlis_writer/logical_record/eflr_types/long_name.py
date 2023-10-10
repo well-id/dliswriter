@@ -7,9 +7,8 @@ class LongName(EFLR):
     logical_record_type = LogicalRecordType.LNAME
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.general_modifier = self._create_attribute('general_modifier')
         self.quantity = self._create_attribute('quantity')
@@ -27,3 +26,4 @@ class LongName(EFLR):
         self.standard_symbol = self._create_attribute('standard_symbol')
         self.private_symbol = self._create_attribute('private_symbol')
 
+        self.set_attributes(**kwargs)

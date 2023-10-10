@@ -16,9 +16,9 @@ class Origin(EFLR):
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.file_id = self._create_attribute('file_id')
         self.file_set_name = self._create_attribute('file_set_name')
@@ -41,6 +41,12 @@ class Origin(EFLR):
         self.name_space_name = self._create_attribute('name_space_name')
         self.name_space_version = self._create_attribute('name_space_version', converter=int)
 
+        if "creation_time" not in kwargs:
+            logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
+            kwargs["creation_time"] = datetime.now()
+
+        self.set_attributes(**kwargs)
+
     @classmethod
     def parse_dtime(cls, dtime_string):
         if isinstance(dtime_string, datetime):
@@ -62,13 +68,3 @@ class Origin(EFLR):
                              f"{', '.join(fmt for fmt in cls.dtime_formats)}")
 
         return dtime
-
-    @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().from_config(config)
-        if not config.has_section("Origin.attributes") or "creation_time" not in config["Origin.attributes"].keys():
-            logger.info("Creation time ('creation_time') not specified in the config; "
-                        "setting it to the current date and time")
-            obj.creation_time.value = datetime.now()
-
-        return obj

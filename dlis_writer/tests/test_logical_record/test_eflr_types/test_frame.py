@@ -8,9 +8,9 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config_
 def test_from_config(config_params):
     frame = Frame.from_config(config_params)
 
-    assert frame.object_name == config_params['Frame']['name']
+    conf = config_params['Frame']
+    assert frame.object_name == conf['name']
 
-    conf = config_params['Frame.attributes']
     assert frame.index_type.value == conf["index_type"]
     assert frame.encrypted.value is True
     assert frame.description.value == conf["description.value"]
@@ -24,7 +24,7 @@ def test_from_config(config_params):
 def test_from_config_with_channels(channels_key):
     config = make_config_for_object("Frame")
     config["Frame"]["name"] = "Some frame"
-    config["Frame.attributes"][channels_key] = "sth"
+    config["Frame"][channels_key] = "sth"
 
     with pytest.raises(RuntimeError, match="Frame channels cannot be defined.*"):
         Frame.from_config(config)

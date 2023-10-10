@@ -7,10 +7,11 @@ class Splice(EFLR):
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.output_channels = self._create_attribute('output_channels')
         self.input_channels = self._create_attribute('input_channels')
         self.zones = self._create_attribute('zones')
+
+        self.set_attributes(**kwargs)

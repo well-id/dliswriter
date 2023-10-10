@@ -9,9 +9,9 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config_
 def test_from_config(config_params):
     origin = Origin.from_config(config_params)
 
-    conf = config_params['Origin.attributes']
+    conf = config_params['Origin']
 
-    assert origin.object_name == config_params['Origin']['name']
+    assert origin.object_name == conf['name']
 
     assert origin.creation_time.value == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
     assert origin.file_id.value == conf['file_id']
@@ -35,7 +35,7 @@ def test_from_config(config_params):
 def test_from_config_no_dtime_in_attributes():
     config = make_config_for_object("Origin")
     config['Origin']['name'] = "Some origin name"
-    config['Origin.attributes']['well_name'] = "Some well name"
+    config['Origin']['well_name'] = "Some well name"
 
     origin = Origin.from_config(config)
     assert origin.object_name == "Some origin name"

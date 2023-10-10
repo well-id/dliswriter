@@ -7,9 +7,8 @@ class CalibrationMeasurement(EFLR):
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.phase = self._create_attribute('phase')
         self.measurement_source = self._create_attribute('measurement_source')
@@ -27,15 +26,16 @@ class CalibrationMeasurement(EFLR):
         self.plus_tolerance = self._create_attribute('plus_tolerance')
         self.minus_tolerance = self._create_attribute('minus_tolerance')
 
+        self.set_attributes(**kwargs)
+
 
 class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
-
-        super().__init__(*args, **kwargs)
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+        super().__init__(object_name, set_name)
 
         self.label = self._create_attribute('label')
         self.coefficients = self._create_attribute('coefficients')
@@ -43,15 +43,17 @@ class CalibrationCoefficient(EFLR):
         self.plus_tolerances = self._create_attribute('plus_tolerances')
         self.minus_tolerances = self._create_attribute('minus_tolerances')
 
+        self.set_attributes(**kwargs)
+
 
 class Calibration(EFLR):
     set_type = 'CALIBRATION'
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        super().__init__(*args, **kwargs)
+        super().__init__(object_name, set_name)
 
         self.calibrated_channels = self._create_attribute('calibrated_channels')
         self.uncalibrated_channels = self._create_attribute('uncalibrated_channels')
@@ -59,3 +61,5 @@ class Calibration(EFLR):
         self.measurements = self._create_attribute('measurements')
         self.parameters = self._create_attribute('parameters')
         self.method = self._create_attribute('method')
+
+        self.set_attributes(**kwargs)
