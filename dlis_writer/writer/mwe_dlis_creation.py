@@ -45,7 +45,7 @@ def _add_index_config(config: ConfigParser, depth_based=False):
         config['Frame'].update({'index_type': 'TIME', 'spacing.units': 's'})
 
 
-def prepare_data(data: np.ndarray, channels: list[Channel], config) -> FrameDataCapsule:
+def make_data_capsule(data: np.ndarray, channels: list[Channel], config) -> FrameDataCapsule:
     frame = Frame.from_config(config)
     frame.channels.value = channels
 
@@ -56,18 +56,34 @@ def prepare_data(data: np.ndarray, channels: list[Channel], config) -> FrameData
     return data_capsule
 
 
+def prepare_data_array(pargs):
+    if (input_file_name := pargs.input_file_name) is None:
+        data = create_data(
+            int(pargs.n_points),
+            n_images=pargs.n_images,
+            n_cols=pargs.n_cols,
+            depth_based=pargs.depth_based
+        )
+    else:
+        data = load_hdf5(input_file_name)
+
+    return data
+
+
 def write_dlis_file(data, channels, dlis_file_name, config):
-    # CREATE THE FILE
-    dlis_file = DLISFile.from_config(config)
+    def timed_func():
+        # CREATE THE FILE
+        dlis_file = DLISFile.from_config(config)
 
-    data_capsule = prepare_data(data, channels, config=config)
+        data_capsule = make_data_capsule(data, channels, config=config)
 
-    dlis_file.write_dlis(data_capsule, dlis_file_name)
+        dlis_file.write_dlis(data_capsule, dlis_file_name)
+
+    exec_time = timeit(timed_func, number=1)
+    logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
 
 
-if __name__ == '__main__':
-    install_logger(logger)
-
+def make_parser():
     parser = ArgumentParser("DLIS file creation - minimal working example")
     pg = parser.add_mutually_exclusive_group()
     pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
@@ -84,45 +100,35 @@ if __name__ == '__main__':
     parser.add_argument('--depth-based', action='store_true', default=False,
                         help="Make a depth-based HDF5 file (default is time-based)")
 
+    return parser
+
+
+def compare_files(output_file_name, reference_file_name):
+    logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
+    equal = compare(output_file_name, reference_file_name, verbose=True)
+    if equal:
+        logger.info("Files are equal")
+    else:
+        logger.warning("Files are NOT equal")
+
+
+if __name__ == '__main__':
+    install_logger(logger)
+
+    parser = make_parser()
+    parser.set_defaults(
+        config_file_name=Path(__file__).resolve().parent/'mwe_mock_config.ini',
+        output_file_name=Path(__file__).resolve().parent.parent/'tests/outputs/mwe_fake_dlis.DLIS'
+    )
     pargs = parser.parse_args()
 
-    if (config_file_name := pargs.config) is None:
-        config_file_name = Path(__file__).resolve().parent/'mwe_mock_config.ini'
+    data = prepare_data_array(pargs)
+    cfg = prepare_config(pargs.config_file_name, data=data)
 
-    if (output_file_name := pargs.file_name) is None:
-        output_file_name = Path(__file__).resolve().parent.parent/'tests/outputs/mwe_fake_dlis.DLIS'
-        os.makedirs(output_file_name.parent, exist_ok=True)
+    channels = Channel.all_from_config(cfg)
 
-    if (input_file_name := pargs.input_file_name) is None:
-        data = create_data(
-            int(pargs.n_points),
-            n_images=pargs.n_images,
-            n_cols=pargs.n_cols,
-            depth_based=pargs.depth_based
-        )
-    else:
-        data = load_hdf5(input_file_name)
+    write_dlis_file(data=data, channels=channels, dlis_file_name=pargs.output_file_name, config=cfg)
 
-    def timed_func():
-        cfg = prepare_config(config_file_name, data=data)
-        channels = Channel.all_from_config(cfg)
-
-        write_dlis_file(
-            data=data,
-            channels=channels,
-            dlis_file_name=output_file_name,
-            config=cfg,
-        )
-
-    exec_time = timeit(timed_func, number=1)
-    logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
-
-    if (reference_file_name := pargs.reference_file_name) is not None:
-        logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
-        equal = compare(output_file_name, reference_file_name, verbose=True)
-
-        if equal:
-            logger.info("Files are equal")
-        else:
-            logger.warning("Files are NOT equal")
+    if pargs.reference_file_name is not None:
+        compare_files(pargs.output_file_name, pargs.reference_file_name)
 
