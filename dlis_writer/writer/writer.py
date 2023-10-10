@@ -91,8 +91,6 @@ class DLISWriter:
 
         parser.add_argument('-c', '--config', help="Path to config file specifying metadata")
         parser.add_argument('-fn', '--file-name', help='Output file name')
-        parser.add_argument('-ref', '--reference-file-name',
-                            help="Another DLIS file to compare the created one against (at binary level)")
         parser.add_argument('-ni', '--n-images', type=int, default=0,
                             help='Number of 2D data sets to add (ignored if input file is specified)')
         parser.add_argument('-nc', '--n-cols', type=int, default=128,
@@ -137,6 +135,8 @@ if __name__ == '__main__':
     install_logger(logger)
 
     parser = DLISWriter.make_parser()
+    parser.add_argument('-ref', '--reference-file-name',
+                        help="Another DLIS file to compare the created one against (at binary level)")
     parser.set_defaults(
         output_file_name=Path(__file__).resolve().parent.parent/'tests/outputs/mwe_fake_dlis.DLIS'
     )
