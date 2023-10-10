@@ -172,7 +172,7 @@ class EFLR(IflrAndEflrBase):
     def all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
         if not keys:
             if key_pattern is None:
-                key_pattern = cls.__name__ + r"-\d+"
+                key_pattern = cls.__name__ + r"-\w+"
             key_pattern = re.compile(key_pattern)
             keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
 

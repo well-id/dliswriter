@@ -95,7 +95,7 @@ def test_multiple_channels_default_pattern(config_params):
     assert len(channels) == 3
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
-    assert channels[2].name == "Channel 264"
+    assert channels[2].name == "Channel 13"
 
     assert channels[0].dimension.value == [10, 10]
     assert channels[0].element_limit.value == [10, 10]
