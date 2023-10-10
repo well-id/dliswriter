@@ -2,7 +2,7 @@ import os
 import pytest
 
 from datetime import datetime
-from dlis_writer.writer.mwe_dlis_creation import write_dlis_file
+from dlis_writer.writer.writer import write_dlis_file
 from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.common import base_data_path, config_params

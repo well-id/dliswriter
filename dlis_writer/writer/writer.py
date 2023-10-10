@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 
 class DLISWriter:
-    default_config_file_name = Path(__file__).resolve().parent/'mwe_mock_config.ini',
+    default_config_file_name = Path(__file__).resolve().parent/'basic_config.ini',
 
     def __init__(self, data, config):
         self._data = data
