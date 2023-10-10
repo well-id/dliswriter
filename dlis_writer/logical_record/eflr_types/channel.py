@@ -70,37 +70,6 @@ class Channel(EFLR):
             raise TypeError("Expected a list of integers, a single integer, or a str parsable to list of integers; "
                             f"got {type(dim)}: {dim}")
 
-    @classmethod
-    def create(cls, name: str, dimension: int = 1, long_name: str = None, repr_code: RepresentationCode = None,
-               unit: Union[Units, str] = None, element_limit: int = None, dataset_name: str = None) -> Self:
-        """
-
-        Args:
-            name:
-            dimension:
-
-            long_name:
-            repr_code:
-            unit:
-            element_limit:
-
-        Returns:
-            channel:
-        """
-
-        channel = Channel(name)
-        channel.long_name.value = long_name or name
-        channel.representation_code.value = (repr_code if repr_code is not None else RepresentationCode.FDOUBL)
-        channel.dimension.value = [dimension]
-        channel.element_limit.value = [element_limit if element_limit is not None else dimension]
-
-        channel.dataset_name = dataset_name
-
-        if unit is not None:
-            channel.units.value = unit
-
-        return channel
-
     def _set_defaults(self):
         
         if not self.element_limit.value and self.dimension.value:
