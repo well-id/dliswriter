@@ -16,7 +16,8 @@ def short_dlis(short_reference_data, base_data_path, config_params):
 
     write_dlis_file(
         data=short_reference_data,
-        channels=make_channels(),
+        channels=make_channels(config_params,
+                               keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]),
         dlis_file_name=dlis_path,
         config=config_params
     )

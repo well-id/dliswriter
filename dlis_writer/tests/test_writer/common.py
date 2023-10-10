@@ -4,7 +4,7 @@ from dlisio import dlis
 
 from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode
 
 from dlis_writer.tests.common import base_data_path
 
@@ -36,44 +36,11 @@ def select_channel(f, name):
     return f.object("CHANNEL", name)
 
 
-def _make_rpm_channel():
-    return Channel.create('surface rpm', unit=None, dataset_name='rpm')
-
-
-def _make_image_channels(repr_code=RepresentationCode.FSINGL, n=3):
-    def make_channel(name, **kwargs):
-        return Channel.create(name, **kwargs, element_limit=N_COLS, dimension=N_COLS, repr_code=repr_code)
-
-    channels = [
-        make_channel('amplitude', unit=None, dataset_name='image0'),
-        make_channel('radius', unit=Units.in_, dataset_name='image1'),
-        make_channel('radius_pooh', unit=Units.m, dataset_name='image2'),
-    ]
-
-    return channels[:n]
-
-
-def make_channels(include_images=True, repr_code=RepresentationCode.FSINGL, depth_based=False):
-    rc = RepresentationCode.FDOUBL
-    if depth_based:
-        index_channel = Channel.create('depth', unit='m', repr_code=rc)
-    else:
-        index_channel = Channel.create('posix time', unit='s', repr_code=rc, dataset_name='time')
-
-    rpm_channel = _make_rpm_channel()
-
-    if not include_images:
-        return [index_channel, rpm_channel]
-    return [index_channel, rpm_channel] + _make_image_channels(repr_code=repr_code)
-
-
-def make_channels_from_config(config, include_images=True, repr_code=RepresentationCode.FSINGL, **kwargs):
+def make_channels(config, repr_code=RepresentationCode.FSINGL, **kwargs):
     channels = Channel.all_from_config(config, **kwargs)
 
     for chan in channels[2:]:
         chan.representation_code.value = repr_code
 
-    if include_images:
-        return channels
-    return channels[:2]
+    return channels
 
