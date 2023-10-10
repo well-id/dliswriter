@@ -5,6 +5,7 @@ import logging
 from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
+from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile, FrameDataCapsule
 from dlis_writer.logical_record.eflr_types import Frame, Channel
@@ -29,32 +30,35 @@ def _define_index_channel(depth_based=False):
     return index_channel
 
 
-def make_channels(data, depth_based=False, double_precision=False) -> list[Channel]:
-    repr_code = RepresentationCode.FDOUBL if double_precision else RepresentationCode.FSINGL
+def prepare_config(config_fname, data, depth_based=False):
+    config = load_config(config_fname)
+    _add_channel_config(data, config=config, depth_based=depth_based)
+    _add_index_config(config=config, depth_based=depth_based)
+    return config
 
-    channels = [
-        _define_index_channel(depth_based=depth_based),
-        Channel.create('surface rpm', unit='rpm', dataset_name='rpm')
-    ]
 
-    for name in data.dtype.names:
-        if not name.startswith('image'):
-            continue
+def _add_channel_config(data: np.ndarray, config: ConfigParser,
+                        repr_code: RepresentationCode = None, depth_based=False):
 
-        n_cols = data[name].shape[1]
+    channel_names = list(data.dtype.names)
+    channel_names.remove('depth')
+    channel_names.remove('time')
+    channel_names = ['depth' if depth_based else 'time'] + channel_names
 
-        channel = Channel.create(
-            name,
-            dataset_name=name,
-            dimension=n_cols,
-            element_limit=n_cols,
-            unit=Units.in_,
-            repr_code=repr_code
-        )
+    for name in channel_names:
+        section = f"Channel-{name}"
+        config.add_section(section)
+        config[section]['name'] = name
+        config[section]['dimension'] = ', '.join(str(i) for i in data[name].shape[1:])
+        if repr_code:
+            config[section]['representation_code'] = str(repr_code.value)
 
-        channels.append(channel)
 
-    return channels
+def _add_index_config(config: ConfigParser, depth_based=False):
+    if depth_based:
+        config['Frame'].update({'index_type': 'DEPTH', 'spacing.units': 'm'})
+    else:
+        config['Frame'].update({'index_type': 'TIME', 'spacing.units': 's'})
 
 
 def prepare_data(data: np.ndarray, channels: list[Channel], config) -> FrameDataCapsule:
@@ -95,17 +99,14 @@ if __name__ == '__main__':
                         help='Number of columns for each of the added 2D data sets (ignored if input file specified)')
     parser.add_argument('--depth-based', action='store_true', default=False,
                         help="Make a depth-based HDF5 file (default is time-based)")
-    parser.add_argument('-dbl', '--double-precision', action='store_true', default=False,
-                        help="Save images in double precision (default: single)")
 
     pargs = parser.parse_args()
 
     if (config_file_name := pargs.config) is None:
-        base = "time" if pargs.depth_based else "depth"
-        config_file_name = Path(__file__).resolve().parent.parent/f'resources/mock_config_{base}_based.ini'
+        config_file_name = Path(__file__).resolve().parent/'mwe_mock_config.ini'
 
     if (output_file_name := pargs.file_name) is None:
-        output_file_name = Path(__file__).resolve().parent.parent/'outputs/mwe_fake_dlis.DLIS'
+        output_file_name = Path(__file__).resolve().parent.parent/'tests/outputs/mwe_fake_dlis.DLIS'
         os.makedirs(output_file_name.parent, exist_ok=True)
 
     if (input_file_name := pargs.input_file_name) is None:
@@ -114,13 +115,14 @@ if __name__ == '__main__':
         data = load_hdf5(input_file_name)
 
     def timed_func():
-        channels = make_channels(data, double_precision=pargs.double_precision, depth_based=pargs.depth_based)
+        cfg = prepare_config(config_file_name, data=data, depth_based=pargs.depth_based)
+        channels = Channel.all_from_config(cfg)
 
         write_dlis_file(
             data=data,
             channels=channels,
             dlis_file_name=output_file_name,
-            config=load_config(config_file_name)
+            config=cfg,
         )
 
     exec_time = timeit(timed_func, number=1)

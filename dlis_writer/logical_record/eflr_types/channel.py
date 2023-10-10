@@ -61,6 +61,9 @@ class Channel(EFLR):
             return [dim]
 
         if isinstance(dim, str):
+            dim = dim.rstrip(' ').rstrip(',')
+            if not dim:
+                return [1]
             return [int(v) for v in dim.split(', ')]
 
         else:
