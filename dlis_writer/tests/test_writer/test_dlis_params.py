@@ -2,12 +2,12 @@ import os
 import pytest
 
 from datetime import datetime
-
 from dlis_writer.writer.mwe_dlis_creation import write_dlis_file
+from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, short_reference_data  # fixtures
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, make_channels  # constants and functions
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel  # constants and functions
 
 
 @pytest.fixture(scope='session')
@@ -16,8 +16,8 @@ def short_dlis(short_reference_data, base_data_path, config_params):
 
     write_dlis_file(
         data=short_reference_data,
-        channels=make_channels(config_params,
-                               keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]),
+        channels=Channel.all_from_config(
+            config_params, keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]),
         dlis_file_name=dlis_path,
         config=config_params
     )

@@ -5,9 +5,10 @@ from dlis_writer.utils.loaders import load_config
 from dlis_writer.writer.mwe_dlis_creation import write_dlis_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
 from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data, short_reference_data  # fixtures
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, make_channels  # constants and functions
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel  # constants and functions
 
 
 @pytest.fixture(scope='session')
@@ -33,7 +34,7 @@ def new_dlis_path(base_data_path):
 def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, new_dlis_path, config_depth_based):
     write_dlis_file(
         data=reference_data,
-        channels=make_channels(config_depth_based),
+        channels=Channel.all_from_config(config_depth_based),
         dlis_file_name=new_dlis_path,
         config=config_depth_based
     )
@@ -45,7 +46,7 @@ def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, n
 def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_path, new_dlis_path, config_time_based):
     write_dlis_file(
         data=reference_data,
-        channels=make_channels(config_time_based),
+        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )
@@ -58,7 +59,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_pa
 def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, config_depth_based):
     write_dlis_file(
         data=short_reference_data,
-        channels=make_channels(config_depth_based),
+        channels=Channel.all_from_config(config_depth_based),
         dlis_file_name=new_dlis_path,
         config=config_depth_based
     )
@@ -75,7 +76,7 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
     write_dlis_file(
         data=short_reference_data,
-        channels=make_channels(config_time_based),
+        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )
@@ -91,9 +92,13 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
 def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time_based):
+    channels = Channel.all_from_config(config_time_based)
+    for chan in channels[2:]:
+        chan.representation_code.value = code
+
     write_dlis_file(
         data=short_reference_data,
-        channels=make_channels(config_time_based, repr_code=code),
+        channels=channels,
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )
@@ -108,7 +113,7 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time
 def test_channel_curves(reference_data, new_dlis_path, n_points, config_time_based):
     write_dlis_file(
         data=reference_data[:n_points],
-        channels=make_channels(config_time_based),
+        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )

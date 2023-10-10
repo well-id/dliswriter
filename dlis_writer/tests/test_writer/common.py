@@ -3,8 +3,6 @@ from contextlib import contextmanager
 from dlisio import dlis
 
 from dlis_writer.utils.loaders import load_hdf5
-from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.utils.enums import RepresentationCode
 
 from dlis_writer.tests.common import base_data_path
 
@@ -34,13 +32,4 @@ def load_dlis(fname):
 
 def select_channel(f, name):
     return f.object("CHANNEL", name)
-
-
-def make_channels(config, repr_code=RepresentationCode.FSINGL, **kwargs):
-    channels = Channel.all_from_config(config, **kwargs)
-
-    for chan in channels[2:]:
-        chan.representation_code.value = repr_code
-
-    return channels
 
