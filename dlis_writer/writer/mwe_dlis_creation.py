@@ -1,6 +1,7 @@
 from pathlib import Path
 import numpy as np
 import logging
+import os
 from argparse import ArgumentParser
 from timeit import timeit
 from datetime import timedelta
@@ -120,6 +121,8 @@ if __name__ == '__main__':
         output_file_name=Path(__file__).resolve().parent.parent/'tests/outputs/mwe_fake_dlis.DLIS'
     )
     pargs = parser.parse_args()
+
+    os.makedirs(Path(pargs.output_file_name).parent, exist_ok=True)
 
     data = prepare_data_array(pargs)
     cfg = prepare_config(pargs.config_file_name, data=data)
