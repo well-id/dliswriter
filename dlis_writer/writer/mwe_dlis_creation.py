@@ -1,6 +1,5 @@
 from pathlib import Path
 import numpy as np
-import os
 import logging
 from argparse import ArgumentParser
 from timeit import timeit
@@ -45,9 +44,9 @@ def _add_index_config(config: ConfigParser, depth_based=False):
         config['Frame'].update({'index_type': 'TIME', 'spacing.units': 's'})
 
 
-def make_data_capsule(data: np.ndarray, channels: list[Channel], config) -> FrameDataCapsule:
+def make_data_capsule(data: np.ndarray, config, channels: list[Channel] = None) -> FrameDataCapsule:
     frame = Frame.from_config(config)
-    frame.channels.value = channels
+    frame.channels.value = channels or Channel.all_from_config(config)
 
     logger.info(f'Preparing frames for {data.shape[0]} rows with channels: '
                 f'{", ".join(c.name for c in frame.channels.value)}')
@@ -70,12 +69,12 @@ def prepare_data_array(pargs):
     return data
 
 
-def write_dlis_file(data, channels, dlis_file_name, config):
+def write_dlis_file(data, dlis_file_name, config, channels=None):
     def timed_func():
         # CREATE THE FILE
         dlis_file = DLISFile.from_config(config)
 
-        data_capsule = make_data_capsule(data, channels, config=config)
+        data_capsule = make_data_capsule(data, config=config, channels=channels)
 
         dlis_file.write_dlis(data_capsule, dlis_file_name)
 
@@ -125,9 +124,7 @@ if __name__ == '__main__':
     data = prepare_data_array(pargs)
     cfg = prepare_config(pargs.config_file_name, data=data)
 
-    channels = Channel.all_from_config(cfg)
-
-    write_dlis_file(data=data, channels=channels, dlis_file_name=pargs.output_file_name, config=cfg)
+    write_dlis_file(data=data, dlis_file_name=pargs.output_file_name, config=cfg)
 
     if pargs.reference_file_name is not None:
         compare_files(pargs.output_file_name, pargs.reference_file_name)

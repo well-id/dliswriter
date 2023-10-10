@@ -14,12 +14,16 @@ from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_chann
 def short_dlis(short_reference_data, base_data_path, config_params):
     dlis_path = base_data_path/'outputs/new_fake_dlis_shared.DLIS'
 
+    channels = Channel.all_from_config(
+        config_params,
+        keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
+    )
+
     write_dlis_file(
         data=short_reference_data,
-        channels=Channel.all_from_config(
-            config_params, keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]),
         dlis_file_name=dlis_path,
-        config=config_params
+        config=config_params,
+        channels=channels
     )
 
     with load_dlis(dlis_path) as f:

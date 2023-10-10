@@ -34,7 +34,6 @@ def new_dlis_path(base_data_path):
 def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, new_dlis_path, config_depth_based):
     write_dlis_file(
         data=reference_data,
-        channels=Channel.all_from_config(config_depth_based),
         dlis_file_name=new_dlis_path,
         config=config_depth_based
     )
@@ -46,7 +45,6 @@ def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, n
 def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_path, new_dlis_path, config_time_based):
     write_dlis_file(
         data=reference_data,
-        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )
@@ -59,7 +57,6 @@ def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_pa
 def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, config_depth_based):
     write_dlis_file(
         data=short_reference_data,
-        channels=Channel.all_from_config(config_depth_based),
         dlis_file_name=new_dlis_path,
         config=config_depth_based
     )
@@ -76,7 +73,6 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
     write_dlis_file(
         data=short_reference_data,
-        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )
@@ -113,7 +109,6 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time
 def test_channel_curves(reference_data, new_dlis_path, n_points, config_time_based):
     write_dlis_file(
         data=reference_data[:n_points],
-        channels=Channel.all_from_config(config_time_based),
         dlis_file_name=new_dlis_path,
         config=config_time_based
     )

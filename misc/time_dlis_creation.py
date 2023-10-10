@@ -42,7 +42,7 @@ fname = Path(os.getcwd())/'timing_output.DLIS'
 
 
 def func():
-    write_dlis_file(data, dlis_file_name=fname)
+    write_dlis_file(data, dlis_file_name=fname, config=)
     if not parser_args.keep_output:
         os.remove(fname)
 
