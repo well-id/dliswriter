@@ -2,12 +2,11 @@ import os
 import pytest
 
 from datetime import datetime
-from dlis_writer.writer.writer import write_dlis_file
 from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.common import base_data_path, config_params
-from dlis_writer.tests.test_writer.common import reference_data, short_reference_data  # fixtures
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel  # constants and functions
+from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
 
 
 @pytest.fixture(scope='session')

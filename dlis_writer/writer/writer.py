@@ -133,11 +133,6 @@ def compare_files(output_file_name, reference_file_name):
         logger.warning("Files are NOT equal")
 
 
-def write_dlis_file(data, dlis_file_name, config, channels=None):
-    writer = DLISWriter(data, config)
-    writer.write_dlis_file(dlis_file_name=dlis_file_name, channels=channels)
-
-
 if __name__ == '__main__':
     install_logger(logger)
 
