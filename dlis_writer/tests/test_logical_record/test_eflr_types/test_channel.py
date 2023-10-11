@@ -1,4 +1,5 @@
 import pytest
+import numpy as np
 
 from dlis_writer.logical_record.eflr_types import Channel
 from dlis_writer.utils.enums import RepresentationCode, Units
@@ -8,6 +9,12 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 @pytest.fixture
 def chan():
     yield Channel("some_channel")
+
+
+@pytest.fixture
+def mock_data():
+    dt = np.dtype([('time', float), ('amplitude', float, (10,)), ('radius', float, (12, 16))])
+    return np.zeros(30, dtype=dt)
 
 
 def test_from_config(config_params):
@@ -208,4 +215,38 @@ def test_setting_dimension_error(chan, value):
 def test_setting_properties(chan, value, expected_value):
     chan.properties.value = value
     assert chan.properties.value == expected_value
+
+
+@pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12, 16])))
+def test_setting_dimension_from_data(chan, mock_data, name, dim):
+    chan.object_name = name
+    chan.set_dimension_from_data(mock_data)
+    assert chan.dimension.value == dim
+    assert chan.element_limit.value == dim
+
+
+@pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [30]), ("amplitude", [10], [1])))
+def test_setting_dimension_from_data_mismatched_dimension(chan, mock_data, name, dim, prev_dim, caplog):
+    chan.object_name = name
+    chan.dimension.value = prev_dim
+    chan.set_dimension_from_data(mock_data)
+    assert chan.dimension.value == dim
+    assert "Previously defined dimension" in caplog.text
+
+
+@pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12, 16], [12])))
+def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, name, dim, prev_dim, caplog):
+    chan.object_name = name
+    chan.element_limit.value = prev_dim
+    chan.set_dimension_from_data(mock_data)
+    assert chan.element_limit.value == dim
+    assert "Previously defined element limit" in caplog.text
+
+
+@pytest.mark.parametrize("name", ("amp", "posix time"))
+def test_setting_dimension_from_data_no_dataset_error(chan, mock_data, name):
+    chan.object_name = name
+    with pytest.raises(ValueError, match=f"No dataset with name '{name}'.*"):
+        chan.set_dimension_from_data(mock_data)
+
 
