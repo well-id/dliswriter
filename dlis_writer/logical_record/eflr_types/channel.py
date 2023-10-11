@@ -17,7 +17,7 @@ class Channel(EFLR):
         super().__init__(object_name, set_name)
 
         self.long_name = self._create_attribute('long_name')
-        self.properties = self._create_attribute('properties', converter=lambda p: p.split(", "))
+        self.properties = self._create_attribute('properties', converter=self.convert_properties)
         self.representation_code = self._create_attribute('representation_code', converter=self.convert_repr_code)
         self.units = self._create_attribute('units', converter=self.convert_unit)
         self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
@@ -79,6 +79,17 @@ class Channel(EFLR):
 
         else:
             raise err
+
+    @staticmethod
+    def convert_properties(p):
+        if isinstance(p, (list, tuple)) and all(isinstance(pp, str) for pp in p):
+            return p if isinstance(p, list) else list(p)
+
+        if isinstance(p, str):
+            return p.split(", ")
+
+        else:
+            raise TypeError(f"Expected a str or a list/tuple of str, got {type(p)}: {p}")
 
     def _set_defaults(self):
         

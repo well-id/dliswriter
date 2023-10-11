@@ -197,3 +197,15 @@ def test_setting_dimension(chan, value, expected_value):
 def test_setting_dimension_error(chan, value):
     with pytest.raises(TypeError, match="Expected a list of integers.*"):
         chan.dimension.value = value
+
+
+@pytest.mark.parametrize(("value", "expected_value"), (
+        ("p1, p2, p3", ["p1", "p2", "p3"]),
+        ("p1, p2 with more words", ["p1", "p2 with more words"]),
+        ("other. punctuation; signs", ["other. punctuation; signs"]),
+        (["list, of, things"], ["list, of, things"])
+))
+def test_setting_properties(chan, value, expected_value):
+    chan.properties.value = value
+    assert chan.properties.value == expected_value
+
