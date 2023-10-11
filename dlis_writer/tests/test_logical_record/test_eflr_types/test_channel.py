@@ -5,6 +5,11 @@ from dlis_writer.utils.enums import RepresentationCode, Units
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
+@pytest.fixture
+def chan():
+    yield Channel("some_channel")
+
+
 def test_from_config(config_params):
     channel = Channel.from_config(config_params)
 
@@ -137,3 +142,14 @@ def test_multiple_channels_list(config_params):
 
     assert channels[1].dimension.value == [12]
     assert channels[1].units.value is Units.acre
+
+
+@pytest.mark.parametrize(("val", "unit"), (("s", Units.s), ("second", Units.s), ("tesla", Units.T), ("T", Units.T)))
+def test_setting_unit(chan, val, unit):
+    chan.units.value = val
+    assert chan.units.value is unit
+
+
+def test_clearing_unit(chan):
+    chan.units.value = None
+    assert chan.units.value is None

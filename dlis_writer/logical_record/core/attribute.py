@@ -65,11 +65,10 @@ class Attribute:
 
     @units.setter
     def units(self, units: Union[str, Units]):
-
-        if not isinstance(units, Units):
-            units = Units[units]
-
-        self._units = units
+        if units is None:
+            self._units = None
+        else:
+            self._units = Units.convert_unit(units)
 
     def write_component_for_template(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute for template, as specified in RP66 V1."""

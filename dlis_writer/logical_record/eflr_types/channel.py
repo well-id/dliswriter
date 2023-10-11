@@ -1,6 +1,3 @@
-from typing import Union
-from typing_extensions import Self
-from configparser import ConfigParser
 import logging
 
 from dlis_writer.logical_record.core import EFLR
@@ -23,7 +20,7 @@ class Channel(EFLR):
         self.properties = self._create_attribute('properties', converter=lambda p: p.split(", "))
         self.representation_code = self._create_attribute('representation_code',
                                                           converter=lambda v: RepresentationCode(int(v)))
-        self.units = self._create_attribute('units', converter=Units.convert_unit)
+        self.units = self._create_attribute('units', converter=self.convert_unit)
         self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
         self.axis = self._create_attribute('axis')
         self.element_limit = self._create_attribute('element_limit', converter=self.convert_dimension_or_el_limit)
@@ -51,6 +48,12 @@ class Channel(EFLR):
     @dataset_name.setter
     def dataset_name(self, name: str):
         self._dataset_name = name
+
+    @staticmethod
+    def convert_unit(unit):
+        if unit is None:
+            return None
+        return Units.convert_unit(unit)
 
     @staticmethod
     def convert_dimension_or_el_limit(dim):
