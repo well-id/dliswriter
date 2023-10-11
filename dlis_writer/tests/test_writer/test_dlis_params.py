@@ -17,6 +17,8 @@ def short_dlis(short_reference_data, base_data_path, config_params):
         config_params,
         keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
     )
+    for channel in channels:
+        channel.set_dimension_from_data(short_reference_data)
 
     write_dlis_file(
         data=short_reference_data,

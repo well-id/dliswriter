@@ -1,4 +1,5 @@
 import logging
+import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
@@ -58,14 +59,14 @@ class Channel(EFLR):
 
     @staticmethod
     def convert_dimension_or_el_limit(dim):
-        err = TypeError(f"Expected a list of integers, a single integer, or a str parsable to list of integers; "
+        err = TypeError(f"Expected a list/tuple of integers, a single integer, or a str parsable to list of integers; "
                         f"got {type(dim)}: {dim}")
 
         if not dim:
             raise err
 
-        if isinstance(dim, list) and all(isinstance(v, int) for v in dim):
-            return dim
+        if isinstance(dim, (list, tuple)) and all(isinstance(v, int) for v in dim):
+            return dim if isinstance(dim, list) else list(dim)
 
         if isinstance(dim, int):
             return [dim]
@@ -90,6 +91,28 @@ class Channel(EFLR):
 
         else:
             raise TypeError(f"Expected a str or a list/tuple of str, got {type(p)}: {p}")
+        
+    def set_dimension_from_data(self, data: np.ndarray):
+        rep = f"Channel '{self.name}'"
+        
+        if self.dataset_name not in data.dtype.names:
+            raise ValueError(f"No dataset with name '{self.dataset_name}' found in the data")
+        
+        dim = data[self.dataset_name].shape[1:] or [1]
+
+        if self.dimension.value != dim:
+            if self.dimension.value:
+                logger.warning(f"Previously defined dimension of {rep}: {self.dimension.value}"
+                               f"does not match the dimension from data: {dim}")
+            logger.debug(f"Setting dimension of {rep} to {dim}")
+            self.dimension.value = dim
+
+        if self.element_limit.value != dim:
+            if self.element_limit.value:
+                logger.warning(f"Previously defined element limit of {rep}: {self.element_limit.value}"
+                               f"does not match the dimension from data: {dim}")
+            logger.debug(f"Setting element limit of {rep} to {dim}")
+            self.element_limit.value = dim
 
     def _set_defaults(self):
         
@@ -101,14 +124,9 @@ class Channel(EFLR):
             logger.debug(f"Setting dimension of channel '{self.name}' to the same value "
                          f"as element limit: {self.element_limit.value}")
             self.dimension.value = self.element_limit.value
-        elif not self.element_limit.value and not self.dimension.value:
-            logger.debug(f"Setting dimension and element limit of channel '{self.name}' to [1]")
-            self.element_limit.value = [1]
-            self.dimension.value = [1]
-        else:
-            if self.element_limit.value != self.dimension.value:
-                logger.warning(f"For channel '{self.name}', dimension is {self.dimension.value} "
-                               f"and element limit is {self.element_limit.value}")
+        elif self.element_limit.value != self.dimension.value:
+            logger.warning(f"For channel '{self.name}', dimension is {self.dimension.value} "
+                           f"and element limit is {self.element_limit.value}")
 
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")

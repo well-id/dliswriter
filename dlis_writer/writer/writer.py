@@ -62,10 +62,16 @@ class DLISWriter:
 
     def make_data_capsule(self, channels: list[Channel] = None) -> FrameDataCapsule:
         frame = Frame.from_config(self._config)
-        frame.channels.value = channels or Channel.all_from_config(self._config)
+
+        if channels is None:
+            channels = Channel.all_from_config(self._config)
+        for channel in channels:
+            channel.set_dimension_from_data(self._data)
+
+        frame.channels.value = channels
 
         logger.info(f'Preparing frames for {self._data.shape[0]} rows with channels: '
-                    f'{", ".join(c.name for c in frame.channels.value)}')
+                    f'{", ".join(c.name for c in channels)}')
         data_capsule = FrameDataCapsule(frame, self._data)
 
         return data_capsule

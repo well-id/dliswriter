@@ -80,8 +80,8 @@ def test_dimension_and_element_limit_not_specified():
     config["Channel"]["name"] = "some channel"
 
     channel = Channel.from_config(config)
-    assert channel.dimension.value == [1]
-    assert channel.element_limit.value == [1]
+    assert channel.dimension.value is None
+    assert channel.element_limit.value is None
 
 
 def test_dimension_and_element_limit_mismatch(caplog):
@@ -107,8 +107,8 @@ def test_multiple_channels_default_pattern(config_params):
     assert channels[0].element_limit.value == [10, 10]
     assert channels[0].units.value == Units.in_
 
-    assert channels[1].dimension.value == [1]
-    assert channels[1].element_limit.value == [1]
+    assert channels[1].dimension.value is None
+    assert channels[1].element_limit.value is None
     assert channels[1].units.value is None
 
     assert channels[2].dimension.value == [128]
@@ -126,7 +126,7 @@ def test_multiple_channels_custom_pattern(config_params):
     assert channels[0].dimension.value == [10, 10]
     assert channels[0].units.value == Units.in_
 
-    assert channels[1].dimension.value == [1]
+    assert channels[1].dimension.value is None
     assert channels[1].units.value is None
 
 
@@ -195,7 +195,7 @@ def test_setting_dimension(chan, value, expected_value):
 
 @pytest.mark.parametrize('value', ("", "10,, 10", 10.6, [10, 11.2]))
 def test_setting_dimension_error(chan, value):
-    with pytest.raises(TypeError, match="Expected a list of integers.*"):
+    with pytest.raises(TypeError, match="Expected a list/tuple of integers.*"):
         chan.dimension.value = value
 
 
