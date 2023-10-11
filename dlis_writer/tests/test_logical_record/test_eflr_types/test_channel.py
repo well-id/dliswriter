@@ -220,7 +220,7 @@ def test_setting_properties(chan, value, expected_value):
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12, 16])))
 def test_setting_dimension_from_data(chan, mock_data, name, dim):
     chan.object_name = name
-    chan.set_dimension_from_data(mock_data)
+    chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.dimension.value == dim
     assert chan.element_limit.value == dim
 
@@ -229,7 +229,7 @@ def test_setting_dimension_from_data(chan, mock_data, name, dim):
 def test_setting_dimension_from_data_mismatched_dimension(chan, mock_data, name, dim, prev_dim, caplog):
     chan.object_name = name
     chan.dimension.value = prev_dim
-    chan.set_dimension_from_data(mock_data)
+    chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.dimension.value == dim
     assert "Previously defined dimension" in caplog.text
 
@@ -238,7 +238,7 @@ def test_setting_dimension_from_data_mismatched_dimension(chan, mock_data, name,
 def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, name, dim, prev_dim, caplog):
     chan.object_name = name
     chan.element_limit.value = prev_dim
-    chan.set_dimension_from_data(mock_data)
+    chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.element_limit.value == dim
     assert "Previously defined element limit" in caplog.text
 
@@ -247,6 +247,6 @@ def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, n
 def test_setting_dimension_from_data_no_dataset_error(chan, mock_data, name):
     chan.object_name = name
     with pytest.raises(ValueError, match=f"No dataset with name '{name}'.*"):
-        chan.set_dimension_from_data(mock_data)
+        chan.set_dimension_and_repr_code_from_data(mock_data)
 
 

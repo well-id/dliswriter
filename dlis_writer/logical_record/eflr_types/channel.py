@@ -2,7 +2,7 @@ import logging
 import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType
+from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType, numpy_dtype_converter
 
 
 logger = logging.getLogger(__name__)
@@ -92,13 +92,19 @@ class Channel(EFLR):
         else:
             raise TypeError(f"Expected a str or a list/tuple of str, got {type(p)}: {p}")
         
-    def set_dimension_from_data(self, data: np.ndarray):
-        rep = f"Channel '{self.name}'"
-        
+    def set_dimension_and_repr_code_from_data(self, data: np.ndarray):
+
         if self.dataset_name not in data.dtype.names:
             raise ValueError(f"No dataset with name '{self.dataset_name}' found in the data")
-        
-        dim = list(data[self.dataset_name].shape[1:]) or [1]
+
+        sub_data = data[self.dataset_name]
+        self._set_dimension_from_data(sub_data)
+        self._set_repr_code_from_data(sub_data)
+
+    def _set_dimension_from_data(self, sub_data):
+        rep = f"Channel '{self.name}'"
+
+        dim = list(sub_data.shape[1:]) or [1]
 
         if self.dimension.value != dim:
             if self.dimension.value:
@@ -113,6 +119,27 @@ class Channel(EFLR):
                                f"does not match the dimension from data: {dim}")
             logger.debug(f"Setting element limit of {rep} to {dim}")
             self.element_limit.value = dim
+
+    def _set_repr_code_from_data(self, sub_data):
+        rep = f"Channel '{self.name}'"
+        dt = sub_data.dtype
+
+        suggested_rc = numpy_dtype_converter.get(dt.name, None)
+        current_rc = self.representation_code.value
+
+        if suggested_rc is None:
+            if not current_rc:
+                raise RuntimeError(f"Could not automatically convert dtype '{dt}' to a representation code; "
+                                   f"please specify the representation code for {rep} manually")
+            return
+
+        if current_rc:
+            if suggested_rc is not current_rc:
+                logger.warning(f"Representation code for {rep} is {current_rc.name}, but according to the data "
+                               f"it should be {suggested_rc.name}")
+        else:
+            logger.debug(f"Setting representation code of {rep} to {suggested_rc.name}")
+            self.representation_code.value = suggested_rc
 
     def _set_defaults(self):
         
@@ -131,9 +158,3 @@ class Channel(EFLR):
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")
             self.long_name.value = self.name
-
-        if not self.representation_code.value:
-            rc = RepresentationCode.FDOUBL
-            logger.debug(f"Representation code of channel '{self.name}' not specified; "
-                         f"setting it to to {rc.name} ({rc.value})")
-            self.representation_code.value = rc

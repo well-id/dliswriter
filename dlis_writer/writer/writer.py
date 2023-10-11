@@ -34,19 +34,11 @@ class DLISWriter:
         return config
 
     @staticmethod
-    def _add_channel_config(data: np.ndarray, config: ConfigParser,
-                            repr_code: RepresentationCode = None):
-
+    def _add_channel_config(data: np.ndarray, config: ConfigParser):
         for name in data.dtype.names:
             section = f"Channel-{name}"
             config.add_section(section)
             config[section]['name'] = name
-
-            if dim := ', '.join(str(i) for i in data[name].shape[1:]):
-                config[section]['dimension'] = dim
-
-            if repr_code:
-                config[section]['representation_code'] = str(repr_code.value)
 
     @staticmethod
     def _add_index_config(config: ConfigParser, depth_based=False):
@@ -69,7 +61,7 @@ class DLISWriter:
         if channels is None:
             channels = Channel.all_from_config(self._config)
         for channel in channels:
-            channel.set_dimension_from_data(self._data)
+            channel.set_dimension_and_repr_code_from_data(self._data)
 
         frame.channels.value = channels
 
