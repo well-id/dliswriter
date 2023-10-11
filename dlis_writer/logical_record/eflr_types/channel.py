@@ -98,18 +98,18 @@ class Channel(EFLR):
         if self.dataset_name not in data.dtype.names:
             raise ValueError(f"No dataset with name '{self.dataset_name}' found in the data")
         
-        dim = data[self.dataset_name].shape[1:] or [1]
+        dim = list(data[self.dataset_name].shape[1:]) or [1]
 
         if self.dimension.value != dim:
             if self.dimension.value:
-                logger.warning(f"Previously defined dimension of {rep}: {self.dimension.value}"
+                logger.warning(f"Previously defined dimension of {rep}: {self.dimension.value} "
                                f"does not match the dimension from data: {dim}")
             logger.debug(f"Setting dimension of {rep} to {dim}")
             self.dimension.value = dim
 
         if self.element_limit.value != dim:
             if self.element_limit.value:
-                logger.warning(f"Previously defined element limit of {rep}: {self.element_limit.value}"
+                logger.warning(f"Previously defined element limit of {rep}: {self.element_limit.value} "
                                f"does not match the dimension from data: {dim}")
             logger.debug(f"Setting element limit of {rep} to {dim}")
             self.element_limit.value = dim

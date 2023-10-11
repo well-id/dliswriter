@@ -41,7 +41,10 @@ class DLISWriter:
             section = f"Channel-{name}"
             config.add_section(section)
             config[section]['name'] = name
-            config[section]['dimension'] = ', '.join(str(i) for i in data[name].shape[1:])
+
+            if dim := ', '.join(str(i) for i in data[name].shape[1:]):
+                config[section]['dimension'] = dim
+
             if repr_code:
                 config[section]['representation_code'] = str(repr_code.value)
 
