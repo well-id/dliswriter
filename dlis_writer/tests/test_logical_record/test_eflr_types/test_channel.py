@@ -169,3 +169,11 @@ def test_setting_repr_code(chan, val, repr_code):
 def test_clearing_repr_code(chan):
     chan.representation_code.value = None
     assert chan.representation_code.value is None
+
+
+def test_attribute_set_directly_error(chan):
+    with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'units'.*"):
+        chan.units = 'm'
+
+    with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'long_name'.*"):
+        chan.long_name = 'Lorem ipsum'

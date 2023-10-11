@@ -38,6 +38,12 @@ class EFLR(IflrAndEflrBase):
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
         self._attributes: dict[str, Attribute] = {}
 
+    def __setattr__(self, key, value):
+        if isinstance(getattr(self, key, None), Attribute):
+            raise RuntimeError(f"Cannot set DLIS Attribute '{key}'. Did you mean setting '{key}.value' instead?")
+
+        return super().__setattr__(key, value)
+
     def _create_attribute(self, key, **kwargs):
         rules = self._rp66_rules[key]
 
