@@ -177,3 +177,23 @@ def test_attribute_set_directly_error(chan):
 
     with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'long_name'.*"):
         chan.long_name = 'Lorem ipsum'
+
+
+@pytest.mark.parametrize(("value", "expected_value"), (
+        (1, [1]),
+        (10, [10]),
+        ("10", [10]),
+        ("10, ", [10]),
+        ("10,    ", [10]),
+        ("10, 11", [10, 11]),
+        ("10, 11,  ", [10, 11]),
+))
+def test_setting_dimension(chan, value, expected_value):
+    chan.dimension.value = value
+    assert chan.dimension.value == expected_value
+
+
+@pytest.mark.parametrize('value', ("", "10,, 10", 10.6, [10, 11.2]))
+def test_setting_dimension_error(chan, value):
+    with pytest.raises(TypeError, match="Expected a list of integers.*"):
+        chan.dimension.value = value

@@ -58,6 +58,12 @@ class Channel(EFLR):
 
     @staticmethod
     def convert_dimension_or_el_limit(dim):
+        err = TypeError(f"Expected a list of integers, a single integer, or a str parsable to list of integers; "
+                        f"got {type(dim)}: {dim}")
+
+        if not dim:
+            raise err
+
         if isinstance(dim, list) and all(isinstance(v, int) for v in dim):
             return dim
 
@@ -66,13 +72,13 @@ class Channel(EFLR):
 
         if isinstance(dim, str):
             dim = dim.rstrip(' ').rstrip(',')
-            if not dim:
-                return [1]
-            return [int(v) for v in dim.split(', ')]
+            try:
+                return [int(v) for v in dim.split(', ')]
+            except ValueError:
+                raise err
 
         else:
-            raise TypeError("Expected a list of integers, a single integer, or a str parsable to list of integers; "
-                            f"got {type(dim)}: {dim}")
+            raise err
 
     def _set_defaults(self):
         
