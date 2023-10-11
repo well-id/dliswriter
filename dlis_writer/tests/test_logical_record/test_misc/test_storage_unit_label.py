@@ -1,7 +1,7 @@
 import pytest
 
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.tests.common import base_data_path, config_params, make_config_for_object
+from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def _check_with_config(sul, config):
@@ -16,7 +16,7 @@ def test_from_config(config_params):
 
 @pytest.mark.parametrize(("name", "sequence_number"), (("SUL-1", "11"), ("Default storage", "0")))
 def test_from_config_with_params(name, sequence_number):
-    config = make_config_for_object("StorageUnitLabel", add_attributes=False)
+    config = make_config("StorageUnitLabel")
     config["StorageUnitLabel"]["name"] = name
     config["StorageUnitLabel"]["sequence_number"] = sequence_number
 

@@ -21,7 +21,3 @@ def make_config(*sections):
         config.add_section(section)
     return config
 
-
-def make_config_for_object(name, add_attributes=True):
-    sections = (name, f"{name}.attributes") if add_attributes else (name,)
-    return make_config(*sections)

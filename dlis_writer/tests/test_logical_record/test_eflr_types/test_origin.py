@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types import Origin
-from dlis_writer.tests.common import base_data_path, config_params, make_config_for_object
+from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params):
@@ -33,7 +33,7 @@ def test_from_config(config_params):
 
 
 def test_from_config_no_dtime_in_attributes():
-    config = make_config_for_object("Origin")
+    config = make_config("Origin")
     config['Origin']['name'] = "Some origin name"
     config['Origin']['well_name'] = "Some well name"
 
@@ -45,7 +45,7 @@ def test_from_config_no_dtime_in_attributes():
 
 
 def test_from_config_no_attributes():
-    config = make_config_for_object("Origin", add_attributes=False)
+    config = make_config("Origin")
     config['Origin']['name'] = "Some origin name"
 
     origin = Origin.from_config(config)

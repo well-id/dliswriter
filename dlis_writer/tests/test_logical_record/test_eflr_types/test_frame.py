@@ -2,7 +2,7 @@ import pytest
 
 from dlis_writer.logical_record.eflr_types import Frame
 from dlis_writer.utils.enums import RepresentationCode, Units
-from dlis_writer.tests.common import base_data_path, config_params, make_config_for_object
+from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params):
@@ -22,7 +22,7 @@ def test_from_config(config_params):
 
 @pytest.mark.parametrize("channels_key", ("channels", "channels.value"))
 def test_from_config_with_channels(channels_key):
-    config = make_config_for_object("Frame")
+    config = make_config("Frame")
     config["Frame"]["name"] = "Some frame"
     config["Frame"][channels_key] = "sth"
 

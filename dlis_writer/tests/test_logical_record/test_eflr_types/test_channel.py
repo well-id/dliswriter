@@ -2,7 +2,7 @@ import pytest
 
 from dlis_writer.logical_record.eflr_types import Channel
 from dlis_writer.utils.enums import RepresentationCode, Units
-from dlis_writer.tests.common import base_data_path, config_params, make_config_for_object
+from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params):
@@ -44,7 +44,7 @@ def test_from_config_alternative_name(config_params):
         ("single_thing", ["single_thing"])
 ))
 def test_properties(prop_str, prop_val):
-    config = make_config_for_object("Channel488")
+    config = make_config("Channel488")
     config["Channel488"]["name"] = "ChanChan"
     config["Channel488"]["properties"] = prop_str
 
@@ -55,7 +55,7 @@ def test_properties(prop_str, prop_val):
 
 @pytest.mark.parametrize(('dimension', 'element_limit'), (("10", None), ("10, 10", None), (None, "1, 2, 3")))
 def test_dimension_and_element_limit(dimension, element_limit):
-    config = make_config_for_object("Channel")
+    config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
     if dimension is not None:
@@ -71,7 +71,7 @@ def test_dimension_and_element_limit(dimension, element_limit):
 
 
 def test_dimension_and_element_limit_not_specified():
-    config = make_config_for_object("Channel")
+    config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
     channel = Channel.from_config(config)
@@ -80,7 +80,7 @@ def test_dimension_and_element_limit_not_specified():
 
 
 def test_dimension_and_element_limit_mismatch(caplog):
-    config = make_config_for_object("Channel")
+    config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
     config["Channel"]["dimension"] = "12"
