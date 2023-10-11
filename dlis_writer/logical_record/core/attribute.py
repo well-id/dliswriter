@@ -57,7 +57,7 @@ class Attribute:
 
     @representation_code.setter
     def representation_code(self, rc):
-        self._representation_code = RepresentationCode(int(rc)) if rc is not None else rc
+        self._representation_code = RepresentationCode.get_member(rc, allow_none=True)
 
     @property
     def units(self) -> Units:

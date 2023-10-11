@@ -18,8 +18,7 @@ class Channel(EFLR):
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=lambda p: p.split(", "))
-        self.representation_code = self._create_attribute('representation_code',
-                                                          converter=lambda v: RepresentationCode(int(v)))
+        self.representation_code = self._create_attribute('representation_code', converter=self.convert_repr_code)
         self.units = self._create_attribute('units', converter=self.convert_unit)
         self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
         self.axis = self._create_attribute('axis')
@@ -52,6 +51,10 @@ class Channel(EFLR):
     @staticmethod
     def convert_unit(unit):
         return Units.get_member(unit, allow_none=True)
+
+    @staticmethod
+    def convert_repr_code(rc):
+        return RepresentationCode.get_member(rc, allow_none=True)
 
     @staticmethod
     def convert_dimension_or_el_limit(dim):

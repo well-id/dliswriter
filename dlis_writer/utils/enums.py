@@ -16,6 +16,12 @@ def get_enum_member(en, v, allow_none=False):
         pass
 
     if isinstance(v, str):
+        if v.isdigit():
+            try:
+                return en(int(v))
+            except ValueError:
+                pass
+
         try:
             return en[v]
         except KeyError:

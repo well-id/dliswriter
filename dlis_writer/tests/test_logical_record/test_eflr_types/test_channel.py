@@ -153,3 +153,19 @@ def test_setting_unit(chan, val, unit):
 def test_clearing_unit(chan):
     chan.units.value = None
     assert chan.units.value is None
+
+
+@pytest.mark.parametrize(("val", "repr_code"), (
+        (7, RepresentationCode.FDOUBL),
+        ("FDOUBL", RepresentationCode.FDOUBL),
+        ("USHORT", RepresentationCode.USHORT),
+        ('15', RepresentationCode.USHORT)
+))
+def test_setting_repr_code(chan, val, repr_code):
+    chan.representation_code.value = val
+    assert chan.representation_code.value is repr_code
+
+
+def test_clearing_repr_code(chan):
+    chan.representation_code.value = None
+    assert chan.representation_code.value is None
