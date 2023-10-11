@@ -65,10 +65,7 @@ class Attribute:
 
     @units.setter
     def units(self, units: Union[str, Units]):
-        if units is None:
-            self._units = None
-        else:
-            self._units = Units.convert_unit(units)
+        self._units = Units.get_member(units, allow_none=True)
 
     def write_component_for_template(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute for template, as specified in RP66 V1."""

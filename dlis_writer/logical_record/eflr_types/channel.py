@@ -51,9 +51,7 @@ class Channel(EFLR):
 
     @staticmethod
     def convert_unit(unit):
-        if unit is None:
-            return None
-        return Units.convert_unit(unit)
+        return Units.get_member(unit, allow_none=True)
 
     @staticmethod
     def convert_dimension_or_el_limit(dim):

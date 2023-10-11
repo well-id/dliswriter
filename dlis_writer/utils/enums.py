@@ -2,6 +2,28 @@ from enum import Enum, IntEnum
 from struct import Struct
 
 
+def get_enum_member(en, v, allow_none=False):
+    if allow_none:
+        if v is None:
+            return None
+
+    if isinstance(v, en):
+        return v
+
+    try:
+        return en(v)
+    except ValueError:
+        pass
+
+    if isinstance(v, str):
+        try:
+            return en[v]
+        except KeyError:
+            pass
+
+    raise ValueError(f"{en.__name__} '{v}' is not defined")
+
+
 class Units(Enum):
 
     A = 'ampere'
@@ -108,22 +130,8 @@ class Units(Enum):
     us = 'microsecond'
 
     @classmethod
-    def convert_unit(cls, u):
-        if isinstance(u, cls):
-            return u
-
-        try:
-            return cls(u)
-        except ValueError:
-            pass
-
-        if isinstance(u, str):
-            try:
-                return cls[u]
-            except KeyError:
-                pass
-
-        raise ValueError(f"Unit '{u}' is not defined")
+    def get_member(cls, u, allow_none=False):
+        return get_enum_member(cls, u, allow_none=allow_none)
 
 
 class _ConverterEnum(int, Enum):
@@ -178,6 +186,10 @@ class RepresentationCode(_ConverterEnum):
     STATUS = 26, Struct('>B')
     UNITS = 27, 'UNITS'
 
+    @classmethod
+    def get_member(cls, c, allow_none=False):
+        return get_enum_member(cls, c, allow_none=allow_none)
+
 
 class LogicalRecordType(IntEnum):
     FHLR = 0
@@ -192,3 +204,7 @@ class LogicalRecordType(IntEnum):
     LNAME = 9
     SPEC = 10
     DICT = 11
+
+    @classmethod
+    def get_member(cls, t, allow_none=False):
+        return get_enum_member(cls, t, allow_none=allow_none)
