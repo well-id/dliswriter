@@ -22,4 +22,4 @@ class SingleLogicalRecordWrapper(MultiLogicalRecord):
         return 1
 
     def __iter__(self):
-        return self.lr,
+        return iter((self.lr,))

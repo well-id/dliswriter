@@ -8,9 +8,7 @@ from datetime import timedelta
 from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.collections.collection import LogicalRecordCollection
-from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data
@@ -62,26 +60,15 @@ class DLISWriter:
     def load_data(input_file_name):
         return load_hdf5(input_file_name)
 
-    def make_data_capsule(self, channels: list[Channel] = None) -> FrameDataCapsule:
-        frame = Frame.from_config(self._config, add_channels=(channels is None))
-
-        if channels is not None:
-            frame.channels.value = channels
-
-        frame.setup_channels_params_from_data(self._data)
-
-        logger.info(f'Preparing frames for {self._data.shape[0]} rows with channels: '
-                    f'{", ".join(c.name for c in frame.channels.value)}')
-        data_capsule = FrameDataCapsule(frame, self._data)
-
-        return data_capsule
-
     def write_dlis_file(self, dlis_file_name, channels=None):
         def timed_func():
-            logical_records = LogicalRecordCollection.from_config(self._config)
+            logical_records = LogicalRecordCollection.from_config(self._config, self._data)
 
-            data_capsule = self.make_data_capsule(channels=channels)
-            logical_records.add_logical_record(data_capsule)
+            if channels is not None:
+                frame = logical_records.other_logical_records[0].frame
+                logger.info(f"Defining channels for {frame}: {', '.join(c.name for c in channels)}")
+                frame.channels.value = channels
+                frame.setup_channels_params_from_data(self._data)
 
             dlis_file = DLISFile()
             dlis_file.write_dlis(logical_records, dlis_file_name)
