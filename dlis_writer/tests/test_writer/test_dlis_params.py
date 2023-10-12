@@ -1,8 +1,6 @@
 import os
 import pytest
-
 from datetime import datetime
-from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
@@ -13,19 +11,10 @@ from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_chann
 def short_dlis(short_reference_data, base_data_path, config_params):
     dlis_path = base_data_path/'outputs/new_fake_dlis_shared.DLIS'
 
-    channels = Channel.all_from_config(
-        config_params,
-        keys=[f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
-    )
-    for channel in channels:
-        channel.set_dimension_and_repr_code_from_data(short_reference_data)
+    channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
+    config_params['Frame']['channels'] = ', '.join(channel_names)
 
-    write_dlis_file(
-        data=short_reference_data,
-        dlis_file_name=dlis_path,
-        config=config_params,
-        channels=channels
-    )
+    write_dlis_file(data=short_reference_data, dlis_file_name=dlis_path, config=config_params)
 
     with load_dlis(dlis_path) as f:
         yield f

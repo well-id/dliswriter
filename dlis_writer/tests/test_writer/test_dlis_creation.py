@@ -4,7 +4,6 @@ import pytest
 from dlis_writer.utils.loaders import load_config
 from dlis_writer.writer.utils.compare_dlis_files import compare
 from dlis_writer.utils.enums import RepresentationCode, Units
-from dlis_writer.logical_record.eflr_types import Channel
 
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data, short_reference_data  # fixtures
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
@@ -31,22 +30,14 @@ def new_dlis_path(base_data_path):
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data, base_data_path, new_dlis_path, config_depth_based):
-    write_dlis_file(
-        data=reference_data,
-        dlis_file_name=new_dlis_path,
-        config=config_depth_based
-    )
+    write_dlis_file(data=reference_data, dlis_file_name=new_dlis_path, config=config_depth_based)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_rpm_depth_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
 
 
 def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_path, new_dlis_path, config_time_based):
-    write_dlis_file(
-        data=reference_data,
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
+    write_dlis_file(data=reference_data, dlis_file_name=new_dlis_path, config=config_time_based)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_full_time_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
@@ -54,11 +45,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data, base_data_pa
 
 @pytest.mark.parametrize('include_images', (True, False))
 def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, config_depth_based):
-    write_dlis_file(
-        data=short_reference_data,
-        dlis_file_name=new_dlis_path,
-        config=config_depth_based
-    )
+    write_dlis_file(data=short_reference_data, dlis_file_name=new_dlis_path, config=config_depth_based)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
@@ -70,11 +57,7 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
 
 
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
-    write_dlis_file(
-        data=short_reference_data,
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
+    write_dlis_file(data=short_reference_data, dlis_file_name=new_dlis_path, config=config_time_based)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
@@ -87,16 +70,11 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
 def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time_based):
-    channels = Channel.all_from_config(config_time_based)
-    for chan in channels[2:]:
-        chan.representation_code.value = code
+    for name in config_time_based.sections():
+        if name.startswith('Channel'):
+            config_time_based[name]['representation_code'] = str(code.value)
 
-    write_dlis_file(
-        data=short_reference_data,
-        channels=channels,
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
+    write_dlis_file(data=short_reference_data, dlis_file_name=new_dlis_path, config=config_time_based)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('amplitude', 'radius', 'radius_pooh'):
@@ -106,11 +84,7 @@ def test_repr_code(short_reference_data, new_dlis_path, code, value, config_time
 
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
 def test_channel_curves(reference_data, new_dlis_path, n_points, config_time_based):
-    write_dlis_file(
-        data=reference_data[:n_points],
-        dlis_file_name=new_dlis_path,
-        config=config_time_based
-    )
+    write_dlis_file(data=reference_data[:n_points], dlis_file_name=new_dlis_path, config=config_time_based)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('posix time', 'surface rpm'):

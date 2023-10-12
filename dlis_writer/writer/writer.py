@@ -60,15 +60,9 @@ class DLISWriter:
     def load_data(input_file_name):
         return load_hdf5(input_file_name)
 
-    def write_dlis_file(self, dlis_file_name, channels=None):
+    def write_dlis_file(self, dlis_file_name):
         def timed_func():
             logical_records = LogicalRecordCollection.from_config(self._config, self._data)
-
-            if channels is not None:
-                frame = logical_records.other_logical_records[0].frame
-                logger.info(f"Defining channels for {frame}: {', '.join(c.name for c in channels)}")
-                frame.channels.value = channels
-                frame.setup_channels_params_from_data(self._data)
 
             dlis_file = DLISFile()
             dlis_file.write_dlis(logical_records, dlis_file_name)

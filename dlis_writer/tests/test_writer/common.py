@@ -35,7 +35,7 @@ def select_channel(f, name):
     return f.object("CHANNEL", name)
 
 
-def write_dlis_file(data, dlis_file_name, config, channels=None):
+def write_dlis_file(data, dlis_file_name, config):
     writer = DLISWriter(data, config)
-    writer.write_dlis_file(dlis_file_name=dlis_file_name, channels=channels)
+    writer.write_dlis_file(dlis_file_name=dlis_file_name)
 
