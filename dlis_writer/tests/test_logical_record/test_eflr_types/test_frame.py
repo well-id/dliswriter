@@ -20,11 +20,18 @@ def test_from_config(config_params):
     assert frame.spacing.representation_code is RepresentationCode.FDOUBL
 
 
-@pytest.mark.parametrize("channels_key", ("channels", "channels.value"))
-def test_from_config_with_channels(channels_key):
-    config = make_config("Frame")
-    config["Frame"]["name"] = "Some frame"
-    config["Frame"][channels_key] = "sth"
+@pytest.mark.parametrize(("channels_key", "channel_entry", "channel_names"), (
+        ("channels", "Channel-rpm, Channel-amplitude", ("surface rpm", "amplitude")),
+        ("channels.value", "Channel, Channel-1, Channel-thirteen", ("Some Channel", "Channel 1", "Channel 13"))
+))
+def test_from_config_with_channels(channels_key, channel_entry, channel_names, config_params):
+    config_params["Frame"]["name"] = "Some frame"
+    config_params["Frame"][channels_key] = channel_entry
 
-    with pytest.raises(RuntimeError, match="Frame channels cannot be defined.*"):
-        Frame.from_config(config)
+    frame = Frame.from_config(config_params)
+
+    assert frame.channels.value is not None
+    assert len(frame.channels.value) == len(channel_names)
+
+    for i, cn in enumerate(channel_names):
+        assert frame.channels.value[i].name == cn

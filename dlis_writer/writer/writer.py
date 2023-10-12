@@ -36,10 +36,16 @@ class DLISWriter:
 
     @staticmethod
     def _add_channel_config(data: np.ndarray, config: ConfigParser):
+        sections = []
+
         for name in data.dtype.names:
             section = f"Channel-{name}"
             config.add_section(section)
             config[section]['name'] = name
+            sections.append(section)
+
+        if sections:
+            config['Frame']['channels'] = ', '.join(sections)
 
     @staticmethod
     def _add_index_config(config: ConfigParser, depth_based=False):
@@ -57,17 +63,15 @@ class DLISWriter:
         return load_hdf5(input_file_name)
 
     def make_data_capsule(self, channels: list[Channel] = None) -> FrameDataCapsule:
-        frame = Frame.from_config(self._config)
+        frame = Frame.from_config(self._config, add_channels=(channels is None))
 
-        if channels is None:
-            channels = Channel.all_from_config(self._config)
-        for channel in channels:
-            channel.set_dimension_and_repr_code_from_data(self._data)
+        if channels is not None:
+            frame.channels.value = channels
 
-        frame.channels.value = channels
+        frame.setup_channels_params_from_data(self._data)
 
         logger.info(f'Preparing frames for {self._data.shape[0]} rows with channels: '
-                    f'{", ".join(c.name for c in channels)}')
+                    f'{", ".join(c.name for c in frame.channels.value)}')
         data_capsule = FrameDataCapsule(frame, self._data)
 
         return data_capsule
