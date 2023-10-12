@@ -1,18 +1,13 @@
 import os
 import numpy as np
 import logging
-from itertools import chain
 from line_profiler_pycharm import profile
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union, Dict
-from typing_extensions import Self
-from configparser import ConfigParser
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
-from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
-from dlis_writer.logical_record.eflr_types import Origin
+from dlis_writer.logical_record.collections.collection import LogicalRecordCollection
 
 
 logger = logging.getLogger(__name__)
@@ -81,22 +76,17 @@ class DLISFile:
         http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
     """
 
-    def __init__(self, storage_unit_label: StorageUnitLabel, file_header: FileHeader, origin: Origin,
-                 visible_record_length: int = None):
+    def __init__(self, visible_record_length: int = None):
         """Initiates the object with given parameters"""
         self.pos = {}
-        self.storage_unit_label = storage_unit_label
-        self.file_header = file_header
-        self.origin = origin
-
         self.visible_record_length = visible_record_length if visible_record_length else 8192
         self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
-
+    
     @log_progress("Validating...")
-    def validate(self):
+    def validate(self, logical_records: LogicalRecordCollection):
         """Validates the object according to RP66 V1 rules"""
 
-        if not self.origin.file_set_number.value:
+        if not logical_records.origin.file_set_number.value:
             raise Exception('Origin object MUST have a file_set_number')
 
         assert self.visible_record_length >= 20, 'Minimum visible record length is 20 bytes'
@@ -104,25 +94,25 @@ class DLISFile:
         assert self.visible_record_length % 2 == 0, 'Visible record length must be an even number'
 
     @log_progress("Assigning origin reference")
-    def assign_origin_reference(self, data_capsule: FrameDataCapsule):
+    def assign_origin_reference(self, logical_records: LogicalRecordCollection):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
-        val = self.origin.file_set_number.value
+        val = logical_records.origin.file_set_number.value
         logger.debug(f"File set number is {val}")
 
-        self.file_header.origin_reference = val
-        self.origin.origin_reference = val
-        for logical_record in progressbar(data_capsule):
+        all_records = iter(logical_records)
+        next(all_records)  # skip storage unit label
+
+        for logical_record in progressbar(all_records):
             logical_record.origin_reference = val
 
     @log_progress("Writing raw bytes...")
     @profile
-    def create_raw_bytes(self, data_capsule: FrameDataCapsule) -> np.ndarray:
+    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        all_records = chain((self.storage_unit_label, self.file_header, self.origin), data_capsule)
-
-        n = 3 + len(data_capsule)
+        all_records = iter(logical_records)
+        n = len(logical_records)
         all_records_bytes = [None] * n
         all_positions = [0] + [None] * n
         current_pos = 0
@@ -142,7 +132,7 @@ class DLISFile:
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, data_capsule: FrameDataCapsule) -> Dict[int, tuple]:
+    def create_visible_record_dictionary(self, logical_records: LogicalRecordCollection) -> Dict[int, tuple]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -151,8 +141,9 @@ class DLISFile:
 
         """
 
-        all_records = chain((self.file_header, self.origin), data_capsule)
-        n = 2 + len(data_capsule)
+        all_records = iter(logical_records)
+        next(all_records)  # skip storage unit label
+        n = len(logical_records) - 1
 
         visible_record_length = self.visible_record_length
 
@@ -310,22 +301,14 @@ class DLISFile:
         logger.info(f"Data written to file: '{filename}'")
 
     @profile
-    def write_dlis(self, data_capsule: FrameDataCapsule, filename: Union[str, bytes, os.PathLike]):
+    def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
-        self.validate()
-        self.assign_origin_reference(data_capsule)
-        raw_bytes = self.create_raw_bytes(data_capsule)
-        vr_dict = self.create_visible_record_dictionary(data_capsule)
+        self.validate(logical_records)
+        self.assign_origin_reference(logical_records)
+        raw_bytes = self.create_raw_bytes(logical_records)
+        vr_dict = self.create_visible_record_dictionary(logical_records)
         all_bytes = self.add_visible_records(vr_dict, raw_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
-
-    @classmethod
-    def from_config(cls, config: ConfigParser) -> Self:
-        obj = cls(
-            storage_unit_label=StorageUnitLabel.from_config(config),
-            file_header=FileHeader.from_config(config),
-            origin=Origin.from_config(config)
-        )
-        return obj
+    

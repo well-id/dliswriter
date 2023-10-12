@@ -9,6 +9,7 @@ from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
+from dlis_writer.logical_record.collections.collection import LogicalRecordCollection
 from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
@@ -73,12 +74,13 @@ class DLISWriter:
 
     def write_dlis_file(self, dlis_file_name, channels=None):
         def timed_func():
-            # CREATE THE FILE
-            dlis_file = DLISFile.from_config(self._config)
+            logical_records = LogicalRecordCollection.from_config(self._config)
 
             data_capsule = self.make_data_capsule(channels=channels)
+            logical_records.add_logical_record(data_capsule)
 
-            dlis_file.write_dlis(data_capsule, dlis_file_name)
+            dlis_file = DLISFile()
+            dlis_file.write_dlis(logical_records, dlis_file_name)
 
         exec_time = timeit(timed_func, number=1)
         logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")

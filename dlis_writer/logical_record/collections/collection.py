@@ -1,4 +1,6 @@
 from itertools import chain
+from typing_extensions import Self
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord, SingleLogicalRecordWrapper
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
@@ -23,7 +25,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         return len(self.header_records) + sum(len(lr) for lr in self._other_logical_records)
 
     def __iter__(self):
-        return chain(self.header_records, self._other_logical_records)
+        return chain(self.header_records, *self._other_logical_records)
 
     def add_logical_record(self, lr):
         if isinstance(lr, MultiLogicalRecord):
@@ -32,3 +34,12 @@ class LogicalRecordCollection(MultiLogicalRecord):
             self._other_logical_records.append(SingleLogicalRecordWrapper(lr))
         else:
             raise TypeError(f"Expected a LogicalRecordBase or a MultiLogicalRecord instance; got {type(lr)}: {lr}")
+
+    @classmethod
+    def from_config(cls, config: ConfigParser) -> Self:
+        obj = cls(
+            storage_unit_label=StorageUnitLabel.from_config(config),
+            file_header=FileHeader.from_config(config),
+            origin=Origin.from_config(config)
+        )
+        return obj
