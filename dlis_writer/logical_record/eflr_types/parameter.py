@@ -5,6 +5,7 @@ from typing_extensions import Self
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.logical_record.eflr_types.zone import Zone
 
 
 class Parameter(EFLR):
@@ -50,10 +51,12 @@ class Parameter(EFLR):
         return values
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None, add_zones=True) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config, key=key)
 
-        # TODO: add zones
+        if (zone_names := obj.zones.value) is not None:
+            zone_names_list = zone_names.rstrip(' ').rstrip(',').split(', ')
+            obj.zones.value = [Zone.get_or_make_from_config(zn, config) for zn in zone_names_list]
 
         return obj
 

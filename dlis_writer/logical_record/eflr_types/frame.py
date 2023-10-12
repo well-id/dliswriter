@@ -42,7 +42,7 @@ class Frame(EFLR):
             obj.channels.value = None
         if channel_names and add_channels:
             logger.info(f"Adding channels for {obj}")
-            channel_names_list = channel_names.rstrip(' ').rstrip(', ').split(', ')
+            channel_names_list = channel_names.rstrip(' ').rstrip(',').split(', ')
             obj.channels.value = Channel.all_from_config(config, keys=channel_names_list)
 
         return obj

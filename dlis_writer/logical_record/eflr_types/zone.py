@@ -9,6 +9,7 @@ class Zone(EFLR):
     set_type = 'ZONE'
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
+    _instance_dict = {}
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         """
@@ -37,6 +38,8 @@ class Zone(EFLR):
 
         self.set_attributes(**kwargs)
 
+        self._instance_dict[object_name] = self
+
     @classmethod
     def parse_number_or_dtime(cls, value):
         if value is None:
@@ -56,3 +59,12 @@ class Zone(EFLR):
 
         raise ValueError(f"Couldn't parse value: '{value}'")
 
+    @classmethod
+    def get_instance(cls, name):
+        return cls._instance_dict.get(name)
+
+    @classmethod
+    def get_or_make_from_config(cls, name, config):
+        if name in cls._instance_dict:
+            return cls.get_instance(name)
+        return cls.from_config(config, key=name)

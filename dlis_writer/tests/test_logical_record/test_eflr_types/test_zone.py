@@ -1,6 +1,5 @@
 import pytest
 from datetime import datetime
-from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types import Zone
 from dlis_writer.utils.enums import Units, RepresentationCode
@@ -31,7 +30,7 @@ def test_from_config(config_params, zone_nr):
 
 
 @pytest.mark.parametrize(("zone_nr", "value_type", "repr_code"), (
-        (1, int, RepresentationCode.USHORT),
+        (1, int, RepresentationCode.UNORM),
         (2, float, RepresentationCode.FDOUBL),
         (3, datetime, RepresentationCode.DTIME)
 ))
