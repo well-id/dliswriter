@@ -58,30 +58,6 @@ class Channel(EFLR):
         return RepresentationCode.get_member(rc, allow_none=True)
 
     @staticmethod
-    def convert_dimension_or_el_limit(dim):
-        err = TypeError(f"Expected a list/tuple of integers, a single integer, or a str parsable to list of integers; "
-                        f"got {type(dim)}: {dim}")
-
-        if not dim:
-            raise err
-
-        if isinstance(dim, (list, tuple)) and all(isinstance(v, int) for v in dim):
-            return dim if isinstance(dim, list) else list(dim)
-
-        if isinstance(dim, int):
-            return [dim]
-
-        if isinstance(dim, str):
-            dim = dim.rstrip(' ').rstrip(',')
-            try:
-                return [int(v) for v in dim.split(', ')]
-            except ValueError:
-                raise err
-
-        else:
-            raise err
-
-    @staticmethod
     def convert_properties(p):
         if isinstance(p, (list, tuple)) and all(isinstance(pp, str) for pp in p):
             return p if isinstance(p, list) else list(p)
