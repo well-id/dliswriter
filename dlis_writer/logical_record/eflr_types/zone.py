@@ -1,3 +1,6 @@
+from numbers import Number
+from datetime import datetime, timedelta
+
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
 
@@ -20,8 +23,8 @@ class Zone(EFLR):
         :maximum -> Depending on the 'domain' attribute, this is either
         max-depth (dtype: float) or the latest time (dtype: datetime.datetime)
 
-        :minimum -> Dependng on the 'domain' attribute, this is either
-        min-depth (dtype: float) or the earlieast time (dtype: datetime.datetime)
+        :minimum -> Depending on the 'domain' attribute, this is either
+        min-depth (dtype: float) or the earliest time (dtype: datetime.datetime)
 
         """
 
@@ -29,7 +32,27 @@ class Zone(EFLR):
 
         self.description = self._create_attribute('description')
         self.domain = self._create_attribute('domain')
-        self.maximum = self._create_attribute('maximum')
-        self.minimum = self._create_attribute('minimum')
+        self.maximum = self._create_attribute('maximum', converter=self.parse_number_or_dtime)
+        self.minimum = self._create_attribute('minimum', converter=self.parse_number_or_dtime)
 
         self.set_attributes(**kwargs)
+
+    @classmethod
+    def parse_number_or_dtime(cls, value):
+        if value is None:
+            return value
+
+        if isinstance(value, (Number, datetime, timedelta)):
+            return value
+
+        if not isinstance(value, str):
+            raise TypeError(f"Expected a number, datetime, timedelta, or a string; got {type(value)}: {value}")
+
+        for parser in (cls.parse_dtime, int, float):
+            try:
+                return parser(value)
+            except ValueError:
+                pass
+
+        raise ValueError(f"Couldn't parse value: '{value}'")
+

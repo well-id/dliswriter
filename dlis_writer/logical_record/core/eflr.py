@@ -1,5 +1,6 @@
 import re
 from configparser import ConfigParser
+from datetime import datetime
 from typing_extensions import Self
 import logging
 
@@ -25,6 +26,7 @@ class EFLR(IflrAndEflrBase):
 
     is_eflr = True
     logical_record_type: LogicalRecordType = NotImplemented
+    dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
     def __init__(self, object_name: str, set_name: str = None):
         super().__init__()
@@ -151,6 +153,28 @@ class EFLR(IflrAndEflrBase):
     @classmethod
     def make_lr_type_struct(cls, logical_record_type):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
+
+    @classmethod
+    def parse_dtime(cls, dtime_string):
+        if isinstance(dtime_string, datetime):
+            return dtime_string
+
+        if not isinstance(dtime_string, str):
+            raise TypeError(f"Expected a str, got {type(dtime_string)}")
+
+        for dtime_format in cls.dtime_formats:
+            try:
+                dtime = datetime.strptime(dtime_string, dtime_format)
+            except ValueError:
+                pass
+            else:
+                break
+        else:
+            # loop finished without breaking - no date format fitted to the string
+            raise ValueError(f"Provided date time value does not conform to any of the allowed formats: "
+                             f"{', '.join(fmt for fmt in cls.dtime_formats)}")
+
+        return dtime
 
     def set_attributes(self, **kwargs):
         rep = f"{self.__class__.__name__} '{self.object_name}'"

@@ -1,6 +1,4 @@
 from datetime import datetime
-from configparser import ConfigParser
-from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core import EFLR
@@ -14,7 +12,6 @@ class Origin(EFLR):
     set_type = 'ORIGIN'
     logical_record_type = LogicalRecordType.OLR
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
-    dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
@@ -46,25 +43,3 @@ class Origin(EFLR):
             kwargs["creation_time"] = datetime.now()
 
         self.set_attributes(**kwargs)
-
-    @classmethod
-    def parse_dtime(cls, dtime_string):
-        if isinstance(dtime_string, datetime):
-            return dtime_string
-
-        if not isinstance(dtime_string, str):
-            raise TypeError(f"Expected a str, got {type(dtime_string)}")
-
-        for dtime_format in cls.dtime_formats:
-            try:
-                dtime = datetime.strptime(dtime_string, dtime_format)
-            except ValueError:
-                pass
-            else:
-                break
-        else:
-            # loop finished without breaking - no date format fitted to the string
-            raise ValueError(f"Provided date time value does not conform to any of the allowed formats: "
-                             f"{', '.join(fmt for fmt in cls.dtime_formats)}")
-
-        return dtime
