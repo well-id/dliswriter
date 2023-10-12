@@ -7,9 +7,9 @@ from timeit import timeit
 from datetime import timedelta
 from configparser import ConfigParser
 
-from dlis_writer.file import DLISFile, FrameDataCapsule
+from dlis_writer.file import DLISFile
+from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.eflr_types import Frame, Channel
-from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data

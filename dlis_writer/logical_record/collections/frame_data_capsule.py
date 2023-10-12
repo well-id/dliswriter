@@ -3,7 +3,7 @@ from itertools import chain
 from typing import List
 
 from dlis_writer.logical_record.eflr_types import Frame, Channel
-from dlis_writer.file.multi_frame_data import MultiFrameData
+from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 
 
 class FrameDataCapsule:

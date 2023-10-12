@@ -10,7 +10,7 @@ from configparser import ConfigParser
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.file.frame_data_capsule import FrameDataCapsule
+from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import Origin
 
