@@ -51,7 +51,7 @@ class Parameter(EFLR):
 
     @classmethod
     def from_config(cls, config: ConfigParser, key=None, add_zones=True) -> Self:
-        obj: Self = super().from_config(config)
+        obj: Self = super().from_config(config, key=key)
 
         # TODO: add zones
 
