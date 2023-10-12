@@ -1,4 +1,3 @@
-from typing import Union
 from itertools import chain
 
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord, SingleLogicalRecordWrapper
@@ -14,7 +13,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
         self.origin = origin
-        self._other_logical_records: list[Union[SingleLogicalRecordWrapper, MultiLogicalRecord]] = []
+        self._other_logical_records: list[MultiLogicalRecord] = []
 
     @property
     def header_records(self):
@@ -25,3 +24,11 @@ class LogicalRecordCollection(MultiLogicalRecord):
 
     def __iter__(self):
         return chain(self.header_records, self._other_logical_records)
+
+    def add_logical_record(self, lr):
+        if isinstance(lr, MultiLogicalRecord):
+            self._other_logical_records.append(lr)
+        elif isinstance(lr, LogicalRecordBase):
+            self._other_logical_records.append(SingleLogicalRecordWrapper(lr))
+        else:
+            raise TypeError(f"Expected a LogicalRecordBase or a MultiLogicalRecord instance; got {type(lr)}: {lr}")
