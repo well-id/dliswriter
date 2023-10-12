@@ -1,13 +1,14 @@
 import numpy as np
 from typing import List
-from line_profiler_pycharm import profile
 
 from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.logical_record.iflr_types import FrameData
+from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 
 
-class MultiFrameData:
+class MultiFrameData(MultiLogicalRecord):
     def __init__(self, frame: Frame, data: np.ndarray):
+        super().__init__()
 
         self._data_array: np.ndarray = self.flatten_structured_array(data, channels=frame.channels.value)
         self._frame = frame

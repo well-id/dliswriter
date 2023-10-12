@@ -4,10 +4,12 @@ from typing import List
 
 from dlis_writer.logical_record.eflr_types import Frame, Channel
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
+from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 
 
-class FrameDataCapsule:
+class FrameDataCapsule(MultiLogicalRecord):
     def __init__(self, frame: Frame, data: np.ndarray):
+        super().__init__()
         self._frame: Frame = frame
         self._data: MultiFrameData = MultiFrameData(frame, data)
 
