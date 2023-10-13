@@ -19,7 +19,7 @@ class FrameDataCapsule(MultiLogicalRecord):
 
     @property
     def channels(self) -> List[Channel]:
-        return self.frame.channels.value
+        return self.frame.channels.value or []
 
     @property
     def data(self) -> MultiFrameData:

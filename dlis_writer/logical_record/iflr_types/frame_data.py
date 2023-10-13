@@ -56,7 +56,7 @@ class FrameData(IFLR):
         
         j = 0
         slots = self._slots
-        for channel in self.frame.channels.value:
+        for channel in self.frame.channels.value or []:
             representation_code = channel.representation_code.value
 
             for i in range(j, j+math.prod(channel.dimension.value)):
