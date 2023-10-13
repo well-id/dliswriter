@@ -2,14 +2,14 @@ from numbers import Number
 from datetime import datetime, timedelta
 
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 from dlis_writer.utils.enums import LogicalRecordType
 
 
-class Zone(EFLR):
+class Zone(EFLR, InstanceRegisterMixin):
     set_type = 'ZONE'
     logical_record_type = LogicalRecordType.STATIC
     lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
-    _instance_dict = {}
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         """
@@ -29,7 +29,8 @@ class Zone(EFLR):
 
         """
 
-        super().__init__(object_name, set_name)
+        EFLR.__init__(self, object_name, set_name)
+        InstanceRegisterMixin.__init__(self, object_name)
 
         self.description = self._create_attribute('description')
         self.domain = self._create_attribute('domain')
@@ -37,8 +38,6 @@ class Zone(EFLR):
         self.minimum = self._create_attribute('minimum', converter=self.parse_number_or_dtime)
 
         self.set_attributes(**kwargs)
-
-        self._instance_dict[object_name] = self
 
     @classmethod
     def parse_number_or_dtime(cls, value):
@@ -59,12 +58,3 @@ class Zone(EFLR):
 
         raise ValueError(f"Couldn't parse value: '{value}'")
 
-    @classmethod
-    def get_instance(cls, name):
-        return cls._instance_dict.get(name)
-
-    @classmethod
-    def get_or_make_from_config(cls, name, config):
-        if name in cls._instance_dict:
-            return cls.get_instance(name)
-        return cls.from_config(config, key=name)
