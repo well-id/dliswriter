@@ -41,8 +41,8 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
 
     """
 
+    logical_record_type: LogicalRecordType
     is_eflr = True
-    logical_record_type: LogicalRecordType = NotImplemented
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
     def __init__(self, object_name: str, set_name: str = None):

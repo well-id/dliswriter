@@ -11,8 +11,8 @@ class IFLR(IflrAndEflrBase, ABC):
     Methods docstrings are not added as they are the same with EFLR.
     """
 
+    logical_record_type: int
     is_eflr = False
-    iflr_type = NotImplemented
 
     def __init__(self):
         super().__init__()

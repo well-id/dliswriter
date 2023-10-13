@@ -105,6 +105,7 @@ class SegmentAttributes:
 class IflrAndEflrBase(LogicalRecordBase):
     is_eflr = NotImplemented
     lr_type_struct = NotImplemented
+    logical_record_type = NotImplemented
 
     def __init__(self):
         super().__init__()

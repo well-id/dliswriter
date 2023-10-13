@@ -8,8 +8,8 @@ from dlis_writer.utils.enums import RepresentationCode
 
 class FrameData(IFLR):
     set_type = 'FDATA'
-    iflr_type = 0
-    lr_type_struct = IFLR.make_lr_type_struct(iflr_type)
+    logical_record_type = 0
+    lr_type_struct = IFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, frame, frame_number: int, slots, origin_reference=None):
 
