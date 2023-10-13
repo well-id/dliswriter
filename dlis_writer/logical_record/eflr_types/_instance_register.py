@@ -1,8 +1,11 @@
-class InstanceRegisterMeta(type):
+from dlis_writer.logical_record.core.eflr import EFLRMeta
+
+
+class InstanceRegisterMeta(EFLRMeta):
     def __new__(cls, *args, **kwargs):
-        cls = super().__new__(cls, *args, **kwargs)
-        cls._instance_dict = {}
-        return cls
+        obj = super().__new__(cls, *args, **kwargs)
+        obj._instance_dict = {}
+        return obj
 
 
 class InstanceRegisterMixin(metaclass=InstanceRegisterMeta):

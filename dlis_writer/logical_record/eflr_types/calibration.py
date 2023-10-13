@@ -5,7 +5,6 @@ from dlis_writer.utils.enums import LogicalRecordType
 class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = LogicalRecordType.STATIC
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         super().__init__(object_name, set_name)
@@ -32,7 +31,6 @@ class CalibrationMeasurement(EFLR):
 class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = LogicalRecordType.STATIC
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         super().__init__(object_name, set_name)
@@ -49,7 +47,6 @@ class CalibrationCoefficient(EFLR):
 class Calibration(EFLR):
     set_type = 'CALIBRATION'
     logical_record_type = LogicalRecordType.STATIC
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
 

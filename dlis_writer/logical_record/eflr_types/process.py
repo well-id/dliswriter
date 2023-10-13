@@ -5,7 +5,6 @@ from dlis_writer.utils.enums import LogicalRecordType
 class Process(EFLR):
     set_type = 'PROCESS'
     logical_record_type = LogicalRecordType.STATIC
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
 

@@ -12,12 +12,11 @@ logger = logging.getLogger(__name__)
 class Channel(EFLR, InstanceRegisterMixin):
     set_type = 'CHANNEL'
     logical_record_type = LogicalRecordType.CHANNL
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, dataset_name: str = None, **kwargs):
 
-        EFLR.__init__(self, object_name, set_name)
         InstanceRegisterMixin.__init__(self, object_name)
+        EFLR.__init__(self, object_name, set_name)
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=self.convert_properties)

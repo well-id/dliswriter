@@ -5,7 +5,6 @@ from dlis_writer.utils.enums import LogicalRecordType
 class LongName(EFLR):
     set_type = 'LONG-NAME'
     logical_record_type = LogicalRecordType.LNAME
-    lr_type_struct = EFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         super().__init__(object_name, set_name)
