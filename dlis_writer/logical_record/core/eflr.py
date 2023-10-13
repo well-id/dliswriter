@@ -14,24 +14,7 @@ from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase
 logger = logging.getLogger(__name__)
 
 
-class EFLRMeta(type):
-    def __new__(cls, *args, **kwargs):
-        obj = super().__new__(cls, *args, **kwargs)
-        obj._lr_type_struct = None
-        return obj
-
-    @property
-    def lr_type_struct(cls):
-        if not cls._lr_type_struct:
-            cls._lr_type_struct = cls.make_lr_type_struct(cls.logical_record_type)
-        return cls._lr_type_struct
-
-    @classmethod
-    def make_lr_type_struct(cls, logical_record_type):
-        return write_struct(RepresentationCode.USHORT, logical_record_type.value)
-
-
-class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
+class EFLR(IflrAndEflrBase):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
@@ -65,10 +48,6 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
             raise RuntimeError(f"Cannot set DLIS Attribute '{key}'. Did you mean setting '{key}.value' instead?")
 
         return super().__setattr__(key, value)
-
-    @property
-    def lr_type_struct(self):
-        return self.__class__.lr_type_struct
 
     def _create_attribute(self, key, **kwargs):
         rules = self._rp66_rules[key]

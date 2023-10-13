@@ -102,9 +102,25 @@ class SegmentAttributes:
         return s
 
 
-class IflrAndEflrBase(LogicalRecordBase):
+class IflrAndEflrRMeta(type):
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls, *args, **kwargs)
+        obj._lr_type_struct = None
+        return obj
+
+    @property
+    def lr_type_struct(cls):
+        if not cls._lr_type_struct:
+            cls._lr_type_struct = cls.make_lr_type_struct(cls.logical_record_type)
+        return cls._lr_type_struct
+
+    @classmethod
+    def make_lr_type_struct(cls, logical_record_type):
+        return write_struct(RepresentationCode.USHORT, logical_record_type.value)
+
+
+class IflrAndEflrBase(LogicalRecordBase, metaclass=IflrAndEflrRMeta):
     is_eflr = NotImplemented
-    lr_type_struct = NotImplemented
     logical_record_type = NotImplemented
 
     def __init__(self):
@@ -197,4 +213,9 @@ class IflrAndEflrBase(LogicalRecordBase):
     @abstractmethod
     def make_lr_type_struct(cls, lr_type):
         pass
+
+    @property
+    def lr_type_struct(self):
+        return self.__class__.lr_type_struct
+
 

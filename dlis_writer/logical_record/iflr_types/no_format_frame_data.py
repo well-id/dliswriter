@@ -4,7 +4,6 @@ from dlis_writer.logical_record.core.iflr import IFLR
 class NoFormatFrameData(IFLR):
     set_type = 'NOFORMAT'
     logical_record_type = 1
-    lr_type_struct = IFLR.make_lr_type_struct(logical_record_type)
 
     def __init__(self):
 

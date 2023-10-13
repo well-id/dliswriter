@@ -1,7 +1,7 @@
-from dlis_writer.logical_record.core.eflr import EFLRMeta
+from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrRMeta
 
 
-class InstanceRegisterMeta(EFLRMeta):
+class InstanceRegisterMeta(IflrAndEflrRMeta):
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls, *args, **kwargs)
         obj._instance_dict = {}
