@@ -31,16 +31,15 @@ class Frame(EFLR):
         self.set_attributes(**kwargs)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None, add_channels=True) -> Self:
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config)
 
-        channel_names = obj.channels.value
-        if add_channels and not channel_names:
+        if not (channel_names := obj.channels.value):
             logger.warning(f"No channels defined for frame {obj}")
-        if not add_channels and channel_names:
-            logger.info("Removing channel names added from config")
-            obj.channels.value = None
-        if channel_names and add_channels:
+            if channel_names is not None:  # e.g. empty string
+                obj.channels.value = None
+
+        else:
             logger.info(f"Adding channels for {obj}")
             channel_names_list = channel_names.rstrip(' ').rstrip(',').split(', ')
             obj.channels.value = []
