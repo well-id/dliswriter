@@ -2,6 +2,7 @@ import os
 import pytest
 from datetime import datetime
 
+from dlis_writer.utils.enums import RepresentationCode, Units
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
@@ -88,3 +89,45 @@ def test_storage_unit_label(short_dlis, config_params):
     assert sul['sequence'] == int(config_params['StorageUnitLabel']['sequence_number'])
     assert sul['maxlen'] == 8192
 
+
+def test_zones(short_dlis):
+    zones = short_dlis.zones
+    assert len(zones) == 4
+
+
+@pytest.mark.parametrize(("idx", "name", "description", "maximum", "minimum", "value_type"), (
+        (0, "Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, int),
+        (1, "Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
+        (2, "Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
+        (3, "Zone-4", "ZONE-TIME-2", 90, 10, int)
+))
+def test_zone_params(short_dlis, idx, name, description, maximum, minimum, value_type):
+    z = short_dlis.zones[idx]
+    assert z.name == name
+    assert z.description == description
+
+    assert z.maximum == maximum
+    assert z.minimum == minimum
+    assert isinstance(z.maximum, value_type)
+    assert isinstance(z.minimum, value_type)
+
+
+def test_parameters(short_dlis):
+    params = short_dlis.parameters
+    assert len(params) == 3
+
+
+@pytest.mark.parametrize(("idx", "name", "long_name", "values", "zones"), (
+        (0, "Param-1", "LATLONG-GPS", ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"], ["Zone-1", "Zone-3"]),
+        (1, "Param-2", "LATLONG", [40.395241, 27.792471], ["Zone-2", "Zone-4"]),
+        (2, "Param-3", "SOME-FLOAT-PARAM", [12.5], [])
+))
+def test_parameters_params(short_dlis, idx, name, long_name, values, zones):
+    param = short_dlis.parameters[idx]
+    assert param.name == name
+    assert param.long_name == long_name
+    assert param.values.tolist() == values
+
+    assert len(param.zones) == len(zones)
+    for i, z in enumerate(zones):
+        assert param.zones[i].name == z

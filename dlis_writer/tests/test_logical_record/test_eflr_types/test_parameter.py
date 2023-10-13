@@ -7,7 +7,7 @@ from dlis_writer.tests.common import base_data_path, config_params
 
 @pytest.mark.parametrize(("param_nr", "value_type", "n_values", "repr_code"), (
         (1, str, 2, RepresentationCode.ASCII),
-        (2, float, 3, RepresentationCode.FDOUBL),
+        (2, float, 2, RepresentationCode.FDOUBL),
         (3, float, 1, RepresentationCode.FDOUBL)
 ))
 def test_from_config(config_params, param_nr, value_type, n_values, repr_code):
