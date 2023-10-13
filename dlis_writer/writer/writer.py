@@ -26,14 +26,7 @@ class DLISWriter:
         self._config = config
 
     @staticmethod
-    def make_config(config_file_name, data):
-        config = load_config(config_file_name)
-        DLISWriter._add_channel_config(data, config=config)
-        DLISWriter._add_index_config(config=config, depth_based="Channel-depth" in config.sections())
-        return config
-
-    @staticmethod
-    def _add_channel_config(data: np.ndarray, config: ConfigParser):
+    def add_channel_config_from_data(data: np.ndarray, config: ConfigParser):
         sections = []
 
         for name in data.dtype.names:
@@ -46,11 +39,12 @@ class DLISWriter:
             config['Frame']['channels'] = ', '.join(sections)
 
     @staticmethod
-    def _add_index_config(config: ConfigParser, depth_based=False):
-        if depth_based:
-            config['Frame'].update({'index_type': 'DEPTH', 'spacing.units': 'm'})
-        else:
-            config['Frame'].update({'index_type': 'TIME', 'spacing.units': 's'})
+    def add_index_config(config: ConfigParser, depth_based=False):
+        if 'index_type' not in config['Frame'].keys():
+            config['Frame']['index_type'] = 'DEPTH' if depth_based else 'TIME'
+
+        if 'spacing.units' not in config['Frame'].keys():
+            config['Frame']['spacing.units'] = 'm' if depth_based else 's'
 
     @staticmethod
     def create_data(**kwargs):
@@ -85,6 +79,8 @@ class DLISWriter:
                             help='No. columns for each of the added 2D data sets (ignored if input file specified)')
         parser.add_argument('--depth-based', action='store_true', default=False,
                             help="Make a depth-based HDF5 file (default is time-based)")
+        parser.add_argument('--channels-from-data', action='store_true', default=False,
+                            help="Extend the provided config file with channel information from the data")
 
         return parser
 
@@ -101,9 +97,16 @@ class DLISWriter:
             data = cls.load_data(input_file_name)
 
         if pargs.config:
-            config = load_config(pargs.config)
+            config_fn = pargs.config
+            add_channels_from_data = pargs.channels_from_data
         else:
-            config = cls.make_config(cls.default_config_file_name, data)
+            config_fn = cls.default_config_file_name
+            add_channels_from_data = True
+
+        config = load_config(config_fn)
+        if add_channels_from_data or ('channels' not in config['Frame'] and 'channels.value' not in config['Frame']):
+            cls.add_channel_config_from_data(data, config)
+        cls.add_index_config(config, depth_based=pargs.depth_based)
 
         writer = cls(data, config)
 
