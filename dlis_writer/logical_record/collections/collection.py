@@ -59,6 +59,16 @@ class LogicalRecordCollection(MultiLogicalRecord):
 
         return data_capsule
 
+    def _add_objects_from_config(self, config, object_class):
+        cn = object_class.__name__
+
+        objects = object_class.all_from_config(config)
+        if not objects:
+            logger.debug(f"No {cn}s found in the config")
+        else:
+            logger.info(f"Adding {cn}(s): {', '.join(p.object_name for p in objects)} to the file")
+            self.add_logical_records(*objects)
+
     @classmethod
     def from_config(cls, config: ConfigParser, data=None) -> Self:
         obj = cls(
@@ -67,21 +77,18 @@ class LogicalRecordCollection(MultiLogicalRecord):
             origin=Origin.from_config(config)
         )
 
-        channels = Channel.all_from_config(config)
+        obj._add_objects_from_config(config, Channel)
 
         if data is not None:
             data_capsule = cls.make_data_records(config, data)
-            obj.add_logical_records(*channels, data_capsule.frame, data_capsule.data)
+            logger.info(f"Adding {data_capsule.frame} and FrameData objects to the file")
+            obj.add_logical_records(data_capsule.frame, data_capsule.data)
         else:
-            logger.warning("No data defined; adding only frame and channels to the logical records")
+            logger.warning("No data defined; adding only a Frame to the logical records")
             frame = Frame.from_config(config)
-            obj.add_logical_records(*frame.channels.value)
             obj.add_logical_records(frame)
 
-        zones = Zone.all_from_config(config)
-        obj.add_logical_records(*zones)
-
-        parameters = Parameter.all_from_config(config)
-        obj.add_logical_records(*parameters)
+        for c in (Zone, Parameter):
+            obj._add_objects_from_config(config, c)
 
         return obj
