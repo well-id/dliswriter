@@ -1,6 +1,12 @@
-class InstanceRegisterMixin:
+class InstanceRegisterMeta(type):
+    def __new__(cls, *args, **kwargs):
+        cls = super().__new__(cls, *args, **kwargs)
+        cls._instance_dict = {}
+        return cls
+
+
+class InstanceRegisterMixin(metaclass=InstanceRegisterMeta):
     from_config: callable  # from EFLR
-    _instance_dict = {}
 
     def __init__(self, name):
         self._instance_dict[name] = self
