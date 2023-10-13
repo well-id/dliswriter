@@ -7,7 +7,7 @@ from dlis_writer.logical_record.collections.multi_logical_record import MultiLog
 from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
-from dlis_writer.logical_record.eflr_types import Origin, Frame, Zone, Parameter
+from dlis_writer.logical_record.eflr_types import Origin, Frame, Zone, Parameter, Channel
 
 
 logger = logging.getLogger(__name__)
@@ -67,8 +67,11 @@ class LogicalRecordCollection(MultiLogicalRecord):
             origin=Origin.from_config(config)
         )
 
+        channels = Channel.all_from_config(config)
+
         if data is not None:
-            obj.add_logical_records(cls.make_data_records(config, data))
+            data_capsule = cls.make_data_records(config, data)
+            obj.add_logical_records(*channels, data_capsule.frame, data_capsule.data)
         else:
             logger.warning("No data defined; adding only frame and channels to the logical records")
             frame = Frame.from_config(config)

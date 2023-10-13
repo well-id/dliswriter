@@ -19,4 +19,9 @@ class InstanceRegisterMixin(metaclass=InstanceRegisterMeta):
     def get_or_make_from_config(cls, name, config):
         if name in cls._instance_dict:
             return cls.get_instance(name)
+
+        if name in config.sections():
+            if (object_name := config[name].get('name', None)) in cls._instance_dict:
+                return cls.get_instance(object_name)
+
         return cls.from_config(config, key=name)
