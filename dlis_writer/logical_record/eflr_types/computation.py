@@ -42,7 +42,7 @@ class Computation(EFLR):
 
         obj.add_dependent_objects_from_config(config, 'zones', Zone)
         obj.add_dependent_objects_from_config(config, 'axis', Axis, single=True)
-        obj.add_dependent_objects_from_config(config, 'tool', Tool, single=True)
+        obj.add_dependent_objects_from_config(config, 'source', Tool, single=True)
 
         return obj
 

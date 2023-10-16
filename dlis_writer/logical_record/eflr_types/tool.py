@@ -25,7 +25,7 @@ class Tool(EFLR, InstanceRegisterMixin):
         self.trademark_name = self._create_attribute('trademark_name')
         self.generic_name = self._create_attribute('generic_name')
         self.parts = self._create_attribute('parts')
-        self.status = self._create_attribute('status')
+        self.status = self._create_attribute('status', converter=int)
         self.channels = self._create_attribute('channels')
         self.parameters = self._create_attribute('parameters')
 
