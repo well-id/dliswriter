@@ -162,3 +162,21 @@ def test_axes_parameters(short_dlis, idx, name, axis_id, coordinates):
     assert axis.name == name
     assert axis.axis_id == axis_id
     assert axis.coordinates == coordinates
+
+
+def test_equipment(short_dlis):
+    eq = short_dlis.equipments
+    assert len(eq) == 3
+
+
+@pytest.mark.parametrize(("idx", "name", "status", "serial_number"), (
+        (0, "EQ1", 1, "9101-21391"),
+        (1, "EQ2", None, "5559101-21391"),
+        (2, "EqX", 1, "12311")
+))
+def test_from_config(short_dlis, idx, name, status, serial_number):
+    eq = short_dlis.equipments[idx]
+
+    assert eq.name == name
+    assert eq.status == status
+    assert eq.serial_number == serial_number
