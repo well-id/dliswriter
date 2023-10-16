@@ -248,6 +248,16 @@ class EFLR(IflrAndEflrBase):
             logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
 
+    def add_dependent_objects_from_config(self, config, attr_name, object_class, single=False):
+        attr = getattr(self, attr_name)
+        if attr.value is not None:
+            if single:
+                name = attr.value.rstrip(' ')
+                attr.value = object_class.get_or_make_from_config(name, config)
+            else:
+                names_list = self.convert_values(attr.value)
+                attr.value = [object_class.get_or_make_from_config(name, config) for name in names_list]
+
     @classmethod
     def all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
         if not keys:

@@ -37,9 +37,7 @@ class Parameter(EFLR, InstanceRegisterMixin):
     def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config, key=key)
 
-        if (zone_names := obj.zones.value) is not None:
-            zone_names_list = cls.convert_values(zone_names)
-            obj.zones.value = [Zone.get_or_make_from_config(zn, config) for zn in zone_names_list]
+        obj.add_dependent_objects_from_config(config, 'zones', Zone)
 
         return obj
 

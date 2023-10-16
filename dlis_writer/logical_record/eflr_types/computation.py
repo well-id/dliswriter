@@ -40,17 +40,9 @@ class Computation(EFLR):
     def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config, key=key)
 
-        if (zone_names := obj.zones.value) is not None:
-            zone_names_list = cls.convert_values(zone_names)
-            obj.zones.value = [Zone.get_or_make_from_config(zn, config) for zn in zone_names_list]
-
-        if (axis_name := obj.axis.value) is not None:
-            axis_name = axis_name.rstrip(' ')
-            obj.axis.value = Axis.get_or_make_from_config(axis_name, config)
-
-        if (tool_name := obj.tool.value) is not None:
-            tool_name = tool_name.rstrip(' ')
-            obj.tool.value = Tool.get_or_make_from_config(tool_name, config)
+        obj.add_dependent_objects_from_config(config, 'zones', Zone)
+        obj.add_dependent_objects_from_config(config, 'axis', Axis, single=True)
+        obj.add_dependent_objects_from_config(config, 'tool', Tool, single=True)
 
         return obj
 

@@ -35,17 +35,9 @@ class Tool(EFLR, InstanceRegisterMixin):
     def from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().from_config(config, key=key)
 
-        if (part_names := obj.parts.value) is not None:
-            part_names_list = cls.convert_values(part_names)
-            obj.parts.value = [Equipment.get_or_make_from_config(zn, config) for zn in part_names_list]
-            
-        if (channel_names := obj.channels.value) is not None:
-            channel_names_list = cls.convert_values(channel_names)
-            obj.channels.value = [Channel.get_or_make_from_config(zn, config) for zn in channel_names_list]
-        
-        if (param_names := obj.params.value) is not None:
-            param_names_list = cls.convert_values(param_names)
-            obj.params.value = [Parameter.get_or_make_from_config(zn, config) for zn in param_names_list]
+        obj.add_dependent_objects_from_config(config, 'parts', Equipment)
+        obj.add_dependent_objects_from_config(config, 'channels', Channel)
+        obj.add_dependent_objects_from_config(config, 'parameters', Parameter)
 
         return obj
 

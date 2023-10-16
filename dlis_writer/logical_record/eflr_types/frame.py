@@ -40,10 +40,7 @@ class Frame(EFLR):
 
         else:
             logger.info(f"Adding channels for {obj}")
-            channel_names_list = channel_names.rstrip(' ').rstrip(',').split(', ')
-            obj.channels.value = []
-            for cn in channel_names_list:
-                obj.channels.value.append(Channel.get_or_make_from_config(cn, config))
+            obj.add_dependent_objects_from_config(config, 'channels', Channel)
 
         return obj
 
