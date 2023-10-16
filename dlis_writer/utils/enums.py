@@ -134,6 +134,8 @@ class Units(Enum):
     uohm = 'microohm'
     upsi = 'micropound per square inch'
     us = 'microsecond'
+    cm3 = 'cubic centimeter'
+    cm2 = 'square centimeter'
 
     @classmethod
     def get_member(cls, u, allow_none=False):
