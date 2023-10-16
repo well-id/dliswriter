@@ -146,3 +146,19 @@ def test_parameters_params(short_dlis, idx, name, long_name, values, zones):
     assert len(param.zones) == len(zones)
     for i, z in enumerate(zones):
         assert param.zones[i].name == z
+
+
+def test_axes(short_dlis):
+    axes = short_dlis.axes
+    assert len(axes) == 2
+
+
+@pytest.mark.parametrize(("idx", "name", "axis_id", "coordinates"), (
+        (0, "Axis-1", "First axis", [40.395241, 27.792471]),
+        (1, "Axis-X", "Axis not added to computation", [8])
+))
+def test_axes_parameters(short_dlis, idx, name, axis_id, coordinates):
+    axis = short_dlis.axes[idx]
+    assert axis.name == name
+    assert axis.axis_id == axis_id
+    assert axis.coordinates == coordinates

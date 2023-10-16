@@ -3,6 +3,7 @@ from configparser import ConfigParser
 from datetime import datetime
 from typing_extensions import Self
 import logging
+import numpy as np
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.rp66 import RP66
@@ -155,6 +156,36 @@ class EFLR(IflrAndEflrBase):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
     @staticmethod
+    def convert_values(val, require_numeric=False):
+        if isinstance(val, list):
+            return val
+
+        if isinstance(val, tuple):
+            return list(val)
+
+        if isinstance(val, np.ndarray):
+            return val.tolist()
+
+        if not isinstance(val, str):
+            raise TypeError(f"Expected a list, tuple, np.ndarray, or str; got {type(val): val}")
+
+        val = val.rstrip(' ').strip('[').rstrip(']')
+        values = val.split(', ')
+        values = [v.strip(' ').rstrip(' ') for v in values]
+
+        for parser in (int, float):
+            try:
+                values = [parser(v) for v in values]
+                break
+            except ValueError:
+                pass
+        else:
+            # if loop not broken - none of the converters worked
+            if require_numeric:
+                raise ValueError(f"Some/all of the values: {values} could not be converted to numeric types")
+        return values
+
+    @staticmethod
     def convert_dimension_or_el_limit(dim):
         err = TypeError(f"Expected a list/tuple of integers, a single integer, or a str parsable to list of integers; "
                         f"got {type(dim)}: {dim}")
@@ -169,6 +200,7 @@ class EFLR(IflrAndEflrBase):
             return [dim]
 
         if isinstance(dim, str):
+            dim = dim.strip('[').rstrip(']')
             dim = dim.rstrip(' ').rstrip(',')
             try:
                 return [int(v) for v in dim.split(', ')]

@@ -37,7 +37,7 @@ class Attribute:
         """Initiate Attribute object."""
 
         self.label = label
-        self.count = count
+        self._count = count
         self._representation_code = representation_code
         self._units = units
         self._value = value
@@ -66,6 +66,14 @@ class Attribute:
     @units.setter
     def units(self, units: Union[str, Units]):
         self._units = Units.get_member(units, allow_none=True)
+
+    @property
+    def count(self) -> int:
+        return self._count
+
+    @count.setter
+    def count(self, count):
+        self._count = int(count) if count is not None else None
 
     def write_component_for_template(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute for template, as specified in RP66 V1."""
