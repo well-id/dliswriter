@@ -2,7 +2,6 @@ import os
 import pytest
 from datetime import datetime
 
-from dlis_writer.utils.enums import RepresentationCode, Units
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
@@ -40,6 +39,12 @@ def test_channel_properties(short_dlis, config_params):
     assert short_dlis.object("CHANNEL", 'amplitude').units is None
     assert short_dlis.object("CHANNEL", 'radius').units == "inch"
     assert short_dlis.object("CHANNEL", 'radius_pooh').units == "meter"
+
+
+def test_channel_not_in_frame(short_dlis, config_params):
+    name = 'channel_x'
+    chan = select_channel(short_dlis, name)
+    assert name not in config_params['Frame']['channels']
 
 
 def test_file_header(short_dlis, config_params):
@@ -92,14 +97,15 @@ def test_storage_unit_label(short_dlis, config_params):
 
 def test_zones(short_dlis):
     zones = short_dlis.zones
-    assert len(zones) == 4
+    assert len(zones) == 5
 
 
 @pytest.mark.parametrize(("idx", "name", "description", "maximum", "minimum", "value_type"), (
         (0, "Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, int),
         (1, "Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
         (2, "Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
-        (3, "Zone-4", "ZONE-TIME-2", 90, 10, int)
+        (3, "Zone-4", "ZONE-TIME-2", 90, 10, int),
+        (4, "Zone-X", "Zone not added to any parameter", 10, 1, int)
 ))
 def test_zone_params(short_dlis, idx, name, description, maximum, minimum, value_type):
     z = short_dlis.zones[idx]
@@ -110,6 +116,15 @@ def test_zone_params(short_dlis, idx, name, description, maximum, minimum, value
     assert z.minimum == minimum
     assert isinstance(z.maximum, value_type)
     assert isinstance(z.minimum, value_type)
+
+
+def test_zone_not_in_param(short_dlis):
+    name = 'Zone-X'
+    z = [z for z in short_dlis.zones if z.name == name]
+    assert len(z) == 1
+    for p in short_dlis.parameters:
+        z = [z for z in p.zones if z.name == name]
+        assert not z
 
 
 def test_parameters(short_dlis):

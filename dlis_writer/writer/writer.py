@@ -31,8 +31,9 @@ class DLISWriter:
 
         for name in data.dtype.names:
             section = f"Channel-{name}"
-            config.add_section(section)
-            config[section]['name'] = name
+            if section not in config.sections():
+                config.add_section(section)
+                config[section]['name'] = name
             sections.append(section)
 
         if sections:

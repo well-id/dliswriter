@@ -105,7 +105,7 @@ def test_dimension_and_element_limit_mismatch(caplog):
 def test_multiple_channels_default_pattern(config_params):
     channels = Channel.all_from_config(config_params)
 
-    assert len(channels) == 8
+    assert len(channels) == 9
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
     assert channels[2].name == "Channel 13"
