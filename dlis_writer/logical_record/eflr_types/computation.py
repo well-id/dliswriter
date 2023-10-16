@@ -4,6 +4,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.eflr_types.tool import Tool
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.utils.enums import LogicalRecordType
 
@@ -46,6 +47,10 @@ class Computation(EFLR):
         if (axis_name := obj.axis.value) is not None:
             axis_name = axis_name.rstrip(' ')
             obj.axis.value = Axis.get_or_make_from_config(axis_name, config)
+
+        if (tool_name := obj.tool.value) is not None:
+            tool_name = tool_name.rstrip(' ')
+            obj.tool.value = Tool.get_or_make_from_config(tool_name, config)
 
         return obj
 
