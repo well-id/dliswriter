@@ -1270,6 +1270,7 @@ classDiagram
         +str source
         +float minimum_value
         +float maximum_value
+        +str dataset_name
     }
     
     class Computation{
@@ -1459,7 +1460,7 @@ classDiagram
 
 ```mermaid
 ---
-title: Group object
+title: EFLR Group object
 ---
 classDiagram
     Group o-- "0..*" EFLR
@@ -1470,6 +1471,29 @@ classDiagram
         +str object_type
         +list~EFLR~ object_list
         +list~Group~ group_list
+    }
+    
+```
+
+
+```mermaid
+---
+title: IFLR objects and their relation to EFLR objects
+---
+classDiagram
+    FrameData o-- "1" Frame
+    NoFormatFrameData o-- "1" NoFormat
+    
+    class FrameData{
+        +Frame frame
+        +int frame_number
+        +int origin_reference
+        -slots numpy.ndarray
+    }
+    
+    class NoFormatFrameData{
+        +NoFormat no_format_object
+        +Any data
     }
     
 ```
