@@ -1348,23 +1348,64 @@ title: Standalone EFLR objects
 ---
 classDiagram
     class Message{
-        
+        +str _type
+        +datetime time
+        +float borehole_drift
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+        +float text
     }
     
     class Comment{
-        
+        +str: text
     }
     
     class LongName{
-        
+        +str general_modifier
+        +str quantity
+        +str quantity_modifier
+        +str altered_form
+        +str entity
+        +str entity_modifier
+        +str entity_number
+        +str entity_part
+        +str entity_part_number
+        +str generic_source
+        +str source_part
+        +str source_part_number
+        +str conditions
+        +str standard_symbol
+        +str private_symbol
     }
     
     class NoFormat{
-        
+        +str consumer_name
+        +str description
     }
     
     class Origin{
-        
+        +str file_id
+        +str file_set_name
+        +int file_set_number
+        +int file_number
+        +str file_type
+        +str product
+        +str version
+        +str programs
+        +datetime creation_time
+        +int order_number
+        +int descent_number
+        +int run_number
+        +int well_id
+        +str well_name
+        +str field_name
+        +int producer_code
+        +str producer_name
+        +str company
+        +str name_space_name
+        +int name_space_version
+
     }
     
     
