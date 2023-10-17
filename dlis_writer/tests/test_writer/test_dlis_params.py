@@ -202,3 +202,25 @@ def test_tool_params(short_dlis, idx, name, description, status, param_names, ch
 
     for i, cn in enumerate(channel_names):
         assert tool.channels[i].name == cn
+
+
+def test_computation(short_dlis):
+    comps = short_dlis.computations
+    assert len(comps) == 3
+
+
+@pytest.mark.parametrize(("idx", "name", "properties", "zone_names", "axis_name", "values"), (
+        (0, "COMPT-1", ["PROP 1", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-1", [100, 200, 300]),
+        (1, "COMPT2", ["PROP 2", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-1", [1.5, 2.5, 3]),
+        (2, "COMPT-X", ["XYZ"], ["Zone-3"], "Axis-1", [12]),
+))
+def test_computation_params(short_dlis, idx, name, properties, zone_names, axis_name, values):
+    comp = short_dlis.computations[idx]
+
+    assert comp.name == name
+    assert comp.properties == properties
+    assert comp.axis[0].name == axis_name
+    assert comp.values.tolist() == values
+
+    for i, n in enumerate(zone_names):
+        assert comp.zones[i].name == n
