@@ -1197,6 +1197,7 @@ title: EFLR objects relationships
 classDiagram
     Path o-- "0..1" WellReferencePoint
     Path o-- "0..*" Channel
+    Path o-- "0..1" Frame
     Frame o-- "0..*" Channel
     Calibration o-- "0..*" CalibrationCoefficient
     Calibration o-- "0..*" CalibrationMeasurement
@@ -1314,31 +1315,76 @@ classDiagram
     
     
     class Parameter{
-        
+        +str long_name
+        +list~int~ dimension
+        +Axis axis
+        +list~Axis~ zones
+        +list values
     }
     
     class Path{
-        
+        +Frame frame_type
+        +WellReferencePoint well_reference_point
+        +list~Channel~ value
+        +float borehole_depth
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+        +float time
+        +float depth_offset
+        +float measure_point_offset
+        +float tool_zero_offset
     }
     
     class Process{
-        
+        +str description
+        +str trademark_name
+        +str version
+        +list~str~ properties
+        +str status
+        +list~Channel~ input_channels
+        +list~Channel~ output_channels
+        +list~Computation~ input_computations
+        +list~Computation~ output_computations
+        +list~Parameter~ parameters
+        +str comments
     }
     
     class Splice{
-        
+        +list~Channel~ output_channels
+        +list~Channel~ input_channels
+        +list~Zone~ zones
     }
     
     class Tool{
-        
+        +str description
+        +str trademark_name
+        +str generic_name
+        +list~Equipment~ parts
+        +int status
+        +list~Channel~ channels
+        +list~Parameter~ parameters
     }
     
     class WellReferencePoint{
-        
+        +str permanent_datum
+        +str vertical_zero
+        +float permanent_datum_elevation
+        +float above_permanent_datum
+        +float magnetic_declination
+        +str coordinate_1_name
+        +float coordinate_1_value
+        +str coordinate_2_name
+        +float coordinate_2_value
+        +str coordinate_3_name
+        +float coordinate_3_value
     }
     
     class Zone{
-        
+        +str description
+        +str domain
+        +float maximum
+        +float minimum
     }
 ```
 
