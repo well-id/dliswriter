@@ -1189,6 +1189,72 @@ dlis_file.logical_records.append(channel)
 
 
 ## DLIS objects
+```mermaid
+---
+title: Logical record types overview
+---
+classDiagram
+    LogicalRecordBase <|-- IflrAndEflrBase
+    LogicalRecordBase <|-- FileHeader
+    LogicalRecordBase <|-- StorageUnitLabel
+    
+    IflrAndEflrBase <|-- IFLR
+    IflrAndEflrBase <|-- EFLR
+    
+    IFLR <|-- FrameData
+    IFLR <|-- NoFormatFrameData
+    
+    class LogicalRecordBase{
+        +set_type
+        +key
+        +size
+        +represent_as_bytes()
+        +from_config()
+    }
+    
+    class IflrAndEflrBase{
+        +is_eflr
+        +logical_record_type
+        +segment_attributes
+        +lr_type_struct
+        +make_body_bytes()
+        +make_header_bytes()
+        +split()
+        +make_lr_type_struct()
+    }
+    
+    class EFLR{
+        +dtime_formats
+        +object_name
+        +set_name
+        +origin_reference
+        +copy_number
+        +obname
+        -_rp66_rules
+        -_attributes
+        +get_attribute()
+        +set_attributes()
+        +add_dependent_objects_from_config()
+        +all_from_config()
+        -_create_attribute()
+    }
+    
+    class FileHeader{
+        +sequence_number
+        +identifier
+        +origin_reference
+        +copy_number
+        +object_name
+    }
+    
+    class StorageUnitLabel{
+        +storage_unit_structure
+        +dlis_version
+        +max_record_length
+        +sequence_number
+        +set_identifier
+    }
+```
 
 ```mermaid
 ---
