@@ -1,5 +1,15 @@
+import logging
+from typing_extensions import Self
+from configparser import ConfigParser
+
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.eflr_types.channel import Channel
+from dlis_writer.logical_record.eflr_types.computation import Computation
+from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.utils.enums import LogicalRecordType
+
+
+logger = logging.getLogger(__name__)
 
 
 class Process(EFLR):
@@ -23,3 +33,15 @@ class Process(EFLR):
         self.comments = self._create_attribute('comments')
 
         self.set_attributes(**kwargs)
+
+    @classmethod
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().from_config(config, key=key)
+
+        obj.add_dependent_objects_from_config(config, 'input_channels', Channel)
+        obj.add_dependent_objects_from_config(config, 'output_channels', Channel)
+        obj.add_dependent_objects_from_config(config, 'input_computations', Computation)
+        obj.add_dependent_objects_from_config(config, 'output_computations', Computation)
+        obj.add_dependent_objects_from_config(config, 'parameters', Parameter)
+
+        return obj

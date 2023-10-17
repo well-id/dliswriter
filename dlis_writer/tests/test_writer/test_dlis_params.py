@@ -224,3 +224,31 @@ def test_computation_params(short_dlis, idx, name, properties, zone_names, axis_
 
     for i, n in enumerate(zone_names):
         assert comp.zones[i].name == n
+
+
+def test_process(short_dlis):
+    procs = short_dlis.processes
+    assert len(procs) == 2
+
+
+@pytest.mark.parametrize(("idx", "name", "input_channels", "output_channels", "input_compts", "output_compts"), (
+        (0, "Process 1", ["radius"], ["amplitude", "Channel 2"], ["COMPT-1"], ["COMPT2"]),
+        (1, "Prc2", ["Channel 1"], ["Channel 2"], ["COMPT2", "COMPT-1"], []),
+))
+def test_process_params(short_dlis, idx, name, input_channels, output_channels, input_compts, output_compts):
+    proc = short_dlis.processes[idx]
+
+    assert proc.name == name
+
+    for i, n in enumerate(input_channels):
+        assert proc.input_channels[i].name == n
+
+    for i, n in enumerate(output_channels):
+        assert proc.output_channels[i].name == n
+
+    for i, n in enumerate(input_compts):
+        assert proc.input_computations[i].name == n
+
+    for i, n in enumerate(output_compts):
+        assert proc.output_computations[i].name == n
+
