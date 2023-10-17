@@ -1186,3 +1186,128 @@ channel = Channel()
 
 dlis_file.logical_records.append(channel)
 ```
+
+
+## DLIS objects
+
+```mermaid
+---
+title: EFLR objects relationships
+---
+classDiagram
+    
+    Calibration o-- "0..*" Channel
+    Calibration o-- "0..*" CalibrationCoefficient
+    Calibration o-- "0..*" CalibrationMeasurement
+    Calibration o-- "0..*" Parameter
+    CalibrationMeasurement o-- "0..1" Channel
+    Computation o-- "0..*" Zone
+    Computation o-- "0..1" Axis
+    Computation o-- "0..1" Tool
+    Frame o-- "0..*" Channel
+    Group o-- "0..*" Channel
+    Parameter o-- "0..*" Zone
+    Path o-- "0..1" WellReferencePoint
+    Path o-- "0..*" Channel
+    Process o-- "0..*" Channel
+    Process o-- "0..*" Computation
+    Process o-- "0..*" Parameter
+    Splice o-- "0..*" Channel
+    Splice o-- "0..*" Zone
+    Tool o-- "0..*" Equipment
+    Tool o-- "0..*" Channel
+    Tool o-- "0..*" Parameter
+    
+    
+    class Axis{
+        
+    }
+    
+    class Calibration{
+        
+    }
+    
+    class CalibrationMeasurement{
+        
+    }
+    
+    class CalibrationCoefficient{
+        
+    }
+    
+    class Channel{
+        
+    }
+    
+    class Computation{
+        
+    }
+    
+    class Equipment{
+        
+    }
+    
+    class Frame{
+        
+    }
+    
+    class Group{
+        
+    }
+    
+    class Parameter{
+        
+    }
+    
+    class Path{
+        
+    }
+    
+    class Process{
+        
+    }
+    
+    class Splice{
+        
+    }
+    
+    class Tool{
+        
+    }
+    
+    class WellReferencePoint{
+        
+    }
+    
+    class Zone{
+        
+    }
+```
+
+```mermaid
+---
+title: Standalone EFLR objects
+---
+classDiagram
+    class Message{
+        
+    }
+    
+    class Comment{
+        
+    }
+    
+    class LongName{
+        
+    }
+    
+    class NoFormat{
+        
+    }
+    
+    class Origin{
+        
+    }
+    
+    
+```
