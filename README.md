@@ -1198,12 +1198,12 @@ classDiagram
     Path o-- "0..1" WellReferencePoint
     Path o-- "0..*" Channel
     Frame o-- "0..*" Channel
-    Group o-- "0..*" Channel
     Calibration o-- "0..*" CalibrationCoefficient
     Calibration o-- "0..*" CalibrationMeasurement
     Calibration o-- "0..*" Channel
     Calibration o-- "0..*" Parameter
     CalibrationMeasurement o-- "0..1" Channel
+    CalibrationMeasurement o-- "0..1" Axis
     Computation o-- "0..*" Zone
     Computation o-- "0..1" Tool
     Computation o-- "0..1" Axis
@@ -1218,40 +1218,100 @@ classDiagram
     Tool o-- "0..*" Equipment
     
     class Axis{
-        
+        +str axis_id
+        +list coordinates
+        +float spacing
     }
     
     class Calibration{
-        
+        +list~Channel~ calibrated_channels
+        +list~Channel~ uncalibrated_channels
+        +list~CalibrationCoefficient~ coefficients
+        +list~CalibrationMeasurement~ measurements
+        +list~Parameter~ parameters
+        +str method
     }
     
     class CalibrationMeasurement{
-        
+        +str phase
+        +Channel measurement_source
+        +str _type
+        +list~int~ dimension
+        +Axis axis
+        +list~float~ measurement
+        +list~int~ sample_count
+        +list~float~ maximum_deviation
+        +list~float~ standard_deviation
+        +datetime begin_time
+        +float duration
+        +list~int~ reference
+        +list~float~ standard
+        +list~float~ plus_tolerance
+        +list~float~ minus_tolerance
     }
     
     class CalibrationCoefficient{
-        
+        +str label
+        +list~float~ coefficients
+        +list~float~ references
+        +list~float~ plus_tolerances
+        +list~float~ minus_tolerances
     }
     
     class Channel{
-        
+        +str long_name
+        +list~str~ properties
+        +RepresentationCodr representation_code
+        +Units units
+        +list~int~ dimension
+        +Axis axis
+        +list~int~ element_limit
+        +str source
+        +float minimum_value
+        +float maximum_value
     }
     
     class Computation{
-        
+        +str long_name
+        +list~str~ properties
+        +list~int~ dimension
+        +Axis axis
+        +list~Zone~ zones
+        +list~float~ values
+        +Tool source
     }
     
     class Equipment{
-        
+        +str trademark_name
+        +int status
+        +str _type
+        +str serial_number
+        +str location
+        +float height
+        +float length
+        +float minimum_diameter
+        +float maximum_diameter
+        +float volume
+        +float weight
+        +float hole_size
+        +float pressure
+        +float temperature
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
     }
     
     class Frame{
-        
+        +str description
+        +list~Channel~ channels
+        +str index_type
+        +str direction
+        +float spacing
+        +bool encrypted
+        +int index_min
+        +int index_max
     }
     
-    class Group{
-        
-    }
     
     class Parameter{
         
@@ -1307,5 +1367,22 @@ classDiagram
         
     }
     
+    
+```
+
+```mermaid
+---
+title: Group object
+---
+classDiagram
+    Group o-- "0..*" EFLR
+    Group o-- "0..*" Group
+
+    class Group{
+        +str description
+        +str object_type
+        +list~EFLR~ object_list
+        +list~Group~ group_list
+    }
     
 ```
