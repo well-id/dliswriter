@@ -1195,29 +1195,27 @@ dlis_file.logical_records.append(channel)
 title: EFLR objects relationships
 ---
 classDiagram
-    
-    Calibration o-- "0..*" Channel
+    Path o-- "0..1" WellReferencePoint
+    Path o-- "0..*" Channel
+    Frame o-- "0..*" Channel
+    Group o-- "0..*" Channel
     Calibration o-- "0..*" CalibrationCoefficient
     Calibration o-- "0..*" CalibrationMeasurement
+    Calibration o-- "0..*" Channel
     Calibration o-- "0..*" Parameter
     CalibrationMeasurement o-- "0..1" Channel
     Computation o-- "0..*" Zone
-    Computation o-- "0..1" Axis
     Computation o-- "0..1" Tool
-    Frame o-- "0..*" Channel
-    Group o-- "0..*" Channel
+    Computation o-- "0..1" Axis
     Parameter o-- "0..*" Zone
-    Path o-- "0..1" WellReferencePoint
-    Path o-- "0..*" Channel
+    Splice o-- "0..*" Channel
+    Splice o-- "0..*" Zone
     Process o-- "0..*" Channel
     Process o-- "0..*" Computation
     Process o-- "0..*" Parameter
-    Splice o-- "0..*" Channel
-    Splice o-- "0..*" Zone
-    Tool o-- "0..*" Equipment
     Tool o-- "0..*" Channel
     Tool o-- "0..*" Parameter
-    
+    Tool o-- "0..*" Equipment
     
     class Axis{
         
