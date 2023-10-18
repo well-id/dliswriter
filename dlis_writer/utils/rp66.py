@@ -855,7 +855,7 @@ class RP66:
 
     SPLICE = {
 
-        'output_channels': {
+        'output_channel': {
             'count': 1,
             'representation_code': RepresentationCode.OBNAME
         },

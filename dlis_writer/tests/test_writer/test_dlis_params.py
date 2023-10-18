@@ -252,3 +252,21 @@ def test_process_params(short_dlis, idx, name, input_channels, output_channels, 
     for i, n in enumerate(output_compts):
         assert proc.output_computations[i].name == n
 
+
+def test_splices(short_dlis):
+    splices = short_dlis.splices
+    assert len(splices) == 1
+
+
+def test_from_config(short_dlis):
+    splice = short_dlis.splices[0]
+
+    assert splice.name == "splc1"
+
+    for i, n in enumerate(("Zone-1", "Zone-2")):
+        assert splice.zones[i].name == n
+
+    for i, n in enumerate(("Channel 1", "Channel 2")):
+        assert splice.input_channels[i].name == n
+
+    assert splice.output_channel.name == 'amplitude'
