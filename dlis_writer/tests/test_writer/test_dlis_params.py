@@ -258,7 +258,7 @@ def test_splices(short_dlis):
     assert len(splices) == 1
 
 
-def test_from_config(short_dlis):
+def test_splice_params(short_dlis):
     splice = short_dlis.splices[0]
 
     assert splice.name == "splc1"
@@ -270,3 +270,23 @@ def test_from_config(short_dlis):
         assert splice.input_channels[i].name == n
 
     assert splice.output_channel.name == 'amplitude'
+
+
+def test_calibration_measurement_params(short_dlis):
+    m = short_dlis.measurements[0]
+
+    assert m.name == "CMEASURE-1"
+    assert m.phase == 'BEFORE'
+    assert m.axis[0].name == 'Axis-1'
+    assert m.source.name == "Channel 1"
+    assert m.mtype == 'Plus'
+    assert m.samples == [12.2323]
+    assert m.samplecount == 12
+    assert m.max_deviation == [2.2324]
+    assert m.begin_time == datetime(2050, 3, 12, 12, 30)
+    assert m.duration == 15
+    assert m.reference == [11]
+    assert m.standard == [11.2]
+    assert m.plus_tolerance == [2]
+    assert m.minus_tolerance == [1]
+
