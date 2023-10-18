@@ -88,7 +88,20 @@ class LogicalRecordCollection(MultiLogicalRecord):
             frame = Frame.from_config(config)
             obj.add_logical_records(frame)
 
-        for c in (Zone, Parameter, Axis, Equipment, Tool, Computation, Process, Splice, CalibrationMeasurement):
+        other_classes = (
+            Zone,
+            Parameter,
+            Axis,
+            Equipment,
+            Tool,
+            Computation,
+            Process,
+            Splice,
+            CalibrationMeasurement,
+            CalibrationCoefficient
+        )
+
+        for c in other_classes:
             obj._add_objects_from_config(config, c)
 
         return obj

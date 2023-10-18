@@ -1,7 +1,7 @@
 import pytest
 from datetime import datetime
 
-from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, Channel, Axis
+from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, CalibrationCoefficient, Channel, Axis
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
@@ -28,4 +28,16 @@ def test_calibration_measurement_from_config(config_params):
     assert m.standard.value == [11.2]
     assert m.plus_tolerance.value == [2]
     assert m.minus_tolerance.value == [1]
+
+
+def test_calibration_coefficient_from_config(config_params):
+    key = "CalibrationCoefficient-1"
+    c = CalibrationCoefficient.from_config(config_params, key=key)
+
+    assert c.object_name == "COEF-1"
+    assert c.label.value == 'Gain'
+    assert c.coefficients.value == [100.2, 201.3]
+    assert c.references.value == [89, 298]
+    assert c.plus_tolerances.value == [100.2, 222.124]
+    assert c.minus_tolerances.value == [87.23, 214]
 

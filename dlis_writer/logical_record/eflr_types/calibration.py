@@ -55,11 +55,13 @@ class CalibrationCoefficient(EFLR):
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         super().__init__(object_name, set_name)
 
+        conv = lambda val: self.convert_values(val, require_numeric=True)
+
         self.label = self._create_attribute('label')
-        self.coefficients = self._create_attribute('coefficients')
-        self.references = self._create_attribute('references')
-        self.plus_tolerances = self._create_attribute('plus_tolerances')
-        self.minus_tolerances = self._create_attribute('minus_tolerances')
+        self.coefficients = self._create_attribute('coefficients', converter=conv)
+        self.references = self._create_attribute('references', converter=conv)
+        self.plus_tolerances = self._create_attribute('plus_tolerances', converter=conv)
+        self.minus_tolerances = self._create_attribute('minus_tolerances', converter=conv)
 
         self.set_attributes(**kwargs)
 

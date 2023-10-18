@@ -290,3 +290,14 @@ def test_calibration_measurement_params(short_dlis):
     assert m.plus_tolerance == [2]
     assert m.minus_tolerance == [1]
 
+
+def test_calibration_coefficient_params(short_dlis):
+    c = short_dlis.coefficients[0]
+
+    assert c.name == "COEF-1"
+    assert c.label == 'Gain'
+    assert c.coefficients == [100.2, 201.3]
+    assert c.references == [89, 298]
+    assert c.plus_tolerance == [100.2, 222.124]
+    assert c.minus_tolerance == [87.23, 214]
+
