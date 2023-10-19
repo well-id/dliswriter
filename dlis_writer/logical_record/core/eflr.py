@@ -9,13 +9,42 @@ from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.rp66 import RP66
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
-from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase
+from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase, IflrAndEflrRMeta
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLR(IflrAndEflrBase):
+class InstanceRegisterMeta(IflrAndEflrRMeta):
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls, *args, **kwargs)
+        obj._instance_dict = {}
+        return obj
+
+
+class InstanceRegisterMixin(metaclass=InstanceRegisterMeta):
+    from_config: callable  # from EFLR
+
+    def __init__(self, name):
+        self._instance_dict[name] = self
+
+    @classmethod
+    def get_instance(cls, name):
+        return cls._instance_dict.get(name)
+
+    @classmethod
+    def get_or_make_from_config(cls, name, config):
+        if name in cls._instance_dict:
+            return cls.get_instance(name)
+
+        if name in config.sections():
+            if (object_name := config[name].get('name', None)) in cls._instance_dict:
+                return cls.get_instance(object_name)
+
+        return cls.from_config(config, key=name)
+
+
+class EFLR(IflrAndEflrBase, InstanceRegisterMixin):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
@@ -30,7 +59,8 @@ class EFLR(IflrAndEflrBase):
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
     def __init__(self, object_name: str, set_name: str = None):
-        super().__init__()
+        IflrAndEflrBase.__init__(self)
+        InstanceRegisterMixin.__init__(self, object_name)
 
         self.object_name = object_name
         self.set_name = set_name

@@ -2,11 +2,10 @@ from numbers import Number
 from datetime import datetime, timedelta
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 from dlis_writer.utils.enums import LogicalRecordType
 
 
-class Zone(EFLR, InstanceRegisterMixin):
+class Zone(EFLR):
     set_type = 'ZONE'
     logical_record_type = LogicalRecordType.STATIC
 
@@ -28,8 +27,7 @@ class Zone(EFLR, InstanceRegisterMixin):
 
         """
 
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.description = self._create_attribute('description')
         self.domain = self._create_attribute('domain')

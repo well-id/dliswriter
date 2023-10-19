@@ -7,19 +7,17 @@ from dlis_writer.utils.enums import LogicalRecordType
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurement(EFLR, InstanceRegisterMixin):
+class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
@@ -51,13 +49,12 @@ class CalibrationMeasurement(EFLR, InstanceRegisterMixin):
         return obj
 
 
-class CalibrationCoefficient(EFLR, InstanceRegisterMixin):
+class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 

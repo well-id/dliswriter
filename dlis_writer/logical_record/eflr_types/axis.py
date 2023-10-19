@@ -1,15 +1,13 @@
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
-class Axis(EFLR, InstanceRegisterMixin):
+class Axis(EFLR):
     set_type = 'AXIS'
     logical_record_type = LogicalRecordType.AXIS
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.axis_id = self._create_attribute('axis_id')
         self.coordinates = self._create_attribute(

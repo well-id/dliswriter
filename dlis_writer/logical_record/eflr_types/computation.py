@@ -7,19 +7,17 @@ from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.logical_record.eflr_types.tool import Tool
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.utils.enums import LogicalRecordType
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class Computation(EFLR, InstanceRegisterMixin):
+class Computation(EFLR):
     set_type = 'COMPUTATION'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=self.convert_values)

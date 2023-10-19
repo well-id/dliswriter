@@ -2,21 +2,18 @@ import logging
 import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType, numpy_dtype_converter
 
 
 logger = logging.getLogger(__name__)
 
 
-class Channel(EFLR, InstanceRegisterMixin):
+class Channel(EFLR):
     set_type = 'CHANNEL'
     logical_record_type = LogicalRecordType.CHANNL
 
     def __init__(self, object_name: str, set_name: str = None, dataset_name: str = None, **kwargs):
-
-        InstanceRegisterMixin.__init__(self, object_name)
-        EFLR.__init__(self, object_name, set_name)
+        super().__init__(object_name, set_name)
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=self.convert_properties)

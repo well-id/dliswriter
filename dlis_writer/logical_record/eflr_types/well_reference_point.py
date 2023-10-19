@@ -1,16 +1,13 @@
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
-class WellReferencePoint(EFLR, InstanceRegisterMixin):
+class WellReferencePoint(EFLR):
     set_type = 'WELL-REFERENCE'
     logical_record_type = LogicalRecordType.OLR
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.permanent_datum = self._create_attribute('permanent_datum')
         self.vertical_zero = self._create_attribute('vertical_zero')

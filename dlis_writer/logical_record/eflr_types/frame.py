@@ -5,20 +5,18 @@ import logging
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
 from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class Frame(EFLR, InstanceRegisterMixin):
+class Frame(EFLR):
     set_type = 'FRAME'
     logical_record_type = LogicalRecordType.FRAME
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.description = self._create_attribute('description')
         self.channels = self._create_attribute('channels')

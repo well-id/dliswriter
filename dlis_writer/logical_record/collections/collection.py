@@ -105,7 +105,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
             Message,
             Comment,
             NoFormat,
-            LongName
+            LongName,
+            Group
         )
 
         for c in other_classes:

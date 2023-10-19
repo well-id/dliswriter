@@ -1,15 +1,13 @@
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
-from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
-class Equipment(EFLR, InstanceRegisterMixin):
+class Equipment(EFLR):
     set_type = 'EQUIPMENT'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        EFLR.__init__(self, object_name, set_name)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__(object_name, set_name)
 
         self.trademark_name = self._create_attribute('trademark_name')
         self.status = self._create_attribute('status', converter=int)
