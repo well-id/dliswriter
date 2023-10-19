@@ -318,3 +318,22 @@ def test_well_reference_point_params(short_dlis, idx, name, v_zero, m_decl, c1_n
     assert w.coordinates[c2_name] == c2_value
 
 
+@pytest.mark.parametrize(("idx", "name", "channels", "depth", "radial_drift", "angular_drift", "time"), (
+        (0, "PATH1", ("Channel 1", "Channel 2"), -187, 105, 64.23, 180),
+        (1, "path2", ("amplitude",), 120, 3, -12.3, 4)
+))
+def test_path_params(short_dlis, idx, name, channels, depth, radial_drift, angular_drift, time):
+    p = short_dlis.paths[idx]
+
+    assert p.name == name
+    assert p.frame.name == 'MAIN FRAME'
+    assert p.well_reference_point.name == 'AQLN WELL-REF'
+
+    assert len(p.value) == len(channels)
+    for i, c in enumerate(channels):
+        assert p.value[i].name == c
+
+    assert p.vertical_depth == depth
+    assert p.radial_drift == radial_drift
+    assert p.angular_drift == angular_drift
+    assert p.time == time

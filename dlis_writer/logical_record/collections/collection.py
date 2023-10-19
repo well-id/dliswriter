@@ -100,7 +100,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
             CalibrationMeasurement,
             CalibrationCoefficient,
             Calibration,
-            WellReferencePoint
+            WellReferencePoint,
+            Path
         )
 
         for c in other_classes:
