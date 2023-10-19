@@ -9,7 +9,7 @@ from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_chann
 
 @pytest.fixture(scope='session')
 def short_dlis(short_reference_data, base_data_path, config_params):
-    dlis_path = base_data_path/'outputs/new_fake_dlis_shared.DLIS'
+    dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
 
     channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
     config_params['Frame']['channels'] = ', '.join(channel_names)
@@ -374,3 +374,23 @@ def test_no_format_params(short_dlis, idx, name, consumer_name, description):
     assert w.consumer_name == consumer_name
     assert w.description == description
 
+
+def test_long_name_params(short_dlis):
+    w = short_dlis.longnames[0]
+    t = 'SOME ASCII TEXT'
+
+    assert w.modifier == [t]
+    assert w.quantity == t
+    assert w.quantity_mod == [t]
+    assert w.altered_form == t
+    assert w.entity == t
+    assert w.entity_mod == [t]
+    assert w.entity_nr == t
+    assert w.entity_part == t
+    assert w.entity_part_nr == t
+    assert w.generic_source == t
+    assert w.source_part == [t]
+    assert w.source_part_nr == [t]
+    assert w.conditions == [t]
+    assert w.standard_symbol == t
+    assert w.private_symbol == t
