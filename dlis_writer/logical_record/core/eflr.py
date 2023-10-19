@@ -22,29 +22,7 @@ class InstanceRegisterMeta(IflrAndEflrRMeta):
         return obj
 
 
-class InstanceRegisterMixin(metaclass=InstanceRegisterMeta):
-    from_config: callable  # from EFLR
-
-    def __init__(self, name):
-        self._instance_dict[name] = self
-
-    @classmethod
-    def get_instance(cls, name):
-        return cls._instance_dict.get(name)
-
-    @classmethod
-    def get_or_make_from_config(cls, name, config):
-        if name in cls._instance_dict:
-            return cls.get_instance(name)
-
-        if name in config.sections():
-            if (object_name := config[name].get('name', None)) in cls._instance_dict:
-                return cls.get_instance(object_name)
-
-        return cls.from_config(config, key=name)
-
-
-class EFLR(IflrAndEflrBase, InstanceRegisterMixin):
+class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
@@ -59,8 +37,7 @@ class EFLR(IflrAndEflrBase, InstanceRegisterMixin):
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
     def __init__(self, object_name: str, set_name: str = None):
-        IflrAndEflrBase.__init__(self)
-        InstanceRegisterMixin.__init__(self, object_name)
+        super().__init__()
 
         self.object_name = object_name
         self.set_name = set_name
@@ -70,6 +47,8 @@ class EFLR(IflrAndEflrBase, InstanceRegisterMixin):
 
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
         self._attributes: dict[str, Attribute] = {}
+
+        self._instance_dict[object_name] = self
 
     def __str__(self):
         return f"{self.__class__.__name__} '{self.object_name}'"
@@ -297,3 +276,19 @@ class EFLR(IflrAndEflrBase, InstanceRegisterMixin):
             keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
 
         return [cls.from_config(config, key) for key in keys]
+    
+    @classmethod
+    def get_instance(cls, name):
+        return cls._instance_dict.get(name)
+
+    @classmethod
+    def get_or_make_from_config(cls, name, config):
+        if name in cls._instance_dict:
+            return cls.get_instance(name)
+
+        if name in config.sections():
+            if (object_name := config[name].get('name', None)) in cls._instance_dict:
+                return cls.get_instance(object_name)
+
+        return cls.from_config(config, key=name)
+

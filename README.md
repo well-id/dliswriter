@@ -1232,10 +1232,13 @@ classDiagram
         +obname
         -_rp66_rules
         -_attributes
+        -_instance_dict
         +get_attribute()
         +set_attributes()
         +add_dependent_objects_from_config()
         +all_from_config()
+        +get_or_make_from_config()
+        +get_instance()
         -_create_attribute()
     }
     
