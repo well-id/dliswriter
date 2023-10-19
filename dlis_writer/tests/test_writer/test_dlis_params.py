@@ -394,3 +394,17 @@ def test_long_name_params(short_dlis):
     assert w.conditions == [t]
     assert w.standard_symbol == t
     assert w.private_symbol == t
+
+
+@pytest.mark.parametrize(("idx", "name", "description", "object_type", "object_names", "group_names"), (
+        (0, "ChannelGroup", "Group of channels", "CHANNEL", ["Channel 1", "Channel 2"], []),
+        (1, "ProcessGroup", "Group of processes", "PROCESS", ["Process 1", "Prc2"], []),
+        (2, "MultiGroup", "Group of groups", "GROUP", [], ["ChannelGroup", "ProcessGroup"])
+))
+def test_group_params(short_dlis, idx, name, description, object_type, object_names, group_names):
+    g = short_dlis.groups[idx]
+    assert g.name == name
+    assert g.description == description
+    assert g.objecttype == object_type
+    _check_list(g.objects, object_names)
+    _check_list(g.groups, group_names)
