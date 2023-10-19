@@ -101,7 +101,9 @@ class LogicalRecordCollection(MultiLogicalRecord):
             CalibrationCoefficient,
             Calibration,
             WellReferencePoint,
-            Path
+            Path,
+            Message,
+            Comment
         )
 
         for c in other_classes:

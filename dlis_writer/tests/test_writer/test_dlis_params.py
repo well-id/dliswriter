@@ -337,3 +337,27 @@ def test_path_params(short_dlis, idx, name, channels, depth, radial_drift, angul
     assert p.radial_drift == radial_drift
     assert p.angular_drift == angular_drift
     assert p.time == time
+
+
+def test_message_params(short_dlis):
+    m = short_dlis.messages[0]
+
+    assert m.name == "MESSAGE-1"
+    assert m.message_type == 'Command'
+    assert m.time == datetime(2050, 3, 4, 11, 23, 11)
+    assert m.borehole_drift == 123.34
+    assert m.vertical_depth == 234.45
+    assert m.radial_drift == 345.56
+    assert m.angular_drift == 456.67
+    assert m.text == ["Test message 11111"]
+
+
+@pytest.mark.parametrize(("idx", "name", "text"), (
+        (0, "COMMENT-1", ["SOME COMMENT HERE"]),
+        (1, "cmt2", ["some other comment here", "and another comment"])
+))
+def test_comment_params(short_dlis, idx, name, text):
+    c = short_dlis.comments[idx]
+
+    assert c.name == name
+    assert c.text == text

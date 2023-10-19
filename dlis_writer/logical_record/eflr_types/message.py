@@ -10,12 +10,12 @@ class Message(EFLR):
         super().__init__(object_name, set_name)
 
         self._type = self._create_attribute('_type')
-        self.time = self._create_attribute('time')
-        self.borehole_drift = self._create_attribute('borehole_drift')
-        self.vertical_depth = self._create_attribute('vertical_depth')
-        self.radial_drift = self._create_attribute('radial_drift')
-        self.angular_drift = self._create_attribute('angular_drift')
-        self.text = self._create_attribute('text')
+        self.time = self._create_attribute('time', converter=self.parse_dtime)
+        self.borehole_drift = self._create_attribute('borehole_drift', converter=float)
+        self.vertical_depth = self._create_attribute('vertical_depth', converter=float)
+        self.radial_drift = self._create_attribute('radial_drift', converter=float)
+        self.angular_drift = self._create_attribute('angular_drift', converter=float)
+        self.text = self._create_attribute('text', converter=self.convert_values)
 
         self.set_attributes(**kwargs)
 
@@ -27,6 +27,6 @@ class Comment(EFLR):
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
         super().__init__(object_name, set_name)
 
-        self.text = self._create_attribute('text')
+        self.text = self._create_attribute('text', converter=self.convert_values)
 
         self.set_attributes(**kwargs)
