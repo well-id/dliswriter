@@ -1,7 +1,7 @@
-import pytest
 from datetime import datetime
 
-from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, CalibrationCoefficient, Channel, Axis
+from dlis_writer.logical_record.eflr_types import (CalibrationMeasurement, CalibrationCoefficient, Calibration,
+                                                   Channel, Axis, Parameter)
 from dlis_writer.utils.enums import Units, RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
@@ -41,3 +41,25 @@ def test_calibration_coefficient_from_config(config_params):
     assert c.plus_tolerances.value == [100.2, 222.124]
     assert c.minus_tolerances.value == [87.23, 214]
 
+
+def _check_list(objects, names, object_class):
+    objects = objects.value
+
+    assert isinstance(objects, list)
+    assert len(objects) == len(names)
+    for i, name in enumerate(names):
+        assert isinstance(objects[i], object_class)
+        assert objects[i].object_name == name
+
+
+def test_calibration_from_config(config_params):
+    key = "Calibration-1"
+    c = Calibration.from_config(config_params, key=key)
+
+    assert c.object_name == "CALIB-MAIN"
+
+    _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), Channel)
+    _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), Channel)
+    _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficient)
+    _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurement)
+    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), Parameter)

@@ -23,6 +23,12 @@ def short_dlis(short_reference_data, base_data_path, config_params):
         os.remove(dlis_path)
 
 
+def _check_list(objects, names):
+    assert len(objects) == len(names)
+    for i, n in enumerate(names):
+        assert objects[i].name == n
+
+
 def test_channel_properties(short_dlis, config_params):
     for name in ('posix time', 'surface rpm'):
         chan = select_channel(short_dlis, name)
@@ -143,9 +149,7 @@ def test_parameters_params(short_dlis, idx, name, long_name, values, zones):
     assert param.long_name == long_name
     assert param.values.tolist() == values
 
-    assert len(param.zones) == len(zones)
-    for i, z in enumerate(zones):
-        assert param.zones[i].name == z
+    _check_list(param.zones, zones)
 
 
 def test_axes(short_dlis):
@@ -197,11 +201,8 @@ def test_tool_params(short_dlis, idx, name, description, status, param_names, ch
     assert tool.description == description
     assert tool.status == status
 
-    for i, pn in enumerate(param_names):
-        assert tool.parameters[i].name == pn
-
-    for i, cn in enumerate(channel_names):
-        assert tool.channels[i].name == cn
+    _check_list(tool.parameters, param_names)
+    _check_list(tool.channels, channel_names)
 
 
 def test_computation(short_dlis):
@@ -222,8 +223,7 @@ def test_computation_params(short_dlis, idx, name, properties, zone_names, axis_
     assert comp.axis[0].name == axis_name
     assert comp.values.tolist() == values
 
-    for i, n in enumerate(zone_names):
-        assert comp.zones[i].name == n
+    _check_list(comp.zones, zone_names)
 
 
 def test_process(short_dlis):
@@ -240,17 +240,10 @@ def test_process_params(short_dlis, idx, name, input_channels, output_channels, 
 
     assert proc.name == name
 
-    for i, n in enumerate(input_channels):
-        assert proc.input_channels[i].name == n
-
-    for i, n in enumerate(output_channels):
-        assert proc.output_channels[i].name == n
-
-    for i, n in enumerate(input_compts):
-        assert proc.input_computations[i].name == n
-
-    for i, n in enumerate(output_compts):
-        assert proc.output_computations[i].name == n
+    _check_list(proc.input_channels, input_channels)
+    _check_list(proc.output_channels, output_channels)
+    _check_list(proc.input_computations, input_compts)
+    _check_list(proc.output_computations, output_compts)
 
 
 def test_splices(short_dlis):
@@ -263,11 +256,8 @@ def test_splice_params(short_dlis):
 
     assert splice.name == "splc1"
 
-    for i, n in enumerate(("Zone-1", "Zone-2")):
-        assert splice.zones[i].name == n
-
-    for i, n in enumerate(("Channel 1", "Channel 2")):
-        assert splice.input_channels[i].name == n
+    _check_list(splice.zones, ("Zone-1", "Zone-2"))
+    _check_list(splice.input_channels, ("Channel 1", "Channel 2"))
 
     assert splice.output_channel.name == 'amplitude'
 
@@ -300,4 +290,16 @@ def test_calibration_coefficient_params(short_dlis):
     assert c.references == [89, 298]
     assert c.plus_tolerance == [100.2, 222.124]
     assert c.minus_tolerance == [87.23, 214]
+
+
+def test_calibration_params(short_dlis):
+    c = short_dlis.calibrations[0]
+
+    assert c.name == 'CALIB-MAIN'
+
+    _check_list(c.calibrated, ("Channel 1", "Channel 2"))
+    _check_list(c.uncalibrated, ("amplitude", "radius", "radius_pooh"))
+    _check_list(c.coefficients, ("COEF-1",))
+    _check_list(c.measurements, ("CMEASURE-1",))
+    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"))
 

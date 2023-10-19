@@ -5,18 +5,21 @@ from configparser import ConfigParser
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
 from dlis_writer.logical_record.eflr_types.channel import Channel
+from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.eflr_types._instance_register import InstanceRegisterMixin
 
 
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurement(EFLR):
+class CalibrationMeasurement(EFLR, InstanceRegisterMixin):
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+        EFLR.__init__(self, object_name, set_name)
+        InstanceRegisterMixin.__init__(self, object_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
@@ -48,12 +51,13 @@ class CalibrationMeasurement(EFLR):
         return obj
 
 
-class CalibrationCoefficient(EFLR):
+class CalibrationCoefficient(EFLR, InstanceRegisterMixin):
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = LogicalRecordType.STATIC
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+        EFLR.__init__(self, object_name, set_name)
+        InstanceRegisterMixin.__init__(self, object_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
@@ -82,3 +86,16 @@ class Calibration(EFLR):
         self.method = self._create_attribute('method')
 
         self.set_attributes(**kwargs)
+
+    @classmethod
+    def from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().from_config(config, key=key)
+
+        obj.add_dependent_objects_from_config(config, 'calibrated_channels', Channel)
+        obj.add_dependent_objects_from_config(config, 'uncalibrated_channels', Channel)
+        obj.add_dependent_objects_from_config(config, 'measurements', CalibrationMeasurement)
+        obj.add_dependent_objects_from_config(config, 'coefficients', CalibrationCoefficient)
+        obj.add_dependent_objects_from_config(config, 'parameters', Parameter)
+
+        return obj
+

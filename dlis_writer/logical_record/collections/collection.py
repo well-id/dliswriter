@@ -98,7 +98,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
             Process,
             Splice,
             CalibrationMeasurement,
-            CalibrationCoefficient
+            CalibrationCoefficient,
+            Calibration
         )
 
         for c in other_classes:
