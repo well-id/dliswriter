@@ -303,3 +303,18 @@ def test_calibration_params(short_dlis):
     _check_list(c.measurements, ("CMEASURE-1",))
     _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"))
 
+
+@pytest.mark.parametrize(("idx", "name", "v_zero", "m_decl", "c1_name", "c1_value", "c2_name", "c2_value"), (
+        (0, "AQLN WELL-REF", "AQLN vertical_zero", 999.51, "Latitude", 40.395240, "Longitude", 27.792470),
+        (1, "WRP-X", "vz20", 112.3, "X", 20, "Y", -0.3)
+))
+def test_well_reference_point_params(short_dlis, idx, name, v_zero, m_decl, c1_name, c1_value, c2_name, c2_value):
+    w = short_dlis.wellrefs[idx]
+
+    assert w.name == name
+    assert w.vertical_zero == v_zero
+    assert w.magnetic_declination == m_decl
+    assert w.coordinates[c1_name] == c1_value
+    assert w.coordinates[c2_name] == c2_value
+
+
