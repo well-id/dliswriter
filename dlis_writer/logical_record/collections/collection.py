@@ -103,7 +103,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
             WellReferencePoint,
             Path,
             Message,
-            Comment
+            Comment,
+            NoFormat
         )
 
         for c in other_classes:

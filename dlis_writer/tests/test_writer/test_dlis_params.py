@@ -361,3 +361,16 @@ def test_comment_params(short_dlis, idx, name, text):
 
     assert c.name == name
     assert c.text == text
+
+
+@pytest.mark.parametrize(("idx", "name", "consumer_name", "description"), (
+        (0, "no_format_1", "SOME TEXT NOT FORMATTED", "TESTING-NO-FORMAT"),
+        (1, "no_fmt2", "xyz", "TESTING NO FORMAT 2")
+))
+def test_no_format_params(short_dlis, idx, name, consumer_name, description):
+    w = short_dlis.noformats[idx]
+
+    assert w.name == name
+    assert w.consumer_name == consumer_name
+    assert w.description == description
+
