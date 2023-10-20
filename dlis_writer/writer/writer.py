@@ -8,7 +8,7 @@ from datetime import timedelta
 from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.collections.collection import LogicalRecordCollection
+from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data

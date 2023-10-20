@@ -7,7 +7,7 @@ from typing import Union, Dict
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.collections.collection import LogicalRecordCollection
+from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 
 
 logger = logging.getLogger(__name__)

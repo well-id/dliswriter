@@ -6,7 +6,6 @@ from functools import reduce
 
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
-from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.core.eflr import EFLR
@@ -23,7 +22,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self.file_header = file_header
         self.origin = origin
         self._channels: list[Channel] = []
-        self._frames: list[FrameDataCapsule] = []
+        self._frames: list[Frame] = []
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[EFLR] = []
 
@@ -101,7 +100,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._other_logical_records.extend(lrs)
 
     @staticmethod
-    def make_data_records(config, data) -> FrameDataCapsule:
+    def make_frame_and_data(config, data):
         frame = Frame.from_config(config)
         if frame.channels.value:
             frame.setup_channels_params_from_data(data)
@@ -110,9 +109,9 @@ class LogicalRecordCollection(MultiLogicalRecord):
             ch = "(no channels defined)"
 
         logger.info(f'Preparing frames for {data.shape[0]} rows {ch}')
-        data_capsule = FrameDataCapsule(frame, data)
+        multi_frame_data = MultiFrameData(frame, data)
 
-        return data_capsule
+        return frame, multi_frame_data
 
     def _add_objects_from_config(self, config, object_class):
         cn = object_class.__name__
@@ -136,10 +135,10 @@ class LogicalRecordCollection(MultiLogicalRecord):
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
         obj.add_channels(*channels)
 
-        data_capsule = cls.make_data_records(config, data)
-        logger.info(f"Adding {data_capsule.frame} and {len(data_capsule.data)} FrameData objects to the file")
-        obj.add_frames(data_capsule.frame)
-        obj.add_frame_data_objects(data_capsule.data)
+        frame, multi_frame_data = cls.make_frame_and_data(config, data)
+        logger.info(f"Adding {frame} and {len(multi_frame_data)} FrameData objects to the file")
+        obj.add_frames(frame)
+        obj.add_frame_data_objects(multi_frame_data)
 
         other_classes = (
             Zone,
