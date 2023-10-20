@@ -282,6 +282,16 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         return cls._instance_dict.get(name)
 
     @classmethod
+    def get_all_instances(cls):
+        return list(cls._instance_dict.values())
+
+    @classmethod
+    def clear_instances(cls):
+        if cls._instance_dict:
+            logger.debug(f"Removing all defined instances of {cls.__name__}")
+            cls._instance_dict.clear()
+
+    @classmethod
     def get_or_make_from_config(cls, name, config):
         if name in cls._instance_dict:
             return cls.get_instance(name)

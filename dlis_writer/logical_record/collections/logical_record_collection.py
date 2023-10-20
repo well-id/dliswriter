@@ -132,10 +132,10 @@ class LogicalRecordCollection(MultiLogicalRecord):
         )
 
         channels = Channel.make_all_from_config(config)
+        frame, multi_frame_data = cls.make_frame_and_data(config, data)
+
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
         obj.add_channels(*channels)
-
-        frame, multi_frame_data = cls.make_frame_and_data(config, data)
         logger.info(f"Adding {frame} and {len(multi_frame_data)} FrameData objects to the file")
         obj.add_frames(frame)
         obj.add_frame_data_objects(multi_frame_data)
@@ -162,6 +162,17 @@ class LogicalRecordCollection(MultiLogicalRecord):
         )
 
         for c in other_classes:
-            obj._add_objects_from_config(config, c)
+            c.make_all_from_config(config)
+
+        # the division into the two loops is on purpose
+        # we first make all instances, then add all instances from all classes
+        # in case some are added in non-standard order
+        for c in other_classes:
+            inst = c.get_all_instances()
+            if not inst:
+                logger.debug(f"No instances of {c.__name__} defined")
+            else:
+                logger.info(f"Adding {c.__name__}(s): {', '.join(p.object_name for p in inst)} to the file")
+                obj.add_logical_records(*inst)
 
         return obj

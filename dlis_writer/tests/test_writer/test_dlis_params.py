@@ -5,6 +5,13 @@ from datetime import datetime
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
+from dlis_writer.tests.common import clear_eflr_instance_registers
+
+
+@pytest.fixture(autouse=True)
+def cleanup():
+    clear_eflr_instance_registers()
+    yield
 
 
 @pytest.fixture(scope='session')
