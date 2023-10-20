@@ -13,6 +13,13 @@ logger = logging.getLogger(__name__)
 class Frame(EFLR):
     set_type = 'FRAME'
     logical_record_type = LogicalRecordType.FRAME
+    frame_index_types = (
+        'ANGULAR-DRIFT',
+        'BOREHOLE-DEPTH',
+        'NON-STANDARD',
+        'RADIAL-DRIFT',
+        'VERTICAL-DEPTH'
+    )
 
     def __init__(self, object_name: str, set_name: str = None, **kwargs):
 
@@ -20,7 +27,7 @@ class Frame(EFLR):
 
         self.description = self._create_attribute('description')
         self.channels = self._create_attribute('channels')
-        self.index_type = self._create_attribute('index_type')
+        self.index_type = self._create_attribute('index_type', converter=self.parse_index_type)
         self.direction = self._create_attribute('direction')
         self.spacing = self._create_attribute('spacing', converter=float)
         self.encrypted = self._create_attribute('encrypted', converter=bool)
@@ -28,6 +35,13 @@ class Frame(EFLR):
         self.index_max = self._create_attribute('index_max', converter=int)
 
         self.set_attributes(**kwargs)
+
+    @staticmethod
+    def parse_index_type(value):
+        if value not in Frame.frame_index_types:
+            logger.warning(f"Frame index type should be one of the following: "
+                           f"'{', '.join(Frame.frame_index_types)}'; got '{value}'")
+        return value
 
     @classmethod
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
