@@ -116,7 +116,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
     def _add_objects_from_config(self, config, object_class):
         cn = object_class.__name__
 
-        objects = object_class.make_all_from_config(config)
+        objects = object_class.get_or_make_all_from_config(config)
         if not objects:
             logger.debug(f"No {cn}s found in the config")
         else:
@@ -131,7 +131,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
             origin=Origin.make_from_config(config)
         )
 
-        channels = Channel.make_all_from_config(config)
+        channels = Channel.get_or_make_all_from_config(config)
         frame, multi_frame_data = cls.make_frame_and_data(config, data)
 
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
@@ -162,7 +162,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         )
 
         for c in other_classes:
-            c.make_all_from_config(config)
+            c.get_or_make_all_from_config(config)
 
         # the division into the two loops is on purpose
         # we first make all instances, then add all instances from all classes
