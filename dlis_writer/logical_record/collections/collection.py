@@ -70,7 +70,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
             self.add_logical_records(*objects)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, data=None) -> Self:
+    def from_config_and_data(cls, config: ConfigParser, data) -> Self:
         obj = cls(
             storage_unit_label=StorageUnitLabel.from_config(config),
             file_header=FileHeader.from_config(config),
@@ -79,14 +79,9 @@ class LogicalRecordCollection(MultiLogicalRecord):
 
         obj._add_objects_from_config(config, Channel)
 
-        if data is not None:
-            data_capsule = cls.make_data_records(config, data)
-            logger.info(f"Adding {data_capsule.frame} and FrameData objects to the file")
-            obj.add_logical_records(data_capsule.frame, data_capsule.data)
-        else:
-            logger.warning("No data defined; adding only a Frame to the logical records")
-            frame = Frame.from_config(config)
-            obj.add_logical_records(frame)
+        data_capsule = cls.make_data_records(config, data)
+        logger.info(f"Adding {data_capsule.frame} and FrameData objects to the file")
+        obj.add_logical_records(data_capsule.frame, data_capsule.data)
 
         other_classes = (
             Zone,

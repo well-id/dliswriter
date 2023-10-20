@@ -57,7 +57,7 @@ class DLISWriter:
 
     def write_dlis_file(self, dlis_file_name):
         def timed_func():
-            logical_records = LogicalRecordCollection.from_config(self._config, self._data)
+            logical_records = LogicalRecordCollection.from_config_and_data(self._config, self._data)
 
             dlis_file = DLISFile()
             dlis_file.write_dlis(logical_records, dlis_file_name)
