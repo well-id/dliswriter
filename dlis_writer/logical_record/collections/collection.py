@@ -27,6 +27,17 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[MultiLogicalRecord] = []
 
+    def set_origin_reference(self, value):
+        self.file_header.origin_reference = value
+        self.origin.origin_reference = value
+
+        for iterable in (self._channels, self._frames, self._frame_data_objects):
+            for ob in iterable:
+                ob.origin_reference = value
+
+        for mlr in self._other_logical_records:
+            mlr.set_origin_reference(value)
+
     @property
     def other_logical_records(self):
         return self._other_logical_records

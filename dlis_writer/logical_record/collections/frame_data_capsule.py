@@ -13,6 +13,9 @@ class FrameDataCapsule(MultiLogicalRecord):
         self._frame: Frame = frame
         self._data: MultiFrameData = MultiFrameData(frame, data)
 
+    def set_origin_reference(self, value):
+        self._data.set_origin_reference(value)
+
     @property
     def frame(self) -> Frame:
         return self._frame
@@ -24,14 +27,6 @@ class FrameDataCapsule(MultiLogicalRecord):
     @property
     def data(self) -> MultiFrameData:
         return self._data
-
-    @property
-    def origin_reference(self):
-        return self._data.origin_reference
-
-    @origin_reference.setter
-    def origin_reference(self, val):
-        self._data.origin_reference = val
 
     def __len__(self):
         return len(self.channels) + 1 + len(self.data)

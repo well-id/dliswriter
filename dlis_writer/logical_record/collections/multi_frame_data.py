@@ -13,16 +13,19 @@ class MultiFrameData(MultiLogicalRecord):
         self._data_array: np.ndarray = self.flatten_structured_array(data, channels=frame.channels.value)
         self._frame = frame
 
-        self.origin_reference = None
+        self._origin_reference = None
 
         self._i = 0
+
+    def set_origin_reference(self, value):
+        self._origin_reference = value
 
     def _make_frame_data(self, idx: int):
         return FrameData(
             frame=self._frame,
             frame_number=idx + 1,
             slots=self._data_array[idx],
-            origin_reference=self.origin_reference
+            origin_reference=self._origin_reference
         )
 
     def __len__(self):

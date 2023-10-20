@@ -100,11 +100,7 @@ class DLISFile:
         val = logical_records.origin.file_set_number.value
         logger.debug(f"File set number is {val}")
 
-        all_records = iter(logical_records)
-        next(all_records)  # skip storage unit label
-
-        for logical_record in progressbar(all_records):
-            logical_record.origin_reference = val
+        logical_records.set_origin_reference(val)
 
     @log_progress("Writing raw bytes...")
     @profile

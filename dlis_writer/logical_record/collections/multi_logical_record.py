@@ -12,6 +12,10 @@ class MultiLogicalRecord:
     def __iter__(self):
         pass
 
+    @abstractmethod
+    def set_origin_reference(self, value):
+        pass
+
 
 class SingleLogicalRecordWrapper(MultiLogicalRecord):
     def __init__(self, lr: LogicalRecordBase):
@@ -23,3 +27,6 @@ class SingleLogicalRecordWrapper(MultiLogicalRecord):
 
     def __iter__(self):
         return iter((self.lr,))
+
+    def set_origin_reference(self, value):
+        self.lr.origin_reference = value
