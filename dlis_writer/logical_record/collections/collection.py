@@ -2,7 +2,9 @@ from itertools import chain
 from typing_extensions import Self
 from configparser import ConfigParser
 import logging
+from functools import reduce
 
+from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord, SingleLogicalRecordWrapper
 from dlis_writer.logical_record.collections.frame_data_capsule import FrameDataCapsule
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
@@ -20,6 +22,9 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self.storage_unit_label = storage_unit_label
         self.file_header = file_header
         self.origin = origin
+        self._channels: list[Channel] = []
+        self._frames: list[FrameDataCapsule] = []
+        self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[MultiLogicalRecord] = []
 
     @property
@@ -30,11 +35,55 @@ class LogicalRecordCollection(MultiLogicalRecord):
     def header_records(self):
         return self.storage_unit_label, self.file_header, self.origin
 
+    @staticmethod
+    def _check_type_of_values(values, expected_type):
+        if not all(isinstance(v, expected_type) for v in values):
+            raise TypeError(f"Expected only {expected_type.__name__} objects; "
+                            f"got {', '.join(type(v).__name__ for v in values)}")
+
+    @property
+    def channels(self) -> list[Channel]:
+        if self._channels:
+            return self._channels
+
+        all_channels_from_frames = [fdc.channels for fdc in self._frames]
+        if all_channels_from_frames:
+            return reduce(lambda a, b: a + b, all_channels_from_frames)
+        return []
+
+    def add_channels(self, *channels):
+        self._check_type_of_values(channels, Channel)
+        self._channels.extend(channels)
+
+    @property
+    def frames(self):
+        return self._frames
+
+    def add_frames(self, *frames):
+        self._check_type_of_values(frames, Frame)
+        self._frames.extend(frames)
+
+    @property
+    def frame_data_objects(self):
+        return self._frame_data_objects
+
+    def add_frame_data_objects(self, *fds):
+        self._check_type_of_values(fds, MultiFrameData)
+        self._frame_data_objects.extend(fds)
+
     def __len__(self):
-        return len(self.header_records) + sum(len(lr) for lr in self._other_logical_records)
+        other_len = sum(len(lr) for lr in self._other_logical_records)
+        len_data = sum(len(mfd) for mfd in self.frame_data_objects)
+        return len(self.header_records) + len(self.channels) + len(self.frames) + len_data + other_len
 
     def __iter__(self):
-        return chain(self.header_records, *self._other_logical_records)
+        return chain(
+            self.header_records,  # tuple of EFLRs
+            self.channels,  # list of channels
+            self.frames,  # list of frames
+            *self.frame_data_objects,  # list of iterables - MultiFrameData objects
+            *self._other_logical_records  # list of iterables - multi-record objects
+        )
 
     def add_logical_records(self, *lrs):
         for lr in lrs:
@@ -77,11 +126,14 @@ class LogicalRecordCollection(MultiLogicalRecord):
             origin=Origin.from_config(config)
         )
 
-        obj._add_objects_from_config(config, Channel)
+        channels = Channel.all_from_config(config)
+        logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
+        obj.add_channels(*channels)
 
         data_capsule = cls.make_data_records(config, data)
-        logger.info(f"Adding {data_capsule.frame} and FrameData objects to the file")
-        obj.add_logical_records(data_capsule.frame, data_capsule.data)
+        logger.info(f"Adding {data_capsule.frame} and {len(data_capsule.data)} FrameData objects to the file")
+        obj.add_frames(data_capsule.frame)
+        obj.add_frame_data_objects(data_capsule.data)
 
         other_classes = (
             Zone,
