@@ -31,7 +31,7 @@ class LogicalRecordBase:
         pass
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         key = key or cls.__name__
 
         if key not in config.sections():

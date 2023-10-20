@@ -101,7 +101,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
 
     @staticmethod
     def make_frame_and_data(config, data):
-        frame = Frame.from_config(config)
+        frame = Frame.make_from_config(config)
         if frame.channels.value:
             frame.setup_channels_params_from_data(data)
             ch = f'with channels: {", ".join(c.name for c in frame.channels.value)}'
@@ -116,7 +116,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
     def _add_objects_from_config(self, config, object_class):
         cn = object_class.__name__
 
-        objects = object_class.all_from_config(config)
+        objects = object_class.make_all_from_config(config)
         if not objects:
             logger.debug(f"No {cn}s found in the config")
         else:
@@ -126,12 +126,12 @@ class LogicalRecordCollection(MultiLogicalRecord):
     @classmethod
     def from_config_and_data(cls, config: ConfigParser, data) -> Self:
         obj = cls(
-            storage_unit_label=StorageUnitLabel.from_config(config),
-            file_header=FileHeader.from_config(config),
-            origin=Origin.from_config(config)
+            storage_unit_label=StorageUnitLabel.make_from_config(config),
+            file_header=FileHeader.make_from_config(config),
+            origin=Origin.make_from_config(config)
         )
 
-        channels = Channel.all_from_config(config)
+        channels = Channel.make_all_from_config(config)
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
         obj.add_channels(*channels)
 

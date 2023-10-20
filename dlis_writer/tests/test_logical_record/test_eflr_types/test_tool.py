@@ -9,7 +9,7 @@ from dlis_writer.tests.common import base_data_path, config_params
         ("Tool-X", "Tool-X", "desc", 0, ["Param-2"], ["radius_pooh"])
 ))
 def test_from_config(config_params, section, name, description, status, param_names, channel_names):
-    tool = Tool.from_config(config_params, key=section)
+    tool = Tool.make_from_config(config_params, key=section)
 
     assert tool.object_name == name
     assert tool.description.value == description

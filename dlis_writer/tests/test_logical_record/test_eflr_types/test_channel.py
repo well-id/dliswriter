@@ -18,7 +18,7 @@ def mock_data():
 
 
 def test_from_config(config_params):
-    channel = Channel.from_config(config_params)
+    channel = Channel.make_from_config(config_params)
 
     conf = config_params['Channel']
 
@@ -40,7 +40,7 @@ def test_from_config(config_params):
 
 
 def test_from_config_alternative_name(config_params):
-    channel = Channel.from_config(config_params, key="Channel-1")
+    channel = Channel.make_from_config(config_params, key="Channel-1")
 
     assert channel.object_name == "Channel 1"
     assert channel.name == "Channel 1"
@@ -60,7 +60,7 @@ def test_properties(prop_str, prop_val):
     config["Channel488"]["name"] = "ChanChan"
     config["Channel488"]["properties"] = prop_str
 
-    channel = Channel.from_config(config, key="Channel488")
+    channel = Channel.make_from_config(config, key="Channel488")
     assert channel.name == "ChanChan"
     assert channel.properties.value == prop_val
 
@@ -76,7 +76,7 @@ def test_dimension_and_element_limit(dimension, element_limit):
     if element_limit is not None:
         config["Channel"]["element_limit"] = element_limit
 
-    channel = Channel.from_config(config)
+    channel = Channel.make_from_config(config)
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
@@ -86,7 +86,7 @@ def test_dimension_and_element_limit_not_specified():
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
-    channel = Channel.from_config(config)
+    channel = Channel.make_from_config(config)
     assert channel.dimension.value is None
     assert channel.element_limit.value is None
 
@@ -98,12 +98,12 @@ def test_dimension_and_element_limit_mismatch(caplog):
     config["Channel"]["dimension"] = "12"
     config["Channel"]["element_limit"] = "12, 10"
 
-    Channel.from_config(config)
+    Channel.make_from_config(config)
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
 def test_multiple_channels_default_pattern(config_params):
-    channels = Channel.all_from_config(config_params)
+    channels = Channel.make_all_from_config(config_params)
 
     assert len(channels) == 9
     assert channels[0].name == "Channel 1"
@@ -125,7 +125,7 @@ def test_multiple_channels_default_pattern(config_params):
 
 
 def test_multiple_channels_custom_pattern(config_params):
-    channels = Channel.all_from_config(config_params, key_pattern=r"Channel-\d")  # 1 digit only
+    channels = Channel.make_all_from_config(config_params, key_pattern=r"Channel-\d")  # 1 digit only
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
@@ -138,7 +138,7 @@ def test_multiple_channels_custom_pattern(config_params):
 
 
 def test_multiple_channels_list(config_params):
-    channels = Channel.all_from_config(config_params, keys=["Channel-1", "Channel"])
+    channels = Channel.make_all_from_config(config_params, keys=["Channel-1", "Channel"])
 
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"

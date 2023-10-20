@@ -10,7 +10,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
         ("3", "MultiGroup", "Group of groups", "GROUP", None, [], ["ChannelGroup", "ProcessGroup"])
 ))
 def test_group_params(config_params, key, name, description, object_type, object_class, object_names, group_names):
-    g = Group.from_config(config_params, f"Group-{key}")
+    g = Group.make_from_config(config_params, f"Group-{key}")
 
     assert g.object_name == name
     assert g.description.value == description

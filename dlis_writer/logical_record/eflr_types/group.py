@@ -25,9 +25,9 @@ class Group(EFLR):
         self.set_attributes(**kwargs)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         key = key or cls.__name__
-        obj: Self = super().from_config(config, key=key)
+        obj: Self = super().make_from_config(config, key=key)
 
         obj.add_dependent_objects_from_config(config, 'group_list', Group)
 

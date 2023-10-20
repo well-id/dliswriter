@@ -10,7 +10,7 @@ from dlis_writer.tests.common import base_data_path, config_params
         ("Computation-X", "COMPT-X", ["XYZ"], ["Zone-3"], "Axis-1", [12]),
 ))
 def test_from_config(config_params, section, name, properties, zone_names, axis_name, values):
-    comp = Computation.from_config(config_params, key=section)
+    comp = Computation.make_from_config(config_params, key=section)
 
     assert comp.object_name == name
     assert comp.properties.value == properties

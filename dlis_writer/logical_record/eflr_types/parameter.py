@@ -32,8 +32,8 @@ class Parameter(EFLR):
             self.dimension.value = [1]
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().from_config(config, key=key)
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().make_from_config(config, key=key)
 
         obj.add_dependent_objects_from_config(config, 'zones', Zone)
 

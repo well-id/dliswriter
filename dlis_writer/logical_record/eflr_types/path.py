@@ -35,8 +35,8 @@ class Path(EFLR):
         self.set_attributes(**kwargs)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().from_config(config, key=key)
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().make_from_config(config, key=key)
 
         obj.add_dependent_objects_from_config(config, 'frame_type', Frame, single=True)
         obj.add_dependent_objects_from_config(config, 'well_reference_point', WellReferencePoint, single=True)

@@ -10,7 +10,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 ))
 def test_from_config(config_params, key, name, v_zero, m_decl, c1_name, c1_value, c2_name, c2_value):
     key = f"WellReferencePoint-{key}"
-    w = WellReferencePoint.from_config(config_params, key=key)
+    w = WellReferencePoint.make_from_config(config_params, key=key)
 
     assert w.object_name == name
     assert w.vertical_zero.value == v_zero

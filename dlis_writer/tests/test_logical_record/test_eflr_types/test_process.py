@@ -9,7 +9,7 @@ from dlis_writer.tests.common import base_data_path, config_params
         ("Process-2", "Prc2", ["Channel 1"], ["Channel 2"], ["COMPT2", "COMPT-1"], []),
 ))
 def test_process_params(config_params, key, name, input_channels, output_channels, input_compts, output_compts):
-    proc = Process.from_config(config_params, key=key)
+    proc = Process.make_from_config(config_params, key=key)
 
     assert proc.object_name == name
 

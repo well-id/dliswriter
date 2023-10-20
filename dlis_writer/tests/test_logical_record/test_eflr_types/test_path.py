@@ -10,7 +10,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 ))
 def test_from_config(config_params, key, name, channels, depth, radial_drift, angular_drift, time):
     key = f"Path-{key}"
-    p = Path.from_config(config_params, key=key)
+    p = Path.make_from_config(config_params, key=key)
 
     assert p.object_name == name
     assert isinstance(p.frame_type.value, Frame)

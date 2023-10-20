@@ -8,7 +8,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 def test_calibration_measurement_from_config(config_params):
     key = "CalibrationMeasurement-1"
-    m = CalibrationMeasurement.from_config(config_params, key=key)
+    m = CalibrationMeasurement.make_from_config(config_params, key=key)
 
     assert m.object_name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
@@ -32,7 +32,7 @@ def test_calibration_measurement_from_config(config_params):
 
 def test_calibration_coefficient_from_config(config_params):
     key = "CalibrationCoefficient-1"
-    c = CalibrationCoefficient.from_config(config_params, key=key)
+    c = CalibrationCoefficient.make_from_config(config_params, key=key)
 
     assert c.object_name == "COEF-1"
     assert c.label.value == 'Gain'
@@ -54,7 +54,7 @@ def _check_list(objects, names, object_class):
 
 def test_calibration_from_config(config_params):
     key = "Calibration-1"
-    c = Calibration.from_config(config_params, key=key)
+    c = Calibration.make_from_config(config_params, key=key)
 
     assert c.object_name == "CALIB-MAIN"
 

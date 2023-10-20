@@ -12,7 +12,7 @@ from dlis_writer.tests.common import base_data_path, config_params
 ))
 def test_from_config(config_params, param_nr, value_type, n_values, repr_code):
     key = f"Parameter-{param_nr}"
-    param = Parameter.from_config(config_params, key=key)
+    param = Parameter.make_from_config(config_params, key=key)
     
     conf = config_params[key]
     

@@ -11,7 +11,7 @@ from dlis_writer.tests.common import base_data_path, config_params
         (2, "Equipment-X", "EqX", 1, "12311")
 ))
 def test_from_config(config_params, idx, section, name, status, serial_number):
-    eq = Equipment.from_config(config_params, key=section)
+    eq = Equipment.make_from_config(config_params, key=section)
 
     assert eq.object_name == name
     assert eq.status.value == status
@@ -21,7 +21,7 @@ def test_from_config(config_params, idx, section, name, status, serial_number):
 
 
 def test_from_config_params_and_units(config_params):
-    eq = Equipment.from_config(config_params, key="Equipment-1")
+    eq = Equipment.make_from_config(config_params, key="Equipment-1")
 
     def check(name, val, unit):
         attr = getattr(eq, name)

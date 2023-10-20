@@ -20,5 +20,5 @@ class IFLR(IflrAndEflrBase):
         return write_struct(RepresentationCode.USHORT, iflr_type)
 
     @classmethod
-    def from_config(cls, config):
+    def make_from_config(cls, config):
         raise NotImplementedError("Initialising IFLR from a config is not supported")

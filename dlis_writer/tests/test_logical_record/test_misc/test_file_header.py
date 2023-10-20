@@ -10,7 +10,7 @@ def _check_with_config(fh, config):
 
 
 def test_from_config(config_params):
-    fh = FileHeader.from_config(config_params)
+    fh = FileHeader.make_from_config(config_params)
     _check_with_config(fh, config_params)
 
 
@@ -20,5 +20,5 @@ def test_from_config_with_params(identifier, sequence_number):
     config["FileHeader"]["name"] = identifier
     config["FileHeader"]["sequence_number"] = sequence_number
 
-    fh = FileHeader.from_config(config)
+    fh = FileHeader.make_from_config(config)
     _check_with_config(fh, config)

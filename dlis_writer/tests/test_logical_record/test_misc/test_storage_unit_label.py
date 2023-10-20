@@ -10,7 +10,7 @@ def _check_with_config(sul, config):
 
 
 def test_from_config(config_params):
-    sul = StorageUnitLabel.from_config(config_params)
+    sul = StorageUnitLabel.make_from_config(config_params)
     _check_with_config(sul, config_params)
 
 
@@ -20,5 +20,5 @@ def test_from_config_with_params(name, sequence_number):
     config["StorageUnitLabel"]["name"] = name
     config["StorageUnitLabel"]["sequence_number"] = sequence_number
 
-    sul = StorageUnitLabel.from_config(config)
+    sul = StorageUnitLabel.make_from_config(config)
     _check_with_config(sul, config)

@@ -30,8 +30,8 @@ class Frame(EFLR):
         self.set_attributes(**kwargs)
 
     @classmethod
-    def from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().from_config(config)
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().make_from_config(config)
 
         if not (channel_names := obj.channels.value):
             logger.warning(f"No channels defined for frame {obj}")

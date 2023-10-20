@@ -268,14 +268,14 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
                 attr.value = [object_class.get_or_make_from_config(name, config) for name in names_list]
 
     @classmethod
-    def all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
+    def make_all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
         if not keys:
             if key_pattern is None:
                 key_pattern = cls.__name__ + r"-\w+"
             key_pattern = re.compile(key_pattern)
             keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
 
-        return [cls.from_config(config, key) for key in keys]
+        return [cls.make_from_config(config, key) for key in keys]
     
     @classmethod
     def get_instance(cls, name):
@@ -290,5 +290,5 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
             if (object_name := config[name].get('name', None)) in cls._instance_dict:
                 return cls.get_instance(object_name)
 
-        return cls.from_config(config, key=name)
+        return cls.make_from_config(config, key=name)
 
