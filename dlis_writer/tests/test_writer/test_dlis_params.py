@@ -113,18 +113,19 @@ def test_zones(short_dlis):
     assert len(zones) == 5
 
 
-@pytest.mark.parametrize(("idx", "name", "description", "maximum", "minimum", "value_type"), (
-        (0, "Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, int),
-        (1, "Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
-        (2, "Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
-        (3, "Zone-4", "ZONE-TIME-2", 90, 10, int),
-        (4, "Zone-X", "Zone not added to any parameter", 10, 1, int)
+@pytest.mark.parametrize(("name", "description", "maximum", "minimum", "value_type"), (
+        ("Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, int),
+        ("Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
+        ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
+        ("Zone-4", "ZONE-TIME-2", 90, 10, int),
+        ("Zone-X", "Zone not added to any parameter", 10, 1, int)
 ))
-def test_zone_params(short_dlis, idx, name, description, maximum, minimum, value_type):
-    z = short_dlis.zones[idx]
-    assert z.name == name
-    assert z.description == description
+def test_zone_params(short_dlis, name, description, maximum, minimum, value_type):
+    zones = [zone for zone in short_dlis.zones if zone.name == name]
+    assert len(zones) == 1
+    z = zones[0]
 
+    assert z.description == description
     assert z.maximum == maximum
     assert z.minimum == minimum
     assert isinstance(z.maximum, value_type)

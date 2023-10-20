@@ -140,26 +140,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         obj.add_frames(frame)
         obj.add_frame_data_objects(multi_frame_data)
 
-        other_classes = (
-            Zone,
-            Parameter,
-            Axis,
-            Equipment,
-            Tool,
-            Computation,
-            Process,
-            Splice,
-            CalibrationMeasurement,
-            CalibrationCoefficient,
-            Calibration,
-            WellReferencePoint,
-            Path,
-            Message,
-            Comment,
-            NoFormat,
-            LongName,
-            Group
-        )
+        other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin)]
 
         for c in other_classes:
             c.get_or_make_all_from_config(config)
