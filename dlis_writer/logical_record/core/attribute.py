@@ -36,12 +36,16 @@ class Attribute:
                  ):
         """Initiate Attribute object."""
 
-        self.label = label
+        self._label = label
         self._count = count
         self._representation_code = representation_code
         self._units = units
         self._value = value
         self.converter = converter or (lambda v: v)  # to convert value from string retrieved from config file
+
+    @property
+    def label(self):
+        return self._label
 
     @property
     def value(self):
