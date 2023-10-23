@@ -65,7 +65,7 @@ class Attribute:
     @representation_code.setter
     def representation_code(self, rc):
         if self._representation_code is not None:
-            raise RuntimeError(f"representation code of {self} is already set to {self.representation_code.name}")
+            raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
         self._representation_code = RepresentationCode.get_member(rc, allow_none=False)
 
     @property
@@ -106,16 +106,16 @@ class Attribute:
     def write_component_for_template(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute for template, as specified in RP66 V1."""
 
-        if self.label:
-            bts += write_struct(RepresentationCode.IDENT, self.label)
+        if self._label:
+            bts += write_struct(RepresentationCode.IDENT, self._label)
             characteristics += '1'
         else:
             characteristics += '0'
 
         characteristics += '0'
 
-        if self.representation_code:
-            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
+        if self._representation_code:
+            bts += write_struct(RepresentationCode.USHORT, self._representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -139,10 +139,7 @@ class Attribute:
             bts += write_struct(RepresentationCode.UVARI, count)
             characteristics += '1'
         else:
-            if self.value:
-                if isinstance(self.value, (list, tuple)):
-                    count = len(self.value)
-
+            if self._value:
                 if count is not None and count > 1:
                     bts += write_struct(RepresentationCode.UVARI, count)
                     characteristics += '1'
@@ -159,8 +156,8 @@ class Attribute:
     def write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object."""
 
-        rc = self.representation_code
-        value = self.value
+        rc = self._representation_code
+        value = self._value
 
         if value:
             if isinstance(value, (list, tuple)):
