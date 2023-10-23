@@ -9,44 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    TOOL = {
-
-        'description': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'trademark_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'generic_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'parts': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'status': {
-            'count': 1,
-            'representation_code': RepresentationCode.STATUS
-        },
-
-        'channels': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'parameters': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        }
-    }
-
     COMPUTATION = {
 
         'long_name': {
