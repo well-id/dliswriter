@@ -9,24 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    SPLICE = {
-
-        'output_channel': {
-            'count': 1,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'input_channels': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'zones': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        }
-    }
-
     NO_FORMAT = {
 
         'consumer_name': {
