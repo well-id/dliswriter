@@ -31,6 +31,9 @@ def test_setting_repr_code(attr, val, repr_code):
     assert attr.representation_code is repr_code
 
 
-def test_clearing_repr_code(attr):
-    attr.representation_code = None
-    assert attr.representation_code is None
+@pytest.mark.parametrize(("code1", "code2"), ((2, 3), (3, 2), (1, 1)))
+def test_setting_repr_code_already_set(attr, code1, code2):
+    attr.representation_code = code1
+    with pytest.raises(RuntimeError, match="representation code .* is already set .*"):
+        attr.representation_code = code2
+

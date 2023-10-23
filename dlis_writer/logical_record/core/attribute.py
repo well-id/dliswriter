@@ -43,6 +43,9 @@ class Attribute:
         self._value = value
         self._converter = converter or self.default_converter  # to convert value from string retrieved from config file
 
+    def __str__(self):
+        return f"{self.__class__.__name__} '{self._label}'"
+
     @property
     def label(self):
         return self._label
@@ -61,7 +64,9 @@ class Attribute:
 
     @representation_code.setter
     def representation_code(self, rc):
-        self._representation_code = RepresentationCode.get_member(rc, allow_none=True)
+        if self._representation_code is not None:
+            raise RuntimeError(f"representation code of {self} is already set to {self.representation_code.name}")
+        self._representation_code = RepresentationCode.get_member(rc, allow_none=False)
 
     @property
     def units(self) -> Units:
