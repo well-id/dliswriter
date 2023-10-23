@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 class Process(EFLR):
     set_type = 'PROCESS'
     logical_record_type = LogicalRecordType.STATIC
+    allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
 
@@ -24,7 +25,7 @@ class Process(EFLR):
         self.trademark_name = self._create_attribute('trademark_name')
         self.version = self._create_attribute('version')
         self.properties = self._create_attribute('properties')
-        self.status = self._create_attribute('status')
+        self.status = self._create_attribute('status', converter=self.check_status)
         self.input_channels = self._create_attribute('input_channels')
         self.output_channels = self._create_attribute('output_channels')
         self.input_computations = self._create_attribute('input_computations')
@@ -33,6 +34,12 @@ class Process(EFLR):
         self.comments = self._create_attribute('comments')
 
         self.set_attributes(**kwargs)
+
+    @classmethod
+    def check_status(cls, status):
+        if status not in cls.allowed_status:
+            raise ValueError(f"'status' should be one of: {', '.join(cls.allowed_status)}; got {status}")
+        return status
 
     @classmethod
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
