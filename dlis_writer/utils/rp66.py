@@ -9,24 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    AXIS = {
-        
-        'axis_id': {
-            'count': 1,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'coordinates': {
-            'count': None,
-            'representation_code': None
-        },
-
-        'spacing': {
-            'count': 1,
-            'representation_code': None
-        }
-    }
-
     LONG_NAME = {
         
         'general_modifier': {

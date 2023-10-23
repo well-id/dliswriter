@@ -1,5 +1,5 @@
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 
 
 class Axis(EFLR):
@@ -9,9 +9,9 @@ class Axis(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.axis_id = self._create_attribute('axis_id')
+        self.axis_id = self._create_attribute('axis_id', representation_code=RepC.IDENT)
         self.coordinates = self._create_attribute(
-            'coordinates', converter=lambda val: self.convert_values(val, require_numeric=True))
+            'coordinates', converter=lambda val: self.convert_values(val, require_numeric=True), multivalued=True)
         self.spacing = self._create_attribute('spacing', converter=float)
 
         self.set_attributes(**kwargs)
