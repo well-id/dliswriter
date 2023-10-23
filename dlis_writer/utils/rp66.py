@@ -9,64 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    PATH = {
-        
-        'frame_type': {
-            'count': 1,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'well_reference_point': {
-            'count': 1,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'value': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'borehole_depth': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'vertical_depth': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'radial_drift': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'angular_drift': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'time': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'depth_offset': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'measure_point_offset': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'tool_zero_offset': {
-            'count': 1,
-            'representation_code': None
-        }
-    }
-
     ZONE = {
         
         'description': {

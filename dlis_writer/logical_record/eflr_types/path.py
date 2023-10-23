@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 
 
 logger = logging.getLogger(__name__)
@@ -20,9 +20,9 @@ class Path(EFLR):
 
         super().__init__(name, set_name)
 
-        self.frame_type = self._create_attribute('frame_type')
-        self.well_reference_point = self._create_attribute('well_reference_point')
-        self.value = self._create_attribute('value')
+        self.frame_type = self._create_attribute('frame_type', representation_code=RepC.OBNAME)
+        self.well_reference_point = self._create_attribute('well_reference_point', representation_code=RepC.OBNAME)
+        self.value = self._create_attribute('value', multivalued=True, representation_code=RepC.OBNAME)
         self.borehole_depth = self._create_attribute('borehole_depth', converter=float)
         self.vertical_depth = self._create_attribute('vertical_depth', converter=float)
         self.radial_drift = self._create_attribute('radial_drift', converter=float)
