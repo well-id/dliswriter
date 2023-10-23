@@ -41,7 +41,7 @@ class Attribute:
         self._representation_code = representation_code
         self._units = units
         self._value = value
-        self.converter = converter or (lambda v: v)  # to convert value from string retrieved from config file
+        self._converter = converter or self.default_converter  # to convert value from string retrieved from config file
 
     @property
     def label(self):
@@ -53,7 +53,7 @@ class Attribute:
 
     @value.setter
     def value(self, val):
-        self._value = self.converter(val)
+        self._value = self._converter(val)
 
     @property
     def representation_code(self):
@@ -78,6 +78,23 @@ class Attribute:
     @count.setter
     def count(self, count):
         self._count = int(count) if count is not None else None
+
+    @property
+    def converter(self):
+        return self._converter
+
+    @staticmethod
+    def default_converter(v):
+        return v
+
+    @converter.setter
+    def converter(self, conv):
+        if conv is None:
+            self._converter = self.default_converter
+        else:
+            if not callable(conv):
+                raise TypeError(f"Expected a callable; got {type(conv)}")
+            self._converter = conv
 
     def write_component_for_template(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write component of Attribute for template, as specified in RP66 V1."""
