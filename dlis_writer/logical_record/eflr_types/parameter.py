@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.zone import Zone
 
 
@@ -17,11 +17,13 @@ class Parameter(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.long_name = self._create_attribute('long_name')
-        self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
-        self.axis = self._create_attribute('axis')
-        self.zones = self._create_attribute('zones')
-        self.values = self._create_attribute('values', converter=self.convert_values)
+        self.long_name = self._create_attribute('long_name', representation_code=RepC.ASCII)
+        self.dimension = self._create_attribute(
+            'dimension', converter=self.convert_dimension_or_el_limit,
+            multivalued=True, representation_code=RepC.UVARI)
+        self.axis = self._create_attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.zones = self._create_attribute('zones', multivalued=True, representation_code=RepC.OBNAME)
+        self.values = self._create_attribute('values', converter=self.convert_values, multivalued=True)
 
         self.set_attributes(**kwargs)
         self._set_defaults()
