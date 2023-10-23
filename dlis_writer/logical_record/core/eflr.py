@@ -7,7 +7,6 @@ import numpy as np
 import importlib
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.rp66 import RP66
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute import Attribute
 from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase, IflrAndEflrRMeta
@@ -46,7 +45,6 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         self.origin_reference = None
         self.copy_number = 0
 
-        self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'), {})
         self._attributes: dict[str, Attribute] = {}
 
         self._instance_dict[name] = self
@@ -61,20 +59,9 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         return super().__setattr__(key, value)
 
     def _create_attribute(self, key, **kwargs):
-        rules = self._rp66_rules.get(key, None)
-
-        rules_kwargs = dict()
-
-        if rules:
-            if 'representation_code' not in kwargs and 'representation_code' in rules:
-                rules_kwargs['representation_code'] = rules['representation_code']
-
-            if 'multivalued' not in kwargs and 'count' in rules:
-                rules_kwargs['multivalued'] = rules['count'] is None or rules['count'] > 1
 
         attr = Attribute(
             label=key.strip('_').upper().replace('_', '-'),
-            **rules_kwargs,
             **kwargs
         )
 
