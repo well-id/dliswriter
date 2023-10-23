@@ -9,57 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    CHANNEL = {
-        
-        'long_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'properties': {
-            'count': None,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'representation_code': {
-            'count': 1,
-            'representation_code': RepresentationCode.USHORT
-        },
-
-        'units': {
-            'count': 1,
-            'representation_code': RepresentationCode.UNITS
-        },
-
-        'dimension': {
-            'count': None,
-            'representation_code': RepresentationCode.UVARI
-        },
-
-        'axis': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'element_limit': {
-            'count': None,
-            'representation_code': RepresentationCode.UVARI
-        },
-
-        'source': {
-            'count': 1,
-            'representation_code': RepresentationCode.OBJREF
-        },
-        'minimum_value': {
-            'count': None,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-        'maximum_value': {
-            'count': None,
-            'representation_code': RepresentationCode.FDOUBL
-        }
-    }
-
     FRAME = {
 
         'description': {

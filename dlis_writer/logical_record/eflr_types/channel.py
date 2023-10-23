@@ -2,7 +2,7 @@ import logging
 import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import RepresentationCode, Units, LogicalRecordType, numpy_dtype_converter
+from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType, numpy_dtype_converter
 
 
 logger = logging.getLogger(__name__)
@@ -15,16 +15,24 @@ class Channel(EFLR):
     def __init__(self, name: str, set_name: str = None, dataset_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.long_name = self._create_attribute('long_name')
-        self.properties = self._create_attribute('properties', converter=self.convert_properties)
-        self.representation_code = self._create_attribute('representation_code', converter=self.convert_repr_code)
-        self.units = self._create_attribute('units', converter=self.convert_unit)
-        self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
-        self.axis = self._create_attribute('axis')
-        self.element_limit = self._create_attribute('element_limit', converter=self.convert_dimension_or_el_limit)
-        self.source = self._create_attribute('source')
-        self.minimum_value = self._create_attribute('minimum_value', converter=float)
-        self.maximum_value = self._create_attribute('maximum_value', converter=float)
+        self.long_name = self._create_attribute('long_name', representation_code=RepC.ASCII)
+        self.properties = self._create_attribute(
+            'properties', converter=self.convert_properties, multivalued=True, representation_code=RepC.IDENT)
+        self.representation_code = self._create_attribute(
+            'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
+        self.units = self._create_attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
+        self.dimension = self._create_attribute(
+            'dimension', converter=self.convert_dimension_or_el_limit,
+            multivalued=True, representation_code=RepC.UVARI)
+        self.axis = self._create_attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.element_limit = self._create_attribute(
+            'element_limit', converter=self.convert_dimension_or_el_limit,
+            multivalued=True, representation_code=RepC.UVARI)
+        self.source = self._create_attribute('source', representation_code=RepC.OBJREF)
+        self.minimum_value = self._create_attribute(
+            'minimum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
+        self.maximum_value = self._create_attribute(
+            'maximum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
         
         self.set_attributes(**kwargs)
         self._set_defaults()
@@ -49,7 +57,7 @@ class Channel(EFLR):
 
     @staticmethod
     def convert_repr_code(rc):
-        return RepresentationCode.get_member(rc, allow_none=True)
+        return RepC.get_member(rc, allow_none=True)
 
     @staticmethod
     def convert_properties(p):
