@@ -9,49 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    FRAME = {
-
-        'description': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'channels': {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'index_type': {
-            'count': 1,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'direction': {
-            'count': 1,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'spacing': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'encrypted': {
-            'count': 1,
-            'representation_code': RepresentationCode.USHORT
-        },
-
-        'index_min': {
-            'count': 1,
-            'representation_code': None
-        },
-
-        'index_max': {
-            'count': 1,
-            'representation_code': None
-        }
-    }
-
     PATH = {
         
         'frame_type': {

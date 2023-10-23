@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
 
 
@@ -25,12 +25,13 @@ class Frame(EFLR):
 
         super().__init__(name, set_name)
 
-        self.description = self._create_attribute('description')
-        self.channels = self._create_attribute('channels')
-        self.index_type = self._create_attribute('index_type', converter=self.parse_index_type)
-        self.direction = self._create_attribute('direction')
+        self.description = self._create_attribute('description', representation_code=RepC.ASCII)
+        self.channels = self._create_attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.index_type = self._create_attribute(
+            'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
+        self.direction = self._create_attribute('direction', representation_code=RepC.IDENT)
         self.spacing = self._create_attribute('spacing', converter=float)
-        self.encrypted = self._create_attribute('encrypted', converter=bool)
+        self.encrypted = self._create_attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
         self.index_min = self._create_attribute('index_min', converter=int)
         self.index_max = self._create_attribute('index_max', converter=int)
 
@@ -73,11 +74,11 @@ class Frame(EFLR):
                 setattr(attr, key, value)
 
         index_channel = self.channels.value[0].dataset_name
-        assign_if_none(self.spacing, RepresentationCode.FDOUBL, 'representation_code')
+        assign_if_none(self.spacing, RepC.FDOUBL, 'representation_code')
         assign_if_none(self.index_min, data[index_channel].min())
         assign_if_none(self.index_max, data[index_channel].max())
-        assign_if_none(self.index_min, RepresentationCode.FDOUBL, 'representation_code')
-        assign_if_none(self.index_max, RepresentationCode.FDOUBL, 'representation_code')
+        assign_if_none(self.index_min, RepC.FDOUBL, 'representation_code')
+        assign_if_none(self.index_max, RepC.FDOUBL, 'representation_code')
 
 
 
