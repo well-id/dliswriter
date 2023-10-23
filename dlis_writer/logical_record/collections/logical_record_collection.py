@@ -134,7 +134,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         if not objects:
             logger.debug(f"No {cn}s found in the config")
         else:
-            logger.info(f"Adding {cn}(s): {', '.join(p.object_name for p in objects)} to the file")
+            logger.info(f"Adding {cn}(s): {', '.join(p._name for p in objects)} to the file")
             self.add_logical_records(*objects)
 
     @classmethod
@@ -167,7 +167,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
             if not inst:
                 logger.debug(f"No instances of {c.__name__} defined")
             else:
-                logger.info(f"Adding {c.__name__}(s): {', '.join(p.object_name for p in inst)} to the file")
+                logger.info(f"Adding {c.__name__}(s): {', '.join(p._name for p in inst)} to the file")
                 obj.add_logical_records(*inst)
 
         return obj

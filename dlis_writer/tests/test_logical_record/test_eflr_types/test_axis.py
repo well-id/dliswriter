@@ -11,6 +11,6 @@ from dlis_writer.tests.common import base_data_path, config_params
 def test_from_config(config_params, idx, name, axis_id, coordinates):
     axis = Axis.make_from_config(config_params, key=name)
 
-    assert axis.object_name == name
+    assert axis._name == name
     assert axis.axis_id.value == axis_id
     assert axis.coordinates.value == coordinates

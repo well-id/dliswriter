@@ -9,7 +9,7 @@ def test_from_config(config_params):
     frame = Frame.make_from_config(config_params)
 
     conf = config_params['Frame']
-    assert frame.object_name == conf['name']
+    assert frame._name == conf['name']
 
     assert frame.index_type.value == conf["index_type"]
     assert frame.encrypted.value is True

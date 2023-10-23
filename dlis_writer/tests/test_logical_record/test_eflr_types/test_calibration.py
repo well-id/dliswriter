@@ -10,13 +10,13 @@ def test_calibration_measurement_from_config(config_params):
     key = "CalibrationMeasurement-1"
     m = CalibrationMeasurement.make_from_config(config_params, key=key)
 
-    assert m.object_name == "CMEASURE-1"
+    assert m._name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
     assert isinstance(m.measurement_source.value, Channel)
-    assert m.measurement_source.value.object_name == "Channel 1"
+    assert m.measurement_source.value._name == "Channel 1"
     assert m._type.value == 'Plus'
     assert isinstance(m.axis.value[0], Axis)
-    assert m.axis.value[0].object_name == 'Axis-1'
+    assert m.axis.value[0]._name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == [12]
     assert m.maximum_deviation.value == [2.2324]
@@ -34,7 +34,7 @@ def test_calibration_coefficient_from_config(config_params):
     key = "CalibrationCoefficient-1"
     c = CalibrationCoefficient.make_from_config(config_params, key=key)
 
-    assert c.object_name == "COEF-1"
+    assert c._name == "COEF-1"
     assert c.label.value == 'Gain'
     assert c.coefficients.value == [100.2, 201.3]
     assert c.references.value == [89, 298]
@@ -49,14 +49,14 @@ def _check_list(objects, names, object_class):
     assert len(objects) == len(names)
     for i, name in enumerate(names):
         assert isinstance(objects[i], object_class)
-        assert objects[i].object_name == name
+        assert objects[i].name == name
 
 
 def test_calibration_from_config(config_params):
     key = "Calibration-1"
     c = Calibration.make_from_config(config_params, key=key)
 
-    assert c.object_name == "CALIB-MAIN"
+    assert c._name == "CALIB-MAIN"
 
     _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), Channel)
     _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), Channel)

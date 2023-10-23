@@ -12,15 +12,15 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 def test_group_params(config_params, key, name, description, object_type, object_class, object_names, group_names):
     g = Group.make_from_config(config_params, f"Group-{key}")
 
-    assert g.object_name == name
+    assert g._name == name
     assert g.description.value == description
     assert g.object_type.value == object_type
 
     for i, name in enumerate(object_names):
-        assert g.object_list.value[i].object_name == name
+        assert g.object_list.value[i]._name == name
         assert isinstance(g.object_list.value[i], object_class)
 
     for i, name in enumerate(group_names):
-        assert g.group_list.value[i].object_name == name
+        assert g.group_list.value[i]._name == name
         assert isinstance(g.group_list.value[i], Group)
 

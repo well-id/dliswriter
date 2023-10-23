@@ -12,16 +12,16 @@ def test_from_config(config_params, key, name, channels, depth, radial_drift, an
     key = f"Path-{key}"
     p = Path.make_from_config(config_params, key=key)
 
-    assert p.object_name == name
+    assert p._name == name
     assert isinstance(p.frame_type.value, Frame)
-    assert p.frame_type.value.object_name == 'MAIN FRAME'
+    assert p.frame_type.value._name == 'MAIN FRAME'
     assert isinstance(p.well_reference_point.value, WellReferencePoint)
-    assert p.well_reference_point.value.object_name == 'AQLN WELL-REF'
+    assert p.well_reference_point.value._name == 'AQLN WELL-REF'
 
     assert len(p.value.value) == len(channels)
     for i, c in enumerate(channels):
         assert isinstance(p.value.value[i], Channel)
-        assert p.value.value[i].object_name == c
+        assert p.value.value[i]._name == c
 
     assert p.vertical_depth.value == depth
     assert p.radial_drift.value == radial_drift

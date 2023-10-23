@@ -33,11 +33,7 @@ class Channel(EFLR):
 
     @property
     def key(self):
-        return hash(type(self)), self.object_name
-
-    @property
-    def name(self):
-        return self.object_name
+        return hash(type(self)), self._name
 
     @property
     def dataset_name(self):

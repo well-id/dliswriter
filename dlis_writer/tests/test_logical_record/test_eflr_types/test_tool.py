@@ -11,12 +11,12 @@ from dlis_writer.tests.common import base_data_path, config_params
 def test_from_config(config_params, section, name, description, status, param_names, channel_names):
     tool = Tool.make_from_config(config_params, key=section)
 
-    assert tool.object_name == name
+    assert tool._name == name
     assert tool.description.value == description
     assert tool.status.value == status
 
     for i, pn in enumerate(param_names):
-        assert tool.parameters.value[i].object_name == pn
+        assert tool.parameters.value[i]._name == pn
 
     for i, cn in enumerate(channel_names):
         assert tool.channels.value[i].name == cn

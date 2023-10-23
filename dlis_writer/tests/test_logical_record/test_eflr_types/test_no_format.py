@@ -12,7 +12,7 @@ def test_from_config(config_params, key, name, consumer_name, description):
     key = f"NoFormat-{key}"
     w = NoFormat.make_from_config(config_params, key=key)
 
-    assert w.object_name == name
+    assert w._name == name
     assert w.consumer_name.value == consumer_name
     assert w.description.value == description
 

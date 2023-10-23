@@ -22,7 +22,7 @@ def test_from_config(config_params):
 
     conf = config_params['Channel']
 
-    assert channel.object_name == conf['name']
+    assert channel._name == conf['name']
     assert channel.name == conf['name']
     assert channel.dataset_name == conf["dataset_name"]
 
@@ -42,7 +42,7 @@ def test_from_config(config_params):
 def test_from_config_alternative_name(config_params):
     channel = Channel.make_from_config(config_params, key="Channel-1")
 
-    assert channel.object_name == "Channel 1"
+    assert channel._name == "Channel 1"
     assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
 
@@ -219,7 +219,7 @@ def test_setting_properties(chan, value, expected_value):
 
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12, 16])))
 def test_setting_dimension_from_data(chan, mock_data, name, dim):
-    chan.object_name = name
+    chan._name = name
     chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.dimension.value == dim
     assert chan.element_limit.value == dim
@@ -227,7 +227,7 @@ def test_setting_dimension_from_data(chan, mock_data, name, dim):
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [30]), ("amplitude", [10], [1])))
 def test_setting_dimension_from_data_mismatched_dimension(chan, mock_data, name, dim, prev_dim, caplog):
-    chan.object_name = name
+    chan._name = name
     chan.dimension.value = prev_dim
     chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.dimension.value == dim
@@ -236,7 +236,7 @@ def test_setting_dimension_from_data_mismatched_dimension(chan, mock_data, name,
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12, 16], [12])))
 def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, name, dim, prev_dim, caplog):
-    chan.object_name = name
+    chan._name = name
     chan.element_limit.value = prev_dim
     chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.element_limit.value == dim
@@ -245,7 +245,7 @@ def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, n
 
 @pytest.mark.parametrize("name", ("amp", "posix time"))
 def test_setting_dimension_from_data_no_dataset_error(chan, mock_data, name):
-    chan.object_name = name
+    chan._name = name
     with pytest.raises(ValueError, match=f"No dataset with name '{name}'.*"):
         chan.set_dimension_and_repr_code_from_data(mock_data)
 
