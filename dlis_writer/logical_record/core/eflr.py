@@ -45,9 +45,11 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         self.origin_reference = None
         self.copy_number = 0
 
-        self._attributes: dict[str, Attribute] = {}
-
         self._instance_dict[name] = self
+
+    @property
+    def attributes(self):
+        return {key: value for key, value in self.__dict__.items() if isinstance(value, Attribute)}
 
     def __str__(self):
         return f"{self.__class__.__name__} '{self.name}'"
@@ -57,20 +59,6 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
             raise RuntimeError(f"Cannot set DLIS Attribute '{key}'. Did you mean setting '{key}.value' instead?")
 
         return super().__setattr__(key, value)
-
-    def _create_attribute(self, key, **kwargs):
-
-        attr = Attribute(
-            label=key.strip('_').upper().replace('_', '-'),
-            **kwargs
-        )
-
-        self._attributes[key] = attr
-
-        return attr
-
-    def get_attribute(self, name, fallback):
-        return self._attributes.get(name, fallback)
 
     @property
     def obname(self) -> bytes:
@@ -118,7 +106,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         """
 
         _bytes = b''
-        for attr in self._attributes.values():
+        for attr in self.attributes.values():
             _bytes += attr.get_as_bytes(for_template=True)
 
         return _bytes
@@ -138,7 +126,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         """
 
         _bytes = b''
-        for attr in self._attributes.values():
+        for attr in self.attributes.values():
             if not attr.value:
                 _bytes += b'\x00'
             else:
@@ -246,8 +234,8 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
             if attr_part not in Attribute.settables:
                 raise ValueError(f"Cannot set {attr_part} of an Attribute object")
 
-            attr = self.get_attribute(attr_name_main, None)
-            if not attr:
+            attr = getattr(self, attr_name_main, None)
+            if not attr or not isinstance(attr, Attribute):
                 logger.warning(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
 
             logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")

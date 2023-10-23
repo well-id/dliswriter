@@ -7,6 +7,7 @@ from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.computation import Computation
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
@@ -21,22 +22,19 @@ class Process(EFLR):
 
         super().__init__(name, set_name)
 
-        self.description = self._create_attribute('description', representation_code=RepC.ASCII)
-        self.trademark_name = self._create_attribute('trademark_name', representation_code=RepC.ASCII)
-        self.version = self._create_attribute('version', representation_code=RepC.ASCII)
-        self.properties = self._create_attribute('properties', multivalued=True, representation_code=RepC.IDENT)
-        self.status = self._create_attribute('status', converter=self.check_status, representation_code=RepC.IDENT)
-        self.input_channels = self._create_attribute(
-            'input_channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.output_channels = self._create_attribute(
-            'output_channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.input_computations = self._create_attribute(
+        self.description = Attribute('description', representation_code=RepC.ASCII)
+        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII)
+        self.version = Attribute('version', representation_code=RepC.ASCII)
+        self.properties = Attribute('properties', multivalued=True, representation_code=RepC.IDENT)
+        self.status = Attribute('status', converter=self.check_status, representation_code=RepC.IDENT)
+        self.input_channels = Attribute('input_channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.output_channels = Attribute('output_channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.input_computations = Attribute(
             'input_computations', multivalued=True, representation_code=RepC.OBNAME)
-        self.output_computations = self._create_attribute(
+        self.output_computations = Attribute(
             'output_computations', multivalued=True, representation_code=RepC.OBNAME)
-        self.parameters = self._create_attribute(
-            'parameters', multivalued=True, representation_code=RepC.OBNAME)
-        self.comments = self._create_attribute('comments', multivalued=True, representation_code=RepC.ASCII)
+        self.parameters = Attribute('parameters', multivalued=True, representation_code=RepC.OBNAME)
+        self.comments = Attribute('comments', multivalued=True, representation_code=RepC.ASCII)
 
         self.set_attributes(**kwargs)
 

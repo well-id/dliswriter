@@ -7,6 +7,7 @@ from dlis_writer.logical_record.eflr_types.equipment import Equipment
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
@@ -19,13 +20,13 @@ class Tool(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.description = self._create_attribute('description', representation_code=RepC.ASCII)
-        self.trademark_name = self._create_attribute('trademark_name', representation_code=RepC.ASCII)
-        self.generic_name = self._create_attribute('generic_name', representation_code=RepC.ASCII)
-        self.parts = self._create_attribute('parts', multivalued=True, representation_code=RepC.OBNAME)
-        self.status = self._create_attribute('status', converter=int, representation_code=RepC.STATUS)
-        self.channels = self._create_attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.parameters = self._create_attribute('parameters', multivalued=True, representation_code=RepC.OBNAME)
+        self.description = Attribute('description', representation_code=RepC.ASCII)
+        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII)
+        self.generic_name = Attribute('generic_name', representation_code=RepC.ASCII)
+        self.parts = Attribute('parts', multivalued=True, representation_code=RepC.OBNAME)
+        self.status = Attribute('status', converter=int, representation_code=RepC.STATUS)
+        self.channels = Attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.parameters = Attribute('parameters', multivalued=True, representation_code=RepC.OBNAME)
 
         self.set_attributes(**kwargs)
 

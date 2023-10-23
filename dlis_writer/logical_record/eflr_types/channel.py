@@ -3,6 +3,7 @@ import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType, numpy_dtype_converter
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
@@ -15,23 +16,23 @@ class Channel(EFLR):
     def __init__(self, name: str, set_name: str = None, dataset_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.long_name = self._create_attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = self._create_attribute(
+        self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
+        self.properties = Attribute(
             'properties', converter=self.convert_properties, multivalued=True, representation_code=RepC.IDENT)
-        self.representation_code = self._create_attribute(
+        self.representation_code = Attribute(
             'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
-        self.units = self._create_attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
-        self.dimension = self._create_attribute(
+        self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
+        self.dimension = Attribute(
             'dimension', converter=self.convert_dimension_or_el_limit,
             multivalued=True, representation_code=RepC.UVARI)
-        self.axis = self._create_attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
-        self.element_limit = self._create_attribute(
+        self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.element_limit = Attribute(
             'element_limit', converter=self.convert_dimension_or_el_limit,
             multivalued=True, representation_code=RepC.UVARI)
-        self.source = self._create_attribute('source', representation_code=RepC.OBJREF)
-        self.minimum_value = self._create_attribute(
+        self.source = Attribute('source', representation_code=RepC.OBJREF)
+        self.minimum_value = Attribute(
             'minimum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
-        self.maximum_value = self._create_attribute(
+        self.maximum_value = Attribute(
             'maximum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
         
         self.set_attributes(**kwargs)

@@ -5,6 +5,7 @@ import logging
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
@@ -25,15 +26,14 @@ class Frame(EFLR):
 
         super().__init__(name, set_name)
 
-        self.description = self._create_attribute('description', representation_code=RepC.ASCII)
-        self.channels = self._create_attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.index_type = self._create_attribute(
-            'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
-        self.direction = self._create_attribute('direction', representation_code=RepC.IDENT)
-        self.spacing = self._create_attribute('spacing', converter=float)
-        self.encrypted = self._create_attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
-        self.index_min = self._create_attribute('index_min', converter=int)
-        self.index_max = self._create_attribute('index_max', converter=int)
+        self.description = Attribute('description', representation_code=RepC.ASCII)
+        self.channels = Attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
+        self.direction = Attribute('direction', representation_code=RepC.IDENT)
+        self.spacing = Attribute('spacing', converter=float)
+        self.encrypted = Attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
+        self.index_min = Attribute('index_min', converter=int)
+        self.index_max = Attribute('index_max', converter=int)
 
         self.set_attributes(**kwargs)
 

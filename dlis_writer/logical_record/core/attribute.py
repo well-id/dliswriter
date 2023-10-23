@@ -36,7 +36,7 @@ class Attribute:
                  ):
         """Initiate Attribute object."""
 
-        self._label = label
+        self._label = label.strip('_').upper().replace('_', '-')
         self._multivalued = multivalued
         self._representation_code = representation_code
         self._units = units

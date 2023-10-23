@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 class Zone(EFLR):
@@ -30,10 +31,10 @@ class Zone(EFLR):
 
         super().__init__(name, set_name)
 
-        self.description = self._create_attribute('description', representation_code=RepC.ASCII)
-        self.domain = self._create_attribute('domain', converter=self.check_domain, representation_code=RepC.IDENT)
-        self.maximum = self._create_attribute('maximum', converter=self.parse_number_or_dtime)
-        self.minimum = self._create_attribute('minimum', converter=self.parse_number_or_dtime)
+        self.description = Attribute('description', representation_code=RepC.ASCII)
+        self.domain = Attribute('domain', converter=self.check_domain, representation_code=RepC.IDENT)
+        self.maximum = Attribute('maximum', converter=self.parse_number_or_dtime)
+        self.minimum = Attribute('minimum', converter=self.parse_number_or_dtime)
 
         self.set_attributes(**kwargs)
 
