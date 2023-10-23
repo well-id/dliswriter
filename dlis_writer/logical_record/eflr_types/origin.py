@@ -23,7 +23,7 @@ class Origin(EFLR):
         self.file_type = self._create_attribute('file_type', representation_code=RepC.IDENT)
         self.product = self._create_attribute('product', representation_code=RepC.ASCII)
         self.version = self._create_attribute('version', representation_code=RepC.ASCII)
-        self.programs = self._create_attribute('programs', representation_code=RepC.ASCII)
+        self.programs = self._create_attribute('programs', representation_code=RepC.ASCII, multivalued=True)
         self.creation_time = self._create_attribute('creation_time', converter=self.parse_dtime, representation_code=RepC.DTIME)
         self.order_number = self._create_attribute('order_number', representation_code=RepC.ASCII)
         self.descent_number = self._create_attribute('descent_number', converter=int, representation_code=RepC.UNORM)
