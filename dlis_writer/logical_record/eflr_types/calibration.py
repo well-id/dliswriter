@@ -16,8 +16,8 @@ class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
@@ -53,8 +53,8 @@ class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
@@ -71,9 +71,9 @@ class Calibration(EFLR):
     set_type = 'CALIBRATION'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+    def __init__(self, name: str, set_name: str = None, **kwargs):
 
-        super().__init__(object_name, set_name)
+        super().__init__(name, set_name)
 
         self.calibrated_channels = self._create_attribute('calibrated_channels')
         self.uncalibrated_channels = self._create_attribute('uncalibrated_channels')

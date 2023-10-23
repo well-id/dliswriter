@@ -6,8 +6,8 @@ class Axis(EFLR):
     set_type = 'AXIS'
     logical_record_type = LogicalRecordType.AXIS
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.axis_id = self._create_attribute('axis_id')
         self.coordinates = self._create_attribute(

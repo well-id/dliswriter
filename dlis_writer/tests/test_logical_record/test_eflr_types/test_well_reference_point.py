@@ -12,7 +12,7 @@ def test_from_config(config_params, key, name, v_zero, m_decl, c1_name, c1_value
     key = f"WellReferencePoint-{key}"
     w = WellReferencePoint.make_from_config(config_params, key=key)
 
-    assert w._name == name
+    assert w.name == name
     assert w.vertical_zero.value == v_zero
     assert w.magnetic_declination.value == m_decl
     assert w.coordinate_1_name.value == c1_name

@@ -16,8 +16,8 @@ class Tool(EFLR):
     set_type = 'TOOL'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.description = self._create_attribute('description')
         self.trademark_name = self._create_attribute('trademark_name')

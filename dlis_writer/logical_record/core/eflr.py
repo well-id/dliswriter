@@ -26,7 +26,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
-        _name: Identifier of a Logical Record Segment. Must be
+        name: Identifier of a Logical Record Segment. Must be
             distinct in a single Logical File.
         set_name: Optional identifier of the set a Logical Record Segment belongs to.
 
@@ -36,10 +36,10 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
     is_eflr = True
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
 
-    def __init__(self, object_name: str, set_name: str = None):
+    def __init__(self, name: str, set_name: str = None):
         super().__init__()
 
-        self._name = object_name
+        self.name = name
         self.set_name = set_name
 
         self.origin_reference = None
@@ -48,14 +48,10 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         self._rp66_rules = getattr(RP66, self.set_type.replace('-', '_'))
         self._attributes: dict[str, Attribute] = {}
 
-        self._instance_dict[object_name] = self
-
-    @property
-    def name(self):
-        return self._name
+        self._instance_dict[name] = self
 
     def __str__(self):
-        return f"{self.__class__.__name__} '{self._name}'"
+        return f"{self.__class__.__name__} '{self.name}'"
 
     def __setattr__(self, key, value):
         if isinstance(getattr(self, key, None), Attribute):
@@ -93,7 +89,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
 
         return write_struct(
             RepresentationCode.OBNAME,
-            (self.origin_reference, self.copy_number, self._name)
+            (self.origin_reference, self.copy_number, self.name)
         )
 
     def make_set_component(self) -> bytes:
@@ -246,7 +242,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         return dtime
 
     def set_attributes(self, **kwargs):
-        rep = f"{self.__class__.__name__} '{self._name}'"
+        rep = f"{self.__class__.__name__} '{self.name}'"
 
         for attr_name, attr_value in kwargs.items():
             attr_name_main, *attr_parts = attr_name.split('.')

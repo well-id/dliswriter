@@ -13,7 +13,7 @@ def test_from_config(config_params, zone_nr):
     
     conf = config_params[key]
     
-    assert zone._name == conf['name']
+    assert zone.name == conf['name']
     assert zone.description.value == conf['description']
     assert zone.domain.value == conf['domain']
     

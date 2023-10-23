@@ -6,8 +6,8 @@ class LongName(EFLR):
     set_type = 'LONG-NAME'
     logical_record_type = LogicalRecordType.LNAME
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.general_modifier = self._create_attribute('general_modifier', converter=self.convert_values)
         self.quantity = self._create_attribute('quantity')

@@ -16,8 +16,8 @@ class Computation(EFLR):
     set_type = 'COMPUTATION'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=self.convert_values)

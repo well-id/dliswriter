@@ -6,8 +6,8 @@ class Message(EFLR):
     set_type = 'MESSAGE'
     logical_record_type = LogicalRecordType.SCRIPT
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self._type = self._create_attribute('_type')
         self.time = self._create_attribute('time', converter=self.parse_dtime)
@@ -24,8 +24,8 @@ class Comment(EFLR):
     set_type = 'COMMENT'
     logical_record_type = LogicalRecordType.SCRIPT
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.text = self._create_attribute('text', converter=self.convert_values)
 

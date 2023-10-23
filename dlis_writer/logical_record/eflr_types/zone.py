@@ -9,7 +9,7 @@ class Zone(EFLR):
     set_type = 'ZONE'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+    def __init__(self, name: str, set_name: str = None, **kwargs):
         """
 
         :description -> str
@@ -27,7 +27,7 @@ class Zone(EFLR):
 
         """
 
-        super().__init__(object_name, set_name)
+        super().__init__(name, set_name)
 
         self.description = self._create_attribute('description')
         self.domain = self._create_attribute('domain')

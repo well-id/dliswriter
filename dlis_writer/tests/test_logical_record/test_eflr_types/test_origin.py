@@ -11,7 +11,7 @@ def test_from_config(config_params):
 
     conf = config_params['Origin']
 
-    assert origin._name == conf['name']
+    assert origin.name == conf['name']
 
     assert origin.creation_time.value == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
     assert origin.file_id.value == conf['file_id']
@@ -38,7 +38,7 @@ def test_from_config_no_dtime_in_attributes():
     config['Origin']['well_name'] = "Some well name"
 
     origin = Origin.make_from_config(config)
-    assert origin._name == "Some origin name"
+    assert origin.name == "Some origin name"
     assert origin.well_name.value == "Some well name"
 
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
@@ -49,7 +49,7 @@ def test_from_config_no_attributes():
     config['Origin']['name'] = "Some origin name"
 
     origin = Origin.make_from_config(config)
-    assert origin._name == "Some origin name"
+    assert origin.name == "Some origin name"
     assert origin.well_name.value is None
 
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)

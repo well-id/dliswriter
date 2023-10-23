@@ -10,13 +10,13 @@ def test_calibration_measurement_from_config(config_params):
     key = "CalibrationMeasurement-1"
     m = CalibrationMeasurement.make_from_config(config_params, key=key)
 
-    assert m._name == "CMEASURE-1"
+    assert m.name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
     assert isinstance(m.measurement_source.value, Channel)
-    assert m.measurement_source.value._name == "Channel 1"
+    assert m.measurement_source.value.name == "Channel 1"
     assert m._type.value == 'Plus'
     assert isinstance(m.axis.value[0], Axis)
-    assert m.axis.value[0]._name == 'Axis-1'
+    assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == [12]
     assert m.maximum_deviation.value == [2.2324]
@@ -34,7 +34,7 @@ def test_calibration_coefficient_from_config(config_params):
     key = "CalibrationCoefficient-1"
     c = CalibrationCoefficient.make_from_config(config_params, key=key)
 
-    assert c._name == "COEF-1"
+    assert c.name == "COEF-1"
     assert c.label.value == 'Gain'
     assert c.coefficients.value == [100.2, 201.3]
     assert c.references.value == [89, 298]
@@ -56,7 +56,7 @@ def test_calibration_from_config(config_params):
     key = "Calibration-1"
     c = Calibration.make_from_config(config_params, key=key)
 
-    assert c._name == "CALIB-MAIN"
+    assert c.name == "CALIB-MAIN"
 
     _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), Channel)
     _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), Channel)

@@ -12,10 +12,10 @@ from dlis_writer.tests.common import base_data_path, config_params
 def test_from_config(config_params, section, name, properties, zone_names, axis_name, values):
     comp = Computation.make_from_config(config_params, key=section)
 
-    assert comp._name == name
+    assert comp.name == name
     assert comp.properties.value == properties
-    assert comp.axis.value._name == axis_name
+    assert comp.axis.value.name == axis_name
     assert comp.values.value == values
 
     for i, n in enumerate(zone_names):
-        assert comp.zones.value[i]._name == n
+        assert comp.zones.value[i].name == n

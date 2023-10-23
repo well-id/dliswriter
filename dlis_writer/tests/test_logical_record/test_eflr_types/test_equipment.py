@@ -13,7 +13,7 @@ from dlis_writer.tests.common import base_data_path, config_params
 def test_from_config(config_params, idx, section, name, status, serial_number):
     eq = Equipment.make_from_config(config_params, key=section)
 
-    assert eq._name == name
+    assert eq.name == name
     assert eq.status.value == status
     assert isinstance(eq.status.value, int)
     assert eq.serial_number.value == serial_number

@@ -12,9 +12,9 @@ class Origin(EFLR):
     set_type = 'ORIGIN'
     logical_record_type = LogicalRecordType.OLR
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+    def __init__(self, name: str, set_name: str = None, **kwargs):
 
-        super().__init__(object_name, set_name)
+        super().__init__(name, set_name)
 
         self.file_id = self._create_attribute('file_id')
         self.file_set_name = self._create_attribute('file_set_name')

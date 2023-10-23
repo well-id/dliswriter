@@ -21,9 +21,9 @@ class Frame(EFLR):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
+    def __init__(self, name: str, set_name: str = None, **kwargs):
 
-        super().__init__(object_name, set_name)
+        super().__init__(name, set_name)
 
         self.description = self._create_attribute('description')
         self.channels = self._create_attribute('channels')

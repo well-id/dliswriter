@@ -15,8 +15,8 @@ class Splice(EFLR):
     set_type = 'SPLICE'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.output_channel = self._create_attribute('output_channel')
         self.input_channels = self._create_attribute('input_channels')

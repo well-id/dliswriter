@@ -5,12 +5,12 @@ from dlis_writer.tests.common import base_data_path, config_params
 def test_from_config(config_params):
     splice = Splice.make_from_config(config_params, key="Splice-1")
 
-    assert splice._name == "splc1"
+    assert splice.name == "splc1"
 
     for i, n in enumerate(("Zone-1", "Zone-2")):
-        assert splice.zones.value[i]._name == n
+        assert splice.zones.value[i].name == n
 
     for i, n in enumerate(("Channel 1", "Channel 2")):
-        assert splice.input_channels.value[i]._name == n
+        assert splice.input_channels.value[i].name == n
 
-    assert splice.output_channel.value._name == 'amplitude'
+    assert splice.output_channel.value.name == 'amplitude'

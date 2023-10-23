@@ -14,8 +14,8 @@ class Group(EFLR):
     set_type = 'GROUP'
     logical_record_type = LogicalRecordType.STATIC
 
-    def __init__(self, object_name: str, set_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.description = self._create_attribute('description')
         self.object_type = self._create_attribute('object_type')

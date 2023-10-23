@@ -16,7 +16,7 @@ def test_from_config(config_params, param_nr, value_type, n_values, repr_code):
     
     conf = config_params[key]
     
-    assert param._name == conf['name']
+    assert param.name == conf['name']
     assert param.long_name.value == conf['long_name']
 
     assert param.values.representation_code is repr_code

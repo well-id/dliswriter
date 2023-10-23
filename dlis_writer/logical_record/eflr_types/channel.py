@@ -12,8 +12,8 @@ class Channel(EFLR):
     set_type = 'CHANNEL'
     logical_record_type = LogicalRecordType.CHANNL
 
-    def __init__(self, object_name: str, set_name: str = None, dataset_name: str = None, **kwargs):
-        super().__init__(object_name, set_name)
+    def __init__(self, name: str, set_name: str = None, dataset_name: str = None, **kwargs):
+        super().__init__(name, set_name)
 
         self.long_name = self._create_attribute('long_name')
         self.properties = self._create_attribute('properties', converter=self.convert_properties)
@@ -33,7 +33,7 @@ class Channel(EFLR):
 
     @property
     def key(self):
-        return hash(type(self)), self._name
+        return hash(type(self)), self.name
 
     @property
     def dataset_name(self):
