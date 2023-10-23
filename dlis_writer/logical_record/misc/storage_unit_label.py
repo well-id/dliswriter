@@ -32,20 +32,26 @@ class StorageUnitLabel(LogicalRecordBase):
     set_type = NotImplemented  # TODO
     storage_unit_structure = 'RECORD'  # the only allowed value
     dlis_version = 'V1.00'
-    max_record_length = 8192  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
+    max_record_length_limit = 16384
 
-    def __init__(self, set_identifier: str, sequence_number: int = 1):
+    def __init__(self, set_identifier: str, sequence_number: int = 1, max_record_length: int = 8192):
         """Initialise StorageUnitLabel.
 
         Args:
             sequence_number     :   Indicates the order in which the current Storage Unit appears in a Storage Set.
-            set_identifier      :   ID of the storage set (eg. "Default Storage Set").
+            set_identifier      :   ID of the storage set (e.g. "Default Storage Set").
+            max_record_length   :   Maximum length of each visible record;
+                                    see  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
         """
 
         super().__init__()
 
         self.sequence_number = int(sequence_number)
         self.set_identifier = set_identifier
+        self.max_record_length = max_record_length
+
+        if max_record_length > self.max_record_length_limit:
+            raise ValueError(f"Max record length cannot be larger than {self.max_record_length_limit}")
 
         self._bytes = None
 
