@@ -5,7 +5,7 @@ from configparser import ConfigParser
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.logical_record.eflr_types.zone import Zone
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 
 
 logger = logging.getLogger(__name__)
@@ -18,14 +18,17 @@ class Computation(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        self.long_name = self._create_attribute('long_name')
-        self.properties = self._create_attribute('properties', converter=self.convert_values)
-        self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
-        self.axis = self._create_attribute('axis')
-        self.zones = self._create_attribute('zones')
+        self.long_name = self._create_attribute('long_name', representation_code=RepC.ASCII)
+        self.properties = self._create_attribute(
+            'properties', converter=self.convert_values, multivalued=True, representation_code=RepC.IDENT)
+        self.dimension = self._create_attribute(
+            'dimension', converter=self.convert_dimension_or_el_limit,
+            multivalued=True, representation_code=RepC.UVARI)
+        self.axis = self._create_attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.zones = self._create_attribute('zones', multivalued=True, representation_code=RepC.OBNAME)
         self.values = self._create_attribute(
-            'values', converter=lambda val: self.convert_values(val, require_numeric=True))
-        self.source = self._create_attribute('source')
+            'values', converter=lambda val: self.convert_values(val, require_numeric=True), multivalued=True)
+        self.source = self._create_attribute('source', multivalued=True)
 
         self.set_attributes(**kwargs)
         self._set_defaults()
