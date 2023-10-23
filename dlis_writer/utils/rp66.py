@@ -9,64 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    PROCESS = {
-        
-        'description' : {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'trademark_name' : {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'version' : {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'properties' : {
-            'count': None,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'status' : {
-            'count': 1,
-            'representation_code': RepresentationCode.IDENT
-        },
-
-        'input_channels' : {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'output_channels' : {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'input_computations' : {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'output_computations' : {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'parameters' : {
-            'count': None,
-            'representation_code': RepresentationCode.OBNAME
-        },
-
-        'comments' : {
-            'count': None,
-            'representation_code': RepresentationCode.ASCII
-        }
-    }
-
     CALIBRATION_MEASUREMENT = {
         
         'phase': {
