@@ -3,7 +3,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
@@ -21,21 +21,23 @@ class CalibrationMeasurement(EFLR):
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
-        self.phase = self._create_attribute('phase')
-        self.measurement_source = self._create_attribute('measurement_source')
-        self._type = self._create_attribute('_type')
-        self.dimension = self._create_attribute('dimension', converter=self.convert_dimension_or_el_limit)
-        self.axis = self._create_attribute('axis')
-        self.measurement = self._create_attribute('measurement', converter=conv)
+        self.phase = self._create_attribute('phase', representation_code=RepC.IDENT)
+        self.measurement_source = self._create_attribute('measurement_source', representation_code=RepC.OBJREF)
+        self._type = self._create_attribute('_type', representation_code=RepC.IDENT)
+        self.dimension = self._create_attribute(
+            'dimension', converter=self.convert_dimension_or_el_limit,
+            multivalued=True, representation_code=RepC.UVARI)
+        self.axis = self._create_attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.measurement = self._create_attribute('measurement', converter=conv, multivalued=True)
         self.sample_count = self._create_attribute('sample_count', converter=conv)
         self.maximum_deviation = self._create_attribute('maximum_deviation', converter=conv)
         self.standard_deviation = self._create_attribute('standard_deviation', converter=conv)
         self.begin_time = self._create_attribute('begin_time', converter=self.parse_dtime)
         self.duration = self._create_attribute('duration', converter=float)
-        self.reference = self._create_attribute('reference', converter=conv)
-        self.standard = self._create_attribute('standard', converter=conv)
-        self.plus_tolerance = self._create_attribute('plus_tolerance', converter=conv)
-        self.minus_tolerance = self._create_attribute('minus_tolerance', converter=conv)
+        self.reference = self._create_attribute('reference', converter=conv, multivalued=True)
+        self.standard = self._create_attribute('standard', converter=conv, multivalued=True)
+        self.plus_tolerance = self._create_attribute('plus_tolerance', converter=conv, multivalued=True)
+        self.minus_tolerance = self._create_attribute('minus_tolerance', converter=conv, multivalued=True)
 
         self.set_attributes(**kwargs)
 
@@ -58,11 +60,11 @@ class CalibrationCoefficient(EFLR):
 
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
-        self.label = self._create_attribute('label')
-        self.coefficients = self._create_attribute('coefficients', converter=conv)
-        self.references = self._create_attribute('references', converter=conv)
-        self.plus_tolerances = self._create_attribute('plus_tolerances', converter=conv)
-        self.minus_tolerances = self._create_attribute('minus_tolerances', converter=conv)
+        self.label = self._create_attribute('label', representation_code=RepC.IDENT)
+        self.coefficients = self._create_attribute('coefficients', converter=conv, multivalued=True)
+        self.references = self._create_attribute('references', converter=conv, multivalued=True)
+        self.plus_tolerances = self._create_attribute('plus_tolerances', converter=conv, multivalued=True)
+        self.minus_tolerances = self._create_attribute('minus_tolerances', converter=conv, multivalued=True)
 
         self.set_attributes(**kwargs)
 
@@ -75,12 +77,17 @@ class Calibration(EFLR):
 
         super().__init__(name, set_name)
 
-        self.calibrated_channels = self._create_attribute('calibrated_channels')
-        self.uncalibrated_channels = self._create_attribute('uncalibrated_channels')
-        self.coefficients = self._create_attribute('coefficients')
-        self.measurements = self._create_attribute('measurements')
-        self.parameters = self._create_attribute('parameters')
-        self.method = self._create_attribute('method')
+        self.calibrated_channels = self._create_attribute(
+            'calibrated_channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.uncalibrated_channels = self._create_attribute(
+            'uncalibrated_channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.coefficients = self._create_attribute(
+            'coefficients', multivalued=True, representation_code=RepC.OBNAME)
+        self.measurements = self._create_attribute(
+            'measurements', multivalued=True, representation_code=RepC.OBNAME)
+        self.parameters = self._create_attribute(
+            'parameters', multivalued=True, representation_code=RepC.OBNAME)
+        self.method = self._create_attribute('method', representation_code=RepC.IDENT)
 
         self.set_attributes(**kwargs)
 
