@@ -4,6 +4,7 @@ from datetime import datetime
 from typing_extensions import Self
 import logging
 import numpy as np
+import importlib
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.rp66 import RP66
@@ -257,14 +258,22 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
             logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
 
-    def add_dependent_objects_from_config(self, config, attr_name, object_class, single=False):
+    def add_dependent_objects_from_config(self, config, attr_name, object_class=None, single=False):
         attr = getattr(self, attr_name)
+
         if attr.value is not None:
             if single:
                 name = attr.value.rstrip(' ')
+                if object_class is None:
+                    object_class = self.get_object_class(name)
                 attr.value = object_class.get_or_make_from_config(name, config)
             else:
                 names_list = self.convert_values(attr.value)
+                if not names_list:
+                    attr.value = []
+                    return
+                if object_class is None:
+                    object_class = self.get_object_class(names_list[0])
                 attr.value = [object_class.get_or_make_from_config(name, config) for name in names_list]
 
     @classmethod
@@ -301,4 +310,16 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
                 return cls.get_instance(object_name)
 
         return cls.make_from_config(config, key=name)
+
+    @classmethod
+    def get_object_class(cls, object_name):
+        module = importlib.import_module('dlis_writer.logical_record.eflr_types')
+
+        class_name = object_name.split('-')[0]
+        the_class = getattr(module, class_name, None)
+        if the_class is None:
+            raise ValueError(f"No EFLR class of name '{class_name}' found")
+
+        return the_class
+
 

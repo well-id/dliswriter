@@ -4,7 +4,6 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.eflr_types.tool import Tool
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.utils.enums import LogicalRecordType
 
@@ -47,7 +46,7 @@ class Computation(EFLR):
 
         obj.add_dependent_objects_from_config(config, 'zones', Zone)
         obj.add_dependent_objects_from_config(config, 'axis', Axis, single=True)
-        obj.add_dependent_objects_from_config(config, 'source', Tool, single=True)
+        obj.add_dependent_objects_from_config(config, 'source', single=True)
 
         obj.check_values_and_zones()
 
