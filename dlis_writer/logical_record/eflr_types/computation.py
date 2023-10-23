@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -22,13 +22,10 @@ class Computation(EFLR):
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
         self.properties = Attribute(
             'properties', converter=self.convert_values, multivalued=True, representation_code=RepC.IDENT)
-        self.dimension = Attribute(
-            'dimension', converter=self.convert_dimension_or_el_limit,
-            multivalued=True, representation_code=RepC.UVARI)
+        self.dimension = ListAttribute('dimension', representation_code=RepC.UVARI, converter=int)
         self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
         self.zones = Attribute('zones', multivalued=True, representation_code=RepC.OBNAME)
-        self.values = Attribute(
-            'values', converter=lambda val: self.convert_values(val, require_numeric=True), multivalued=True)
+        self.values = ListAttribute('values', converter=Attribute.convert_numeric)
         self.source = Attribute('source', multivalued=True)
 
         self.set_attributes(**kwargs)

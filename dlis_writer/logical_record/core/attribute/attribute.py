@@ -1,4 +1,5 @@
 from typing import Union, List, Tuple
+from numbers import Number
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, Units
@@ -41,7 +42,7 @@ class Attribute:
         self._representation_code = representation_code
         self._units = units
         self._value = value
-        self._converter = converter or self.default_converter  # to convert value from string retrieved from config file
+        self._converter = converter  # to convert value from string retrieved from config file
 
     def __str__(self):
         return f"{self.__class__.__name__} '{self._label}'"
@@ -56,7 +57,7 @@ class Attribute:
 
     @value.setter
     def value(self, val):
-        self._value = self._converter(val)
+        self._value = self.converter(val)
 
     @property
     def representation_code(self):
@@ -88,16 +89,15 @@ class Attribute:
 
     @property
     def converter(self):
-        return self._converter
+        return self._converter or self.default_converter
 
-    @staticmethod
-    def default_converter(v):
+    def default_converter(self, v):
         return v
 
     @converter.setter
     def converter(self, conv):
         if conv is None:
-            self._converter = self.default_converter
+            self._converter = None
         else:
             if not callable(conv):
                 raise TypeError(f"Expected a callable; got {type(conv)}")
@@ -198,3 +198,27 @@ class Attribute:
             bts, characteristics = self.write_values(bts, characteristics)
 
         return write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
+
+    @staticmethod
+    def convert_numeric(value):
+        for parser in (int, float):
+            try:
+                value = parser(value)
+                break
+            except ValueError:
+                pass
+        else:
+            # if loop not broken - none of the converters worked
+            raise ValueError(f"Some/all of the values: {value} could not be converted to numeric types")
+        return value
+
+    @staticmethod
+    def convert_integer(value):
+        if isinstance(value, str):
+            return int(value)
+        if isinstance(value, Number):
+            if value % 1:
+                raise ValueError(f"{value} is not an integer")
+            return int(value)
+        else:
+            raise TypeError(f"Cannot convert {type(value)}: {value} to integer")

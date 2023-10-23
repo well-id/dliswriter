@@ -3,7 +3,7 @@ import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType, numpy_dtype_converter
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -22,18 +22,12 @@ class Channel(EFLR):
         self.representation_code = Attribute(
             'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
         self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
-        self.dimension = Attribute(
-            'dimension', converter=self.convert_dimension_or_el_limit,
-            multivalued=True, representation_code=RepC.UVARI)
+        self.dimension = ListAttribute('dimension', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
         self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
-        self.element_limit = Attribute(
-            'element_limit', converter=self.convert_dimension_or_el_limit,
-            multivalued=True, representation_code=RepC.UVARI)
+        self.element_limit = ListAttribute('element_limit', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
         self.source = Attribute('source', representation_code=RepC.OBJREF)
-        self.minimum_value = Attribute(
-            'minimum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
-        self.maximum_value = Attribute(
-            'maximum_value', converter=float, multivalued=True, representation_code=RepC.FDOUBL)
+        self.minimum_value = ListAttribute('minimum_value', converter=float, representation_code=RepC.FDOUBL)
+        self.maximum_value = ListAttribute('maximum_value', converter=float, representation_code=RepC.FDOUBL)
         
         self.set_attributes(**kwargs)
         self._set_defaults()

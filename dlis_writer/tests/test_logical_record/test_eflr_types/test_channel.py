@@ -34,9 +34,9 @@ def test_from_config(config_params):
     assert channel.axis.value == 'some axis'
     assert channel.element_limit.value == [12]
     assert channel.source.value == 'some source'
-    assert channel.minimum_value.value == 0.
-    assert isinstance(channel.minimum_value.value, float)
-    assert channel.maximum_value.value == 127.6
+    assert channel.minimum_value.value == [0.]
+    assert isinstance(channel.minimum_value.value[0], float)
+    assert channel.maximum_value.value == [127.6]
 
 
 def test_from_config_alternative_name(config_params):
@@ -202,7 +202,7 @@ def test_setting_dimension(chan, value, expected_value):
 
 @pytest.mark.parametrize('value', ("", "10,, 10", 10.6, [10, 11.2]))
 def test_setting_dimension_error(chan, value):
-    with pytest.raises(TypeError, match="Expected a list/tuple of integers.*"):
+    with pytest.raises(ValueError):
         chan.dimension.value = value
 
 
