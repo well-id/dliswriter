@@ -28,7 +28,7 @@ class Attribute:
 
     settables = ('representation_code', 'units', 'value')
 
-    def __init__(self, label: str, single: bool = False,
+    def __init__(self, label: str, multivalued: bool = False,
                  representation_code: RepresentationCode = None,
                  units: Units = None,
                  value: AttributeValue = None,
@@ -37,7 +37,7 @@ class Attribute:
         """Initiate Attribute object."""
 
         self._label = label
-        self._single = single
+        self._multivalued = multivalued
         self._representation_code = representation_code
         self._units = units
         self._value = value
@@ -78,7 +78,7 @@ class Attribute:
 
     @property
     def count(self) -> int:
-        if self._single:
+        if not self._multivalued:
             return 1
         if self._value is None:
             return None
