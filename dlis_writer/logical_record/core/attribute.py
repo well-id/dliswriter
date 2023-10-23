@@ -26,9 +26,9 @@ class Attribute:
 
     """
 
-    settables = ('count', 'representation_code', 'units', 'value')
+    settables = ('representation_code', 'units', 'value')
 
-    def __init__(self, label: str, count: int = None,
+    def __init__(self, label: str, single: bool = False,
                  representation_code: RepresentationCode = None,
                  units: Units = None,
                  value: AttributeValue = None,
@@ -37,7 +37,7 @@ class Attribute:
         """Initiate Attribute object."""
 
         self._label = label
-        self._count = count
+        self._single = single
         self._representation_code = representation_code
         self._units = units
         self._value = value
@@ -78,11 +78,13 @@ class Attribute:
 
     @property
     def count(self) -> int:
-        return self._count
-
-    @count.setter
-    def count(self, count):
-        self._count = int(count) if count is not None else None
+        if self._single:
+            return 1
+        if self._value is None:
+            return None
+        if isinstance(self._value, (list, tuple)):
+            return len(self._value)
+        return 1
 
     @property
     def converter(self):

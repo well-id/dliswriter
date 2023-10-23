@@ -66,7 +66,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
         rules_kwargs = dict()
         if 'representation_code' not in kwargs and 'representation_code' in rules:
             rules_kwargs['representation_code'] = rules['representation_code']
-        rules_kwargs['count'] = rules['count']
+        rules_kwargs['single'] = rules['count'] == 1
 
         attr = Attribute(
             label=key.strip('_').upper().replace('_', '-'),
