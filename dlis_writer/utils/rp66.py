@@ -9,64 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 class RP66:
     """Serves as a lookup dictionary of Set Types and their attributes' count and data types"""
 
-    WELL_REFERENCE = {
-        
-        'permanent_datum': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'vertical_zero': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'permanent_datum_elevation': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-
-        'above_permanent_datum': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-
-        'magnetic_declination': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-
-        'coordinate_1_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'coordinate_1_value': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-
-        'coordinate_2_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'coordinate_2_value': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        },
-
-        'coordinate_3_name': {
-            'count': 1,
-            'representation_code': RepresentationCode.ASCII
-        },
-
-        'coordinate_3_value': {
-            'count': 1,
-            'representation_code': RepresentationCode.FDOUBL
-        }
-    }
-
     AXIS = {
         
         'axis_id': {
