@@ -10,12 +10,18 @@ class FileHeader(LogicalRecordBase):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     set_type = 'FILE-HEADER'
+    identifier_length_limit = 65
 
     def __init__(self, identifier: str, sequence_number: int = 1):
         super().__init__()
 
         self.sequence_number = int(sequence_number)
         self.identifier = identifier
+
+        if not isinstance(identifier, str):
+            raise TypeError(f"'identifier' should be a str; got {type(identifier)}")
+        if len(identifier) > self.identifier_length_limit:
+            raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
         
         self.origin_reference = None
         self.copy_number = 0
