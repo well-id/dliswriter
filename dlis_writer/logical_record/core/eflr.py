@@ -63,10 +63,14 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
     def _create_attribute(self, key, **kwargs):
         rules = self._rp66_rules[key]
 
+        rules_kwargs = dict()
+        if 'representation_code' not in kwargs and 'representation_code' in rules:
+            rules_kwargs['representation_code'] = rules['representation_code']
+        rules_kwargs['count'] = rules['count']
+
         attr = Attribute(
             label=key.strip('_').upper().replace('_', '-'),
-            count=rules['count'],
-            representation_code=rules['representation_code'],
+            **rules_kwargs,
             **kwargs
         )
 
