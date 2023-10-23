@@ -8,6 +8,7 @@ from dlis_writer.utils.enums import LogicalRecordType
 class Zone(EFLR):
     set_type = 'ZONE'
     logical_record_type = LogicalRecordType.STATIC
+    domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         """
@@ -30,11 +31,17 @@ class Zone(EFLR):
         super().__init__(name, set_name)
 
         self.description = self._create_attribute('description')
-        self.domain = self._create_attribute('domain')
+        self.domain = self._create_attribute('domain', converter=self.check_domain)
         self.maximum = self._create_attribute('maximum', converter=self.parse_number_or_dtime)
         self.minimum = self._create_attribute('minimum', converter=self.parse_number_or_dtime)
 
         self.set_attributes(**kwargs)
+
+    @classmethod
+    def check_domain(cls, domain):
+        if domain not in cls.domains:
+            raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
+        return domain
 
     @classmethod
     def parse_number_or_dtime(cls, value):
