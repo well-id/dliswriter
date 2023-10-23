@@ -60,7 +60,10 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
         assert chan.units == Units.m.value
         assert chan.reprc == 7
 
-        assert f.frames[0].index_type == 'DEPTH'
+        frame = f.frames[0]
+        assert frame.index_type == 'DEPTH'
+        assert frame.index_min == short_reference_data['depth'].min()
+        assert frame.index_max == pytest.approx(short_reference_data['depth'].max(), abs=1)
 
 
 def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based):
@@ -72,7 +75,11 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
         assert chan.units == Units.s.value
         assert chan.reprc == 7
 
-        assert f.frames[0].index_type == 'TIME'
+        frame = f.frames[0]
+        assert frame.index_type == 'TIME'
+        assert frame.index_max == pytest.approx(short_reference_data['time'].max(), abs=0.5)
+        assert (frame.index_min or 0) == short_reference_data['time'].min()
+        # ^ value of 0 is changed to None in dlisio-loaded files
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
