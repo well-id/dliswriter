@@ -9,7 +9,6 @@ from dlis_writer.logical_record.collections.multi_logical_record import MultiLog
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import RepresentationCode
 
 
 logger = logging.getLogger(__name__)
@@ -104,21 +103,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
     def make_frame_and_data(config, data):
         frame = Frame.make_from_config(config)
         if frame.channels.value:
-            frame.setup_channels_params_from_data(data)
+            frame.setup_from_data(data)
             ch = f'with channels: {", ".join(c.name for c in frame.channels.value)}'
-
-            # TODO: move this part
-            def assign_if_none(attr, value, key='value'):
-                if getattr(attr, key) is None:
-                    setattr(attr, key, value)
-
-            index_channel = frame.channels.value[0].dataset_name
-            assign_if_none(frame.spacing, RepresentationCode.FDOUBL, 'representation_code')
-            assign_if_none(frame.index_min, data[index_channel].min())
-            assign_if_none(frame.index_max, data[index_channel].max())
-            assign_if_none(frame.index_min, RepresentationCode.FDOUBL, 'representation_code')
-            assign_if_none(frame.index_max, RepresentationCode.FDOUBL, 'representation_code')
-
         else:
             ch = "(no channels defined)"
 

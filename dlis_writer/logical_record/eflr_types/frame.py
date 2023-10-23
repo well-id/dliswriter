@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode
 from dlis_writer.logical_record.eflr_types import Channel
 
 
@@ -58,11 +58,26 @@ class Frame(EFLR):
 
         return obj
 
-    def setup_channels_params_from_data(self, data):
+    def setup_from_data(self, data):
         if not self.channels.value:
             raise RuntimeError(f"No channels defined for {self}")
 
         for channel in self.channels.value:
             channel.set_dimension_and_repr_code_from_data(data)
+
+        self._setup_index_max_and_min_from_data(data)
+
+    def _setup_index_max_and_min_from_data(self, data):
+        def assign_if_none(attr, value, key='value'):
+            if getattr(attr, key) is None:
+                setattr(attr, key, value)
+
+        index_channel = self.channels.value[0].dataset_name
+        assign_if_none(self.spacing, RepresentationCode.FDOUBL, 'representation_code')
+        assign_if_none(self.index_min, data[index_channel].min())
+        assign_if_none(self.index_max, data[index_channel].max())
+        assign_if_none(self.index_min, RepresentationCode.FDOUBL, 'representation_code')
+        assign_if_none(self.index_max, RepresentationCode.FDOUBL, 'representation_code')
+
 
 
