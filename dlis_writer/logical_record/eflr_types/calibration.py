@@ -7,7 +7,7 @@ from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as Rep
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, EFLRAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -23,10 +23,11 @@ class CalibrationMeasurement(EFLR):
         conv = lambda val: self.convert_values(val, require_numeric=True)
 
         self.phase = Attribute('phase', representation_code=RepC.IDENT)
-        self.measurement_source = Attribute('measurement_source', representation_code=RepC.OBJREF)
+        self.measurement_source = EFLRAttribute(
+            'measurement_source', representation_code=RepC.OBJREF, object_class=Channel)
         self._type = Attribute('_type', representation_code=RepC.IDENT)
         self.dimension = ListAttribute('dimension', representation_code=RepC.UVARI, converter=int)
-        self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
+        self.axis = EFLRListAttribute('axis', object_class=Axis)
         self.measurement = Attribute('measurement', converter=conv, multivalued=True)
         self.sample_count = Attribute('sample_count', converter=conv)
         self.maximum_deviation = Attribute('maximum_deviation', converter=conv)
@@ -44,8 +45,8 @@ class CalibrationMeasurement(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'measurement_source', Channel, single=True)
-        obj.add_dependent_objects_from_config(config, 'axis', Axis)
+        obj.measurement_source.finalise_from_config(config)
+        obj.axis.finalise_from_config(config)
 
         return obj
 

@@ -1,2 +1,2 @@
 from .attribute import Attribute
-from .subtypes import ListAttribute
+from .subtypes import ListAttribute, EFLRListAttribute, EFLRAttribute

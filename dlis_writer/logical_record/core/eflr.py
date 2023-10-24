@@ -8,7 +8,7 @@ import importlib
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute.attribute import Attribute
 from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase, IflrAndEflrRMeta
 
 
