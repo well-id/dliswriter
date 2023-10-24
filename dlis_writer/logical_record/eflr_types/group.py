@@ -4,7 +4,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -19,18 +19,17 @@ class Group(EFLR):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.object_type = Attribute('object_type', representation_code=RepC.IDENT)
-        self.object_list = Attribute('object_list', representation_code=RepC.OBNAME, multivalued=True)
-        self.group_list = Attribute('group_list', representation_code=RepC.OBNAME, multivalued=True)
+        self.object_list = EFLRListAttribute('object_list')
+        self.group_list = EFLRListAttribute('group_list', object_class=Group)
 
         self.set_attributes(**kwargs)
 
     @classmethod
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        key = key or cls.__name__
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'group_list', Group)
-        obj.add_dependent_objects_from_config(config, 'object_list')
+        for attr in (obj.object_list, obj.group_list):
+            attr.finalise_from_config(config)
 
         return obj
 

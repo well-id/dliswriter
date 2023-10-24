@@ -3,7 +3,7 @@ import logging
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class Origin(EFLR):
         self.file_type = Attribute('file_type', representation_code=RepC.IDENT)
         self.product = Attribute('product', representation_code=RepC.ASCII)
         self.version = Attribute('version', representation_code=RepC.ASCII)
-        self.programs = Attribute('programs', representation_code=RepC.ASCII, multivalued=True)
+        self.programs = ListAttribute('programs', representation_code=RepC.ASCII)
         self.creation_time = Attribute('creation_time', converter=self.parse_dtime, representation_code=RepC.DTIME)
         self.order_number = Attribute('order_number', representation_code=RepC.ASCII)
         self.descent_number = Attribute('descent_number', converter=int, representation_code=RepC.UNORM)

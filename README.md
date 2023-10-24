@@ -1277,6 +1277,7 @@ classDiagram
     Computation o-- "0..*" Zone
     Computation o-- "0..1" Tool
     Computation o-- "0..1" Axis
+    Parameter o-- "0..*" Axis
     Parameter o-- "0..*" Zone
     Splice o-- "0..*" Channel
     Splice o-- "0..*" Zone
@@ -1286,6 +1287,7 @@ classDiagram
     Tool o-- "0..*" Channel
     Tool o-- "0..*" Parameter
     Tool o-- "0..*" Equipment
+    Channel o-- "0..*" Axis
     
     class Axis{
         +str axis_id
@@ -1331,10 +1333,10 @@ classDiagram
     class Channel{
         +str long_name
         +list~str~ properties
-        +RepresentationCodr representation_code
+        +RepresentationCode representation_code
         +Units units
         +list~int~ dimension
-        +Axis axis
+        +list~Axis~ axis
         +list~int~ element_limit
         +str source
         +float minimum_value
@@ -1387,7 +1389,7 @@ classDiagram
     class Parameter{
         +str long_name
         +list~int~ dimension
-        +Axis axis
+        +list~Axis~ axis
         +list~Axis~ zones
         +list values
     }

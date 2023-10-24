@@ -5,7 +5,8 @@ import logging
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.zone import Zone
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -19,12 +20,11 @@ class Parameter(EFLR):
         super().__init__(name, set_name)
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.dimension = Attribute(
-            'dimension', converter=self.convert_dimension_or_el_limit,
-            multivalued=True, representation_code=RepC.UVARI)
-        self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
-        self.zones = Attribute('zones', multivalued=True, representation_code=RepC.OBNAME)
-        self.values = Attribute('values', converter=self.convert_values, multivalued=True)
+        self.dimension = ListAttribute(
+            'dimension', representation_code=RepC.UVARI, converter=Attribute.convert_integer)
+        self.axis = EFLRListAttribute('axis', object_class=Axis)
+        self.zones = EFLRListAttribute('zones', object_class=Zone)
+        self.values = ListAttribute('values', converter=self.convert_value)
 
         self.set_attributes(**kwargs)
         self._set_defaults()
@@ -38,7 +38,17 @@ class Parameter(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'zones', Zone)
+        for attr in (obj.axis, obj.zones):
+            attr.finalise_from_config(config)
 
         return obj
+
+    @classmethod
+    def convert_value(cls, val):
+        try:
+            val = Attribute.convert_numeric(val)
+        except ValueError:
+            pass
+        return val
+
 
