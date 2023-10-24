@@ -18,9 +18,7 @@ def test_from_config(config_params, zone_nr):
     assert zone.domain.value == conf['domain']
     
     assert isinstance(zone.maximum.representation_code, RepresentationCode)
-    assert zone.maximum.representation_code.name == conf['maximum.representation_code']
     assert isinstance(zone.minimum.representation_code, RepresentationCode)
-    assert zone.minimum.representation_code.name == conf['minimum.representation_code']
 
     if zone_nr != 3:
         assert isinstance(zone.maximum.units, Units)
@@ -30,7 +28,7 @@ def test_from_config(config_params, zone_nr):
 
 
 @pytest.mark.parametrize(("zone_nr", "value_type", "repr_code"), (
-        (1, int, RepresentationCode.UNORM),
+        (1, float, RepresentationCode.FDOUBL),
         (2, float, RepresentationCode.FDOUBL),
         (3, datetime, RepresentationCode.DTIME)
 ))

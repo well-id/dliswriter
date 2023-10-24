@@ -30,7 +30,7 @@ class CalibrationMeasurement(EFLR):
         self.sample_count = Attribute('sample_count', converter=int)
         self.maximum_deviation = Attribute('maximum_deviation', converter=float)
         self.standard_deviation = Attribute('standard_deviation', converter=float)
-        self.begin_time = Attribute('begin_time', converter=self.parse_dtime)
+        self.begin_time = DTimeAttribute('begin_time', allow_float=True)
         self.duration = Attribute('duration', converter=float)
         self.reference = ListAttribute('reference', converter=Attribute.convert_numeric)
         self.standard = ListAttribute('standard', converter=Attribute.convert_numeric)

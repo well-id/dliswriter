@@ -1,6 +1,7 @@
 import numpy as np
 import logging
 from numbers import Number
+from datetime import datetime
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
@@ -112,3 +113,58 @@ class DimensionAttribute(ListAttribute):
             return int(value)
         else:
             raise TypeError(f"Cannot convert {type(value)}: {value} to integer")
+
+
+class DTimeAttribute(Attribute):
+    dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]
+
+    class DTimeFormatError(ValueError):
+        pass
+
+    def __init__(self, *args, allow_float=False, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if allow_float and kwargs.get('representation_code', None) is not None:
+            raise ValueError("Representation code cannot be specified if float time format is allowed")
+
+        self._allow_float = allow_float
+        if not self._allow_float:
+            self._representation_code = RepC.DTIME
+        if not self._converter:
+            self._converter = self._convert_value
+
+    def _convert_value(self, value):
+        try:
+            value = self.parse_dtime(value)
+        except self.DTimeFormatError as exc:
+            if self._allow_float:
+                value = float(value)
+                self._representation_code = RepC.FDOUBL
+            else:
+                raise exc
+        else:
+            self._representation_code = RepC.DTIME
+
+        return value
+
+    @classmethod
+    def parse_dtime(cls, dtime_string):
+        if isinstance(dtime_string, datetime):
+            return dtime_string
+
+        if not isinstance(dtime_string, str):
+            raise TypeError(f"Expected a str, got {type(dtime_string)}")
+
+        for dtime_format in cls.dtime_formats:
+            try:
+                dtime = datetime.strptime(dtime_string, dtime_format)
+            except ValueError:
+                pass
+            else:
+                break
+        else:
+            # loop finished without breaking - no date format fitted to the string
+            raise cls.DTimeFormatError(f"Provided date time value does not conform to any of the allowed formats: "
+                                       f"{', '.join(fmt for fmt in cls.dtime_formats)}")
+
+        return dtime

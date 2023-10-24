@@ -114,11 +114,11 @@ def test_zones(short_dlis):
 
 
 @pytest.mark.parametrize(("name", "description", "maximum", "minimum", "value_type"), (
-        ("Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, int),
+        ("Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, float),
         ("Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
         ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
-        ("Zone-4", "ZONE-TIME-2", 90, 10, int),
-        ("Zone-X", "Zone not added to any parameter", 10, 1, int)
+        ("Zone-4", "ZONE-TIME-2", 90, 10, float),
+        ("Zone-X", "Zone not added to any parameter", 10, 1, float)
 ))
 def test_zone_params(short_dlis, name, description, maximum, minimum, value_type):
     zones = [zone for zone in short_dlis.zones if zone.name == name]

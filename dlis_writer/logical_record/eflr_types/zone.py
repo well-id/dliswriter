@@ -1,9 +1,6 @@
-from numbers import Number
-from datetime import datetime, timedelta
-
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 
 
 class Zone(EFLR):
@@ -33,8 +30,8 @@ class Zone(EFLR):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.domain = Attribute('domain', converter=self.check_domain, representation_code=RepC.IDENT)
-        self.maximum = Attribute('maximum', converter=self.parse_number_or_dtime)
-        self.minimum = Attribute('minimum', converter=self.parse_number_or_dtime)
+        self.maximum = DTimeAttribute('maximum', allow_float=True)
+        self.minimum = DTimeAttribute('minimum', allow_float=True)
 
         self.set_attributes(**kwargs)
 
@@ -43,23 +40,4 @@ class Zone(EFLR):
         if domain not in cls.domains:
             raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
         return domain
-
-    @classmethod
-    def parse_number_or_dtime(cls, value):
-        if value is None:
-            return value
-
-        if isinstance(value, (Number, datetime, timedelta)):
-            return value
-
-        if not isinstance(value, str):
-            raise TypeError(f"Expected a number, datetime, timedelta, or a string; got {type(value)}: {value}")
-
-        for parser in (cls.parse_dtime, int, float):
-            try:
-                return parser(value)
-            except ValueError:
-                pass
-
-        raise ValueError(f"Couldn't parse value: '{value}'")
 
