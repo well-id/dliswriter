@@ -16,7 +16,7 @@ class Message(EFLR):
         self.vertical_depth = Attribute('vertical_depth', converter=float)
         self.radial_drift = Attribute('radial_drift', converter=float)
         self.angular_drift = Attribute('angular_drift', converter=float)
-        self.text = Attribute('text', converter=self.convert_values, representation_code=RepC.ASCII)
+        self.text = ListAttribute('text', representation_code=RepC.ASCII)
 
         self.set_attributes(**kwargs)
 

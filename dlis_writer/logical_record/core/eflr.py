@@ -148,61 +148,6 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
     def make_lr_type_struct(cls, logical_record_type):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
-    @staticmethod
-    def convert_values(val, require_numeric=False):
-        if isinstance(val, list):
-            return val
-
-        if isinstance(val, tuple):
-            return list(val)
-
-        if isinstance(val, np.ndarray):
-            return val.tolist()
-
-        if not isinstance(val, str):
-            raise TypeError(f"Expected a list, tuple, np.ndarray, or str; got {type(val): val}")
-
-        val = val.rstrip(' ').strip('[').rstrip(']')
-        values = val.split(', ')
-        values = [v.strip(' ').rstrip(' ') for v in values]
-
-        for parser in (int, float):
-            try:
-                values = [parser(v) for v in values]
-                break
-            except ValueError:
-                pass
-        else:
-            # if loop not broken - none of the converters worked
-            if require_numeric:
-                raise ValueError(f"Some/all of the values: {values} could not be converted to numeric types")
-        return values
-
-    @staticmethod
-    def convert_dimension_or_el_limit(dim):
-        err = TypeError(f"Expected a list/tuple of integers, a single integer, or a str parsable to list of integers; "
-                        f"got {type(dim)}: {dim}")
-
-        if not dim:
-            raise err
-
-        if isinstance(dim, (list, tuple)) and all(isinstance(v, int) for v in dim):
-            return dim if isinstance(dim, list) else list(dim)
-
-        if isinstance(dim, int):
-            return [dim]
-
-        if isinstance(dim, str):
-            dim = dim.strip('[').rstrip(']')
-            dim = dim.rstrip(' ').rstrip(',')
-            try:
-                return [int(v) for v in dim.split(', ')]
-            except ValueError:
-                raise err
-
-        else:
-            raise err
-
     @classmethod
     def parse_dtime(cls, dtime_string):
         if isinstance(dtime_string, datetime):
@@ -240,24 +185,6 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
 
             logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
-
-    def add_dependent_objects_from_config(self, config, attr_name, object_class=None, single=False):
-        attr = getattr(self, attr_name)
-
-        if attr.value is not None:
-            if single:
-                name = attr.value.rstrip(' ')
-                if object_class is None:
-                    object_class = self.get_object_class(name)
-                attr.value = object_class.get_or_make_from_config(name, config)
-            else:
-                names_list = self.convert_values(attr.value)
-                if not names_list:
-                    attr.value = []
-                    return
-                if object_class is None:
-                    object_class = self.get_object_class(names_list[0])
-                attr.value = [object_class.get_or_make_from_config(name, config) for name in names_list]
 
     @classmethod
     def get_or_make_all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
