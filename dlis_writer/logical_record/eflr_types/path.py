@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, EFLRListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -21,9 +21,9 @@ class Path(EFLR):
 
         super().__init__(name, set_name)
 
-        self.frame_type = Attribute('frame_type', representation_code=RepC.OBNAME)
-        self.well_reference_point = Attribute('well_reference_point', representation_code=RepC.OBNAME)
-        self.value = Attribute('value', multivalued=True, representation_code=RepC.OBNAME)
+        self.frame_type = EFLRAttribute('frame_type', object_class=Frame)
+        self.well_reference_point = EFLRAttribute('well_reference_point', object_class=WellReferencePoint)
+        self.value = EFLRListAttribute('value', object_class=Channel)
         self.borehole_depth = Attribute('borehole_depth', converter=float)
         self.vertical_depth = Attribute('vertical_depth', converter=float)
         self.radial_drift = Attribute('radial_drift', converter=float)
@@ -39,9 +39,8 @@ class Path(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'frame_type', Frame, single=True)
-        obj.add_dependent_objects_from_config(config, 'well_reference_point', WellReferencePoint, single=True)
-        obj.add_dependent_objects_from_config(config, 'value', Channel)
+        for attr in (obj.frame_type, obj.well_reference_point, obj.value):
+            attr.finalise_from_config(config)
 
         return obj
 
