@@ -5,7 +5,7 @@ import logging
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class Frame(EFLR):
         super().__init__(name, set_name)
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
-        self.channels = Attribute('channels', multivalued=True, representation_code=RepC.OBNAME)
+        self.channels = EFLRListAttribute('channels', object_class=Channel)
         self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
         self.direction = Attribute('direction', representation_code=RepC.IDENT)
         self.spacing = Attribute('spacing', converter=float)
@@ -48,14 +48,7 @@ class Frame(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config)
 
-        if not (channel_names := obj.channels.value):
-            logger.warning(f"No channels defined for frame {obj}")
-            if channel_names is not None:  # e.g. empty string
-                obj.channels.value = None
-
-        else:
-            logger.info(f"Adding channels for {obj}")
-            obj.add_dependent_objects_from_config(config, 'channels', Channel)
+        obj.channels.finalise_from_config(config)
 
         return obj
 
