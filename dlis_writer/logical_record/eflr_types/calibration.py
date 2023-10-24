@@ -20,24 +20,22 @@ class CalibrationMeasurement(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        conv = lambda val: self.convert_values(val, require_numeric=True)
-
         self.phase = Attribute('phase', representation_code=RepC.IDENT)
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=Channel)
         self._type = Attribute('_type', representation_code=RepC.IDENT)
         self.dimension = ListAttribute('dimension', representation_code=RepC.UVARI, converter=int)
         self.axis = EFLRListAttribute('axis', object_class=Axis)
-        self.measurement = Attribute('measurement', converter=conv, multivalued=True)
-        self.sample_count = Attribute('sample_count', converter=conv)
-        self.maximum_deviation = Attribute('maximum_deviation', converter=conv)
-        self.standard_deviation = Attribute('standard_deviation', converter=conv)
+        self.measurement = ListAttribute('measurement', converter=Attribute.convert_numeric)
+        self.sample_count = Attribute('sample_count', converter=int)
+        self.maximum_deviation = Attribute('maximum_deviation', converter=float)
+        self.standard_deviation = Attribute('standard_deviation', converter=float)
         self.begin_time = Attribute('begin_time', converter=self.parse_dtime)
         self.duration = Attribute('duration', converter=float)
-        self.reference = Attribute('reference', converter=conv, multivalued=True)
-        self.standard = Attribute('standard', converter=conv, multivalued=True)
-        self.plus_tolerance = Attribute('plus_tolerance', converter=conv, multivalued=True)
-        self.minus_tolerance = Attribute('minus_tolerance', converter=conv, multivalued=True)
+        self.reference = ListAttribute('reference', converter=Attribute.convert_numeric)
+        self.standard = ListAttribute('standard', converter=Attribute.convert_numeric)
+        self.plus_tolerance = ListAttribute('plus_tolerance', converter=Attribute.convert_numeric)
+        self.minus_tolerance = ListAttribute('minus_tolerance', converter=Attribute.convert_numeric)
 
         self.set_attributes(**kwargs)
 
@@ -45,8 +43,8 @@ class CalibrationMeasurement(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.measurement_source.finalise_from_config(config)
-        obj.axis.finalise_from_config(config)
+        for attr in (obj.measurement_source, obj.axis):
+            attr.finalise_from_config(config)
 
         return obj
 
@@ -58,13 +56,11 @@ class CalibrationCoefficient(EFLR):
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
 
-        conv = lambda val: self.convert_values(val, require_numeric=True)
-
         self.label = Attribute('label', representation_code=RepC.IDENT)
-        self.coefficients = Attribute('coefficients', converter=conv, multivalued=True)
-        self.references = Attribute('references', converter=conv, multivalued=True)
-        self.plus_tolerances = Attribute('plus_tolerances', converter=conv, multivalued=True)
-        self.minus_tolerances = Attribute('minus_tolerances', converter=conv, multivalued=True)
+        self.coefficients = ListAttribute('coefficients', converter=Attribute.convert_numeric)
+        self.references = ListAttribute('references', converter=Attribute.convert_numeric)
+        self.plus_tolerances = ListAttribute('plus_tolerances', converter=Attribute.convert_numeric)
+        self.minus_tolerances = ListAttribute('minus_tolerances', converter=Attribute.convert_numeric)
 
         self.set_attributes(**kwargs)
 
@@ -77,16 +73,11 @@ class Calibration(EFLR):
 
         super().__init__(name, set_name)
 
-        self.calibrated_channels = Attribute(
-            'calibrated_channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.uncalibrated_channels = Attribute(
-            'uncalibrated_channels', multivalued=True, representation_code=RepC.OBNAME)
-        self.coefficients = Attribute(
-            'coefficients', multivalued=True, representation_code=RepC.OBNAME)
-        self.measurements = Attribute(
-            'measurements', multivalued=True, representation_code=RepC.OBNAME)
-        self.parameters = Attribute(
-            'parameters', multivalued=True, representation_code=RepC.OBNAME)
+        self.calibrated_channels = EFLRListAttribute('calibrated_channels', object_class=Channel)
+        self.uncalibrated_channels = EFLRListAttribute('uncalibrated_channels', object_class=Channel)
+        self.coefficients = EFLRListAttribute('coefficients', object_class=CalibrationCoefficient)
+        self.measurements = EFLRListAttribute('measurements', object_class=CalibrationMeasurement)
+        self.parameters = EFLRListAttribute('parameters', object_class=Parameter)
         self.method = Attribute('method', representation_code=RepC.IDENT)
 
         self.set_attributes(**kwargs)
@@ -95,11 +86,9 @@ class Calibration(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'calibrated_channels', Channel)
-        obj.add_dependent_objects_from_config(config, 'uncalibrated_channels', Channel)
-        obj.add_dependent_objects_from_config(config, 'measurements', CalibrationMeasurement)
-        obj.add_dependent_objects_from_config(config, 'coefficients', CalibrationCoefficient)
-        obj.add_dependent_objects_from_config(config, 'parameters', Parameter)
+        for attr in (obj.calibrated_channels, obj.uncalibrated_channels, obj.coefficients, obj.measurements,
+                     obj.parameters):
+            attr.finalise_from_config(config)
 
         return obj
 
