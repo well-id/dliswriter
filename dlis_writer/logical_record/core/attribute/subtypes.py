@@ -67,7 +67,16 @@ class EFLRListAttribute(_EFLRAttributeMixin, ListAttribute):
         if not self._value:
             logger.warning(f"No object names defined for {self}")
             return
-        self._value = [self._make_eflr_object_from_config(config, v) for v in self._value]
+
+        objects = []
+        for i, v in enumerate(self._value):
+            if isinstance(self._value, EFLR):
+                logger.info(f"Value {i} of {self} is already an instance of EFLR")
+                objects.append(v)
+            else:
+                objects.append(self._make_eflr_object_from_config(config, v))
+
+        self._value = objects
 
 
 class EFLRAttribute(_EFLRAttributeMixin, Attribute):
@@ -79,4 +88,6 @@ class EFLRAttribute(_EFLRAttributeMixin, Attribute):
         if not self._value:
             logger.warning(f"No object name defined for {self}")
             return
+        if isinstance(self._value, EFLR):
+            logger.info(f"Value of {self} is already an instance of EFLR")
         self._value = self._make_eflr_object_from_config(config, self._value)
