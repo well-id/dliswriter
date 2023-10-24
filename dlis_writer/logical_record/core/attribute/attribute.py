@@ -1,5 +1,4 @@
 from typing import Union, List, Tuple
-from numbers import Number
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, Units
@@ -211,14 +210,3 @@ class Attribute:
             # if loop not broken - none of the converters worked
             raise ValueError(f"Some/all of the values: {value} could not be converted to numeric types")
         return value
-
-    @staticmethod
-    def convert_integer(value):
-        if isinstance(value, str):
-            return int(value)
-        if isinstance(value, Number):
-            if value % 1:
-                raise ValueError(f"{value} is not an integer")
-            return int(value)
-        else:
-            raise TypeError(f"Cannot convert {type(value)}: {value} to integer")

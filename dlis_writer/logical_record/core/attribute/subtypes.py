@@ -1,5 +1,6 @@
 import numpy as np
 import logging
+from numbers import Number
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
@@ -91,3 +92,23 @@ class EFLRAttribute(_EFLRAttributeMixin, Attribute):
         if isinstance(self._value, EFLR):
             logger.info(f"Value of {self} is already an instance of EFLR")
         self._value = self._make_eflr_object_from_config(config, self._value)
+
+
+class DimensionAttribute(ListAttribute):
+    def __init__(self, *args, representation_code=RepC.UVARI, **kwargs):
+        if 'converter' in kwargs:
+            raise TypeError(f"{self.__class__.__name__} does not accept 'converter' argument")
+
+        super().__init__(*args, representation_code=representation_code, **kwargs)
+        self._value_converter = self.convert_integer
+
+    @staticmethod
+    def convert_integer(value):
+        if isinstance(value, str):
+            return int(value)
+        if isinstance(value, Number):
+            if value % 1:
+                raise ValueError(f"{value} is not an integer")
+            return int(value)
+        else:
+            raise TypeError(f"Cannot convert {type(value)}: {value} to integer")

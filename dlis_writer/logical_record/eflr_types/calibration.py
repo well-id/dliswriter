@@ -7,7 +7,7 @@ from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as Rep
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, EFLRAttribute
+from dlis_writer.logical_record.core.attribute import *
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class CalibrationMeasurement(EFLR):
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=Channel)
         self._type = Attribute('_type', representation_code=RepC.IDENT)
-        self.dimension = ListAttribute('dimension', representation_code=RepC.UVARI, converter=int)
+        self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRListAttribute('axis', object_class=Axis)
         self.measurement = ListAttribute('measurement', converter=Attribute.convert_numeric)
         self.sample_count = Attribute('sample_count', converter=int)

@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, DimensionAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,7 @@ class Parameter(EFLR):
         super().__init__(name, set_name)
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.dimension = ListAttribute(
-            'dimension', representation_code=RepC.UVARI, converter=Attribute.convert_integer)
+        self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRListAttribute('axis', object_class=Axis)
         self.zones = EFLRListAttribute('zones', object_class=Zone)
         self.values = ListAttribute('values', converter=self.convert_value)
