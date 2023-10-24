@@ -6,6 +6,7 @@ from datetime import datetime
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import RepresentationCode as RepC
+from dlis_writer.utils.converters import determine_repr_code
 
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,11 @@ class EFLRListAttribute(_EFLRAttributeMixin, ListAttribute):
                 objects.append(self._make_eflr_object_from_config(config, v))
 
         self._value = objects
+
+    def _guess_repr_code(self):
+        if not self._value:
+            return None
+        return determine_repr_code(self._value[0])
 
 
 class EFLRAttribute(_EFLRAttributeMixin, Attribute):

@@ -199,24 +199,6 @@ class RepresentationCode(_ConverterEnum):
         return get_enum_member(cls, c, allow_none=allow_none)
 
 
-# TODO: verify
-numpy_dtype_converter = {
-    'int_': RepresentationCode.SLONG,
-    'int8': RepresentationCode.SSHORT,
-    'int16': RepresentationCode.SSHORT,
-    'int32': RepresentationCode.SNORM,
-    'int64': RepresentationCode.SLONG,
-    'uint8': RepresentationCode.USHORT,
-    'uint16': RepresentationCode.USHORT,
-    'uint32': RepresentationCode.UNORM,
-    'uint64': RepresentationCode.ULONG,
-    'float_': RepresentationCode.FDOUBL,
-    'float16': RepresentationCode.FSINGL,
-    'float32': RepresentationCode.FSINGL,
-    'float64': RepresentationCode.FDOUBL
-}
-
-
 class LogicalRecordType(IntEnum):
     FHLR = 0
     OLR = 1

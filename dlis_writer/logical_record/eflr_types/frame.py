@@ -67,11 +67,5 @@ class Frame(EFLR):
                 setattr(attr, key, value)
 
         index_channel = self.channels.value[0].dataset_name
-        assign_if_none(self.spacing, RepC.FDOUBL, 'representation_code')
         assign_if_none(self.index_min, data[index_channel].min())
         assign_if_none(self.index_max, data[index_channel].max())
-        assign_if_none(self.index_min, RepC.FDOUBL, 'representation_code')
-        assign_if_none(self.index_max, RepC.FDOUBL, 'representation_code')
-
-
-

@@ -6,7 +6,8 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType, numpy_dtype_converter
+from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType
+from dlis_writer.utils.converters import numpy_dtype_converter
 from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, DimensionAttribute
 
 

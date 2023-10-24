@@ -1,7 +1,12 @@
 from typing import Union, List, Tuple
+import logging
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.converters import determine_repr_code
+
+
+logger = logging.getLogger(__name__)
 
 
 # custom type
@@ -60,11 +65,23 @@ class Attribute:
 
     @property
     def representation_code(self):
-        return self._representation_code
+        if self._representation_code is not None:
+            return self._representation_code
+
+        try:
+            return self._guess_repr_code()
+        except ValueError as exc:
+            logger.warning(exc.args[0])
+            return None
+
+    def _guess_repr_code(self):
+        if self._value is None:
+            return None
+        return determine_repr_code(self._value)
 
     @representation_code.setter
     def representation_code(self, rc):
-        if self._representation_code is not None:
+        if self._representation_code is not None and self._representation_code is not rc:
             raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
         self._representation_code = RepresentationCode.get_member(rc, allow_none=False)
 
@@ -113,8 +130,8 @@ class Attribute:
 
         characteristics += '0'
 
-        if self._representation_code:
-            bts += write_struct(RepresentationCode.USHORT, self._representation_code.value)
+        if self.representation_code:
+            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -155,7 +172,7 @@ class Attribute:
     def write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object."""
 
-        rc = self._representation_code
+        rc = self.representation_code
         value = self._value
 
         if value:
