@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, EFLRAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -20,16 +20,16 @@ class Computation(EFLR):
         super().__init__(name, set_name)
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = Attribute(
-            'properties', converter=self.convert_values, multivalued=True, representation_code=RepC.IDENT)
+        self.properties = ListAttribute('properties', representation_code=RepC.IDENT)
         self.dimension = ListAttribute('dimension', representation_code=RepC.UVARI, converter=int)
-        self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
-        self.zones = Attribute('zones', multivalued=True, representation_code=RepC.OBNAME)
+        self.axis = EFLRAttribute('axis', object_class=Axis)
+        self.zones = EFLRListAttribute('zones', object_class=Zone)
         self.values = ListAttribute('values', converter=Attribute.convert_numeric)
-        self.source = Attribute('source', multivalued=True)
+        self.source = EFLRAttribute('source')
 
         self.set_attributes(**kwargs)
         self._set_defaults()
+        self.check_values_and_zones()
 
     def _set_defaults(self):
         if not self.dimension.value:
@@ -45,11 +45,8 @@ class Computation(EFLR):
     def make_from_config(cls, config: ConfigParser, key=None) -> Self:
         obj: Self = super().make_from_config(config, key=key)
 
-        obj.add_dependent_objects_from_config(config, 'zones', Zone)
-        obj.add_dependent_objects_from_config(config, 'axis', Axis, single=True)
-        obj.add_dependent_objects_from_config(config, 'source', single=True)
-
-        obj.check_values_and_zones()
+        for attr in (obj.axis, obj.zones, obj.source):
+            attr.finalise_from_config(config)
 
         return obj
 
