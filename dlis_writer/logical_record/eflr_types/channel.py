@@ -1,9 +1,13 @@
 import logging
 import numpy as np
+from typing_extensions import Self
+from configparser import ConfigParser
+
 
 from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType, numpy_dtype_converter
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -17,14 +21,15 @@ class Channel(EFLR):
         super().__init__(name, set_name)
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = Attribute(
-            'properties', converter=self.convert_properties, multivalued=True, representation_code=RepC.IDENT)
+        self.properties = ListAttribute('properties', representation_code=RepC.IDENT)
         self.representation_code = Attribute(
             'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
         self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
-        self.dimension = ListAttribute('dimension', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
-        self.axis = Attribute('axis', multivalued=True, representation_code=RepC.OBNAME)
-        self.element_limit = ListAttribute('element_limit', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
+        self.dimension = ListAttribute(
+            'dimension', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
+        self.axis = EFLRListAttribute('axis', object_class=Axis)
+        self.element_limit = ListAttribute(
+            'element_limit', converter=Attribute.convert_integer, representation_code=RepC.UVARI)
         self.source = Attribute('source', representation_code=RepC.OBJREF)
         self.minimum_value = ListAttribute('minimum_value', converter=float, representation_code=RepC.FDOUBL)
         self.maximum_value = ListAttribute('maximum_value', converter=float, representation_code=RepC.FDOUBL)
@@ -33,6 +38,14 @@ class Channel(EFLR):
         self._set_defaults()
 
         self._dataset_name: str = dataset_name
+
+    @classmethod
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+        obj: Self = super().make_from_config(config, key=key)
+
+        obj.axis.finalise_from_config(config)
+
+        return obj
 
     @property
     def key(self):
@@ -54,17 +67,6 @@ class Channel(EFLR):
     def convert_repr_code(rc):
         return RepC.get_member(rc, allow_none=True)
 
-    @staticmethod
-    def convert_properties(p):
-        if isinstance(p, (list, tuple)) and all(isinstance(pp, str) for pp in p):
-            return p if isinstance(p, list) else list(p)
-
-        if isinstance(p, str):
-            return p.split(", ")
-
-        else:
-            raise TypeError(f"Expected a str or a list/tuple of str, got {type(p)}: {p}")
-        
     def set_dimension_and_repr_code_from_data(self, data: np.ndarray):
 
         if self.dataset_name not in data.dtype.names:

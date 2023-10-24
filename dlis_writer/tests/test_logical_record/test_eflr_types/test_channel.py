@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from dlis_writer.logical_record.eflr_types import Channel
+from dlis_writer.logical_record.eflr_types import Channel, Axis
 from dlis_writer.utils.enums import RepresentationCode, Units
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
@@ -31,7 +31,9 @@ def test_from_config(config_params):
     assert channel.representation_code.value is RepresentationCode.FSINGL
     assert channel.units.value is Units.acre
     assert channel.dimension.value == [12]
-    assert channel.axis.value == 'some axis'
+    assert isinstance(channel.axis.value, list)
+    assert isinstance(channel.axis.value[0], Axis)
+    assert channel.axis.value[0].name == 'Axis-1'
     assert channel.element_limit.value == [12]
     assert channel.source.value == 'some source'
     assert channel.minimum_value.value == [0.]
