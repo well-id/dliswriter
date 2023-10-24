@@ -32,8 +32,8 @@ class Frame(EFLR):
         self.direction = Attribute('direction', representation_code=RepC.IDENT)
         self.spacing = Attribute('spacing', converter=float)
         self.encrypted = Attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
-        self.index_min = Attribute('index_min', converter=int)
-        self.index_max = Attribute('index_max', converter=int)
+        self.index_min = Attribute('index_min', converter=float)
+        self.index_max = Attribute('index_max', converter=float)
 
         self.set_attributes(**kwargs)
 
