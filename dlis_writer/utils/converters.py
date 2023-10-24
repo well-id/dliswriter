@@ -46,12 +46,20 @@ numpy_dtype_converter = {
 }
 
 
+int_short_bound = 2**16
+int_norm_bount = 2**32
+
+
 def _get_repr_code_for_integer(v):
-    return RepresentationCode.UNORM  # TODO
+    if -int_short_bound >= v >= int_short_bound-1:
+        return RepresentationCode.SSHORT
+    if -int_norm_bount >= v >= int_norm_bount-1:
+        return RepresentationCode.SNORM
+    return RepresentationCode.SLONG
 
 
 def _get_repr_code_for_float(v):
-    return RepresentationCode.FDOUBL  # TODO
+    return RepresentationCode.FDOUBL
 
 
 generic_type_converter = {

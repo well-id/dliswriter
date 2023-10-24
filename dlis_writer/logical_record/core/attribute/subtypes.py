@@ -130,11 +130,11 @@ class DTimeAttribute(Attribute):
     def __init__(self, *args, allow_float=False, **kwargs):
         super().__init__(*args, **kwargs)
 
-        if allow_float and kwargs.get('representation_code', None) is not None:
-            raise ValueError("Representation code cannot be specified if float time format is allowed")
+        if allow_float and kwargs.get('representation_code', None) is RepC.DTIME:
+            raise ValueError("Representation code cannot be specified as DTIME if float time format is allowed")
 
         self._allow_float = allow_float
-        if not self._allow_float:
+        if not self._allow_float and not self._representation_code:
             self._representation_code = RepC.DTIME
         if not self._converter:
             self._converter = self._convert_value
@@ -145,11 +145,8 @@ class DTimeAttribute(Attribute):
         except self.DTimeFormatError as exc:
             if self._allow_float:
                 value = float(value)
-                self._representation_code = RepC.FDOUBL
             else:
                 raise exc
-        else:
-            self._representation_code = RepC.DTIME
 
         return value
 
