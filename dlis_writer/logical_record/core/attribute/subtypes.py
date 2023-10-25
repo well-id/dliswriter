@@ -260,8 +260,7 @@ class NumericAttribute(_NumericAttributeMixin, Attribute):
 class NumericListAttribute(_NumericAttributeMixin, ListAttribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self._value_converter:
-            self._value = self._convert_number
+        self._value_converter = self._convert_number
 
     @property
     def representation_code(self):

@@ -32,7 +32,7 @@ class CalibrationMeasurement(EFLR):
         self.standard_deviation = NumericAttribute('standard_deviation')
         self.begin_time = DTimeAttribute('begin_time', allow_float=True)
         self.duration = NumericAttribute('duration')
-        self.reference = ListAttribute('reference', converter=Attribute.convert_numeric)
+        self.reference = NumericListAttribute('reference')
         self.standard = ListAttribute('standard', converter=Attribute.convert_numeric)
         self.plus_tolerance = ListAttribute('plus_tolerance', converter=Attribute.convert_numeric)
         self.minus_tolerance = ListAttribute('minus_tolerance', converter=Attribute.convert_numeric)
