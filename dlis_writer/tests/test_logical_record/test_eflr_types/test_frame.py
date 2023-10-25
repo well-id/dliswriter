@@ -12,7 +12,7 @@ def test_from_config(config_params):
     assert frame.name == conf['name']
 
     assert frame.index_type.value == conf["index_type"]
-    assert frame.encrypted.value is True
+    assert frame.encrypted.value == 1
     assert frame.description.value == conf["description.value"]
 
     assert frame.spacing.value == float(conf["spacing.value"])

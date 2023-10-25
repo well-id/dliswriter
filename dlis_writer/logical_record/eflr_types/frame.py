@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from typing_extensions import Self
 import logging
+from numbers import Number
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
@@ -31,7 +32,8 @@ class Frame(EFLR):
         self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
         self.direction = Attribute('direction', representation_code=RepC.IDENT)
         self.spacing = NumericAttribute('spacing')
-        self.encrypted = Attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
+        self.encrypted = NumericAttribute(
+            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
         self.index_min = NumericAttribute('index_min')
         self.index_max = NumericAttribute('index_max')
 
@@ -51,6 +53,22 @@ class Frame(EFLR):
         obj.channels.finalise_from_config(config)
 
         return obj
+
+    @staticmethod
+    def convert_encrypted(value):
+        if isinstance(value, str):
+            if value.lower() in ('1', 'true', 't', 'yes', 'y'):
+                return 1
+            elif value.lower() in ('0', 'false', 'f', 'no', 'n'):
+                return 0
+            else:
+                raise ValueError(f"Couldn't evaluate the boolean meaning of '{value}'")
+        if isinstance(value, Number):
+            return int(bool(value))
+        if isinstance(value, bool):
+            return int(value)
+        else:
+            raise TypeError(f"Cannot convert {type(value)} object ({value}) to integer")
 
     def setup_from_data(self, data):
         if not self.channels.value:
