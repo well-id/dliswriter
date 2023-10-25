@@ -123,9 +123,7 @@ class DTimeAttribute(Attribute):
         return dtime
 
 
-class _NumericAttributeMixin:
-    _representation_code: RepC
-
+class NumericAttribute(Attribute):
     def __init__(self, *args, int_only=False, float_only=False, **kwargs):
         self._int_only = int_only
         self._float_only = float_only
@@ -137,6 +135,22 @@ class _NumericAttributeMixin:
             self._check_repr_code_numeric(rc)
 
         super().__init__(*args, **kwargs)
+        if not self._converter:
+            self._converter = self._convert_number
+
+    @property
+    def representation_code(self):
+        return super().representation_code
+
+    @representation_code.setter
+    def representation_code(self, rc):
+        self._set_representation_code(rc)
+        self._check_repr_code_numeric(self._representation_code)
+        if self._value is not None:
+            if self._multivalued:
+                self._value = [self._convert_number(v) for v in self._value]
+            else:
+                self._value = self._convert_number(self._value)
 
     def _check_repr_code_numeric(self, rc):
         if self._int_only and rc not in int_codes:
@@ -188,45 +202,9 @@ class _NumericAttributeMixin:
         raise RuntimeError(f"Representation code {rc.name} is not numeric")
 
 
-class NumericAttribute(_NumericAttributeMixin, Attribute):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self._converter:
-            self._converter = self._convert_number
-
-    @property
-    def representation_code(self):
-        return super().representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc):
-        self._set_representation_code(rc)
-        self._check_repr_code_numeric(self._representation_code)
-        if self._value is not None:
-            self._value = self._convert_number(self._value)
-
-
-class NumericListAttribute(_NumericAttributeMixin, ListAttribute):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if not self._converter:
-            self._converter = self._convert_number
-
-    @property
-    def representation_code(self):
-        return super().representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc):
-        self._set_representation_code(rc)
-        self._check_repr_code_numeric(self._representation_code)
-        if self._value is not None:
-            self._value = [self._convert_number(v) for v in self._value]
-
-
-class DimensionAttribute(NumericListAttribute):
+class DimensionAttribute(NumericAttribute):
     def __init__(self, *args, representation_code=RepC.UVARI, **kwargs):
         if 'converter' in kwargs:
             raise TypeError(f"{self.__class__.__name__} does not accept 'converter' argument")
 
-        super().__init__(*args, representation_code=representation_code, int_only=True, **kwargs)
+        super().__init__(*args, representation_code=representation_code, int_only=True, multivalued=True, **kwargs)
