@@ -23,7 +23,7 @@ class Computation(EFLR):
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=Axis)
-        self.zones = EFLRListAttribute('zones', object_class=Zone)
+        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True)
         self.values = NumericAttribute('values', multivalued=True)
         self.source = EFLRAttribute('source')
 

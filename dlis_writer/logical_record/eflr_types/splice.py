@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.zone import Zone
-from dlis_writer.logical_record.core.attribute import EFLRAttribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, EFLRAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -20,8 +20,8 @@ class Splice(EFLR):
         super().__init__(name, set_name)
 
         self.output_channel = EFLRAttribute('output_channel', object_class=Channel)
-        self.input_channels = EFLRListAttribute('input_channels', object_class=Channel)
-        self.zones = EFLRListAttribute('zones', object_class=Zone)
+        self.input_channels = EFLRAttribute('input_channels', object_class=Channel, multivalued=True)
+        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True)
 
         self.set_attributes(**kwargs)
 

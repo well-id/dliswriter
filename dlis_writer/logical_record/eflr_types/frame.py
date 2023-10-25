@@ -6,7 +6,7 @@ from numbers import Number
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class Frame(EFLR):
         super().__init__(name, set_name)
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
-        self.channels = EFLRListAttribute('channels', object_class=Channel)
+        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
         self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
         self.direction = Attribute('direction', representation_code=RepC.IDENT)
         self.spacing = NumericAttribute('spacing')

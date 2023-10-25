@@ -4,7 +4,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -19,8 +19,8 @@ class Group(EFLR):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.object_type = Attribute('object_type', representation_code=RepC.IDENT)
-        self.object_list = EFLRListAttribute('object_list')
-        self.group_list = EFLRListAttribute('group_list', object_class=Group)
+        self.object_list = EFLRAttribute('object_list', multivalued=True)
+        self.group_list = EFLRAttribute('group_list', object_class=Group, multivalued=True)
 
         self.set_attributes(**kwargs)
 

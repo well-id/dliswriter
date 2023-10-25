@@ -25,7 +25,7 @@ class CalibrationMeasurement(EFLR):
             'measurement_source', representation_code=RepC.OBJREF, object_class=Channel)
         self._type = Attribute('_type', representation_code=RepC.IDENT)
         self.dimension = DimensionAttribute('dimension')
-        self.axis = EFLRListAttribute('axis', object_class=Axis)
+        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True)
         self.measurement = NumericAttribute('measurement', multivalued=True)
         self.sample_count = NumericAttribute('sample_count', int_only=True)
         self.maximum_deviation = NumericAttribute('maximum_deviation')
@@ -73,11 +73,11 @@ class Calibration(EFLR):
 
         super().__init__(name, set_name)
 
-        self.calibrated_channels = EFLRListAttribute('calibrated_channels', object_class=Channel)
-        self.uncalibrated_channels = EFLRListAttribute('uncalibrated_channels', object_class=Channel)
-        self.coefficients = EFLRListAttribute('coefficients', object_class=CalibrationCoefficient)
-        self.measurements = EFLRListAttribute('measurements', object_class=CalibrationMeasurement)
-        self.parameters = EFLRListAttribute('parameters', object_class=Parameter)
+        self.calibrated_channels = EFLRAttribute('calibrated_channels', object_class=Channel, multivalued=True)
+        self.uncalibrated_channels = EFLRAttribute('uncalibrated_channels', object_class=Channel, multivalued=True)
+        self.coefficients = EFLRAttribute('coefficients', object_class=CalibrationCoefficient, multivalued=True)
+        self.measurements = EFLRAttribute('measurements', object_class=CalibrationMeasurement, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True)
         self.method = Attribute('method', representation_code=RepC.IDENT)
 
         self.set_attributes(**kwargs)

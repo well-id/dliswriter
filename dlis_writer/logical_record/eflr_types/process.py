@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.computation import Computation
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -27,11 +27,11 @@ class Process(EFLR):
         self.version = Attribute('version', representation_code=RepC.ASCII)
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
         self.status = Attribute('status', converter=self.check_status, representation_code=RepC.IDENT)
-        self.input_channels = EFLRListAttribute('input_channels', object_class=Channel)
-        self.output_channels = EFLRListAttribute('output_channels', object_class=Channel)
-        self.input_computations = EFLRListAttribute('input_computations', object_class=Computation)
-        self.output_computations = EFLRListAttribute('output_computations', object_class=Computation)
-        self.parameters = EFLRListAttribute('parameters', object_class=Parameter)
+        self.input_channels = EFLRAttribute('input_channels', object_class=Channel, multivalued=True)
+        self.output_channels = EFLRAttribute('output_channels', object_class=Channel, multivalued=True)
+        self.input_computations = EFLRAttribute('input_computations', object_class=Computation, multivalued=True)
+        self.output_computations = EFLRAttribute('output_computations', object_class=Computation, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True)
         self.comments = Attribute('comments', representation_code=RepC.ASCII, multivalued=True)
 
         self.set_attributes(**kwargs)
