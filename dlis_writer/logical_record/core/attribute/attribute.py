@@ -1,5 +1,6 @@
 from typing import Union, List, Tuple
 import logging
+import numpy as np
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, Units
@@ -61,7 +62,7 @@ class Attribute:
 
     @value.setter
     def value(self, val):
-        self._value = self.converter(val)
+        self._value = self.convert_value(val)
 
     @property
     def representation_code(self):
@@ -77,6 +78,10 @@ class Attribute:
     def _guess_repr_code(self):
         if self._value is None:
             return None
+        if self._multivalued:
+            if not self._value:
+                return None
+            return determine_repr_code(self._value[0])
         return determine_repr_code(self._value)
 
     @representation_code.setter
@@ -105,6 +110,29 @@ class Attribute:
         if isinstance(self._value, (list, tuple)):
             return len(self._value)
         return 1
+
+    @staticmethod
+    def parse_values(val):
+        if isinstance(val, list):
+            values = val
+        elif isinstance(val, tuple):
+            values = list(val)
+        elif isinstance(val, np.ndarray):
+            values = val.tolist()
+        elif isinstance(val, str):
+            val = val.rstrip(' ').strip('[').rstrip(']').rstrip(',')
+            values = val.split(', ')
+            values = [v.strip(' ').rstrip(' ') for v in values]
+        else:
+            values = [val]
+
+        return values
+
+    def convert_value(self, value):
+        if self._multivalued:
+            value = self.parse_values(value)
+            return [self.converter(v) for v in value]
+        return self.converter(value)
 
     @property
     def converter(self):

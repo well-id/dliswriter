@@ -1,4 +1,3 @@
-import numpy as np
 import logging
 from numbers import Number
 from datetime import datetime
@@ -6,7 +5,6 @@ from datetime import datetime
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import RepresentationCode as RepC, float_codes, int_codes
-from dlis_writer.utils.converters import determine_repr_code
 
 
 logger = logging.getLogger(__name__)
@@ -15,39 +13,6 @@ logger = logging.getLogger(__name__)
 class ListAttribute(Attribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, multivalued=True, **kwargs)
-        self._value_converter = self._converter
-        self._converter = None
-
-    @property
-    def value_converter(self):
-        return self._value_converter or (lambda v: v)
-
-    @staticmethod
-    def parse_values(val):
-        if isinstance(val, list):
-            values = val
-        elif isinstance(val, tuple):
-            values = list(val)
-        elif isinstance(val, np.ndarray):
-            values = val.tolist()
-        elif isinstance(val, str):
-            val = val.rstrip(' ').strip('[').rstrip(']').rstrip(',')
-            values = val.split(', ')
-            values = [v.strip(' ').rstrip(' ') for v in values]
-        else:
-            values = [val]
-
-        return values
-
-    def default_converter(self, values):
-        values = self.parse_values(values)
-        return [self.value_converter(v) for v in values]
-
-    def _guess_repr_code(self):
-        if not self._value:
-            return None
-
-        return determine_repr_code(self._value[0])
 
 
 class _EFLRAttributeMixin:
@@ -74,7 +39,7 @@ class _EFLRAttributeMixin:
 class EFLRListAttribute(_EFLRAttributeMixin, ListAttribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._value_converter = self._convert_value
+        self._converter = self._convert_value
 
     def finalise_from_config(self, config):
         if not self._value:
@@ -244,8 +209,8 @@ class NumericAttribute(_NumericAttributeMixin, Attribute):
 class NumericListAttribute(_NumericAttributeMixin, ListAttribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if not self._value_converter:
-            self._value_converter = self._convert_number
+        if not self._converter:
+            self._converter = self._convert_number
 
     @property
     def representation_code(self):
