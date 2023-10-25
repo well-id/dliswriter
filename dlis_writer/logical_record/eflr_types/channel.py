@@ -8,7 +8,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType
 from dlis_writer.utils.converters import numpy_dtype_converter
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, EFLRListAttribute, DimensionAttribute
+from dlis_writer.logical_record.core.attribute import *
 
 
 logger = logging.getLogger(__name__)
@@ -30,8 +30,8 @@ class Channel(EFLR):
         self.axis = EFLRListAttribute('axis', object_class=Axis)
         self.element_limit = DimensionAttribute('element_limit')
         self.source = Attribute('source', representation_code=RepC.OBJREF)
-        self.minimum_value = ListAttribute('minimum_value', converter=float, representation_code=RepC.FDOUBL)
-        self.maximum_value = ListAttribute('maximum_value', converter=float, representation_code=RepC.FDOUBL)
+        self.minimum_value = NumericListAttribute('minimum_value', representation_code=RepC.FDOUBL)
+        self.maximum_value = NumericListAttribute('maximum_value', representation_code=RepC.FDOUBL)
         
         self.set_attributes(**kwargs)
         self._set_defaults()

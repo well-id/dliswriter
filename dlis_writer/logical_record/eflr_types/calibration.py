@@ -33,9 +33,9 @@ class CalibrationMeasurement(EFLR):
         self.begin_time = DTimeAttribute('begin_time', allow_float=True)
         self.duration = NumericAttribute('duration')
         self.reference = NumericListAttribute('reference')
-        self.standard = ListAttribute('standard', converter=Attribute.convert_numeric)
-        self.plus_tolerance = ListAttribute('plus_tolerance', converter=Attribute.convert_numeric)
-        self.minus_tolerance = ListAttribute('minus_tolerance', converter=Attribute.convert_numeric)
+        self.standard = NumericListAttribute('standard')
+        self.plus_tolerance = NumericListAttribute('plus_tolerance')
+        self.minus_tolerance = NumericListAttribute('minus_tolerance')
 
         self.set_attributes(**kwargs)
 
@@ -57,10 +57,10 @@ class CalibrationCoefficient(EFLR):
         super().__init__(name, set_name)
 
         self.label = Attribute('label', representation_code=RepC.IDENT)
-        self.coefficients = ListAttribute('coefficients', converter=Attribute.convert_numeric)
-        self.references = ListAttribute('references', converter=Attribute.convert_numeric)
-        self.plus_tolerances = ListAttribute('plus_tolerances', converter=Attribute.convert_numeric)
-        self.minus_tolerances = ListAttribute('minus_tolerances', converter=Attribute.convert_numeric)
+        self.coefficients = NumericListAttribute('coefficients')
+        self.references = NumericListAttribute('references')
+        self.plus_tolerances = NumericListAttribute('plus_tolerances')
+        self.minus_tolerances = NumericListAttribute('minus_tolerances')
 
         self.set_attributes(**kwargs)
 

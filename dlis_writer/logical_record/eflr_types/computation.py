@@ -24,7 +24,7 @@ class Computation(EFLR):
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=Axis)
         self.zones = EFLRListAttribute('zones', object_class=Zone)
-        self.values = ListAttribute('values', converter=Attribute.convert_numeric)
+        self.values = NumericListAttribute('values')
         self.source = EFLRAttribute('source')
 
         self.set_attributes(**kwargs)

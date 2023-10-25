@@ -5,7 +5,7 @@ import logging
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRListAttribute, NumericAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -30,10 +30,10 @@ class Frame(EFLR):
         self.channels = EFLRListAttribute('channels', object_class=Channel)
         self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
         self.direction = Attribute('direction', representation_code=RepC.IDENT)
-        self.spacing = Attribute('spacing', converter=float)
+        self.spacing = NumericAttribute('spacing')
         self.encrypted = Attribute('encrypted', converter=bool, representation_code=RepC.USHORT)
-        self.index_min = Attribute('index_min', converter=float)
-        self.index_max = Attribute('index_max', converter=float)
+        self.index_min = NumericAttribute('index_min')
+        self.index_max = NumericAttribute('index_max')
 
         self.set_attributes(**kwargs)
 
