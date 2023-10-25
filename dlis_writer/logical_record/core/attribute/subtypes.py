@@ -177,14 +177,25 @@ class DTimeAttribute(Attribute):
 class _NumericAttributeMixin:
     _representation_code: RepC
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, int_only=False, float_only=False, **kwargs):
+        self._int_only = int_only
+        self._float_only = float_only
+
+        if self._int_only and self._float_only:
+            raise ValueError("'int_only' and 'float_only' cannot both be True")
+
         if rc := kwargs.get('representation_code', None):
             self._check_repr_code_numeric(rc)
 
         super().__init__(*args, **kwargs)
 
-    @staticmethod
-    def _check_repr_code_numeric(rc):
+    def _check_repr_code_numeric(self, rc):
+        if self._int_only and rc not in int_codes:
+            raise ValueError(f"Representation code {rc.name} is not integer")
+
+        if self._float_only and rc not in float_codes:
+            raise ValueError(f"Representation code {rc.name} is not float")
+
         if rc not in float_codes and rc not in int_codes:
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
