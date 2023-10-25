@@ -15,8 +15,12 @@ logger = logging.getLogger(__name__)
 class ListAttribute(Attribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, multivalued=True, **kwargs)
-        self._value_converter = self._converter or (lambda v: v)
+        self._value_converter = self._converter
         self._converter = None
+
+    @property
+    def value_converter(self):
+        return self._value_converter or (lambda v: v)
 
     @staticmethod
     def parse_values(val):
@@ -37,7 +41,7 @@ class ListAttribute(Attribute):
 
     def default_converter(self, values):
         values = self.parse_values(values)
-        return [self._value_converter(v) for v in values]
+        return [self.value_converter(v) for v in values]
 
     def _guess_repr_code(self):
         if not self._value:
@@ -260,7 +264,8 @@ class NumericAttribute(_NumericAttributeMixin, Attribute):
 class NumericListAttribute(_NumericAttributeMixin, ListAttribute):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._value_converter = self._convert_number
+        if not self._value_converter:
+            self._value_converter = self._convert_number
 
     @property
     def representation_code(self):
