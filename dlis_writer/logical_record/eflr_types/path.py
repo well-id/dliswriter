@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, EFLRListAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, EFLRListAttribute, NumericAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -24,14 +24,14 @@ class Path(EFLR):
         self.frame_type = EFLRAttribute('frame_type', object_class=Frame)
         self.well_reference_point = EFLRAttribute('well_reference_point', object_class=WellReferencePoint)
         self.value = EFLRListAttribute('value', object_class=Channel)
-        self.borehole_depth = Attribute('borehole_depth', converter=float)
-        self.vertical_depth = Attribute('vertical_depth', converter=float)
-        self.radial_drift = Attribute('radial_drift', converter=float)
-        self.angular_drift = Attribute('angular_drift', converter=float)
-        self.time = Attribute('time', converter=float)
-        self.depth_offset = Attribute('depth_offset', converter=float)
-        self.measure_point_offset = Attribute('measure_point_offset', converter=float)
-        self.tool_zero_offset = Attribute('tool_zero_offset', converter=float)
+        self.borehole_depth = NumericAttribute('borehole_depth')
+        self.vertical_depth = NumericAttribute('vertical_depth')
+        self.radial_drift = NumericAttribute('radial_drift')
+        self.angular_drift = NumericAttribute('angular_drift')
+        self.time = NumericAttribute('time')
+        self.depth_offset = NumericAttribute('depth_offset')
+        self.measure_point_offset = NumericAttribute('measure_point_offset')
+        self.tool_zero_offset = NumericAttribute('tool_zero_offset')
 
         self.set_attributes(**kwargs)
 

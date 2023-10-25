@@ -81,6 +81,9 @@ class Attribute:
 
     @representation_code.setter
     def representation_code(self, rc):
+        self._set_representation_code(rc)
+
+    def _set_representation_code(self, rc):
         if self._representation_code is not None and self._representation_code is not rc:
             raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
         self._representation_code = RepresentationCode.get_member(rc, allow_none=False)

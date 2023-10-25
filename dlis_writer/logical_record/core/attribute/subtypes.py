@@ -5,7 +5,7 @@ from datetime import datetime
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import RepresentationCode as RepC
+from dlis_writer.utils.enums import RepresentationCode as RepC, float_codes, int_codes
 from dlis_writer.utils.converters import determine_repr_code
 
 
@@ -172,3 +172,93 @@ class DTimeAttribute(Attribute):
                                        f"{', '.join(fmt for fmt in cls.dtime_formats)}")
 
         return dtime
+
+
+class _NumericAttributeMixin:
+    _representation_code: RepC
+
+    def __init__(self, *args, **kwargs):
+        if rc := kwargs.get('representation_code', None):
+            self._check_repr_code_numeric(rc)
+
+        super().__init__(*args, **kwargs)
+
+    @staticmethod
+    def _check_repr_code_numeric(rc):
+        if rc not in float_codes and rc not in int_codes:
+            raise ValueError(f"Representation code {rc.name} is not numeric")
+
+    @staticmethod
+    def _int_parser(value):
+        if isinstance(value, str):
+            value = int(value)  # ValueError possible, caught later if needed or allowed to propagate
+        elif isinstance(value, Number):
+            if not float(value).is_integer():
+                raise ValueError(f"{value} cannot be represented as integer")
+            value = int(value)
+        else:
+            raise TypeError(f"Cannot convert a {type(value)} object ({value}) to integer")
+        return value
+
+    @staticmethod
+    def _float_parser(value):
+        if isinstance(value, str):
+            value = float(value)  # ValueError possible
+        elif isinstance(value, Number):
+            value = float(value)
+        else:
+            raise TypeError(f"Cannot convert a {type(value)} object ({value}) to float")
+        return value
+
+    def _convert_number(self, value):
+        rc = self._representation_code
+        if not self._representation_code:
+            try:
+                value = self._int_parser(value)
+            except (ValueError, TypeError):
+                value = self._float_parser(value)
+            return value
+
+        if rc in int_codes:
+            return self._int_parser(value)
+
+        if rc in float_codes:
+            return self._float_parser(value)
+
+        raise RuntimeError(f"Representation code {rc.name} is not numeric")
+
+
+class NumericAttribute(_NumericAttributeMixin, Attribute):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self._converter:
+            self._converter = self._convert_number
+
+    @property
+    def representation_code(self):
+        return super().representation_code
+
+    @representation_code.setter
+    def representation_code(self, rc):
+        self._set_representation_code(rc)
+        self._check_repr_code_numeric(self._representation_code)
+        if self._value is not None:
+            self._value = self._convert_number(self._value)
+
+
+class NumericListAttribute(_NumericAttributeMixin, ListAttribute):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if not self._value_converter:
+            self._value = self._convert_number
+
+    @property
+    def representation_code(self):
+        return super().representation_code
+
+    @representation_code.setter
+    def representation_code(self, rc):
+        self._set_representation_code(rc)
+        self._check_repr_code_numeric(self._representation_code)
+        if self._value is not None:
+            self._value = [self._convert_number(v) for v in self._value]
