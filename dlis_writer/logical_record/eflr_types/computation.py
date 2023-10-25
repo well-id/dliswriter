@@ -20,7 +20,7 @@ class Computation(EFLR):
         super().__init__(name, set_name)
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = ListAttribute('properties', representation_code=RepC.IDENT)
+        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=Axis)
         self.zones = EFLRListAttribute('zones', object_class=Zone)

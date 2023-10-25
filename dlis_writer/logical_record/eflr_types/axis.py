@@ -1,6 +1,6 @@
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, ListAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
 
 class Axis(EFLR):
@@ -11,7 +11,7 @@ class Axis(EFLR):
         super().__init__(name, set_name)
 
         self.axis_id = Attribute('axis_id', representation_code=RepC.IDENT)
-        self.coordinates = ListAttribute('coordinates', converter=Attribute.convert_numeric)
+        self.coordinates = NumericAttribute('coordinates', multivalued=True)
         self.spacing = NumericAttribute('spacing')
 
         self.set_attributes(**kwargs)

@@ -26,16 +26,16 @@ class CalibrationMeasurement(EFLR):
         self._type = Attribute('_type', representation_code=RepC.IDENT)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRListAttribute('axis', object_class=Axis)
-        self.measurement = ListAttribute('measurement', converter=Attribute.convert_numeric)
+        self.measurement = NumericAttribute('measurement', multivalued=True)
         self.sample_count = NumericAttribute('sample_count', int_only=True)
         self.maximum_deviation = NumericAttribute('maximum_deviation')
         self.standard_deviation = NumericAttribute('standard_deviation')
         self.begin_time = DTimeAttribute('begin_time', allow_float=True)
         self.duration = NumericAttribute('duration')
-        self.reference = NumericListAttribute('reference')
-        self.standard = NumericListAttribute('standard')
-        self.plus_tolerance = NumericListAttribute('plus_tolerance')
-        self.minus_tolerance = NumericListAttribute('minus_tolerance')
+        self.reference = NumericAttribute('reference', multivalued=True)
+        self.standard = NumericAttribute('standard', multivalued=True)
+        self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True)
+        self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
 
         self.set_attributes(**kwargs)
 
@@ -57,10 +57,10 @@ class CalibrationCoefficient(EFLR):
         super().__init__(name, set_name)
 
         self.label = Attribute('label', representation_code=RepC.IDENT)
-        self.coefficients = NumericListAttribute('coefficients')
-        self.references = NumericListAttribute('references')
-        self.plus_tolerances = NumericListAttribute('plus_tolerances')
-        self.minus_tolerances = NumericListAttribute('minus_tolerances')
+        self.coefficients = NumericAttribute('coefficients', multivalued=True)
+        self.references = NumericAttribute('references', multivalued=True)
+        self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True)
+        self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True)
 
         self.set_attributes(**kwargs)
 
