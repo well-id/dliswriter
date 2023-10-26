@@ -100,8 +100,8 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._other_logical_records.extend(lrs)
 
     @staticmethod
-    def make_frame_and_data(config, data):
-        frame = Frame.make_from_config(config)
+    def make_frame_and_data(config, data, key='Frame'):
+        frame = Frame.make_from_config(config, key=key)
         if frame.channels.value:
             frame.setup_from_data(data)
             ch = f'with channels: {", ".join(c.name for c in frame.channels.value)}'
@@ -132,13 +132,16 @@ class LogicalRecordCollection(MultiLogicalRecord):
         )
 
         channels = Channel.get_or_make_all_from_config(config)
-        frame, multi_frame_data = cls.make_frame_and_data(config, data)
+        frame_keys = (key for key in config.sections() if key.startswith('Frame-') or key == 'Frame')
+        frame_and_data_objects = [cls.make_frame_and_data(config, data, key=key) for key in frame_keys]
 
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")
         obj.add_channels(*channels)
-        logger.info(f"Adding {frame} and {len(multi_frame_data)} FrameData objects to the file")
-        obj.add_frames(frame)
-        obj.add_frame_data_objects(multi_frame_data)
+
+        for frame, multi_frame_data in frame_and_data_objects:
+            logger.info(f"Adding {frame} and {len(multi_frame_data)} FrameData objects to the file")
+            obj.add_frames(frame)
+            obj.add_frame_data_objects(multi_frame_data)
 
         other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin)]
 
