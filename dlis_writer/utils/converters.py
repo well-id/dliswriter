@@ -1,7 +1,7 @@
 from functools import lru_cache
 from datetime import datetime
-
 import numpy as np
+import logging
 
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -53,15 +53,56 @@ generic_type_converter = {
 }
 
 
-def determine_repr_code(value):
+float_codes = tuple(code for code in RepresentationCode.__members__.values() if code.value <= 11)
+sint_codes = tuple(code for code in RepresentationCode.__members__.values() if 12 <= code.value <= 14)
+uint_codes = tuple(code for code in RepresentationCode.__members__.values() if 15 <= code.value <= 18)
+int_codes = sint_codes + uint_codes
+
+
+class ReprCodeError(ValueError):
+    pass
+
+
+def _determine_repr_code_single(value):
     if isinstance(value, (np.generic, np.ndarray)):
         repr_code = numpy_dtype_converter.get(value.dtype.name, None)
         if repr_code is None:
-            raise ValueError(f"Cannot determine representation code for numpy dtype {value.dtype}")
+            raise ReprCodeError(f"Cannot determine representation code for numpy dtype {value.dtype}")
         return repr_code
 
     repr_code_getter = generic_type_converter.get(type(value), None)
     if not repr_code_getter:
-        raise ValueError(f"Cannot determine representation code for type {type(value)} ({value})")
+        raise ReprCodeError(f"Cannot determine representation code for type {type(value)} ({value})")
     return repr_code_getter
 
+
+def _determine_repr_code_multiple(values):
+    repr_codes = [_determine_repr_code_single(v) for v in values]
+    if len(set(repr_codes)) == 1:
+        return repr_codes[0]
+
+    if not all(rc in (float_codes + int_codes) for rc in repr_codes):
+        raise ReprCodeError(f"Cannot determine a common representation code for values: {values} "
+                            f"(proposed representation codes are: {repr_codes})")
+
+    # at this stage we know all codes are numeric
+
+    if any(rc in float_codes for rc in repr_codes):
+        # if any of them is a float - return the float code
+        return RepresentationCode.FDOUBL
+
+    if any(all(rc in codes for rc in repr_codes) for codes in (float_codes, sint_codes, uint_codes)):
+        # only floats, only signed ints, or only unsigned ints
+        return max(repr_codes)
+
+    if any(rc in sint_codes for rc in repr_codes):
+        # if any of them is a signed int - return a signed int code
+        return RepresentationCode.SLONG
+
+    raise ReprCodeError(f"Cannot determine a representation code for values: {values}")
+
+
+def determine_repr_code(v):
+    if isinstance(v, list):
+        return _determine_repr_code_multiple(v)
+    return _determine_repr_code_single(v)

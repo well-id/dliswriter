@@ -4,7 +4,8 @@ from datetime import datetime
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import RepresentationCode as RepC, float_codes, int_codes
+from dlis_writer.utils.enums import RepresentationCode as RepC
+from dlis_writer.utils.converters import float_codes, int_codes
 
 
 logger = logging.getLogger(__name__)

@@ -3,8 +3,8 @@ import logging
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode, Units, int_codes, float_codes, sint_codes, uint_codes
-from dlis_writer.utils.converters import determine_repr_code
+from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.converters import determine_repr_code, ReprCodeError
 
 
 logger = logging.getLogger(__name__)
@@ -69,49 +69,20 @@ class Attribute:
         if self._representation_code is not None:
             return self._representation_code
 
-        try:
-            return self._guess_repr_code()
-        except ValueError as exc:
-            logger.warning(exc.args[0])
-            return None
+        return self._guess_repr_code()
 
     def _guess_repr_code(self):
         if self._value is None:
             return None
         if self._multivalued:
-            return self._guess_multivalued_repr_code()
+            if not self._value:
+                return None
 
-        return determine_repr_code(self._value)
-
-    def _guess_multivalued_repr_code(self):
-        if not self._value:
+        try:
+            return determine_repr_code(self._value)
+        except ReprCodeError as exc:
+            logger.warning(exc.args[0])
             return None
-
-        repr_codes = [determine_repr_code(v) for v in self._value]
-        if len(set(repr_codes)) == 1:
-            return repr_codes[0]
-
-        if not all(rc in (float_codes + int_codes) for rc in repr_codes):
-            logger.warning(f"Cannot determine a common representation code for values: {self._value} "
-                           f"(proposed representation codes are: {repr_codes})")
-            return None
-
-        # at this stage we know all codes are numeric
-
-        if any(rc in float_codes for rc in repr_codes):
-            # if any of them is a float - return the float code
-            return RepresentationCode.FDOUBL
-
-        if any(all(rc in codes for rc in repr_codes) for codes in (float_codes, sint_codes, uint_codes)):
-            # only floats, only signed ints, or only unsigned ints
-            return max(repr_codes)
-
-        if any(rc in sint_codes for rc in repr_codes):
-            # if any of them is a signed int - return a signed int code
-            return RepresentationCode.SLONG
-
-        logger.warning(f"Cannot determine a representation code for values: {self._value}")
-        return None
 
     @representation_code.setter
     def representation_code(self, rc):

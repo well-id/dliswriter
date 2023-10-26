@@ -199,11 +199,6 @@ class RepresentationCode(_ConverterEnum):
         return get_enum_member(cls, c, allow_none=allow_none)
 
 
-float_codes = tuple(code for code in RepresentationCode.__members__.values() if code.value <= 11)
-sint_codes = tuple(code for code in RepresentationCode.__members__.values() if 12 <= code.value <= 14)
-uint_codes = tuple(code for code in RepresentationCode.__members__.values() if 15 <= code.value <= 18)
-int_codes = sint_codes + uint_codes
-
 
 class LogicalRecordType(IntEnum):
     FHLR = 0
