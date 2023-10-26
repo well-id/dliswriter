@@ -4,7 +4,7 @@ import numpy as np
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, Units
-from dlis_writer.utils.converters import determine_repr_code, ReprCodeError
+from dlis_writer.utils.converters import ReprCodeConverter
 
 
 logger = logging.getLogger(__name__)
@@ -79,8 +79,8 @@ class Attribute:
                 return None
 
         try:
-            return determine_repr_code(self._value)
-        except ReprCodeError as exc:
+            return ReprCodeConverter.determine_repr_code(self._value)
+        except ReprCodeConverter.ReprCodeError as exc:
             logger.warning(exc.args[0])
             return None
 

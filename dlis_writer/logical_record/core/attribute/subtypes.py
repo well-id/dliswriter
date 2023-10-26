@@ -5,7 +5,7 @@ from datetime import datetime
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.enums import RepresentationCode as RepC
-from dlis_writer.utils.converters import float_codes, int_codes
+from dlis_writer.utils.converters import ReprCodeConverter
 
 
 logger = logging.getLogger(__name__)
@@ -130,13 +130,13 @@ class NumericAttribute(Attribute):
                 self._value = self._convert_number(self._value)
 
     def _check_repr_code_numeric(self, rc):
-        if self._int_only and rc not in int_codes:
+        if self._int_only and rc not in ReprCodeConverter.int_codes:
             raise ValueError(f"Representation code {rc.name} is not integer")
 
-        if self._float_only and rc not in float_codes:
+        if self._float_only and rc not in ReprCodeConverter.float_codes:
             raise ValueError(f"Representation code {rc.name} is not float")
 
-        if rc not in float_codes and rc not in int_codes:
+        if rc not in ReprCodeConverter.numeric_codes:
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
@@ -170,10 +170,10 @@ class NumericAttribute(Attribute):
                 value = self._float_parser(value)
             return value
 
-        if rc in int_codes:
+        if rc in ReprCodeConverter.int_codes:
             return self._int_parser(value)
 
-        if rc in float_codes:
+        if rc in ReprCodeConverter.float_codes:
             return self._float_parser(value)
 
         raise RuntimeError(f"Representation code {rc.name} is not numeric")
