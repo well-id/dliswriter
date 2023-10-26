@@ -32,7 +32,7 @@ def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False
 numpy_dtype_converter = {
     'int_': RepresentationCode.SLONG,
     'int8': RepresentationCode.SSHORT,
-    'int16': RepresentationCode.SSHORT,
+    'int16': RepresentationCode.SNORM,
     'int32': RepresentationCode.SNORM,
     'int64': RepresentationCode.SLONG,
     'uint8': RepresentationCode.USHORT,
@@ -46,14 +46,14 @@ numpy_dtype_converter = {
 }
 
 
-int_short_bound = 2**16
-int_norm_bount = 2**32
+int_short_bound = 2**8
+int_norm_bound = 2**32
 
 
 def _get_repr_code_for_integer(v):
-    if -int_short_bound >= v >= int_short_bound-1:
+    if -int_short_bound <= v <= int_short_bound-1:
         return RepresentationCode.SSHORT
-    if -int_norm_bount >= v >= int_norm_bount-1:
+    if -int_norm_bound <= v <= int_norm_bound-1:
         return RepresentationCode.SNORM
     return RepresentationCode.SLONG
 
