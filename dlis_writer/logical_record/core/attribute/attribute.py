@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode, Units, int_codes, float_codes, sint_codes, uint_codes
 from dlis_writer.utils.converters import determine_repr_code
 
 
@@ -79,10 +79,45 @@ class Attribute:
         if self._value is None:
             return None
         if self._multivalued:
-            if not self._value:
-                return None
-            return determine_repr_code(self._value[0])
+            return self._guess_multivalued_repr_code()
+
         return determine_repr_code(self._value)
+
+    def _guess_multivalued_repr_code(self):
+        if not self._value:
+            return None
+
+        repr_codes = [determine_repr_code(v) for v in self._value]
+        if len(set(repr_codes)) == 1:
+            return repr_codes[0]
+
+        if not all(rc in (float_codes + int_codes) for rc in repr_codes):
+            logger.warning(f"Cannot determine a common representation code for values: {self._value} "
+                           f"(proposed representation codes are: {repr_codes})")
+            return None
+
+        # at this stage we know all codes are numeric
+
+        if any(all(rc in codes for rc in repr_codes) for codes in (float_codes, sint_codes, uint_codes)):
+            # only floats, only signed ints, or only unsigned ints
+            return max(repr_codes)
+
+        if any(rc in float_codes for rc in repr_codes):
+            # if any of them is a float - return the float code
+            return max(rc for rc in repr_codes if rc in float_codes)
+
+        if any(rc in sint_codes for rc in repr_codes):
+            # if any of them is a signed int - return a signed int code
+            max_uint_code = max(rc for rc in repr_codes if rc in uint_codes)
+            max_sint_code = max(rc for rc in repr_codes if rc in sint_codes)
+            if max_uint_code is RepresentationCode.ULONG:
+                return max(RepresentationCode.SLONG, max_sint_code)
+            if max_uint_code is RepresentationCode.UNORM:
+                return max(RepresentationCode.SNORM, max_sint_code)
+            return max_sint_code
+
+        logger.warning(f"Cannot determine a representation code for values: {self._value}")
+        return None
 
     @representation_code.setter
     def representation_code(self, rc):

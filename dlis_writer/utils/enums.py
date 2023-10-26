@@ -200,7 +200,9 @@ class RepresentationCode(_ConverterEnum):
 
 
 float_codes = tuple(code for code in RepresentationCode.__members__.values() if code.value <= 11)
-int_codes = tuple(code for code in RepresentationCode.__members__.values() if 12 <= code.value <= 18)
+sint_codes = tuple(code for code in RepresentationCode.__members__.values() if 12 <= code.value <= 14)
+uint_codes = tuple(code for code in RepresentationCode.__members__.values() if 15 <= code.value <= 18)
+int_codes = sint_codes + uint_codes
 
 
 class LogicalRecordType(IntEnum):
