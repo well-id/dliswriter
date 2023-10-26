@@ -1,6 +1,7 @@
 from configparser import ConfigParser
 from typing_extensions import Self
 import logging
+import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
@@ -59,13 +60,25 @@ class Frame(EFLR):
         for channel in self.channels.value:
             channel.set_dimension_and_repr_code_from_data(data)
 
-        self._setup_index_max_and_min_from_data(data)
+        self._setup_frame_params_from_data(data)
 
-    def _setup_index_max_and_min_from_data(self, data):
+    def _setup_frame_params_from_data(self, data):
         def assign_if_none(attr, value, key='value'):
-            if getattr(attr, key) is None:
+            if getattr(attr, key) is None and value is not None:
                 setattr(attr, key, value)
 
-        index_channel = self.channels.value[0].dataset_name
-        assign_if_none(self.index_min, data[index_channel].min())
-        assign_if_none(self.index_max, data[index_channel].max())
+        index_channel: Channel = self.channels.value[0]
+        index_data = data[index_channel.dataset_name]
+        unit = index_channel.units.value
+        repr_code = index_channel.representation_code.value
+        spacing = np.median(np.diff(index_data))
+
+        assign_if_none(self.index_min, index_data.min())
+        assign_if_none(self.index_max, index_data.max())
+        assign_if_none(self.spacing, spacing)
+        assign_if_none(self.direction, 'INCREASING' if spacing > 0 else 'DECREASING')
+
+        for attr in (self.index_min, self.index_max, self.spacing):
+            assign_if_none(attr, key='units', value=unit)
+            assign_if_none(attr, key='representation_code', value=repr_code)
+
