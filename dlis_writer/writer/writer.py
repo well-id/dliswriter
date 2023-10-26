@@ -73,7 +73,7 @@ class DLISWriter:
         pg.add_argument('-ifn', '--input-file-name', help='Input file name')
 
         parser.add_argument('-c', '--config', help="Path to config file specifying metadata")
-        parser.add_argument('-fn', '--file-name', help='Output file name')
+        parser.add_argument('-ofn', '--output-file-name', help='Output file name')
         parser.add_argument('-ni', '--n-images', type=int, default=0,
                             help='Number of 2D data sets to add (ignored if input file is specified)')
         parser.add_argument('-nc', '--n-cols', type=int, default=128,
