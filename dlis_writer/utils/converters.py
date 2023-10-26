@@ -45,28 +45,11 @@ numpy_dtype_converter = {
     'float64': RepresentationCode.FDOUBL
 }
 
-
-int_short_bound = 2**7
-int_norm_bound = 2**32
-
-
-def _get_repr_code_for_integer(v):
-    if -int_short_bound <= v <= int_short_bound-1:
-        return RepresentationCode.SSHORT
-    if -int_norm_bound <= v <= int_norm_bound-1:
-        return RepresentationCode.SNORM
-    return RepresentationCode.SLONG
-
-
-def _get_repr_code_for_float(v):
-    return RepresentationCode.FDOUBL
-
-
 generic_type_converter = {
-    datetime: lambda v: RepresentationCode.DTIME,
-    int: _get_repr_code_for_integer,
-    float: _get_repr_code_for_float,
-    str: lambda v: RepresentationCode.ASCII
+    datetime: RepresentationCode.DTIME,
+    int: RepresentationCode.SLONG,
+    float: RepresentationCode.FDOUBL,
+    str: RepresentationCode.ASCII
 }
 
 
@@ -80,5 +63,5 @@ def determine_repr_code(value):
     repr_code_getter = generic_type_converter.get(type(value), None)
     if not repr_code_getter:
         raise ValueError(f"Cannot determine representation code for type {type(value)} ({value})")
-    return repr_code_getter(value)
+    return repr_code_getter
 

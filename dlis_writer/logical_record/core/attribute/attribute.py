@@ -98,23 +98,17 @@ class Attribute:
 
         # at this stage we know all codes are numeric
 
+        if any(rc in float_codes for rc in repr_codes):
+            # if any of them is a float - return the float code
+            return RepresentationCode.FDOUBL
+
         if any(all(rc in codes for rc in repr_codes) for codes in (float_codes, sint_codes, uint_codes)):
             # only floats, only signed ints, or only unsigned ints
             return max(repr_codes)
 
-        if any(rc in float_codes for rc in repr_codes):
-            # if any of them is a float - return the float code
-            return max(rc for rc in repr_codes if rc in float_codes)
-
         if any(rc in sint_codes for rc in repr_codes):
             # if any of them is a signed int - return a signed int code
-            max_uint_code = max(rc for rc in repr_codes if rc in uint_codes)
-            max_sint_code = max(rc for rc in repr_codes if rc in sint_codes)
-            if max_uint_code is RepresentationCode.ULONG:
-                return max(RepresentationCode.SLONG, max_sint_code)
-            if max_uint_code is RepresentationCode.UNORM:
-                return max(RepresentationCode.SNORM, max_sint_code)
-            return max_sint_code
+            return RepresentationCode.SLONG
 
         logger.warning(f"Cannot determine a representation code for values: {self._value}")
         return None
