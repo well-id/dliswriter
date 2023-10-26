@@ -46,7 +46,7 @@ numpy_dtype_converter = {
 }
 
 
-int_short_bound = 2**8
+int_short_bound = 2**7
 int_norm_bound = 2**32
 
 
