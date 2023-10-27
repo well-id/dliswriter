@@ -186,7 +186,7 @@ class Attribute:
             bts += write_struct(RepresentationCode.UVARI, count)
             characteristics += '1'
         else:
-            if self._value:
+            if self._value is not None:
                 if count is not None and count > 1:
                     bts += write_struct(RepresentationCode.UVARI, count)
                     characteristics += '1'
@@ -206,7 +206,7 @@ class Attribute:
         rc = self.representation_code
         value = self._value
 
-        if value:
+        if value is not None:
             if isinstance(value, (list, tuple)):
                 for val in value:
                     bts += write_struct(rc, val)
