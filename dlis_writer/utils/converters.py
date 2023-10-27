@@ -54,6 +54,17 @@ class ReprCodeConverter:
         'float64': RepresentationCode.FDOUBL
     }
 
+    repr_codes_to_numpy_dtypes = {
+        RepresentationCode.FDOUBL: np.float64,
+        RepresentationCode.FSINGL: np.float32,
+        RepresentationCode.USHORT: np.uint16,
+        RepresentationCode.UNORM: np.uint32,
+        RepresentationCode.ULONG: np.uint64,
+        RepresentationCode.SSHORT: np.int8,
+        RepresentationCode.SNORM: np.int32,
+        RepresentationCode.SLONG: np.int64
+    }
+
     generic_types = {
         datetime: RepresentationCode.DTIME,
         int: RepresentationCode.SLONG,

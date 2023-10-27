@@ -1,4 +1,3 @@
-import math
 from functools import lru_cache, cached_property
 
 from dlis_writer.logical_record.core.iflr import IFLR
@@ -52,14 +51,8 @@ class FrameData(IFLR):
         body = b''
         body += self.frame.obname
         body += write_struct(RepresentationCode.UVARI, self.frame_number)
-        
-        j = 0
-        slots = self._slots
-        for channel in self.frame.channels.value or []:
-            representation_code = channel.representation_code.value
 
-            for i in range(j, j+math.prod(channel.dimension.value)):
-                body += write_struct(representation_code, slots[i])
-                j += 1
+        for s in self._slots:
+            body += s.byteswap().tobytes()
 
         return body
