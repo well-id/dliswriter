@@ -88,9 +88,10 @@ class Frame(EFLR):
         index_channel: Channel = self.channels.value[0]
         index_data = data[index_channel.dataset_name]
         unit = index_channel.units.value
-        repr_code = index_channel.representation_code.value
+        repr_code = index_channel.representation_code.value or RepC.FDOUBL
         spacing = np.median(np.diff(index_data))
 
+        assign_if_none(index_channel.representation_code, repr_code)
         assign_if_none(self.index_min, index_data.min())
         assign_if_none(self.index_max, index_data.max())
         assign_if_none(self.spacing, spacing)
@@ -98,5 +99,6 @@ class Frame(EFLR):
 
         for attr in (self.index_min, self.index_max, self.spacing):
             assign_if_none(attr, key='units', value=unit)
-            assign_if_none(attr, key='representation_code', value=repr_code)
+            if attr.assigned_representation_code is None:
+                attr.representation_code = repr_code
 
