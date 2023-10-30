@@ -6,7 +6,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.utils.enums import RepresentationCode as RepC, LogicalRecordType
+from dlis_writer.utils.enums import RepresentationCode as RepC, LogicalRecordType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
 
@@ -65,7 +65,9 @@ class Channel(EFLR):
 
         if not isinstance(unit, str):
             raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
-        # TODO: check unit is allowed
+        if unit not in UNITS:
+            raise ValueError(f"'{unit}' is not one of the allowed units")
+
         return unit
 
     @staticmethod

@@ -152,7 +152,7 @@ def test_multiple_channels_list(config_params):
     assert channels[1].units.value == 'acre'
 
 
-@pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("second", 'second'), ("tesla", 'tesla'), ("T", 'T')))
+@pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("T", 'T')))
 def test_setting_unit(chan, val, unit):
     chan.units.value = val
     assert chan.units.value is unit

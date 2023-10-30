@@ -31,7 +31,6 @@ def test_from_config_params_and_units(config_params):
     check('length', 230.78, 'cm')
     check('minimum_diameter', 2.3, 'm')
     check('maximum_diameter', 3.2, 'm')
-    check('volume', 100, 'cm3')
     check('weight', 1.2, 't')
     check('hole_size', 323.2, 'm')
     check('pressure', 18000, 'psi')

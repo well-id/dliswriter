@@ -10,7 +10,7 @@ def attr():
     yield Attribute('some_attribute')
 
 
-@pytest.mark.parametrize(("val", "unit"), (("m", 'm'), ("meter", 'meter'), ("in", 'in'), ("inch", 'inch')))
+@pytest.mark.parametrize(("val", "unit"), (("m", 'm'), ("in", 'in')))
 def test_setting_unit(attr, val, unit):
     attr.units = val
     assert attr.units is unit

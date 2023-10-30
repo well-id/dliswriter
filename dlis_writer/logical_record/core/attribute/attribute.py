@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 
 
@@ -104,7 +104,12 @@ class Attribute:
 
     @units.setter
     def units(self, units: str):
-        self._units = units  # TODO: check if unit is among the allowed ones
+        if units is not None:
+            if not isinstance(units, str):
+                raise TypeError(f"'units' should be str; got {type(units)}: {units}")
+            if units not in UNITS:
+                raise ValueError(f"'{units}' is not one of the allowed units")
+        self._units = units
 
     @property
     def count(self) -> int:
