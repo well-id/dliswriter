@@ -66,10 +66,7 @@ class Attribute:
 
     @property
     def representation_code(self):
-        if self._representation_code is not None:
-            return self._representation_code
-
-        return self._guess_repr_code()
+        return self.assigned_representation_code or self.inferred_representation_code
 
     def _guess_repr_code(self):
         if self._value is None:
@@ -83,6 +80,14 @@ class Attribute:
         except ReprCodeConverter.ReprCodeError as exc:
             logger.warning(exc.args[0])
             return None
+
+    @property
+    def assigned_representation_code(self):
+        return self._representation_code
+
+    @property
+    def inferred_representation_code(self):
+        return self._guess_repr_code()
 
     @representation_code.setter
     def representation_code(self, rc):

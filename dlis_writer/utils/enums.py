@@ -39,7 +39,7 @@ class Units(Enum):
     dB = 'decibel'
     gAPI = 'API gamma ray'
     kg = 'kilogram'
-    m = 'meter'
+    m = 'm'  # TODO
     mol = 'mole'
     nAPI = 'API neutron'
     rad = 'radian'
@@ -90,7 +90,7 @@ class Units(Enum):
     g = 'gram'
     gal = 'gallon'
     h = 'hour'
-    in_ = 'inch'
+    in_ = 'in'
     kHz = 'kilohertz'
     kPa = 'kilopascal'
     kV = 'kilovolt'
