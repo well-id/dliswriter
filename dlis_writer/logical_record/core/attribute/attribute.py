@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.converters import ReprCodeConverter
 
 
@@ -36,7 +36,7 @@ class Attribute:
 
     def __init__(self, label: str, multivalued: bool = False,
                  representation_code: RepresentationCode = None,
-                 units: Units = None,
+                 units: str = None,
                  value: AttributeValue = None,
                  converter: callable = None
                  ):
@@ -99,12 +99,12 @@ class Attribute:
         self._representation_code = RepresentationCode.get_member(rc, allow_none=False)
 
     @property
-    def units(self) -> Units:
+    def units(self) -> str:
         return self._units
 
     @units.setter
-    def units(self, units: Union[str, Units]):
-        self._units = Units.get_member(units, allow_none=True)
+    def units(self, units: str):
+        self._units = units  # TODO: check if unit is among the allowed ones
 
     @property
     def count(self) -> int:
@@ -173,7 +173,7 @@ class Attribute:
             characteristics += '0'
 
         if self._units:
-            bts += write_struct(RepresentationCode.UNITS, self._units.value)
+            bts += write_struct(RepresentationCode.IDENT, self._units)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -216,8 +216,6 @@ class Attribute:
                 for val in value:
                     bts += write_struct(rc, val)
             else:
-                if isinstance(value, Units):
-                    value = value.value
                 bts += write_struct(rc, value)
 
             characteristics += '1'

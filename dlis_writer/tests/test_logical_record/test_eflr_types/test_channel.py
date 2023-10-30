@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 
 from dlis_writer.logical_record.eflr_types import Channel, Axis
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
@@ -29,7 +29,7 @@ def test_from_config(config_params):
     assert channel.long_name.value == conf["long_name"]
     assert channel.properties.value == ["property1", "property 2 with multiple words"]
     assert channel.representation_code.value is RepresentationCode.FSINGL
-    assert channel.units.value is Units.acre
+    assert channel.units.value == 'acre'
     assert channel.dimension.value == [12]
     assert isinstance(channel.axis.value, list)
     assert isinstance(channel.axis.value[0], Axis)
@@ -45,11 +45,10 @@ def test_from_config_alternative_name(config_params):
     channel = Channel.make_from_config(config_params, key="Channel-1")
 
     assert channel.name == "Channel 1"
-    assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
 
     assert channel.dimension.value == [10, 10]
-    assert channel.units.value == Units.in_
+    assert channel.units.value == 'in'
 
 
 @pytest.mark.parametrize(("prop_str", "prop_val"), (
@@ -114,7 +113,7 @@ def test_multiple_channels_default_pattern(config_params):
 
     assert channels[0].dimension.value == [10, 10]
     assert channels[0].element_limit.value == [10, 10]
-    assert channels[0].units.value == Units.in_
+    assert channels[0].units.value == 'in'
 
     assert channels[1].dimension.value is None
     assert channels[1].element_limit.value is None
@@ -133,7 +132,7 @@ def test_multiple_channels_custom_pattern(config_params):
     assert channels[1].name == "Channel 2"
 
     assert channels[0].dimension.value == [10, 10]
-    assert channels[0].units.value == Units.in_
+    assert channels[0].units.value == 'in'
 
     assert channels[1].dimension.value is None
     assert channels[1].units.value is None
@@ -147,13 +146,13 @@ def test_multiple_channels_list(config_params):
     assert channels[1].name == "Some Channel"
 
     assert channels[0].dimension.value == [10, 10]
-    assert channels[0].units.value == Units.in_
+    assert channels[0].units.value == 'in'
 
     assert channels[1].dimension.value == [12]
-    assert channels[1].units.value is Units.acre
+    assert channels[1].units.value == 'acre'
 
 
-@pytest.mark.parametrize(("val", "unit"), (("s", Units.s), ("second", Units.s), ("tesla", Units.T), ("T", Units.T)))
+@pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("second", 'second'), ("tesla", 'tesla'), ("T", 'T')))
 def test_setting_unit(chan, val, unit):
     chan.units.value = val
     assert chan.units.value is unit

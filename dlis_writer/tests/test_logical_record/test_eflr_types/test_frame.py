@@ -1,7 +1,7 @@
 import pytest
 
 from dlis_writer.logical_record.eflr_types import Frame
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params
 
 
@@ -16,7 +16,7 @@ def test_from_config(config_params):
     assert frame.description.value == conf["description.value"]
 
     assert frame.spacing.value == float(conf["spacing.value"])
-    assert frame.spacing.units is Units.s
+    assert frame.spacing.units == 's'
     assert frame.spacing.representation_code is RepresentationCode.FDOUBL
 
 

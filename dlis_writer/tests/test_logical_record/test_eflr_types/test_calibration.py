@@ -2,8 +2,7 @@ from datetime import datetime
 
 from dlis_writer.logical_record.eflr_types import (CalibrationMeasurement, CalibrationCoefficient, Calibration,
                                                    Channel, Axis, Parameter)
-from dlis_writer.utils.enums import Units, RepresentationCode
-from dlis_writer.tests.common import base_data_path, config_params, make_config
+from dlis_writer.tests.common import base_data_path, config_params
 
 
 def test_calibration_measurement_from_config(config_params):
@@ -23,7 +22,7 @@ def test_calibration_measurement_from_config(config_params):
     assert isinstance(m.begin_time.value, datetime)
     assert m.begin_time.value == datetime(2050, 3, 12, 12, 30)
     assert m.duration.value == 15
-    assert m.duration.units is Units.s
+    assert m.duration.units == 's'
     assert m.reference.value == [11]
     assert m.standard.value == [11.2]
     assert m.plus_tolerance.value == [2]

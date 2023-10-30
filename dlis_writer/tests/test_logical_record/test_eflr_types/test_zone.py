@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 
 from dlis_writer.logical_record.eflr_types import Zone
-from dlis_writer.utils.enums import Units, RepresentationCode
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
@@ -21,10 +21,10 @@ def test_from_config(config_params, zone_nr):
     assert isinstance(zone.minimum.representation_code, RepresentationCode)
 
     if zone_nr != 3:
-        assert isinstance(zone.maximum.units, Units)
-        assert zone.maximum.units.value == conf['maximum.units'] or zone.maximum.units.name == conf['maximum.units']
-        assert isinstance(zone.minimum.units, Units)
-        assert zone.minimum.units.value == conf['minimum.units'] or zone.minimum.units.name == conf['minimum.units']
+        assert isinstance(zone.maximum.units, str)
+        assert zone.maximum.units == conf['maximum.units'] or zone.maximum.units.name == conf['maximum.units']
+        assert isinstance(zone.minimum.units, str)
+        assert zone.minimum.units == conf['minimum.units'] or zone.minimum.units.name == conf['minimum.units']
 
 
 @pytest.mark.parametrize(("zone_nr", "value_type", "repr_code"), (

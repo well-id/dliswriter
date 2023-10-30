@@ -124,7 +124,6 @@ _struct_dict = {
     RepresentationCode.IDENT: _write_struct_ident,
     RepresentationCode.DTIME: _write_struct_dtime,
     RepresentationCode.OBNAME: _write_struct_obname,
-    RepresentationCode.UNITS: _write_struct_ident,
     RepresentationCode.OBJREF: _write_struct_objref,
     RepresentationCode.STATUS: _write_struct_status
 }

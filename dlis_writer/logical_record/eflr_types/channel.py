@@ -6,7 +6,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.utils.enums import RepresentationCode as RepC, Units, LogicalRecordType
+from dlis_writer.utils.enums import RepresentationCode as RepC, LogicalRecordType
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
 
@@ -25,7 +25,7 @@ class Channel(EFLR):
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
         self.representation_code = Attribute(
             'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
-        self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.UNITS)
+        self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.IDENT)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')
@@ -60,7 +60,13 @@ class Channel(EFLR):
 
     @staticmethod
     def convert_unit(unit):
-        return Units.get_member(unit, allow_none=True)
+        if unit is None:
+            return None
+
+        if not isinstance(unit, str):
+            raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
+        # TODO: check unit is allowed
+        return unit
 
     @staticmethod
     def convert_repr_code(rc):

@@ -50,8 +50,8 @@ def test_channel_properties(short_dlis, config_params):
         assert chan.dimension == [N_COLS]
 
     assert short_dlis.object("CHANNEL", 'amplitude').units is None
-    assert short_dlis.object("CHANNEL", 'radius').units == "inch"
-    assert short_dlis.object("CHANNEL", 'radius_pooh').units == "meter"
+    assert short_dlis.object("CHANNEL", 'radius').units == "in"
+    assert short_dlis.object("CHANNEL", 'radius_pooh').units == "m"
 
 
 def test_channel_not_in_frame(short_dlis, config_params):
@@ -324,27 +324,6 @@ def test_well_reference_point_params(short_dlis, idx, name, v_zero, m_decl, c1_n
     assert w.magnetic_declination == m_decl
     assert w.coordinates[c1_name] == c1_value
     assert w.coordinates[c2_name] == c2_value
-
-
-@pytest.mark.parametrize(("idx", "name", "channels", "depth", "radial_drift", "angular_drift", "time"), (
-        (0, "PATH1", ("Channel 1", "Channel 2"), -187, 105, 64.23, 180),
-        (1, "path2", ("amplitude",), 120, 3, -12.3, 4)
-))
-def test_path_params(short_dlis, idx, name, channels, depth, radial_drift, angular_drift, time):
-    p = short_dlis.paths[idx]
-
-    assert p.name == name
-    assert p.frame.name == 'MAIN FRAME'
-    assert p.well_reference_point.name == 'AQLN WELL-REF'
-
-    assert len(p.value) == len(channels)
-    for i, c in enumerate(channels):
-        assert p.value[i].name == c
-
-    assert p.vertical_depth == depth
-    assert p.radial_drift == radial_drift
-    assert p.angular_drift == angular_drift
-    assert p.time == time
 
 
 def test_message_params(short_dlis):

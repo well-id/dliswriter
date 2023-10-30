@@ -3,7 +3,7 @@ import pytest
 
 from dlis_writer.utils.loaders import load_config
 from dlis_writer.writer.utils.compare_dlis_files import compare
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.enums import RepresentationCode
 
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data, short_reference_data  # fixtures
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
@@ -57,7 +57,7 @@ def test_dlis_depth_based(short_reference_data, new_dlis_path, include_images, c
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
         assert chan.name == 'depth'
-        assert chan.units == Units.m.value
+        assert chan.units == 'm'
         assert chan.reprc == 7
 
         frame = f.frames[0]
@@ -72,7 +72,7 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
         assert chan.name == 'posix time'
-        assert chan.units == Units.s.value
+        assert chan.units == 's'
         assert chan.reprc == 7
 
         frame = f.frames[0]
