@@ -13,6 +13,7 @@ class MultiFrameData(MultiLogicalRecord):
         super().__init__()
 
         self._data_array: np.ndarray = self.transform_structured_array(data, channels=frame.channels.value)
+        self._data_array.byteswap(inplace=True)
         self._frame = frame
 
         self._origin_reference = None
