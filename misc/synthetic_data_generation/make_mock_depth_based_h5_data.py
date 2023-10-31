@@ -2,6 +2,7 @@ import numpy as np
 import h5py
 from pathlib import Path
 import os
+from argparse import ArgumentParser
 
 
 def make_image(n_rows, n_cols, divider=11):
@@ -28,10 +29,28 @@ def make_h5_file(fpath, depth_min, depth_span, depth_res=0.1, n_cols=128):
     print(f"Fake data with {n_points} points saved to file '{fpath}'")
 
 
+def make_parser():
+    parser = ArgumentParser("Creating synthetic HDF5 data file")
+    parser.add_argument('--fpath', help="Path to the output HDF5 file", required=True)
+    parser.add_argument('--start-depth', default=2500, type=float, help="Start depth")
+    parser.add_argument('--span', default=100, type=float, help="Depth span - length of the segment")
+    parser.add_argument('--res', default=0.1, type=float, help="Depth resolution")
+    parser.add_argument('--n-cols', default=128, type=int, help="Number of columns for the 2D data")
+    return parser
+
+
 if __name__ == '__main__':
-    file_path = Path(__file__).parent/'tmp_data/mock_depth_amplitude_radius.hdf5'
+    pargs = make_parser().parse_args()
+
+    file_path = Path(pargs.fpath)
 
     if file_path.exists():
         os.remove(file_path)
 
-    make_h5_file(file_path, depth_min=2500, depth_span=100, depth_res=0.1, n_cols=128)
+    make_h5_file(
+        file_path,
+        depth_min=pargs.start_depth,
+        depth_span=pargs.span,
+        depth_res=pargs.res,
+        n_cols=pargs.n_cols
+    )
