@@ -13,14 +13,14 @@ from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase, Iflr
 logger = logging.getLogger(__name__)
 
 
-class InstanceRegisterMeta(IflrAndEflrRMeta):
+class EFLRMeta(IflrAndEflrRMeta):
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls, *args, **kwargs)
         obj._instance_dict = {}
         return obj
 
 
-class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
+class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
