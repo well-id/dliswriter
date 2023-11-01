@@ -124,7 +124,7 @@ class EFLR(IflrAndEflrBase, metaclass=InstanceRegisterMeta):
 
         _bytes = b''
         for attr in self.attributes.values():
-            if not attr.value:
+            if attr.value is None:
                 _bytes += b'\x00'
             else:
                 _bytes += attr.get_as_bytes()

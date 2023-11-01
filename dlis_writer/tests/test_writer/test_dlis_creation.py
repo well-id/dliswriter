@@ -78,8 +78,7 @@ def test_dlis_time_based(short_reference_data, new_dlis_path, config_time_based)
         frame = f.frames[0]
         assert frame.index_type == 'TIME'
         assert frame.index_max == short_reference_data['time'].max()
-        assert (frame.index_min or 0) == short_reference_data['time'].min()
-        # ^ value of 0 is changed to None in dlisio-loaded files
+        assert frame.index_min == short_reference_data['time'].min()
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))

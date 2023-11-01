@@ -183,7 +183,7 @@ def test_equipment(short_dlis):
 
 @pytest.mark.parametrize(("idx", "name", "status", "serial_number"), (
         (0, "EQ1", 1, "9101-21391"),
-        (1, "EQ2", None, "5559101-21391"),
+        (1, "EQ2", 0, "5559101-21391"),
         (2, "EqX", 1, "12311")
 ))
 def test_equipment_params(short_dlis, idx, name, status, serial_number):
@@ -201,7 +201,7 @@ def test_tool(short_dlis):
 
 @pytest.mark.parametrize(("idx", "name", "description", "status", "param_names", "channel_names"), (
         (0, "TOOL-1", "SOME TOOL", 1, ["Param-1", "Param-3"], ["posix time", "amplitude"]),
-        (1, "Tool-X", "desc", None, ["Param-2"], ["radius_pooh"])
+        (1, "Tool-X", "desc", 0, ["Param-2"], ["radius_pooh"])
 ))
 def test_tool_params(short_dlis, idx, name, description, status, param_names, channel_names):
     tool = short_dlis.tools[idx]
