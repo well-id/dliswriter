@@ -79,7 +79,7 @@ class DLISFile:
 
     def __init__(self, visible_record_length: int = None):
         """Initiates the object with given parameters"""
-        self.pos = {}
+
         self.visible_record_length = visible_record_length if visible_record_length else 8192
         self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
     
@@ -105,7 +105,7 @@ class DLISFile:
 
     @log_progress("Writing raw bytes...")
     @profile
-    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> np.ndarray:
+    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> tuple[np.ndarray, dict]:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         n = len(logical_records)
@@ -114,6 +114,7 @@ class DLISFile:
         current_pos = 0
         i = 0
         bar = ProgressBar(max_value=n)
+        positions = {}
 
         def process_lr(lr_):
             nonlocal current_pos, i
@@ -121,7 +122,7 @@ class DLISFile:
             all_records_bytes[i] = b
             current_pos += b.size
             all_positions[i + 1] = current_pos
-            self.pos[lr_.key] = all_positions[i]
+            positions[lr_.key] = all_positions[i]
             bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
             i += 1
 
@@ -138,11 +139,12 @@ class DLISFile:
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
 
-        return raw_bytes
+        return raw_bytes, positions
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, logical_records: LogicalRecordCollection) -> Dict[int, tuple]:
+    def create_visible_record_dictionary(self, logical_records: LogicalRecordCollection, positions: dict) \
+            -> Dict[int, tuple]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
 
@@ -175,7 +177,7 @@ class DLISFile:
 
             vr_position = calculate_vr_position()
             _lrs_size = _lrs.size
-            _lrs_position = self.pos[lrs.key] + 4 * (n_vrs + n_splits)
+            _lrs_position = positions[lrs.key] + 4 * (n_vrs + n_splits)
             _position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
 
             # option A: NO NEED TO SPLIT KEEP ON
@@ -209,7 +211,7 @@ class DLISFile:
 
     @log_progress("Adding visible records...")
     @profile
-    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray) -> np.ndarray:
+    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray, positions: dict) -> np.ndarray:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -252,7 +254,7 @@ class DLISFile:
 
             if lrs_to_split := val[1]:
                 # FIRST PART OF THE SPLIT
-                updated_lrs_position = self.pos[lrs_to_split.key] + 4 * val[2]
+                updated_lrs_position = positions[lrs_to_split.key] + 4 * val[2]
 
                 first_segment_length = vr_position + vr_length - updated_lrs_position
                 header_bytes_to_replace = lrs_to_split.split(
@@ -316,9 +318,9 @@ class DLISFile:
 
         self.validate(logical_records)
         self.assign_origin_reference(logical_records)
-        raw_bytes = self.create_raw_bytes(logical_records)
-        vr_dict = self.create_visible_record_dictionary(logical_records)
-        all_bytes = self.add_visible_records(vr_dict, raw_bytes)
+        raw_bytes, positions = self.create_raw_bytes(logical_records)
+        vr_dict = self.create_visible_record_dictionary(logical_records, positions)
+        all_bytes = self.add_visible_records(vr_dict, raw_bytes, positions)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
     
