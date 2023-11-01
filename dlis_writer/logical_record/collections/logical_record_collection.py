@@ -102,6 +102,20 @@ class LogicalRecordCollection(MultiLogicalRecord):
             *self._other_logical_records.values()  # iterable of lists of EFLRs
         )
 
+    @property
+    def collection_dict(self):
+        d = {}
+
+        for rec in self.header_records:
+            d[type(rec)] = [rec]
+
+        d[Channel] = self.channels
+        d[Frame] = self.frames
+        d[MultiFrameData] = self.frame_data_objects
+        d |= self._other_logical_records
+
+        return d
+
     def add_logical_records(self, *lrs):
         self._check_type_of_values(lrs, EFLR)
         for lr in lrs:

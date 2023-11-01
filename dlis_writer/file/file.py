@@ -2,12 +2,13 @@ import os
 import numpy as np
 import logging
 from line_profiler_pycharm import profile
-from progressbar import progressbar  # package name is progressbar2 (added to requirements)
+from progressbar import progressbar, ProgressBar  # package name is progressbar2 (added to requirements)
 from typing import Union, Dict
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
+from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 
 
 logger = logging.getLogger(__name__)
@@ -107,17 +108,30 @@ class DLISFile:
     def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> np.ndarray:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        all_records = iter(logical_records)
         n = len(logical_records)
         all_records_bytes = [None] * n
         all_positions = [0] + [None] * n
         current_pos = 0
-        for i, lr in progressbar(enumerate(all_records), max_value=n):
-            b = lr.represent_as_bytes()  # grows with data size more than row number
+        i = 0
+        bar = ProgressBar(max_value=n)
+
+        def process_lr(lr_):
+            nonlocal current_pos, i
+            b = lr_.represent_as_bytes()  # grows with data size more than row number
             all_records_bytes[i] = b
             current_pos += b.size
-            all_positions[i+1] = current_pos
-            self.pos[lr.key] = all_positions[i]
+            all_positions[i + 1] = current_pos
+            self.pos[lr_.key] = all_positions[i]
+            bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
+            i += 1
+
+        for lr_list in logical_records.collection_dict.values():
+            for lr in lr_list:
+                if isinstance(lr, MultiFrameData):
+                    for frame_data in lr:
+                        process_lr(frame_data)
+                else:
+                    process_lr(lr)
 
         raw_bytes = np.zeros(all_positions[-1], dtype=np.uint8)
 
