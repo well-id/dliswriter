@@ -8,7 +8,7 @@ from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameDa
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
 from dlis_writer.logical_record.eflr_types import *
-from dlis_writer.logical_record.core.eflr import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRMeta
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._channels: list[Channel] = []
         self._frames: list[Frame] = []
         self._frame_data_objects: list[MultiFrameData] = []
-        self._other_logical_records: list[EFLR] = []
+        self._other_logical_records: dict[EFLRMeta, list[EFLR]] = {}
 
     def set_origin_reference(self, value):
         self.file_header.origin_reference = value
@@ -34,12 +34,19 @@ class LogicalRecordCollection(MultiLogicalRecord):
             for ob in iterable:
                 ob.origin_reference = value
 
-        for lr in self._other_logical_records:
+        for lr in self.other_logical_records_as_list:
             lr.origin_reference = value
 
     @property
     def other_logical_records(self):
         return self._other_logical_records
+
+    @property
+    def other_logical_records_as_list(self):
+        olr = []
+        for v in self._other_logical_records.values():
+            olr.extend(v)
+        return olr
 
     @property
     def header_records(self):
@@ -82,7 +89,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._frame_data_objects.extend(fds)
 
     def __len__(self):
-        other_len = len(self._other_logical_records)
+        other_len = sum(len(v) for v in self._other_logical_records.values())
         len_data = sum(len(mfd) for mfd in self.frame_data_objects)
         return len(self.header_records) + len(self.channels) + len(self.frames) + len_data + other_len
 
@@ -92,12 +99,16 @@ class LogicalRecordCollection(MultiLogicalRecord):
             self.channels,  # list of channels
             self.frames,  # list of frames
             *self.frame_data_objects,  # list of iterables - MultiFrameData objects
-            self._other_logical_records  # list of EFLRs
+            *self._other_logical_records.values()  # iterable of lists of EFLRs
         )
 
     def add_logical_records(self, *lrs):
         self._check_type_of_values(lrs, EFLR)
-        self._other_logical_records.extend(lrs)
+        for lr in lrs:
+            lr_class = type(lr)
+            if lr_class not in self._other_logical_records:
+                self._other_logical_records[lr_class] = []
+            self._other_logical_records[lr_class].append(lr)
 
     @staticmethod
     def make_frame_and_data(config, data, key='Frame'):
