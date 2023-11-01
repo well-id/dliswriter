@@ -68,10 +68,7 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
             http://w3.energistics.org/rp66/v1/rp66v1_appb.html#B_23
         """
 
-        return write_struct(
-            RepresentationCode.OBNAME,
-            (self.origin_reference, self.copy_number, self.name)
-        )
+        return write_struct(RepresentationCode.OBNAME, self)
 
     def make_set_component(self) -> bytes:
         """Creates component role Set

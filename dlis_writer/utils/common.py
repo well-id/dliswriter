@@ -89,19 +89,15 @@ def _write_struct_ident(value):
 
 def _write_struct_obname(value):
     try:
-        origin_reference = _write_struct_uvari(value[0])
-        copy_number = RepresentationCode.USHORT.converter.pack(value[1])
-        name = _write_struct_ident(value[2])
+        origin_reference = _write_struct_uvari(value.origin_reference)
+        copy_number = RepresentationCode.USHORT.converter.pack(value.copy_number)
+        name = _write_struct_ident(value.name)
 
         obname = origin_reference + copy_number + name
 
-    except TypeError:
-        if type(value) == list or type(value) == tuple:
-            obname = b''
-            for val in value:
-                obname += val.obname
-        else:
-            obname = value.obname
+    except AttributeError:
+        raise TypeError(f"'OBNAME' struct can only be written for an EFLR object or a FileHeader; "
+                        f"got {type(value)}: {value}")
 
     return obname
 

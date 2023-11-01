@@ -25,7 +25,7 @@ class FileHeader(LogicalRecordBase):
         
         self.origin_reference = None
         self.copy_number = 0
-        self.object_name = '0'
+        self.name = '0'
 
     def represent_as_bytes(self) -> np.ndarray:
         # HEADER
@@ -51,8 +51,7 @@ class FileHeader(LogicalRecordBase):
 
         # OBJECT
         _body_bytes += write_struct(RepresentationCode.USHORT, int('01110000', 2))
-        _body_bytes += write_struct(RepresentationCode.OBNAME,
-                                    (self.origin_reference, self.copy_number, self.object_name))
+        _body_bytes += write_struct(RepresentationCode.OBNAME, self)
 
         # ATTRIBUTES
         _body_bytes += write_struct(RepresentationCode.USHORT, int('00100001', 2))
