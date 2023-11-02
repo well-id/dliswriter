@@ -9,6 +9,7 @@ from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
+from dlis_writer.logical_record.core.eflr import EFLR
 
 
 logger = logging.getLogger(__name__)
@@ -116,21 +117,35 @@ class DLISFile:
         bar = ProgressBar(max_value=n)
         positions = {}
 
-        def process_lr(lr_):
+        def add_bytes(b, key):
             nonlocal current_pos, i
-            b = lr_.represent_as_bytes()  # grows with data size more than row number
             all_records_bytes[i] = b
             current_pos += b.size
             all_positions[i + 1] = current_pos
-            positions[lr_.key] = all_positions[i]
+            positions[key] = all_positions[i]
             bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
             i += 1
+
+        def process_lr(lr_):
+            b = lr_.represent_as_bytes()  # grows with data size more than row number
+            add_bytes(b, lr_.key)
+
+        def process_eflr(lr_):
+            b = lr_.make_body_bytes()
+            b = lr_.make_header_bytes(b) + b
+            if lr_.segment_attributes.has_padding:
+                b += write_struct(RepresentationCode.USHORT, 1)
+            b = np.frombuffer(b, dtype=np.uint8)
+
+            add_bytes(b, lr_.key)
 
         for lr_list in logical_records.collection_dict.values():
             for lr in lr_list:
                 if isinstance(lr, MultiFrameData):
                     for frame_data in lr:
                         process_lr(frame_data)
+                elif isinstance(lr, EFLR):
+                    process_eflr(lr)
                 else:
                     process_lr(lr)
 
