@@ -1,18 +1,19 @@
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record import LogicalRecord, ConfigGenMixin
-from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.logical_record.core.eflr import EFLR
+from dlis_writer.utils.enums import LogicalRecordType
 
 
-class FileHeader(LogicalRecord, ConfigGenMixin):
+class FileHeader(EFLR):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     set_type = 'FILE-HEADER'
     identifier_length_limit = 65
+    logical_record_type = LogicalRecordType.FHLR
 
-    def __init__(self, identifier: str, sequence_number: int = 1):
-        super().__init__()
+    def __init__(self, identifier: str, sequence_number: int = 1, set_name=None):
+        super().__init__(name='0', set_name=set_name)
 
         self.sequence_number = int(sequence_number)
         self.identifier = identifier
@@ -21,12 +22,8 @@ class FileHeader(LogicalRecord, ConfigGenMixin):
             raise TypeError(f"'identifier' should be a str; got {type(identifier)}")
         if len(identifier) > self.identifier_length_limit:
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
-        
-        self.origin_reference = None
-        self.copy_number = 0
-        self.name = '0'
 
-    def represent_as_bytes(self) -> LogicalRecordBytes:
+    def make_body_bytes(self) -> bytes:
         # BODY
         _body_bytes = b''
         _body_bytes += write_struct(RepresentationCode.USHORT, int('11110000', 2))
@@ -53,8 +50,5 @@ class FileHeader(LogicalRecord, ConfigGenMixin):
         _body_bytes += write_struct(RepresentationCode.USHORT, 65)
         _body_bytes += get_ascii_bytes(self.identifier, 65, justify_left=True)
 
-        lrb = self._make_lrb(_body_bytes)
-        return lrb
+        return _body_bytes
 
-    def _make_lrb(self, bts, **kwargs):
-        return super()._make_lrb(bts, lr_type_struct=write_struct(RepresentationCode.USHORT, 0), is_eflr=True)
