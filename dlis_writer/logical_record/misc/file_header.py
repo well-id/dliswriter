@@ -63,7 +63,7 @@ class FileHeader(LogicalRecord):
 
         _bytes = _header_bytes + _body_bytes
         
-        return LogicalRecordBytes(_bytes)
+        return self._make_lrb(_bytes)
 
     @property
     def size(self):

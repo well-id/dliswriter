@@ -1,3 +1,7 @@
+from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.common import write_struct
+
+
 class SegmentAttributes:
     weights = [2 ** i for i in range(8)][::-1]
 
@@ -89,3 +93,6 @@ class SegmentAttributes:
             value[7] = True
 
         return s
+
+    def to_struct(self, no_padding=False):
+        return write_struct(RepresentationCode.USHORT, self.reduce(no_padding=no_padding))

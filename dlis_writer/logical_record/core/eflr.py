@@ -204,4 +204,9 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
 
         return the_class
 
+    def _make_lrb(self, bts, **kwargs):
+        lrb = super()._make_lrb(bts, **kwargs)
+        lrb.segment_attributes.is_eflr = True
+        return lrb
+
 

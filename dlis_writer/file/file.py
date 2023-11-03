@@ -126,7 +126,7 @@ class DLISFile:
 
         def add_bytes(b, key):
             nonlocal current_pos, i
-            all_records_bytes[i] = b.bytes
+            all_records_bytes[i] = b
             current_pos += b.size
             all_positions[i + 1] = current_pos
             positions[key] = all_positions[i]
@@ -148,13 +148,13 @@ class DLISFile:
         raw_bytes = np.zeros(all_positions[-1], dtype=np.uint8)
 
         for i in range(n):
-            raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i]
+            raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i].bytes
 
-        return raw_bytes, positions
+        return raw_bytes, positions, all_records_bytes
 
     @log_progress("Creating visible record dictionary...")
     @profile
-    def create_visible_record_dictionary(self, logical_records: LogicalRecordCollection, positions: dict) \
+    def create_visible_record_dictionary(self, positions: dict, all_records_bytes: list) \
             -> Dict[int, tuple]:
         """Creates a dictionary that guides in which positions Visible Records must be added and which
         Logical Record Segments must be split
@@ -164,9 +164,7 @@ class DLISFile:
 
         """
 
-        all_records = iter(logical_records)
-        next(all_records)  # skip storage unit label
-        n = len(logical_records) - 1
+        n = len(all_records_bytes) - 1
 
         visible_record_length = self.visible_record_length
 
@@ -212,7 +210,7 @@ class DLISFile:
 
         # note: this is a for-loop, but with a recursive element inside
         # some lrs-es need to be processed multiple times (see option B in process_iteration)
-        for lrs in progressbar(all_records, max_value=n):
+        for lrs in progressbar(all_records_bytes[1:], max_value=n):  # skipping storage unit label
             process_iteration(lrs)
 
         # last vr
@@ -222,7 +220,7 @@ class DLISFile:
 
     @log_progress("Adding visible records...")
     @profile
-    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray, positions: dict) -> np.ndarray:
+    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray, positions: dict, all_records_bytes: list) -> np.ndarray:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -323,9 +321,9 @@ class DLISFile:
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.assign_origin_reference(logical_records)
-        raw_bytes, positions = self.create_raw_bytes(logical_records)
-        vr_dict = self.create_visible_record_dictionary(logical_records, positions)
-        all_bytes = self.add_visible_records(vr_dict, raw_bytes, positions)
+        raw_bytes, positions, all_records_bytes = self.create_raw_bytes(logical_records)
+        vr_dict = self.create_visible_record_dictionary(positions, all_records_bytes)
+        all_bytes = self.add_visible_records(vr_dict, raw_bytes, positions, all_records_bytes)
         self.write_bytes_to_file(all_bytes.tobytes(), filename)
         logger.info('DLIS file created.')
     

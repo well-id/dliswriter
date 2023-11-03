@@ -80,7 +80,7 @@ class StorageUnitLabel(LogicalRecord):
             _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-            self._bytes = LogicalRecordBytes(bts)
+            self._bytes = self._make_lrb(bts)
         return self._bytes
 
     @property
