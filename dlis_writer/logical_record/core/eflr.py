@@ -70,7 +70,7 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
 
         return write_struct(RepresentationCode.OBNAME, self)
 
-    def make_set_component(self) -> bytes:
+    def _make_set_component_bytes(self) -> bytes:
         """Creates component role Set
 
         Returns:
@@ -88,7 +88,7 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
 
         return _bytes
 
-    def make_template(self) -> bytes:
+    def _make_template_bytes(self) -> bytes:
         """Creates template from EFLR object's attributes
 
         Returns:
@@ -105,12 +105,12 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
 
         return _bytes
 
-    def make_object_component(self) -> bytes:
+    def _make_obname_bytes(self) -> bytes:
         """Creates object component"""
 
         return b'p' + self.obname
 
-    def make_objects(self) -> bytes:
+    def _make_objects_bytes(self) -> bytes:
         """Creates object bytes that follows the object component
 
         Note:
@@ -131,12 +131,12 @@ class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
     def make_body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
 
-        a = self.make_set_component()
-        b = self.make_template()
-        c = self.make_objects()
-        d = self.make_object_component()
+        set_component = self._make_set_component_bytes()
+        template = self._make_template_bytes()
+        obname = self._make_obname_bytes()
+        objects = self._make_objects_bytes()
 
-        return a + b + d + c
+        return set_component + template + obname + objects
 
     @classmethod
     def make_lr_type_struct(cls, logical_record_type):
