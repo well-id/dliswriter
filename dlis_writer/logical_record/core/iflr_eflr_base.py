@@ -2,7 +2,6 @@ from abc import abstractmethod
 
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
-from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
 
 
 class IflrAndEflrRMeta(type):
@@ -24,9 +23,6 @@ class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):
 
     def __init__(self):
         super().__init__()
-
-        self.segment_attributes = SegmentAttributes()
-        self.segment_attributes.is_eflr = self.is_eflr
 
         self._bytes = None
 
