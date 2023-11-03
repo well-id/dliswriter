@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class LogicalRecordBytes:
-    def __init__(self, bts, key, lr_type_struct=None):
+    def __init__(self, bts, key, lr_type_struct=None, is_eflr=False):
         if isinstance(bts, (bytes, bytearray)):
             self._bts = np.frombuffer(bts, dtype=np.uint8)
         elif isinstance(bts, np.ndarray):
@@ -22,6 +22,8 @@ class LogicalRecordBytes:
         self.lr_type_struct = lr_type_struct
 
         self.segment_attributes = SegmentAttributes()
+        if is_eflr:
+            self.segment_attributes.is_eflr = True
 
     @property
     def bytes(self):

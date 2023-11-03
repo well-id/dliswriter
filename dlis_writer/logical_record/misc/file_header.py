@@ -28,13 +28,6 @@ class FileHeader(LogicalRecord):
         self.name = '0'
 
     def represent_as_bytes(self) -> LogicalRecordBytes:
-        # HEADER
-        _length = write_struct(RepresentationCode.UNORM, 124)
-        _attributes = write_struct(RepresentationCode.USHORT, int('10000000', 2))
-        _type = write_struct(RepresentationCode.USHORT, 0)
-
-        _header_bytes = _length + _attributes + _type
-
         # BODY
         _body_bytes = b''
         _body_bytes += write_struct(RepresentationCode.USHORT, int('11110000', 2))
@@ -61,6 +54,9 @@ class FileHeader(LogicalRecord):
         _body_bytes += write_struct(RepresentationCode.USHORT, 65)
         _body_bytes += get_ascii_bytes(self.identifier, 65, justify_left=True)
 
-        _bytes = _header_bytes + _body_bytes
-        
-        return self._make_lrb(_bytes)
+        lrb = self._make_lrb(_body_bytes)
+        lrb.add_header_bytes()
+        return lrb
+
+    def _make_lrb(self, bts, **kwargs):
+        return super()._make_lrb(bts, lr_type_struct=write_struct(RepresentationCode.USHORT, 0), is_eflr=True)
