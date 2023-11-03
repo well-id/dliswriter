@@ -34,9 +34,7 @@ class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
         if self._bytes is None:
-            bts = self._make_lrb(self.make_body_bytes())
-            bts.add_header_bytes()
-            self._bytes = bts
+            self._bytes = self._make_lrb(self.make_body_bytes())
 
         return self._bytes
 

@@ -25,6 +25,9 @@ class LogicalRecordBytes:
         if is_eflr:
             self.segment_attributes.is_eflr = True
 
+        if lr_type_struct is not None:
+            self._add_header_bytes()
+
     @property
     def bytes(self):
         return self._bts
@@ -63,7 +66,7 @@ class LogicalRecordBytes:
 
         return write_struct(RepresentationCode.UNORM, segment_length) + _attributes + self.lr_type_struct
 
-    def add_header_bytes(self):
+    def _add_header_bytes(self):
         """Writes Logical Record Segment Header
 
         .._RP66 V1 Logical Record Segment Header:

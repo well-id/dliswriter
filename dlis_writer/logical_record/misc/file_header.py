@@ -55,7 +55,6 @@ class FileHeader(LogicalRecord):
         _body_bytes += get_ascii_bytes(self.identifier, 65, justify_left=True)
 
         lrb = self._make_lrb(_body_bytes)
-        lrb.add_header_bytes()
         return lrb
 
     def _make_lrb(self, bts, **kwargs):
