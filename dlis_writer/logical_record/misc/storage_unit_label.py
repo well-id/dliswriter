@@ -1,5 +1,3 @@
-import numpy as np
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
 
@@ -82,7 +80,3 @@ class StorageUnitLabel(LogicalRecord):
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
             self._bytes = self._make_lrb(bts)
         return self._bytes
-
-    @property
-    def size(self):
-        raise RuntimeError(f"Size of {type(self)} is undefined")  # TODO: verify (probably never needed)

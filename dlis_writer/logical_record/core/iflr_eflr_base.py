@@ -1,10 +1,5 @@
 from abc import abstractmethod
-from functools import cached_property
 
-from line_profiler_pycharm import profile
-
-from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
 
@@ -20,10 +15,6 @@ class IflrAndEflrRMeta(type):
         if not cls._lr_type_struct:
             cls._lr_type_struct = cls.make_lr_type_struct(cls.logical_record_type)
         return cls._lr_type_struct
-
-    @classmethod
-    def make_lr_type_struct(cls, logical_record_type):
-        return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
 
 class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):

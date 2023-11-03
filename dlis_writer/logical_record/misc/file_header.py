@@ -1,5 +1,3 @@
-import numpy as np
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -64,7 +62,3 @@ class FileHeader(LogicalRecord):
         _bytes = _header_bytes + _body_bytes
         
         return self._make_lrb(_bytes)
-
-    @property
-    def size(self):
-        return 124

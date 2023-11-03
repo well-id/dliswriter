@@ -99,11 +99,6 @@ class LogicalRecord:
     def __init__(self, *args, **kwargs):
         pass
 
-    @property
-    @abstractmethod
-    def size(self) -> int:
-        pass
-
     @cached_property
     def key(self):
         return hash(type(self))

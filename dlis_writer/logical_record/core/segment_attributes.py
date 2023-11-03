@@ -79,7 +79,7 @@ class SegmentAttributes:
         self._value[1] = not first  # has predecessor segment
         self._value[2] = not last  # has successor segment
 
-    def reduce(self, no_padding=False) -> int:
+    def to_struct(self, no_padding=False):
         value = self._value
 
         toggle_padding = no_padding and value[7]
@@ -92,7 +92,4 @@ class SegmentAttributes:
         if toggle_padding:
             value[7] = True
 
-        return s
-
-    def to_struct(self, no_padding=False):
-        return write_struct(RepresentationCode.USHORT, self.reduce(no_padding=no_padding))
+        return write_struct(RepresentationCode.USHORT, s)
