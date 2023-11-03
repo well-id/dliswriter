@@ -148,7 +148,7 @@ class DLISFile:
         raw_bytes = np.zeros(all_positions[-1], dtype=np.uint8)
 
         for i in range(n):
-            raw_bytes[all_positions[i]:all_positions[i+1]] = all_records_bytes[i].bytes
+            raw_bytes[all_positions[i]:all_positions[i+1]] = np.frombuffer(all_records_bytes[i].bytes, dtype=np.uint8)
 
         return raw_bytes, positions, all_records_bytes
 

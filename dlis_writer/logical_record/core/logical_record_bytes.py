@@ -1,4 +1,3 @@
-import numpy as np
 import logging
 
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
@@ -12,7 +11,8 @@ logger = logging.getLogger(__name__)
 class BasicLogicalRecordBytes:
     def __init__(self, bts, key):
 
-        self._bts = np.frombuffer(bts, dtype=np.uint8)
+        self._bts = bts
+        self._size = len(bts)
         self.key = key
 
     @property
@@ -21,7 +21,7 @@ class BasicLogicalRecordBytes:
 
     @property
     def size(self) -> int:
-        return self._bts.size
+        return self._size
 
 
 class LogicalRecordBytes(BasicLogicalRecordBytes):
@@ -35,14 +35,6 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             self.segment_attributes.is_eflr = True
 
         self._add_header_bytes()
-
-    @property
-    def bytes(self):
-        return self._bts
-
-    @property
-    def size(self) -> int:
-        return self._bts.size
 
     def split(self, segment_length: int, is_first: bool = False, is_last: bool = False) -> bytes:
         """Creates header bytes to be inserted into split position
@@ -93,9 +85,10 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             + self.segment_attributes.to_struct()\
             + self.lr_type_struct
 
-        new_bts = header_bytes + self._bts.tobytes()
+        new_bts = header_bytes + self._bts
         if self.segment_attributes.has_padding:
             new_bts += write_struct(RepresentationCode.USHORT, 1)
 
-        self._bts = np.frombuffer(new_bts, dtype=np.uint8)
+        self._bts = new_bts
+        self._size = len(new_bts)
 
