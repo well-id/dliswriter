@@ -126,7 +126,7 @@ class DLISFile:
 
         def add_bytes(b, key):
             nonlocal current_pos, i
-            all_records_bytes[i] = b
+            all_records_bytes[i] = b.bytes
             current_pos += b.size
             all_positions[i + 1] = current_pos
             positions[key] = all_positions[i]
@@ -137,22 +137,11 @@ class DLISFile:
             b = lr_.represent_as_bytes()  # grows with data size more than row number
             add_bytes(b, lr_.key)
 
-        def process_eflr(lr_):
-            b = lr_.make_body_bytes()
-            b = lr_.make_header_bytes(b) + b
-            if lr_.segment_attributes.has_padding:
-                b += write_struct(RepresentationCode.USHORT, 1)
-            b = np.frombuffer(b, dtype=np.uint8)
-
-            add_bytes(b, lr_.key)
-
         for lr_list in logical_records.collection_dict.values():
             for lr in lr_list:
                 if isinstance(lr, MultiFrameData):
                     for frame_data in lr:
                         process_lr(frame_data)
-                elif isinstance(lr, EFLR):
-                    process_eflr(lr)
                 else:
                     process_lr(lr)
 

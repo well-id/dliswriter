@@ -9,6 +9,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+class LogicalRecordBytes:
+    def __init__(self, bts):
+        if isinstance(bts, (bytes, bytearray)):
+            self._bts = np.frombuffer(bts, dtype=np.uint8)
+        elif isinstance(bts, np.ndarray):
+            self._bts = bts
+        else:
+            raise TypeError(f"Expected numpy.ndarray, bytes, or bytearray; got {type(bts)}")
+
+    @property
+    def bytes(self):
+        return self._bts
+
+    @property
+    def size(self) -> int:
+        return self._bts.size
+
+
 class LogicalRecord:
     """Base for all logical record classes."""
 
@@ -27,7 +45,7 @@ class LogicalRecord:
         return hash(type(self))
 
     @abstractmethod
-    def represent_as_bytes(self) -> np.ndarray:
+    def represent_as_bytes(self) -> LogicalRecordBytes:
         pass
 
     @classmethod

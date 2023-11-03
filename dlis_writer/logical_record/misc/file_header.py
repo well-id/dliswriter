@@ -3,7 +3,7 @@ import numpy as np
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecord
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
 
 
 class FileHeader(LogicalRecord):
@@ -27,7 +27,7 @@ class FileHeader(LogicalRecord):
         self.copy_number = 0
         self.name = '0'
 
-    def represent_as_bytes(self) -> np.ndarray:
+    def represent_as_bytes(self) -> LogicalRecordBytes:
         # HEADER
         _length = write_struct(RepresentationCode.UNORM, 124)
         _attributes = write_struct(RepresentationCode.USHORT, int('10000000', 2))
@@ -63,7 +63,7 @@ class FileHeader(LogicalRecord):
 
         _bytes = _header_bytes + _body_bytes
         
-        return np.frombuffer(_bytes, dtype=np.uint8)
+        return LogicalRecordBytes(_bytes)
 
     @property
     def size(self):

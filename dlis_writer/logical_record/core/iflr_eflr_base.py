@@ -6,7 +6,7 @@ from line_profiler_pycharm import profile
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecord
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
 
 
@@ -59,7 +59,7 @@ class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):
 
         return self.represent_as_bytes().size
 
-    def represent_as_bytes(self) -> np.ndarray:
+    def represent_as_bytes(self) -> LogicalRecordBytes:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
         if self._bytes is None:
@@ -68,7 +68,7 @@ class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):
             if self.segment_attributes.has_padding:
                 bts += write_struct(RepresentationCode.USHORT, 1)
 
-            self._bytes = np.frombuffer(bts, dtype=np.uint8)
+            self._bytes = LogicalRecordBytes(bts)
 
         return self._bytes
 
