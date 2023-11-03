@@ -3,10 +3,10 @@ import numpy as np
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecord
 
 
-class FileHeader(LogicalRecordBase):
+class FileHeader(LogicalRecord):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     set_type = 'FILE-HEADER'

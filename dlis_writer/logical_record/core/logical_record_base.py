@@ -9,7 +9,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class LogicalRecordBase:
+class LogicalRecord:
     """Base for all logical record classes."""
 
     set_type: str = NotImplemented

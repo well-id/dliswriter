@@ -1,10 +1,10 @@
 import numpy as np
 
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecord
 
 
-class StorageUnitLabel(LogicalRecordBase):
+class StorageUnitLabel(LogicalRecord):
     """Represents  the Storage Unit Label in RP66 V1
     
     This is the first part of a logical file.

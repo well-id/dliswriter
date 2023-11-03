@@ -6,7 +6,7 @@ from line_profiler_pycharm import profile
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecordBase
+from dlis_writer.logical_record.core.logical_record_base import LogicalRecord
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
 
 
@@ -27,7 +27,7 @@ class IflrAndEflrRMeta(type):
         return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
 
-class IflrAndEflrBase(LogicalRecordBase, metaclass=IflrAndEflrRMeta):
+class IflrAndEflrBase(LogicalRecord, metaclass=IflrAndEflrRMeta):
     is_eflr = NotImplemented
     logical_record_type = NotImplemented
 
