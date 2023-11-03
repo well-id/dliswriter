@@ -78,28 +78,35 @@ class DLISFile:
         http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
     """
 
-    def __init__(self, visible_record_length: int = None):
+    def __init__(self, visible_record_length: int = 8192):
         """Initiates the object with given parameters"""
 
-        self.visible_record_length = visible_record_length if visible_record_length else 8192
-        self._vr_struct = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
-    
-    @log_progress("Validating...")
-    def validate(self, logical_records: LogicalRecordCollection):
-        """Validates the object according to RP66 V1 rules"""
+        self.check_visible_record_length(visible_record_length)
+        self.visible_record_length = visible_record_length
 
-        if not logical_records.origin.file_set_number.value:
-            raise Exception('Origin object MUST have a file_set_number')
+        # format version is a required part of each visible record and is fixed for a given version of the standard
+        self._format_version = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
 
-        assert self.visible_record_length >= 20, 'Minimum visible record length is 20 bytes'
-        assert self.visible_record_length <= 16384, 'Maximum visible record length is 16384 bytes'
-        assert self.visible_record_length % 2 == 0, 'Visible record length must be an even number'
+    @staticmethod
+    def check_visible_record_length(vrl):
+        if vrl < 20:
+            raise ValueError("Visible record length must be at least 20 bytes")
+
+        if vrl > 16384:
+            raise ValueError("Visible record length cannot be larger than 16384 bytes")
+
+        if vrl % 2:
+            raise ValueError("Visible record length must be an even number")
 
     @log_progress("Assigning origin reference")
     def assign_origin_reference(self, logical_records: LogicalRecordCollection):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
         val = logical_records.origin.file_set_number.value
+
+        if not val:
+            raise Exception('Origin object MUST have a file_set_number')
+
         logger.debug(f"File set number is {val}")
 
         logical_records.set_origin_reference(val)
@@ -264,7 +271,7 @@ class DLISFile:
             # 'inserting' visible record bytes (changed array length in the original code)
             bytes_inserted.insert_items(
                 idx=vr_position,
-                items=write_struct(RepresentationCode.UNORM, vr_length) + self._vr_struct
+                items=write_struct(RepresentationCode.UNORM, vr_length) + self._format_version
             )
 
             if lrs_to_split := val[1]:
@@ -331,7 +338,6 @@ class DLISFile:
     def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
-        self.validate(logical_records)
         self.assign_origin_reference(logical_records)
         raw_bytes, positions = self.create_raw_bytes(logical_records)
         vr_dict = self.create_visible_record_dictionary(logical_records, positions)
