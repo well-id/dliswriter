@@ -7,7 +7,6 @@ import logging
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -31,21 +30,53 @@ class ConfigGenMixin:
         return obj
 
 
-class LogicalRecord:
+class LRMeta(type):
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls, *args, **kwargs)
+        obj._lr_type_struct = None
+        return obj
+
+    @property
+    def lr_type_struct(cls):
+        if not cls._lr_type_struct:
+            cls._lr_type_struct = cls.make_lr_type_struct(cls.logical_record_type)
+        return cls._lr_type_struct
+
+
+class LogicalRecord(metaclass=LRMeta):
     """Base for all logical record classes."""
 
     set_type: str = NotImplemented
+    is_eflr = NotImplemented
+    logical_record_type = NotImplemented
 
     def __init__(self, *args, **kwargs):
-        pass
+        self._bytes = None
 
     @cached_property
     def key(self):
         return hash(type(self))
 
-    def _make_lrb(self, bts, **kwargs):
-        return LogicalRecordBytes(bts, key=self.key, **kwargs)
-
     @abstractmethod
-    def represent_as_bytes(self) -> LogicalRecordBytes:
+    def make_body_bytes(self) -> bytes:
         pass
+
+    def represent_as_bytes(self) -> LogicalRecordBytes:
+        """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
+
+        if self._bytes is None:
+            self._bytes = self._make_lrb(self.make_body_bytes())
+
+        return self._bytes
+
+    def _make_lrb(self, bts, **kwargs):
+        return LogicalRecordBytes(bts, key=self.key, lr_type_struct=self.lr_type_struct, **kwargs)
+
+    @classmethod
+    @abstractmethod
+    def make_lr_type_struct(cls, lr_type):
+        pass
+
+    @property
+    def lr_type_struct(self):
+        return self.__class__.lr_type_struct
