@@ -279,10 +279,7 @@ class DLISFile:
                 updated_lrs_position = positions[lrs_to_split.key] + 4 * val[2]
 
                 first_segment_length = vr_position + vr_length - updated_lrs_position
-                header_bytes_to_replace = lrs_to_split.split(
-                    is_first=True,
-                    segment_length=first_segment_length
-                )
+                header_bytes_to_replace = lrs_to_split.split(segment_length=first_segment_length, is_first=True)
 
                 # replacing header bytes (no change in the array length in the original code)
                 bytes_replaced.insert_items(
@@ -291,10 +288,8 @@ class DLISFile:
                 )
 
                 # SECOND PART OF THE SPLIT
-                header_bytes_to_insert = lrs_to_split.split(
-                    is_first=False,
-                    segment_length=lrs_to_split.size - first_segment_length + 4
-                )
+                header_bytes_to_insert = lrs_to_split.split(segment_length=lrs_to_split.size - first_segment_length + 4,
+                                                            is_last=True)
 
                 # 'inserting' header bytes (changed array length in the original code)
                 bytes_inserted.insert_items(

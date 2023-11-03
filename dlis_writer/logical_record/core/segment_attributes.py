@@ -71,9 +71,9 @@ class SegmentAttributes:
     def toggle_padding(self):
         self._value[7] = not self._value[7]
 
-    def mark_order(self, first: bool):
+    def mark_order(self, first: bool, last: bool):
         self._value[1] = not first  # has predecessor segment
-        self._value[2] = first  # has successor segment
+        self._value[2] = not last  # has successor segment
 
     def reduce(self, no_padding=False) -> int:
         value = self._value

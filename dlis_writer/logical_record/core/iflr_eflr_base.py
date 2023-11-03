@@ -91,7 +91,7 @@ class IflrAndEflrBase(LogicalRecordBase, metaclass=IflrAndEflrRMeta):
             + self.lr_type_struct
 
     @profile
-    def split(self, is_first: bool, segment_length: int) -> bytes:
+    def split(self, segment_length: int, is_first: bool = False, is_last: bool = False) -> bytes:
         """Creates header bytes to be inserted into split position
 
         When a Logical Record Segment overflows a Visible Record, it must be split.
@@ -100,7 +100,8 @@ class IflrAndEflrBase(LogicalRecordBase, metaclass=IflrAndEflrRMeta):
             2. Adding a header to the second part of the split
 
         Args:
-            is_first: Represents whether this is the first or the last part of the split
+            is_first: Represents whether this is the first part of the split
+            is_last: Represents whether this is the last part of the split
             segment_length: Length of the segment after split operation
 
         Returns:
@@ -111,7 +112,7 @@ class IflrAndEflrBase(LogicalRecordBase, metaclass=IflrAndEflrRMeta):
         assert segment_length % 2 == 0, 'Split segment length is not an EVEN NUMBER'
         assert segment_length < self.size, 'Split segment length can not be larger than the whole segment'
 
-        self.segment_attributes.mark_order(first=is_first)
+        self.segment_attributes.mark_order(first=is_first, last=is_last)
 
         _attributes = self._make_segment_attributes(no_padding=is_first)
 
