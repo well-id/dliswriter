@@ -1,6 +1,7 @@
 from abc import abstractmethod
 
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import LogicalRecord
+from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
 
 

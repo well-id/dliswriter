@@ -1,5 +1,6 @@
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record_base import LogicalRecord, LogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import LogicalRecord
+from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
 class StorageUnitLabel(LogicalRecord):
