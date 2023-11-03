@@ -1,9 +1,11 @@
+from functools import cached_property
+
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record import LogicalRecord
-from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
+from dlis_writer.logical_record.core.logical_record_bytes import BasicLogicalRecordBytes
 
 
-class StorageUnitLabel(LogicalRecord):
+class StorageUnitLabel(ConfigGenMixin):
     """Represents  the Storage Unit Label in RP66 V1
     
     This is the first part of a logical file.
@@ -28,7 +30,6 @@ class StorageUnitLabel(LogicalRecord):
 
     """
 
-    set_type = NotImplemented  # TODO
     storage_unit_structure = 'RECORD'  # the only allowed value
     dlis_version = 'V1.00'
     max_record_length_limit = 16384
@@ -54,7 +55,7 @@ class StorageUnitLabel(LogicalRecord):
 
         self._bytes = None
 
-    def represent_as_bytes(self) -> LogicalRecordBytes:
+    def represent_as_bytes(self) -> BasicLogicalRecordBytes:
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 
         Returns:
@@ -79,5 +80,9 @@ class StorageUnitLabel(LogicalRecord):
             _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-            self._bytes = self._make_lrb(bts)
+            self._bytes = BasicLogicalRecordBytes(bts, self.key)
         return self._bytes
+
+    @cached_property
+    def key(self):
+        return hash(type(self))

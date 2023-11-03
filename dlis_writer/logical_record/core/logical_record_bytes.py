@@ -9,8 +9,8 @@ from dlis_writer.utils.common import write_struct
 logger = logging.getLogger(__name__)
 
 
-class LogicalRecordBytes:
-    def __init__(self, bts, key, lr_type_struct=None, is_eflr=False):
+class BasicLogicalRecordBytes:
+    def __init__(self, bts, key):
         if isinstance(bts, (bytes, bytearray)):
             self._bts = np.frombuffer(bts, dtype=np.uint8)
         elif isinstance(bts, np.ndarray):
@@ -19,6 +19,20 @@ class LogicalRecordBytes:
             raise TypeError(f"Expected numpy.ndarray, bytes, or bytearray; got {type(bts)}")
 
         self.key = key
+
+    @property
+    def bytes(self):
+        return self._bts
+
+    @property
+    def size(self) -> int:
+        return self._bts.size
+
+
+class LogicalRecordBytes(BasicLogicalRecordBytes):
+    def __init__(self, bts, key, lr_type_struct=None, is_eflr=False):
+        super().__init__(bts, key)
+
         self.lr_type_struct = lr_type_struct
 
         self.segment_attributes = SegmentAttributes()

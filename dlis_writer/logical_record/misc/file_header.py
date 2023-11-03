@@ -1,12 +1,11 @@
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.logical_record import LogicalRecord
+from dlis_writer.logical_record.core.logical_record import LogicalRecord, ConfigGenMixin
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
-
-class FileHeader(LogicalRecord):
+class FileHeader(LogicalRecord, ConfigGenMixin):
     """Represents FILE-HEADER logical record type in RP66V1"""
 
     set_type = 'FILE-HEADER'

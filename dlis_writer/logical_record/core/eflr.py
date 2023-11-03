@@ -8,6 +8,7 @@ from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 from dlis_writer.logical_record.core.iflr_eflr_base import IflrAndEflrBase, IflrAndEflrRMeta
+from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
 
 
 logger = logging.getLogger(__name__)
@@ -20,7 +21,7 @@ class EFLRMeta(IflrAndEflrRMeta):
         return obj
 
 
-class EFLR(IflrAndEflrBase, metaclass=EFLRMeta):
+class EFLR(IflrAndEflrBase, ConfigGenMixin, metaclass=EFLRMeta):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
