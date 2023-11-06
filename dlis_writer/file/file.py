@@ -72,33 +72,24 @@ class DLISFile:
 
         logical_records.set_origin_reference(val)
 
-    @log_progress("Transforming logical records into raw bytes...")
     @profile
-    def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection) -> list[LogicalRecordBytes]:
+    def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection):
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        n = len(logical_records)
-        all_lrb_list = [None] * n
-        i = 0
-        bar = ProgressBar(max_value=n)
-
         def process_lr(lr_):
-            nonlocal i
             b = lr_.represent_as_bytes()  # grows with data size more than row number
-            all_lrb_list[i] = b
-            bar.update(i)
-            i += 1
+            return b
 
-        for lr_list in logical_records.collection_dict.values():
-            for lr in lr_list:
-                if isinstance(lr, MultiFrameData):
-                    for frame_data in lr:
-                        process_lr(frame_data)
-                else:
-                    process_lr(lr)
-        bar.finish()
+        def wrapper():
+            for lr_list in logical_records.collection_dict.values():
+                for lr in lr_list:
+                    if isinstance(lr, MultiFrameData):
+                        for frame_data in lr:
+                            yield process_lr(frame_data)
+                    else:
+                        yield process_lr(lr)
 
-        return all_lrb_list
+        return wrapper()
 
     def _make_visible_record(self, body, size=None) -> bytes:
 
@@ -112,7 +103,7 @@ class DLISFile:
 
     @log_progress("Creating visible records of the DLIS...")
     @profile
-    def create_visible_records(self, all_lrb_list: list[LogicalRecordBytes]) -> bytes:
+    def create_visible_records(self, n_records, all_lrb_iter) -> bytes:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -121,8 +112,7 @@ class DLISFile:
         hs = 4  # header size (both for logical record segment and visible record)
         mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
 
-        all_lrb_iter = iter(all_lrb_list)
-        bar = ProgressBar(max_value=len(all_lrb_list))
+        bar = ProgressBar(max_value=n_records)
 
         output = next(all_lrb_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
@@ -201,8 +191,8 @@ class DLISFile:
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.assign_origin_reference(logical_records)
-        all_lrb_list = self.make_bytes_of_logical_records(logical_records)
-        all_bytes = self.create_visible_records(all_lrb_list)
+        all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
+        all_bytes = self.create_visible_records(len(logical_records), all_lrb_iter)
         self.write_bytes_to_file(all_bytes, filename)
         logger.info('DLIS file created.')
     
