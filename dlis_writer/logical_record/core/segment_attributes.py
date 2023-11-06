@@ -5,8 +5,17 @@ from dlis_writer.utils.common import write_struct
 class SegmentAttributes:
     weights = [2 ** i for i in range(8)][::-1]
 
-    def __init__(self):
-        self._value = 8 * [False]
+    def __init__(self, is_eflr=False, is_first=False, is_last=False):
+        self._value = [
+            is_eflr,
+            not is_first,
+            not is_last,
+            False,
+            False,
+            False,
+            False,
+            False
+        ]
 
     @property
     def is_eflr(self) -> bool:
@@ -71,13 +80,6 @@ class SegmentAttributes:
     @has_padding.setter
     def has_padding(self, b: bool):
         self._value[7] = b
-
-    def toggle_padding(self):
-        self._value[7] = not self._value[7]
-
-    def mark_order(self, first: bool, last: bool):
-        self._value[1] = not first  # has predecessor segment
-        self._value[2] = not last  # has successor segment
 
     def to_struct(self, no_padding=False):
         value = self._value

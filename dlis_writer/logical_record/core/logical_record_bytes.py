@@ -62,14 +62,11 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
 
 
 class LogicalRecordSegment:
-    def __init__(self, bts, lr_type_struct, is_eflr=False, is_first=False, is_last=False):
+    def __init__(self, bts, lr_type_struct, **kwargs):
         self._bts = bts
         self.lr_type_struct = lr_type_struct
 
-        self.segment_attributes = SegmentAttributes()
-        if is_eflr:
-            self.segment_attributes.is_eflr = True
-        self.segment_attributes.mark_order(first=is_first, last=is_last)
+        self.segment_attributes = SegmentAttributes(**kwargs)
 
     def get_bytes(self) -> bytes:
         size = len(self._bts) + 4
