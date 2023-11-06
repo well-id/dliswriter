@@ -47,10 +47,6 @@ class Channel(EFLR):
         return obj
 
     @property
-    def key(self):
-        return hash(type(self)), self.name
-
-    @property
     def dataset_name(self):
         return self._dataset_name if self._dataset_name is not None else self.name
 

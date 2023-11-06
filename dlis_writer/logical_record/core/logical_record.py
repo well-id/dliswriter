@@ -1,5 +1,4 @@
 from abc import abstractmethod
-from functools import cached_property
 from configparser import ConfigParser
 from typing_extensions import Self
 import logging
@@ -53,10 +52,6 @@ class LogicalRecord(metaclass=LRMeta):
     def __init__(self, *args, **kwargs):
         self._bytes = None
 
-    @cached_property
-    def key(self):
-        return hash(type(self))
-
     @abstractmethod
     def make_body_bytes(self) -> bytes:
         pass
@@ -70,7 +65,7 @@ class LogicalRecord(metaclass=LRMeta):
         return self._bytes
 
     def _make_lrb(self, bts, **kwargs):
-        return LogicalRecordBytes(bts, key=self.key, lr_type_struct=self.lr_type_struct, **kwargs)
+        return LogicalRecordBytes(bts, lr_type_struct=self.lr_type_struct, **kwargs)
 
     @classmethod
     @abstractmethod

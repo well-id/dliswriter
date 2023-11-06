@@ -1,5 +1,3 @@
-from functools import cached_property
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
 from dlis_writer.logical_record.core.logical_record_bytes import BasicLogicalRecordBytes
@@ -80,9 +78,5 @@ class StorageUnitLabel(ConfigGenMixin):
             _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-            self._bytes = BasicLogicalRecordBytes(bts, self.key)
+            self._bytes = BasicLogicalRecordBytes(bts)
         return self._bytes
-
-    @cached_property
-    def key(self):
-        return hash(type(self))

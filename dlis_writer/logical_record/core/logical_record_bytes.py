@@ -9,11 +9,10 @@ logger = logging.getLogger(__name__)
 
 
 class BasicLogicalRecordBytes:
-    def __init__(self, bts, key):
+    def __init__(self, bts):
 
         self._bts = bts
         self._size = len(bts)
-        self.key = key
 
     @property
     def bytes(self):
@@ -25,8 +24,8 @@ class BasicLogicalRecordBytes:
 
 
 class LogicalRecordBytes(BasicLogicalRecordBytes):
-    def __init__(self, bts, key, lr_type_struct, is_eflr=False):
-        super().__init__(bts, key)
+    def __init__(self, bts, lr_type_struct, is_eflr=False):
+        super().__init__(bts)
 
         self.lr_type_struct = lr_type_struct
 
