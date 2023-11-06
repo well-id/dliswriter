@@ -58,7 +58,7 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             lr_type_struct=self.lr_type_struct,
             is_eflr=self.is_eflr,
             is_first=(start_pos == 0),
-            is_last=(end_pos == self._size)
+            is_last=(end_pos is None or end_pos == self._size)
         )
 
         return lrs.get_bytes()
