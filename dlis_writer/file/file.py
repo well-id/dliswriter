@@ -123,6 +123,7 @@ class DLISFile:
         all_bytes = next(all_records_bytes_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
         current_body = b''
+        current_size = 0
         max_body_size = self.visible_record_length - 4
         position_in_current_lrb = 0
 
@@ -163,7 +164,8 @@ class DLISFile:
 
             if remaining_lrb_size <= space_remaining:
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb)
-                current_size = len(current_body)
+                # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
+                current_size = current_size + 4 + remaining_lrb_size + (remaining_lrb_size % 2)
                 space_remaining = max_body_size - current_size - 4
                 if not next_lrb():
                     break
@@ -173,7 +175,7 @@ class DLISFile:
                 future_remaining_lrb_size = lrb.size - position_in_current_lrb - segment_size
                 if segment_size >= 12 and future_remaining_lrb_size >= 12:
                     current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_size = len(current_body)
+                    current_size += segment_size + 4
                     space_remaining = max_body_size - current_size - 4
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
