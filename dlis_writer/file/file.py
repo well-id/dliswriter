@@ -119,10 +119,9 @@ class DLISFile:
 
         all_records_bytes_iter = iter(all_records_bytes)
 
-        all_bytes = next(all_records_bytes_iter).bytes  # SUL
+        all_bytes = next(all_records_bytes_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
         current_body = b''
-        current_size = 0
         max_body_size = self.visible_record_length - 4
         position_in_current_lrb = 0
 
@@ -133,7 +132,6 @@ class DLISFile:
 
         def next_vr():
             nonlocal all_bytes, current_size, current_body, space_remaining
-            # print(f"Current VR body size: {len(current_body)}; making next VR")
             all_bytes += self._make_visible_record(current_body)
             current_body = b''
             current_size = 0
@@ -143,14 +141,12 @@ class DLISFile:
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
             lrb = next(all_records_bytes_iter)
             i += 1
-            # print(f"Logical record {i}, size {lrb.size}")
             position_in_current_lrb = 0
             remaining_lrb_size = lrb.size  # position in current lrb is 0
 
         next_lrb()
 
         while True:
-            # print(f"Current size is {current_size}; space remaining is {space_remaining}")
             if space_remaining < 12:  # minimal LRS size is 16, 4 bytes reserved for header
                 next_vr()
 
@@ -161,7 +157,6 @@ class DLISFile:
                     break
 
             if remaining_lrb_size <= space_remaining:
-                # print("Adding current logical record in full")
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 current_size = len(current_body)
                 space_remaining = max_body_size - current_size - 4
@@ -181,7 +176,6 @@ class DLISFile:
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
 
-        # print(f"Last VR body size: {len(current_body)}")
         all_bytes += self._make_visible_record(current_body)
 
         return all_bytes
