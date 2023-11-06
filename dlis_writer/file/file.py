@@ -59,8 +59,8 @@ class DLISFile:
         if vrl % 2:
             raise ValueError("Visible record length must be an even number")
 
-    @log_progress("Assigning origin reference")
-    def assign_origin_reference(self, logical_records: LogicalRecordCollection):
+    @staticmethod
+    def assign_origin_reference(logical_records: LogicalRecordCollection):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
         val = logical_records.origin.file_set_number.value
@@ -68,8 +68,7 @@ class DLISFile:
         if not val:
             raise Exception('Origin object MUST have a file_set_number')
 
-        logger.debug(f"File set number is {val}")
-
+        logger.info(f"Assigning origin reference: {val} to all logical records")
         logical_records.set_origin_reference(val)
 
     @profile
@@ -95,11 +94,11 @@ class DLISFile:
 
         if size is None:
             size = len(body)
+
         if size > self.visible_record_length - 4:
             raise ValueError(f"Body length is too large; got {size}, max is {self.visible_record_length - 4}")
 
-        vr_header = write_struct(RepresentationCode.UNORM, size + 4) + self._format_version
-        return vr_header + body
+        return write_struct(RepresentationCode.UNORM, size + 4) + self._format_version + body
 
     @log_progress("Creating visible records of the DLIS...")
     @profile
