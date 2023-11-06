@@ -100,9 +100,10 @@ class DLISFile:
 
         return all_lrb_list
 
-    def _make_visible_record(self, body) -> bytes:
+    def _make_visible_record(self, body, size=None) -> bytes:
 
-        size = len(body)
+        if size is None:
+            size = len(body)
         if size > self.visible_record_length - 4:
             raise ValueError(f"Body length is too large; got {size}, max is {self.visible_record_length - 4}")
 
@@ -126,7 +127,7 @@ class DLISFile:
         output = next(all_lrb_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
         current_vr_body = b''
-        current_vr_size = 0
+        current_vr_body_size = 0
         max_vr_body_size = self.visible_record_length - hs
         position_in_current_lrb = 0
 
@@ -136,10 +137,10 @@ class DLISFile:
         remaining_lrb_size = 0
 
         def next_vr():
-            nonlocal output, current_vr_size, current_vr_body, remaining_vr_space
-            output += self._make_visible_record(current_vr_body)
+            nonlocal output, current_vr_body_size, current_vr_body, remaining_vr_space
+            output += self._make_visible_record(current_vr_body, size=current_vr_body_size)
             current_vr_body = b''
-            current_vr_size = 0
+            current_vr_body_size = 0
             remaining_vr_space = max_vr_body_size - 4
 
         def next_lrb():
@@ -165,8 +166,8 @@ class DLISFile:
             if remaining_lrb_size <= remaining_vr_space:
                 current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
-                current_vr_size = current_vr_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
-                remaining_vr_space = max_vr_body_size - current_vr_size - hs
+                current_vr_body_size = current_vr_body_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
+                remaining_vr_space = max_vr_body_size - current_vr_body_size - hs
                 if not next_lrb():
                     break
 
@@ -175,12 +176,12 @@ class DLISFile:
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if segment_size >= mbs and future_remaining_lrb_size >= mbs:
                     current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_vr_size += segment_size + hs
+                    current_vr_body_size += segment_size + hs
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
 
-        output += self._make_visible_record(current_vr_body)
+        output += self._make_visible_record(current_vr_body, size=current_vr_body_size)
         bar.finish()
 
         return output
