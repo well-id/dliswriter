@@ -225,7 +225,7 @@ class DLISFile:
         if size > self.visible_record_length - 4:
             raise ValueError(f"Body length is too large; got {size}, max is {self.visible_record_length - 4}")
 
-        vr_header = write_struct(RepresentationCode.UNORM, size) + self._format_version
+        vr_header = write_struct(RepresentationCode.UNORM, size + 4) + self._format_version
         return vr_header + body
 
     @log_progress("Adding visible records...")
