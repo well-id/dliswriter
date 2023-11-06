@@ -1,5 +1,4 @@
 import os
-import numpy as np
 import logging
 from line_profiler_pycharm import profile
 from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
@@ -87,7 +86,7 @@ class DLISFile:
             nonlocal i
             b = lr_.represent_as_bytes()  # grows with data size more than row number
             all_records_bytes[i] = b
-            bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
+            bar.update(i)
             i += 1
 
         for lr_list in logical_records.collection_dict.values():
@@ -97,6 +96,7 @@ class DLISFile:
                         process_lr(frame_data)
                 else:
                     process_lr(lr)
+        bar.finish()
 
         return all_records_bytes
 
@@ -118,6 +118,7 @@ class DLISFile:
         """
 
         all_records_bytes_iter = iter(all_records_bytes)
+        bar = ProgressBar(max_value=len(all_records_bytes))
 
         all_bytes = next(all_records_bytes_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
@@ -144,6 +145,7 @@ class DLISFile:
             except StopIteration:
                 return False
             else:
+                bar.update(i)
                 i += 1
                 position_in_current_lrb = 0
                 remaining_lrb_size = lrb.size  # position in current lrb is 0
@@ -178,6 +180,7 @@ class DLISFile:
                 next_vr()
 
         all_bytes += self._make_visible_record(current_body)
+        bar.finish()
 
         return all_bytes
 
