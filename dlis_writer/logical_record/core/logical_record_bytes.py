@@ -33,15 +33,30 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
     def make_segment(self, start_pos=0, n_bytes=None):
         end_pos = self._calculate_segment_end_pos(n_bytes, start_pos)
 
-        lrs = LogicalRecordSegment(
-            self._bts[start_pos:end_pos],
-            lr_type_struct=self.lr_type_struct,
+        segment_attributes = SegmentAttributes(
             is_eflr=self.is_eflr,
             is_first=(start_pos == 0),
             is_last=(end_pos is None or end_pos == self._size)
         )
 
-        return lrs.get_bytes()
+        segment_body_bytes = self._bts[start_pos:end_pos]
+
+        size = len(segment_body_bytes) + 4
+        if size % 2 != 0:
+            size += 1
+            segment_attributes.has_padding = True
+        else:
+            segment_attributes.has_padding = False
+
+        header_bytes = write_struct(RepresentationCode.UNORM, size) \
+                       + segment_attributes.to_struct() \
+                       + self.lr_type_struct
+
+        new_bts = header_bytes + segment_body_bytes
+        if segment_attributes.has_padding:
+            new_bts += write_struct(RepresentationCode.USHORT, 1)
+
+        return new_bts
 
     def _calculate_segment_end_pos(self, n_bytes, start_pos):
         if n_bytes:
@@ -61,30 +76,3 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             end_pos = None
 
         return end_pos
-
-
-class LogicalRecordSegment:
-    def __init__(self, bts, lr_type_struct, **kwargs):
-        self._bts = bts
-        self.lr_type_struct = lr_type_struct
-
-        self.segment_attributes = SegmentAttributes(**kwargs)
-
-    def get_bytes(self) -> bytes:
-        size = len(self._bts) + 4
-        if size % 2 != 0:
-            size += 1
-            self.segment_attributes.has_padding = True
-        else:
-            self.segment_attributes.has_padding = False
-
-        header_bytes = write_struct(RepresentationCode.UNORM, size) \
-                       + self.segment_attributes.to_struct() \
-                       + self.lr_type_struct
-
-        new_bts = header_bytes + self._bts
-        if self.segment_attributes.has_padding:
-            new_bts += write_struct(RepresentationCode.USHORT, 1)
-
-        return new_bts
-
