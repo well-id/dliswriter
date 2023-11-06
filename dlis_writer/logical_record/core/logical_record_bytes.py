@@ -39,8 +39,8 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
 
     def make_segment(self, start_pos=0, n_bytes=None):
         if n_bytes:
-            # if n_bytes < 12:  # TODO
-            #     raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes (got {n_bytes})")
+            if n_bytes < 12:
+                raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes (got {n_bytes})")
 
             if n_bytes % 2:
                 raise ValueError("Segment length must be an even number")
@@ -49,9 +49,8 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             if end_pos > self._size:
                 raise ValueError("Logical record too short for the requested bytes")
         else:
-            # TODO
-            # if self._size - start_pos < 16:
-            #     raise ValueError(f"Logical Record segment cannot be shorter than 16 bytes")
+            if self._size - start_pos < 12:
+                raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes")
             end_pos = None
 
         lrs = LogicalRecordSegment(
