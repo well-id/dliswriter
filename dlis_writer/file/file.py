@@ -276,17 +276,17 @@ class DLISFile:
 
             else:
                 segment_size = min(space_remaining, remaining_lrb_size)
-                if segment_size >= 12 and lrb.size - position_in_current_lrb - segment_size >= 12:
-                    # print(f"Adding {segment_size} bytes of the current record (remaining in the lrb: {remaining_lrb_size})")
-                    current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    position_in_current_lrb += segment_size
+                # if segment_size >= 12 and lrb.size - position_in_current_lrb - segment_size >= 12:  # TODO
+                #     print(f"Adding {segment_size} bytes of the current record (remaining in the lrb: {remaining_lrb_size})")
+                current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
+                position_in_current_lrb += segment_size
                 # else:
-                    # print(f"Bringing over to next VR (remaining space: {space_remaining}, remaining lrb size: {remaining_lrb_size})")
-                # print(f"Current VR body size: {len(current_body)}; maxing next VR")
+                #     print(f"Bringing over to next VR (remaining space: {space_remaining}, remaining lrb size: {remaining_lrb_size})")
+                print(f"Current VR body size: {len(current_body)}; making next VR")
                 all_bytes += self._make_visible_record(current_body)
                 current_body = b''
 
-        # print(f"Last VR body size: {len(current_body)}")
+        print(f"Last VR body size: {len(current_body)}")
         all_bytes += self._make_visible_record(current_body)
 
         return all_bytes
