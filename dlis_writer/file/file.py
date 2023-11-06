@@ -139,10 +139,15 @@ class DLISFile:
 
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
-            lrb = next(all_records_bytes_iter)
-            i += 1
-            position_in_current_lrb = 0
-            remaining_lrb_size = lrb.size  # position in current lrb is 0
+            try:
+                lrb = next(all_records_bytes_iter)
+            except StopIteration:
+                return False
+            else:
+                i += 1
+                position_in_current_lrb = 0
+                remaining_lrb_size = lrb.size  # position in current lrb is 0
+            return True
 
         next_lrb()
 
@@ -151,18 +156,14 @@ class DLISFile:
                 next_vr()
 
             if not remaining_lrb_size:
-                try:
-                    next_lrb()
-                except StopIteration:
+                if not next_lrb():
                     break
 
             if remaining_lrb_size <= space_remaining:
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 current_size = len(current_body)
                 space_remaining = max_body_size - current_size - 4
-                try:
-                    next_lrb()
-                except StopIteration:
+                if not next_lrb():
                     break
 
             else:
