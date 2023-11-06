@@ -9,7 +9,6 @@ from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
-from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
@@ -114,7 +113,7 @@ class DLISFile:
 
     @log_progress("Writing raw bytes...")
     @profile
-    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> tuple[np.ndarray, dict]:
+    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> list[LogicalRecordBytes]:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         n = len(logical_records)
@@ -151,73 +150,7 @@ class DLISFile:
         for i in range(n):
             raw_bytes[all_positions[i]:all_positions[i+1]] = np.frombuffer(all_records_bytes[i].bytes, dtype=np.uint8)
 
-        return raw_bytes, positions, all_records_bytes
-
-    @log_progress("Creating visible record dictionary...")
-    @profile
-    def create_visible_record_dictionary(self, positions: dict, all_records_bytes: list) \
-            -> Dict[int, tuple]:
-        """Creates a dictionary that guides in which positions Visible Records must be added and which
-        Logical Record Segments must be split
-
-        Returns:
-            A dict object containing Visible Record split positions and related information
-
-        """
-
-        n = len(all_records_bytes) - 1
-
-        visible_record_length = self.visible_record_length
-
-        q = {}          # dictionary to contain all visible records information
-
-        vr_length = 4
-        n_vrs = 1       #: number of visible records
-        vr_offset = 0
-        n_splits = 0    #: number of created splits
-        vr_position = 0
-
-        def calculate_vr_position():
-            vrp = (visible_record_length * (n_vrs - 1)) + 80  # DON'T TOUCH THIS
-            vrp += vr_offset
-            return vrp
-
-        def process_iteration(_lrs):
-            nonlocal vr_position, vr_length, vr_offset, n_vrs, n_splits
-
-            vr_position = calculate_vr_position()
-            _lrs_size = _lrs.size
-            _lrs_position = positions[lrs.key] + 4 * (n_vrs + n_splits)
-            _position_diff = vr_position + visible_record_length - _lrs_position  # idk how to call this, but it's reused
-
-            # option A: NO NEED TO SPLIT KEEP ON
-            if (vr_length + _lrs_size) <= visible_record_length:
-                vr_length += _lrs_size
-
-            # option B: NO NEED TO SPLIT JUST DON'T ADD THE LAST LR
-            elif _position_diff < 16:
-                q[vr_position] = (vr_length, None, n_splits+n_vrs)
-                vr_length = 4
-                n_vrs += 1
-                vr_offset -= _position_diff
-                process_iteration(_lrs)  # need to do A, B, or C for the same lrs again
-
-            # option C
-            else:
-                q[vr_position] = (visible_record_length, _lrs, n_splits+n_vrs)
-                vr_length = 8 + _lrs_size - _position_diff
-                n_vrs += 1
-                n_splits += 1
-
-        # note: this is a for-loop, but with a recursive element inside
-        # some lrs-es need to be processed multiple times (see option B in process_iteration)
-        for lrs in progressbar(all_records_bytes[1:], max_value=n):  # skipping storage unit label
-            process_iteration(lrs)
-
-        # last vr
-        q[calculate_vr_position()] = (vr_length, None, n_splits+n_vrs)
-
-        return q
+        return all_records_bytes
 
     def _make_visible_record(self, body) -> bytes:
 
@@ -230,7 +163,7 @@ class DLISFile:
 
     @log_progress("Adding visible records...")
     @profile
-    def add_visible_records(self, vr_dict: dict, raw_bytes: np.ndarray, positions: dict, all_records_bytes: list[LogicalRecordBytes]) -> np.ndarray:
+    def add_visible_records(self, all_records_bytes: list[LogicalRecordBytes]) -> np.ndarray:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -305,87 +238,6 @@ class DLISFile:
 
         return all_bytes
 
-
-        # # added bytes: 4 bytes per visible record and 4 per header  # TODO: is it always 4?
-        # total_vr_length = 4 * len(vr_dict)  # bytes added due to inserting visible record bytes (first part of the loop)
-        # splits = sum(int(bool(val[1])) for val in vr_dict.values())  # how many splits are done (not for all vr's)
-        # total_header_length = 4 * splits  # bytes added due to inserting 'header bytes' (see 'second part of the split')
-        #
-        # # expected total length of the raw_bytes array after the vr and header bytes are inserted
-        # total_len = raw_bytes.size + total_vr_length + total_header_length
-        #
-        # inserted_len = total_vr_length + total_header_length
-        # replaced_len = total_header_length
-        #
-        # # New approach: instead of inserting the bytes (changing the length of the raw_bytes at every iteration),
-        # # prepare arrays which will only hold the inserted bytes already at the correct positions;
-        # # otherwise, these arrays are filled with zeros.
-        # # Also keep 'mask' arrays, marking the positions at which the 'inserted' bytes are placed.
-        # # When the loop is finished, re-map the original raw_bytes onto the non-occupied positions in the new array.
-        # # Note: there are actually two types of operations done here (as it was in the original code): inserting
-        # # and replacing bytes. In the loop, first, a visible record is *inserted*, then (if a split is done)
-        # # header bytes are *replaced* (see 'first part of the split'), and finally more bytes are *inserted*
-        # # (see 'second part of the split'). To preserve the correct positions of the bytes, bytes coming from the two
-        # # types of operations are kept in two separate arrays (with corresponding masks): bytes_inserted
-        # # and bytes_replaced.
-        # bytes_inserted = PositionedArray(inserted_len)
-        # bytes_replaced = PositionedArray(replaced_len)
-        #
-        # for vr_position, val in progressbar(vr_dict.items()):
-        #
-        #     vr_length = val[0]
-        #
-        #     # 'inserting' visible record bytes (changed array length in the original code)
-        #     bytes_inserted.insert_items(
-        #         idx=vr_position,
-        #         items=write_struct(RepresentationCode.UNORM, vr_length) + self._format_version
-        #     )
-        #
-        #     if lrs_to_split := val[1]:
-        #         # FIRST PART OF THE SPLIT
-        #         updated_lrs_position = positions[lrs_to_split.key] + 4 * val[2]
-        #
-        #         first_segment_length = vr_position + vr_length - updated_lrs_position
-        #         header_bytes_to_replace = lrs_to_split.split(segment_length=first_segment_length, is_first=True)
-        #
-        #         # replacing header bytes (no change in the array length in the original code)
-        #         bytes_replaced.insert_items(
-        #             idx=updated_lrs_position,
-        #             items=header_bytes_to_replace
-        #         )
-        #
-        #         # SECOND PART OF THE SPLIT
-        #         header_bytes_to_insert = lrs_to_split.split(segment_length=lrs_to_split.size - first_segment_length + 4,
-        #                                                     is_last=True)
-        #
-        #         # 'inserting' header bytes (changed array length in the original code)
-        #         bytes_inserted.insert_items(
-        #             idx=vr_position + vr_length,
-        #             items=header_bytes_to_insert
-        #         )
-        #
-        # logger.debug(f"{splits} splits created")
-        #
-        # # destination array
-        # all_bytes = np.zeros(total_len, dtype=np.uint8)
-        # raw_mask = np.ones(total_len, dtype=bool)
-        # raw_mask[bytes_inserted.idx] = False
-        #
-        # # map the original raw_bytes on the unoccupied positions in bytes_inserted
-        # # first check that the empty bytes counts are correct
-        # if not bytes_inserted.full:
-        #     raise RuntimeError("Error in inserting visible record bytes: the number of inserted bytes is lower "
-        #                        "than expected")
-        # all_bytes[raw_mask] = raw_bytes
-        #
-        # # apply the inserted bytes
-        # all_bytes[bytes_inserted.idx] = bytes_inserted.bytes
-        #
-        # # apply the replaced header bytes
-        # all_bytes[bytes_replaced.idx] = bytes_replaced.bytes
-        #
-        # return all_bytes
-
     @staticmethod
     @log_progress("Writing to file...")
     def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike]):
@@ -401,9 +253,8 @@ class DLISFile:
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.assign_origin_reference(logical_records)
-        raw_bytes, positions, all_records_bytes = self.create_raw_bytes(logical_records)
-        vr_dict = self.create_visible_record_dictionary(positions, all_records_bytes)
-        all_bytes = self.add_visible_records(vr_dict, raw_bytes, positions, all_records_bytes)
+        all_records_bytes = self.create_raw_bytes(logical_records)
+        all_bytes = self.add_visible_records(all_records_bytes)
         self.write_bytes_to_file(all_bytes, filename)
         logger.info('DLIS file created.')
     
