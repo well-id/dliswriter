@@ -73,9 +73,9 @@ class DLISFile:
 
         logical_records.set_origin_reference(val)
 
-    @log_progress("Writing raw bytes...")
+    @log_progress("Transforming logical records into raw bytes...")
     @profile
-    def create_raw_bytes(self, logical_records: LogicalRecordCollection) -> list[LogicalRecordBytes]:
+    def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection) -> list[LogicalRecordBytes]:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         n = len(logical_records)
@@ -109,9 +109,9 @@ class DLISFile:
         vr_header = write_struct(RepresentationCode.UNORM, size + 4) + self._format_version
         return vr_header + body
 
-    @log_progress("Adding visible records...")
+    @log_progress("Creating visible records of the DLIS...")
     @profile
-    def add_visible_records(self, all_records_bytes: list[LogicalRecordBytes]) -> np.ndarray:
+    def create_visible_records(self, all_records_bytes: list[LogicalRecordBytes]) -> bytes:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -195,8 +195,8 @@ class DLISFile:
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.assign_origin_reference(logical_records)
-        all_records_bytes = self.create_raw_bytes(logical_records)
-        all_bytes = self.add_visible_records(all_records_bytes)
+        all_records_bytes = self.make_bytes_of_logical_records(logical_records)
+        all_bytes = self.create_visible_records(all_records_bytes)
         self.write_bytes_to_file(all_bytes, filename)
         logger.info('DLIS file created.')
     
