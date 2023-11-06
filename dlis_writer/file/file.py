@@ -2,8 +2,8 @@ import os
 import numpy as np
 import logging
 from line_profiler_pycharm import profile
-from progressbar import progressbar, ProgressBar  # package name is progressbar2 (added to requirements)
-from typing import Union, Dict
+from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
+from typing import Union
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -25,44 +25,6 @@ def log_progress(message):
             return result
         return wrapper
     return decorator
-
-
-class PositionedArray:
-    def __init__(self, n):
-        self._bytes = np.zeros(n, dtype=np.uint8)
-        self._idx = np.zeros(n, dtype=np.uint64)
-        self._max_pos = n
-        self._pos = 0
-
-    @property
-    def bytes(self):
-        return self._bytes
-
-    @property
-    def idx(self):
-        return self._idx
-
-    @property
-    def full(self):
-        return self._pos == self._max_pos
-
-    def insert_items(self, idx: int, items: bytes):
-        n = len(items)
-
-        if n != 4:
-            raise ValueError(f"Expected 4 bytes, got n")
-
-        if self._pos + n > self._max_pos:
-            raise RuntimeError("No more space in the array")
-
-        if self._pos and self._idx[self._pos - n] == idx:
-            # shift the bytes already at the requested position to the right by 4 indices
-            # (assumed length of the inserted bytes is always 4, and otherwise the arrays are filled with zeros)
-            self._idx[self._pos - n:self._pos] += n
-
-        self._idx[self._pos:self._pos + n] = idx + np.arange(n)
-        self._bytes[self._pos:self._pos + n] = np.frombuffer(items, dtype=np.uint8)
-        self._pos += n
 
 
 class DLISFile:
