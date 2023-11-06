@@ -118,24 +118,15 @@ class DLISFile:
 
         n = len(logical_records)
         all_records_bytes = [None] * n
-        all_positions = [0] + [None] * n
-        current_pos = 0
         i = 0
         bar = ProgressBar(max_value=n)
-        positions = {}
-
-        def add_bytes(b, key):
-            nonlocal current_pos, i
-            all_records_bytes[i] = b
-            current_pos += b.size
-            all_positions[i + 1] = current_pos
-            positions[key] = all_positions[i]
-            bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
-            i += 1
 
         def process_lr(lr_):
+            nonlocal i
             b = lr_.represent_as_bytes()  # grows with data size more than row number
-            add_bytes(b, lr_.key)
+            all_records_bytes[i] = b
+            bar.update(i)  # TODO: i goes up to n, but progress bar stops a few iterations too early; all tests passed
+            i += 1
 
         for lr_list in logical_records.collection_dict.values():
             for lr in lr_list:
@@ -144,11 +135,6 @@ class DLISFile:
                         process_lr(frame_data)
                 else:
                     process_lr(lr)
-
-        raw_bytes = np.zeros(all_positions[-1], dtype=np.uint8)
-
-        for i in range(n):
-            raw_bytes[all_positions[i]:all_positions[i+1]] = np.frombuffer(all_records_bytes[i].bytes, dtype=np.uint8)
 
         return all_records_bytes
 
