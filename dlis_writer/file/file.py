@@ -78,14 +78,14 @@ class DLISFile:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         n = len(logical_records)
-        all_records_bytes = [None] * n
+        all_lrb_list = [None] * n
         i = 0
         bar = ProgressBar(max_value=n)
 
         def process_lr(lr_):
             nonlocal i
             b = lr_.represent_as_bytes()  # grows with data size more than row number
-            all_records_bytes[i] = b
+            all_lrb_list[i] = b
             bar.update(i)
             i += 1
 
@@ -98,7 +98,7 @@ class DLISFile:
                     process_lr(lr)
         bar.finish()
 
-        return all_records_bytes
+        return all_lrb_list
 
     def _make_visible_record(self, body) -> bytes:
 
@@ -111,7 +111,7 @@ class DLISFile:
 
     @log_progress("Creating visible records of the DLIS...")
     @profile
-    def create_visible_records(self, all_records_bytes: list[LogicalRecordBytes]) -> bytes:
+    def create_visible_records(self, all_lrb_list: list[LogicalRecordBytes]) -> bytes:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -120,32 +120,32 @@ class DLISFile:
         hs = 4  # header size (both for logical record segment and visible record)
         mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
 
-        all_records_bytes_iter = iter(all_records_bytes)
-        bar = ProgressBar(max_value=len(all_records_bytes))
+        all_lrb_iter = iter(all_lrb_list)
+        bar = ProgressBar(max_value=len(all_lrb_list))
 
-        all_bytes = next(all_records_bytes_iter).bytes  # SUL - add as-is, don't wrap in a visible record
+        output = next(all_lrb_iter).bytes  # SUL - add as-is, don't wrap in a visible record
 
-        current_body = b''
-        current_size = 0
-        max_body_size = self.visible_record_length - hs
+        current_vr_body = b''
+        current_vr_size = 0
+        max_vr_body_size = self.visible_record_length - hs
         position_in_current_lrb = 0
 
         lrb: LogicalRecordBytes = None
         i = 0
-        space_remaining = max_body_size - hs
+        remaining_vr_space = max_vr_body_size - hs
         remaining_lrb_size = 0
 
         def next_vr():
-            nonlocal all_bytes, current_size, current_body, space_remaining
-            all_bytes += self._make_visible_record(current_body)
-            current_body = b''
-            current_size = 0
-            space_remaining = max_body_size - 4
+            nonlocal output, current_vr_size, current_vr_body, remaining_vr_space
+            output += self._make_visible_record(current_vr_body)
+            current_vr_body = b''
+            current_vr_size = 0
+            remaining_vr_space = max_vr_body_size - 4
 
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
             try:
-                lrb = next(all_records_bytes_iter)
+                lrb = next(all_lrb_iter)
             except StopIteration:
                 return False
             else:
@@ -162,28 +162,28 @@ class DLISFile:
                 if not next_lrb():
                     break
 
-            if remaining_lrb_size <= space_remaining:
-                current_body += lrb.make_segment(start_pos=position_in_current_lrb)
+            if remaining_lrb_size <= remaining_vr_space:
+                current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
-                current_size = current_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
-                space_remaining = max_body_size - current_size - hs
+                current_vr_size = current_vr_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
+                remaining_vr_space = max_vr_body_size - current_vr_size - hs
                 if not next_lrb():
                     break
 
             else:
-                segment_size = min(space_remaining, remaining_lrb_size)
+                segment_size = min(remaining_vr_space, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if segment_size >= mbs and future_remaining_lrb_size >= mbs:
-                    current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_size += segment_size + hs
+                    current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
+                    current_vr_size += segment_size + hs
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
 
-        all_bytes += self._make_visible_record(current_body)
+        output += self._make_visible_record(current_vr_body)
         bar.finish()
 
-        return all_bytes
+        return output
 
     @staticmethod
     @log_progress("Writing to file...")
@@ -200,8 +200,8 @@ class DLISFile:
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         self.assign_origin_reference(logical_records)
-        all_records_bytes = self.make_bytes_of_logical_records(logical_records)
-        all_bytes = self.create_visible_records(all_records_bytes)
+        all_lrb_list = self.make_bytes_of_logical_records(logical_records)
+        all_bytes = self.create_visible_records(all_lrb_list)
         self.write_bytes_to_file(all_bytes, filename)
         logger.info('DLIS file created.')
     
