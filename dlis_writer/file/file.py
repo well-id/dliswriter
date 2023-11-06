@@ -117,6 +117,9 @@ class DLISFile:
 
         """
 
+        hs = 4  # header size (both for logical record segment and visible record)
+        mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
+
         all_records_bytes_iter = iter(all_records_bytes)
         bar = ProgressBar(max_value=len(all_records_bytes))
 
@@ -124,12 +127,12 @@ class DLISFile:
 
         current_body = b''
         current_size = 0
-        max_body_size = self.visible_record_length - 4
+        max_body_size = self.visible_record_length - hs
         position_in_current_lrb = 0
 
         lrb: LogicalRecordBytes = None
         i = 0
-        space_remaining = max_body_size - 4
+        space_remaining = max_body_size - hs
         remaining_lrb_size = 0
 
         def next_vr():
@@ -162,17 +165,17 @@ class DLISFile:
             if remaining_lrb_size <= space_remaining:
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
-                current_size = current_size + 4 + remaining_lrb_size + (remaining_lrb_size % 2)
-                space_remaining = max_body_size - current_size - 4
+                current_size = current_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
+                space_remaining = max_body_size - current_size - hs
                 if not next_lrb():
                     break
 
             else:
                 segment_size = min(space_remaining, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
-                if segment_size >= 12 and future_remaining_lrb_size >= 12:
+                if segment_size >= mbs and future_remaining_lrb_size >= mbs:
                     current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_size += segment_size + 4
+                    current_size += segment_size + hs
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
