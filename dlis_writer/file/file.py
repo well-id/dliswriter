@@ -155,9 +155,6 @@ class DLISFile:
         next_lrb()
 
         while True:
-            if space_remaining < 12:  # minimal LRS size is 16, 4 bytes reserved for header
-                next_vr()
-
             if not remaining_lrb_size:
                 if not next_lrb():
                     break
@@ -172,11 +169,10 @@ class DLISFile:
 
             else:
                 segment_size = min(space_remaining, remaining_lrb_size)
-                future_remaining_lrb_size = lrb.size - position_in_current_lrb - segment_size
+                future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if segment_size >= 12 and future_remaining_lrb_size >= 12:
                     current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
                     current_size += segment_size + 4
-                    space_remaining = max_body_size - current_size - 4
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
