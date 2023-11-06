@@ -245,21 +245,28 @@ class DLISFile:
         max_body_size = self.visible_record_length - 4
         position_in_current_lrb = 0
 
-        lrb = next(all_records_bytes_iter)
-        i = 1
-        # print(f"Logical record {i}, size {lrb.size}")
+        lrb: LogicalRecordBytes = None
+        i = 0
+        space_remaining = 0
+        remaining_lrb_size = 0
 
-        while True:
+        def next_lrb():
+            nonlocal lrb, i, position_in_current_lrb, space_remaining, remaining_lrb_size, current_size
+            lrb = next(all_records_bytes_iter)
+            i += 1
+            # print(f"Logical record {i}, size {lrb.size}")
+            position_in_current_lrb = 0
+            remaining_lrb_size = lrb.size  # position in current lrb is 0
             current_size = len(current_body)
             space_remaining = max_body_size - current_size - 4
+
+        next_lrb()
+
+        while True:
             # print(f"Current size is {current_size}; space remaining is {space_remaining}")
-            remaining_lrb_size = lrb.size - position_in_current_lrb
-            if not remaining_lrb_size:
+            if space_remaining <= 0 or not remaining_lrb_size:
                 try:
-                    lrb = next(all_records_bytes_iter)
-                    i += 1
-                    # print(f"Logical record {i}, size {lrb.size}")
-                    position_in_current_lrb = 0
+                    next_lrb()
                 except StopIteration:
                     break
 
@@ -267,10 +274,7 @@ class DLISFile:
                 # print("Adding current logical record in full")
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 try:
-                    lrb = next(all_records_bytes_iter)
-                    i += 1
-                    position_in_current_lrb = 0
-                    # print(f"Logical record {i}, size {lrb.size}")
+                    next_lrb()
                 except StopIteration:
                     break
 
@@ -280,6 +284,7 @@ class DLISFile:
                 #     print(f"Adding {segment_size} bytes of the current record (remaining in the lrb: {remaining_lrb_size})")
                 current_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
                 position_in_current_lrb += segment_size
+                remaining_lrb_size = lrb.size - position_in_current_lrb
                 # else:
                 #     print(f"Bringing over to next VR (remaining space: {space_remaining}, remaining lrb size: {remaining_lrb_size})")
                 print(f"Current VR body size: {len(current_body)}; making next VR")
