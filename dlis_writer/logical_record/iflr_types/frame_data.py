@@ -7,7 +7,6 @@ from dlis_writer.utils.enums import RepresentationCode, IFLRType
 
 
 class FrameData(IFLR):
-    set_type = 'FDATA'
     logical_record_type = IFLRType.FDATA
 
     def __init__(self, frame, frame_number: int, slots, origin_reference=None):

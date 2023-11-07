@@ -48,7 +48,6 @@ class LRMeta(type):
 class LogicalRecord(metaclass=LRMeta):
     """Base for all logical record classes."""
 
-    set_type: str = NotImplemented
     is_eflr = NotImplemented
     logical_record_type: Union[EFLRType, IFLRType] = NotImplemented
 

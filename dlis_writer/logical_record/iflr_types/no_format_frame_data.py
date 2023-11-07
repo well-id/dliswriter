@@ -3,7 +3,6 @@ from dlis_writer.utils.enums import IFLRType
 
 
 class NoFormatFrameData(IFLR):
-    set_type = 'NOFORMAT'
     logical_record_type = IFLRType.NOFMT
 
     def __init__(self):

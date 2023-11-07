@@ -32,7 +32,8 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
 
     """
 
-    logical_record_type: EFLRType
+    set_type: str = NotImplemented
+    logical_record_type: EFLRType = NotImplemented
     is_eflr = True
 
     def __init__(self, name: str, set_name: str = None):
