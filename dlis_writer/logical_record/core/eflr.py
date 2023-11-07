@@ -5,7 +5,7 @@ import logging
 import importlib
 
 from dlis_writer.utils.common import write_struct
-from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
+from dlis_writer.utils.enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
 from dlis_writer.logical_record.core.logical_record import LogicalRecord, LRMeta
@@ -32,7 +32,7 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
 
     """
 
-    logical_record_type: LogicalRecordType
+    logical_record_type: EFLRType
     is_eflr = True
 
     def __init__(self, name: str, set_name: str = None):
@@ -153,10 +153,6 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
             bts += inst._make_objects_bytes()
 
         return LogicalRecordBytes(bts, is_eflr=True, lr_type_struct=cls.lr_type_struct)
-
-    @classmethod
-    def make_lr_type_struct(cls, logical_record_type):
-        return write_struct(RepresentationCode.USHORT, logical_record_type.value)
 
     def set_attributes(self, **kwargs):
         rep = f"{self.__class__.__name__} '{self.name}'"

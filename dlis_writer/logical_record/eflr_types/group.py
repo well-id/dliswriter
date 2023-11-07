@@ -3,7 +3,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 class Group(EFLR):
     set_type = 'GROUP'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)

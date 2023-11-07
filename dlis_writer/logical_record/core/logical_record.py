@@ -2,8 +2,11 @@ from abc import abstractmethod
 from configparser import ConfigParser
 from typing_extensions import Self
 import logging
+from typing import Union
 
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.utils.enums import RepresentationCode, EFLRType, IFLRType
+from dlis_writer.utils.common import write_struct
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +41,7 @@ class LRMeta(type):
     @property
     def lr_type_struct(cls):
         if not cls._lr_type_struct:
-            cls._lr_type_struct = cls.make_lr_type_struct(cls.logical_record_type)
+            cls._lr_type_struct = write_struct(RepresentationCode.USHORT, cls.logical_record_type.value)
         return cls._lr_type_struct
 
 
@@ -47,7 +50,7 @@ class LogicalRecord(metaclass=LRMeta):
 
     set_type: str = NotImplemented
     is_eflr = NotImplemented
-    logical_record_type = NotImplemented
+    logical_record_type: Union[EFLRType, IFLRType] = NotImplemented
 
     def __init__(self, *args, **kwargs):
         pass
@@ -64,8 +67,3 @@ class LogicalRecord(metaclass=LRMeta):
             lr_type_struct=self.__class__.lr_type_struct,
             is_eflr=self.is_eflr
         )
-
-    @classmethod
-    @abstractmethod
-    def make_lr_type_struct(cls, lr_type):
-        pass

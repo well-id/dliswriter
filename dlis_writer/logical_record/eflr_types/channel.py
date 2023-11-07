@@ -6,7 +6,7 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.axis import Axis
-from dlis_writer.utils.enums import RepresentationCode as RepC, LogicalRecordType, UNITS
+from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
 
@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 class Channel(EFLR):
     set_type = 'CHANNEL'
-    logical_record_type = LogicalRecordType.CHANNL
+    logical_record_type = EFLRType.CHANNL
 
     def __init__(self, name: str, set_name: str = None, dataset_name: str = None, **kwargs):
         super().__init__(name, set_name)

@@ -191,7 +191,8 @@ UNITS = (
     "us"
 )
 
-class LogicalRecordType(IntEnum):
+
+class EFLRType(IntEnum):
     FHLR = 0
     OLR = 1
     AXIS = 2
@@ -205,6 +206,8 @@ class LogicalRecordType(IntEnum):
     SPEC = 10
     DICT = 11
 
-    @classmethod
-    def get_member(cls, t, allow_none=False):
-        return get_enum_member(cls, t, allow_none=allow_none)
+
+class IFLRType(IntEnum):
+    FDATA = 0
+    NOFMT = 1
+

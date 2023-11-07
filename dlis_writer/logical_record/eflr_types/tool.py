@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.equipment import Equipment
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Tool(EFLR):
     set_type = 'TOOL'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)

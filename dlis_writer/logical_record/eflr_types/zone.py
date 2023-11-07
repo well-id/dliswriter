@@ -1,11 +1,11 @@
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 
 
 class Zone(EFLR):
     set_type = 'ZONE'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')
 
     def __init__(self, name: str, set_name: str = None, **kwargs):

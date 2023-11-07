@@ -3,7 +3,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
 from dlis_writer.logical_record.eflr_types.axis import Axis
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class CalibrationMeasurement(EFLR):
     set_type = 'CALIBRATION-MEASUREMENT'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
@@ -51,7 +51,7 @@ class CalibrationMeasurement(EFLR):
 
 class CalibrationCoefficient(EFLR):
     set_type = 'CALIBRATION-COEFFICIENT'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
@@ -67,7 +67,7 @@ class CalibrationCoefficient(EFLR):
 
 class Calibration(EFLR):
     set_type = 'CALIBRATION'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
 

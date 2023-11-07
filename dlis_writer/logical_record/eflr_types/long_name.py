@@ -1,11 +1,11 @@
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute
 
 
 class LongName(EFLR):
     set_type = 'LONG-NAME'
-    logical_record_type = LogicalRecordType.LNAME
+    logical_record_type = EFLRType.LNAME
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)

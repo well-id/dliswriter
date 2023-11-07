@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Parameter(EFLR):
     set_type = 'PARAMETER'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)

@@ -5,7 +5,7 @@ from numbers import Number
 import numpy as np
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types import Channel
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Frame(EFLR):
     set_type = 'FRAME'
-    logical_record_type = LogicalRecordType.FRAME
+    logical_record_type = EFLRType.FRAME
     frame_index_types = (
         'ANGULAR-DRIFT',
         'BOREHOLE-DEPTH',

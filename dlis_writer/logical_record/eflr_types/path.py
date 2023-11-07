@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core import EFLR
 from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
-from dlis_writer.utils.enums import LogicalRecordType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, EFLRAttribute, NumericAttribute
 
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Path(EFLR):
     set_type = 'PATH'
-    logical_record_type = LogicalRecordType.FRAME
+    logical_record_type = EFLRType.FRAME
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
 

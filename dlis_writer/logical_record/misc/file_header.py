@@ -2,7 +2,7 @@ from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import EFLRType
 
 
 class FileHeader(EFLR):
@@ -10,7 +10,7 @@ class FileHeader(EFLR):
 
     set_type = 'FILE-HEADER'
     identifier_length_limit = 65
-    logical_record_type = LogicalRecordType.FHLR
+    logical_record_type = EFLRType.FHLR
 
     def __init__(self, identifier: str, sequence_number: int = 1, set_name=None):
         super().__init__(name='0', set_name=set_name)

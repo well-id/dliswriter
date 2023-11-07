@@ -3,7 +3,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.core import EFLR
-from dlis_writer.utils.enums import LogicalRecordType
+from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.zone import Zone
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, EFLRAttribute
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Splice(EFLR):
     set_type = 'SPLICE'
-    logical_record_type = LogicalRecordType.STATIC
+    logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, set_name: str = None, **kwargs):
         super().__init__(name, set_name)
