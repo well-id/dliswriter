@@ -205,6 +205,3 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
 
         return the_class
 
-    def _make_lrb(self, bts, **kwargs):
-        return super()._make_lrb(bts, is_eflr=True, **kwargs)
-

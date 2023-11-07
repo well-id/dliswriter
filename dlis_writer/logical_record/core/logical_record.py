@@ -50,7 +50,7 @@ class LogicalRecord(metaclass=LRMeta):
     logical_record_type = NotImplemented
 
     def __init__(self, *args, **kwargs):
-        self._bytes = None
+        pass
 
     @abstractmethod
     def make_body_bytes(self) -> bytes:
@@ -59,19 +59,13 @@ class LogicalRecord(metaclass=LRMeta):
     def represent_as_bytes(self) -> LogicalRecordBytes:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
-        if self._bytes is None:
-            self._bytes = self._make_lrb(self.make_body_bytes())
-
-        return self._bytes
-
-    def _make_lrb(self, bts, **kwargs):
-        return LogicalRecordBytes(bts, lr_type_struct=self.lr_type_struct, **kwargs)
+        return LogicalRecordBytes(
+            self.make_body_bytes(),
+            lr_type_struct=self.__class__.lr_type_struct,
+            is_eflr=self.is_eflr
+        )
 
     @classmethod
     @abstractmethod
     def make_lr_type_struct(cls, lr_type):
         pass
-
-    @property
-    def lr_type_struct(self):
-        return self.__class__.lr_type_struct
