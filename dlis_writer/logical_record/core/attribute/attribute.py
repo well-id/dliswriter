@@ -170,18 +170,7 @@ class Attribute:
             characteristics += '0'
 
         characteristics += '0'
-
-        if self.representation_code:
-            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
-            characteristics += '1'
-        else:
-            characteristics += '0'
-
-        if self._units:
-            bts += write_struct(RepresentationCode.IDENT, self._units)
-            characteristics += '1'
-        else:
-            characteristics += '0'
+        characteristics += '00'  # representation code and units
 
         return bts, characteristics
 
@@ -206,7 +195,17 @@ class Attribute:
                 characteristics += '0'
 
         # representation code & units
-        characteristics += '00'
+        if self.representation_code:
+            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
+            characteristics += '1'
+        else:
+            characteristics += '0'
+
+        if self._units:
+            bts += write_struct(RepresentationCode.IDENT, self._units)
+            characteristics += '1'
+        else:
+            characteristics += '0'
 
         return bts, characteristics
 
