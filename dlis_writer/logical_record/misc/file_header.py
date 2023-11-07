@@ -23,15 +23,9 @@ class FileHeader(EFLR):
         if len(identifier) > self.identifier_length_limit:
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
         
-    def _make_set_component_bytes(self) -> bytes:
-        bts = b''
-        bts += write_struct(RepresentationCode.USHORT, int('11110000', 2))
-        bts += write_struct(RepresentationCode.IDENT, self.set_type)
-        return bts
-    
     def _make_template_bytes(self) -> bytes:
         bts = b''
-        
+
         bts += write_struct(RepresentationCode.USHORT, int('00110100', 2))
         bts += write_struct(RepresentationCode.ASCII, 'SEQUENCE-NUMBER')
         bts += write_struct(RepresentationCode.USHORT, 20)
@@ -39,13 +33,7 @@ class FileHeader(EFLR):
         bts += write_struct(RepresentationCode.USHORT, int('00110100', 2))
         bts += write_struct(RepresentationCode.ASCII, 'ID')
         bts += write_struct(RepresentationCode.USHORT, 20)
-        
-        return bts
-    
-    def _make_obname_bytes(self) -> bytes:
-        bts = b''
-        bts += write_struct(RepresentationCode.USHORT, int('01110000', 2))
-        bts += write_struct(RepresentationCode.OBNAME, self)
+
         return bts
 
     def _make_objects_bytes(self) -> bytes:
