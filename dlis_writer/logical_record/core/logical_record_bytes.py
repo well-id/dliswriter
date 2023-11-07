@@ -1,7 +1,7 @@
 import logging
 
 from dlis_writer.logical_record.core.segment_attributes import SegmentAttributes
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.common import write_struct
 
 
@@ -24,6 +24,8 @@ class BasicLogicalRecordBytes:
 
 
 class LogicalRecordBytes(BasicLogicalRecordBytes):
+    padding = write_struct(RepC.USHORT, 1)
+
     def __init__(self, bts, lr_type_struct, is_eflr=False):
         super().__init__(bts)
 
@@ -31,48 +33,34 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
         self.is_eflr = is_eflr
 
     def make_segment(self, start_pos=0, n_bytes=None):
-        end_pos = self._calculate_segment_end_pos(n_bytes, start_pos)
+        if n_bytes is None:
+            n_bytes = self._size - start_pos
+            end_pos = None
+            is_last = True
+        else:
+            end_pos = start_pos + n_bytes
+            if end_pos > self._size:
+                raise ValueError("Logical record too short for the requested bytes")
+            is_last = end_pos == self._size
+
+        if n_bytes < 12:
+            raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes (got {n_bytes})")
 
         segment_attributes = SegmentAttributes(
             is_eflr=self.is_eflr,
             is_first=(start_pos == 0),
-            is_last=(end_pos is None or end_pos == self._size)
+            is_last=is_last
         )
 
-        segment_body_bytes = self._bts[start_pos:end_pos]
-
-        size = len(segment_body_bytes) + 4
-        if size % 2 != 0:
+        size = n_bytes + 4
+        if size % 2:
             size += 1
             segment_attributes.has_padding = True
-        else:
-            segment_attributes.has_padding = False
 
-        header_bytes = write_struct(RepresentationCode.UNORM, size) \
-                       + segment_attributes.to_struct() \
-                       + self.lr_type_struct
+        header_bytes = write_struct(RepC.UNORM, size) + segment_attributes.to_struct() + self.lr_type_struct
 
-        new_bts = header_bytes + segment_body_bytes
+        new_bts = header_bytes + self._bts[start_pos:end_pos]
         if segment_attributes.has_padding:
-            new_bts += write_struct(RepresentationCode.USHORT, 1)
+            new_bts += self.padding
 
         return new_bts
-
-    def _calculate_segment_end_pos(self, n_bytes, start_pos):
-        if n_bytes:
-            if n_bytes < 12:
-                raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes (got {n_bytes})")
-
-            if n_bytes % 2:
-                raise ValueError("Segment length must be an even number")
-
-            end_pos = start_pos + n_bytes
-            if end_pos > self._size:
-                raise ValueError("Logical record too short for the requested bytes")
-
-        else:
-            if self._size - start_pos < 12:
-                raise ValueError(f"Logical Record segment body cannot be shorter than 12 bytes")
-            end_pos = None
-
-        return end_pos
