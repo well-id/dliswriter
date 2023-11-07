@@ -169,8 +169,8 @@ class Attribute:
         else:
             characteristics += '0'
 
-        characteristics += '0'
-        characteristics += '00'  # representation code and units
+        # count, representation code, units, and value - no defaults
+        characteristics += '0000'
 
         return bts, characteristics
 
@@ -179,8 +179,9 @@ class Attribute:
 
         # label
         characteristics += '0'
-        count = self.count
 
+        # count
+        count = self.count
         if count and count != 1:
             bts += write_struct(RepresentationCode.UVARI, count)
             characteristics += '1'
@@ -194,22 +195,26 @@ class Attribute:
             else:
                 characteristics += '0'
 
-        # representation code & units
+        # representation code
         if self.representation_code:
             bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
 
+        # units
         if self._units:
             bts += write_struct(RepresentationCode.IDENT, self._units)
             characteristics += '1'
         else:
             characteristics += '0'
 
+        # values
+        bts, characteristics = self._write_values(bts, characteristics)
+
         return bts, characteristics
 
-    def write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
+    def _write_values(self, bts: bytes, characteristics: str) -> (bytes, str):
         """Write value(s) passed to value attribute of this object."""
 
         rc = self.representation_code
@@ -246,10 +251,8 @@ class Attribute:
 
         if for_template:
             bts, characteristics = self.write_component_for_template(bts, characteristics)
-            characteristics += '0'
         else:
             bts, characteristics = self.write_component_not_for_template(bts, characteristics)
-            bts, characteristics = self.write_values(bts, characteristics)
 
         return write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
 
