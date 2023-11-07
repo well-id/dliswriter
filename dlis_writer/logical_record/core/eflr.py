@@ -19,7 +19,14 @@ class EFLRMeta(LRMeta):
     def __new__(cls, *args, **kwargs):
         obj = super().__new__(cls, *args, **kwargs)
         obj._instance_dict = {}
+        obj._set_type_struct = None
         return obj
+
+    @property
+    def set_type_struct(cls):
+        if not cls._set_type_struct:
+            cls._set_type_struct = write_struct(RepresentationCode.IDENT, cls.set_type)
+        return cls._set_type_struct
 
 
 class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
@@ -83,11 +90,10 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
             http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
         """
 
-        _bytes = write_struct(RepresentationCode.IDENT, self.set_type)
         if self.set_name:
-            _bytes = b'\xf8' + _bytes + write_struct(RepresentationCode.IDENT, self.set_name)
+            _bytes = b'\xf8' + self.__class__.set_type_struct + write_struct(RepresentationCode.IDENT, self.set_name)
         else:
-            _bytes = b'\xf0' + _bytes
+            _bytes = b'\xf0' + self.__class__.set_type_struct
 
         return _bytes
 
