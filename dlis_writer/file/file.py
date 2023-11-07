@@ -9,6 +9,7 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.logical_record.core.eflr import EFLR
 
 
 logger = logging.getLogger(__name__)
@@ -75,18 +76,17 @@ class DLISFile:
     def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection):
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        def process_lr(lr_):
-            b = lr_.represent_as_bytes()  # grows with data size more than row number
-            return b
-
         def wrapper():
-            for lr_list in logical_records.collection_dict.values():
-                for lr in lr_list:
-                    if isinstance(lr, MultiFrameData):
-                        for frame_data in lr:
-                            yield process_lr(frame_data)
-                    else:
-                        yield process_lr(lr)
+            for lr_class, lr_list in logical_records.collection_dict.items():
+                if issubclass(lr_class, EFLR):
+                    yield lr_class.represent_all_objects_as_bytes(instances=lr_list)
+                else:
+                    for lr in lr_list:
+                        if isinstance(lr, MultiFrameData):
+                            for frame_data in lr:
+                                yield frame_data.represent_as_bytes()
+                        else:
+                            yield lr.represent_as_bytes()
 
         return wrapper()
 

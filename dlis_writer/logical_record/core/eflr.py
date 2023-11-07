@@ -9,6 +9,7 @@ from dlis_writer.utils.enums import RepresentationCode, LogicalRecordType
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
 from dlis_writer.logical_record.core.logical_record import LogicalRecord, LRMeta
+from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
 logger = logging.getLogger(__name__)
@@ -138,6 +139,20 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
         objects = self._make_objects_bytes()
 
         return set_component + template + obname + objects
+
+    @classmethod
+    def represent_all_objects_as_bytes(cls, instances=None) -> LogicalRecordBytes:
+        instances = instances or cls.get_all_instances()
+        if not instances:
+            return None
+
+        inst0 = instances[0]
+        bts = inst0._make_set_component_bytes() + inst0._make_template_bytes()
+        for inst in instances:
+            bts += inst._make_obname_bytes()
+            bts += inst._make_objects_bytes()
+
+        return LogicalRecordBytes(bts, is_eflr=True, lr_type_struct=cls.lr_type_struct)
 
     @classmethod
     def make_lr_type_struct(cls, logical_record_type):
