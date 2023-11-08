@@ -1,58 +1,26 @@
 import re
 from configparser import ConfigParser
-from typing_extensions import Self
 import logging
 import importlib
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
-from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
-from dlis_writer.logical_record.core.logical_record import LogicalRecord, LRMeta
-from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import LogicalRecord
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLRMeta(LRMeta):
-    def __new__(cls, *args, **kwargs):
-        obj = super().__new__(cls, *args, **kwargs)
-        obj._instance_dict = {}
-        obj._set_type_struct = None
-        return obj
-
-    @property
-    def set_type_struct(cls):
-        if not cls._set_type_struct:
-            cls._set_type_struct = write_struct(RepresentationCode.IDENT, cls.set_type)
-        return cls._set_type_struct
-
-
-class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
-    """Represents an Explicitly Formatted Logical Record
-
-    Attributes:
-        name: Identifier of a Logical Record Segment. Must be
-            distinct in a single Logical File.
-        set_name: Optional identifier of the set a Logical Record Segment belongs to.
-
-    """
-
-    set_type: str = NotImplemented
-    logical_record_type: EFLRType = NotImplemented
-    is_eflr = True
-
-    def __init__(self, name: str, set_name: str = None):
-        super().__init__()
-
+class EFLRObject:
+    def __init__(self, name: str, parent: "EFLR", **kwargs):
         self.name = name
-        self.set_name = set_name
-
+        self.parent = parent
+        
         self.origin_reference = None
         self.copy_number = 0
 
-        self._instance_dict[name] = self
+        self.set_attributes(**kwargs)
 
     @property
     def attributes(self):
@@ -80,6 +48,73 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
 
         return write_struct(RepresentationCode.OBNAME, self)
 
+    def _make_obname_bytes(self) -> bytes:
+        """Creates object component"""
+
+        return b'p' + self.obname
+
+    def _make_attrs_bytes(self) -> bytes:
+        """Creates object bytes that follows the object component
+
+        Note:
+            Each attribute of EFLR object is a logical_record.utils.core.Attribute instance
+            Using Attribute instances' get_as_bytes method to create bytes.
+
+        """
+
+        _bytes = b''
+        for attr in self.attributes.values():
+            if attr.value is None:
+                _bytes += b'\x00'
+            else:
+                _bytes += attr.get_as_bytes()
+
+        return _bytes
+    
+    def make_object_body_bytes(self):
+        return self._make_obname_bytes() + self._make_attrs_bytes()
+    
+    def set_attributes(self, **kwargs):
+        for attr_name, attr_value in kwargs.items():
+            attr_name_main, *attr_parts = attr_name.split('.')
+            attr_part = attr_parts[0] if attr_parts else 'value'
+            if attr_part not in Attribute.settables:
+                raise ValueError(f"Cannot set {attr_part} of an Attribute object")
+
+            attr = getattr(self, attr_name_main, None)
+            if not attr or not isinstance(attr, Attribute):
+                raise AttributeError(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
+
+            logger.debug(f"Setting attribute '{attr_name}' of {self} to {repr(attr_value)}")
+            setattr(attr, attr_part, attr_value)
+
+
+class EFLR(LogicalRecord):
+    """Represents an Explicitly Formatted Logical Record
+
+    Attributes:
+        name: Identifier of a Logical Record Segment. Must be
+            distinct in a single Logical File.
+        set_name: Optional identifier of the set a Logical Record Segment belongs to.
+
+    """
+
+    set_type: str = NotImplemented
+    logical_record_type: EFLRType = NotImplemented
+    is_eflr = True
+    object_type = EFLRObject
+
+    def __init__(self, set_name: str = None):
+        super().__init__()
+        
+        self.set_name = set_name
+        self._set_type_struct = write_struct(RepresentationCode.IDENT, self.set_type)
+        self._object_dict = {}
+        self._attributes = {}
+
+    def __str__(self):
+        return f"EFLR class '{self.__class__.__name__}'"
+    
     def _make_set_component_bytes(self) -> bytes:
         """Creates component role Set
 
@@ -91,9 +126,9 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
         """
 
         if self.set_name:
-            _bytes = b'\xf8' + self.__class__.set_type_struct + write_struct(RepresentationCode.IDENT, self.set_name)
+            _bytes = b'\xf8' + self._set_type_struct + write_struct(RepresentationCode.IDENT, self.set_name)
         else:
-            _bytes = b'\xf0' + self.__class__.set_type_struct
+            _bytes = b'\xf0' + self._set_type_struct
 
         return _bytes
 
@@ -113,104 +148,74 @@ class EFLR(LogicalRecord, ConfigGenMixin, metaclass=EFLRMeta):
             _bytes += attr.get_as_bytes(for_template=True)
 
         return _bytes
-
-    def _make_obname_bytes(self) -> bytes:
-        """Creates object component"""
-
-        return b'p' + self.obname
-
-    def _make_objects_bytes(self) -> bytes:
-        """Creates object bytes that follows the object component
-
-        Note:
-            Each attribute of EFLR object is a logical_record.utils.core.Attribute instance
-            Using Attribute instances' get_as_bytes method to create bytes.
-
-        """
-
-        _bytes = b''
-        for attr in self.attributes.values():
-            if attr.value is None:
-                _bytes += b'\x00'
-            else:
-                _bytes += attr.get_as_bytes()
-
-        return _bytes
-
+    
     def make_body_bytes(self) -> bytes:
         """Writes Logical Record Segment bytes without header"""
 
-        set_component = self._make_set_component_bytes()
-        template = self._make_template_bytes()
-        obname = self._make_obname_bytes()
-        objects = self._make_objects_bytes()
-
-        return set_component + template + obname + objects
-
-    @classmethod
-    def represent_all_objects_as_bytes(cls, instances=None) -> LogicalRecordBytes:
-        instances = instances or cls.get_all_instances()
-        if not instances:
+        objects = self.get_all_objects()
+        if not objects:
             return None
 
-        inst0 = instances[0]
-        bts = inst0._make_set_component_bytes() + inst0._make_template_bytes()
-        for inst in instances:
-            bts += inst._make_obname_bytes()
-            bts += inst._make_objects_bytes()
+        bts = self._make_set_component_bytes() + self._make_template_bytes()
+        for obj in objects:
+            bts += obj.make_object_body_bytes()
 
-        return LogicalRecordBytes(bts, is_eflr=True, lr_type_struct=cls.lr_type_struct)
+        return bts
 
-    def set_attributes(self, **kwargs):
-        rep = f"{self.__class__.__name__} '{self.name}'"
+    def make_object(self, name, **kwargs) -> EFLRObject:
+        obj = self.object_type(name, self, **kwargs)
+        self._object_dict[name] = obj
 
-        for attr_name, attr_value in kwargs.items():
-            attr_name_main, *attr_parts = attr_name.split('.')
-            attr_part = attr_parts[0] if attr_parts else 'value'
-            if attr_part not in Attribute.settables:
-                raise ValueError(f"Cannot set {attr_part} of an Attribute object")
+        if len(self._object_dict) == 1:
+            for attr_name, attr in obj.attributes.items():
+                self._attributes[attr_name] = attr.copy()
 
-            attr = getattr(self, attr_name_main, None)
-            if not attr or not isinstance(attr, Attribute):
-                logger.warning(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
+        return obj
 
-            logger.debug(f"Setting attribute '{attr_name}' of {rep} to {repr(attr_value)}")
-            setattr(attr, attr_part, attr_value)
+    def make_object_from_config(self, config: ConfigParser, key=None) -> EFLRObject:
+        key = key or self.__class__.__name__
 
-    @classmethod
-    def get_or_make_all_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None) -> list[Self]:
+        if key not in config.sections():
+            raise RuntimeError(f"Section '{key}' not present in the config")
+
+        name_key = "name"
+
+        if name_key not in config[key].keys():
+            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
+
+        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
+
+        return self.make_object(config[key][name_key], **other_kwargs)
+
+    def get_or_make_all_from_config(self, config: ConfigParser, keys: list[str] = None, key_pattern: str = None):
         if not keys:
             if key_pattern is None:
-                key_pattern = cls.__name__ + r"-\w+"
+                key_pattern = self.__class__.__name__ + r"-\w+"
             key_pattern = re.compile(key_pattern)
             keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
 
-        return [cls.get_or_make_from_config(key, config) for key in keys]
+        return [self.get_or_make_from_config(key, config) for key in keys]
     
-    @classmethod
-    def get_instance(cls, name):
-        return cls._instance_dict.get(name)
+    def get_object(self, name):
+        return self._object_dict.get(name)
 
-    @classmethod
-    def get_all_instances(cls):
-        return list(cls._instance_dict.values())
+    def get_all_objects(self):
+        return list(self._object_dict.values())
 
-    @classmethod
-    def clear_instances(cls):
-        if cls._instance_dict:
-            logger.debug(f"Removing all defined instances of {cls.__name__}")
-            cls._instance_dict.clear()
+    def clear_objects(self):
+        if self._object_dict:
+            logger.debug(f"Removing all defined objects of {self}")
+            self._object_dict.clear()
 
-    @classmethod
-    def get_or_make_from_config(cls, name, config):
-        if name in cls._instance_dict:
-            return cls.get_instance(name)
+    def get_or_make_from_config(self, name, config):
+        if name in self._object_dict:
+            return self.get_object(name)
 
         if name in config.sections():
-            if (object_name := config[name].get('name', None)) in cls._instance_dict:
-                return cls.get_instance(object_name)
+            if (object_name := config[name].get('name', None)) in self._object_dict:
+                return self.get_object(object_name)
 
-        return cls.make_from_config(config, key=name)
+        return self.make_object_from_config(config, key=name)
 
     @classmethod
     def get_object_class(cls, object_name):

@@ -268,3 +268,13 @@ class Attribute:
             # if loop not broken - none of the converters worked
             raise ValueError(f"Some/all of the values: {value} could not be converted to numeric types")
         return value
+
+    def copy(self):
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            representation_code=self._representation_code,
+            units=self._units,
+            value=self._value,
+            converter=self._converter,
+        )

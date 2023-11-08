@@ -1,14 +1,20 @@
 import pytest
 import numpy as np
 
-from dlis_writer.logical_record.eflr_types import Channel, Axis
+from dlis_writer.logical_record.eflr_types import Channel
+from dlis_writer.logical_record.eflr_types.axis import AxisObject
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 @pytest.fixture
-def chan():
-    yield Channel("some_channel")
+def channel_eflr():
+    yield Channel()
+
+
+@pytest.fixture
+def chan(channel_eflr):
+    yield channel_eflr.make_object("some_channel")
 
 
 @pytest.fixture
@@ -17,8 +23,8 @@ def mock_data():
     return np.zeros(30, dtype=dt)
 
 
-def test_from_config(config_params):
-    channel = Channel.make_from_config(config_params)
+def test_from_config(config_params, channel_eflr):
+    channel = channel_eflr.make_object_from_config(config_params)
 
     conf = config_params['Channel']
 
@@ -32,7 +38,7 @@ def test_from_config(config_params):
     assert channel.units.value == 'acre'
     assert channel.dimension.value == [12]
     assert isinstance(channel.axis.value, list)
-    assert isinstance(channel.axis.value[0], Axis)
+    assert isinstance(channel.axis.value[0], AxisObject)
     assert channel.axis.value[0].name == 'Axis-1'
     assert channel.element_limit.value == [12]
     assert channel.source.value == 'some source'
@@ -40,9 +46,11 @@ def test_from_config(config_params):
     assert isinstance(channel.minimum_value.value[0], float)
     assert channel.maximum_value.value == [127.6]
 
+    assert isinstance(channel.parent, Channel)
 
-def test_from_config_alternative_name(config_params):
-    channel = Channel.make_from_config(config_params, key="Channel-1")
+
+def test_from_config_alternative_name(config_params, channel_eflr):
+    channel = channel_eflr.make_object_from_config(config_params, key="Channel-1")
 
     assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
@@ -56,18 +64,18 @@ def test_from_config_alternative_name(config_params):
         ("1word, 2 words, 3 w ords", ["1word", "2 words", "3 w ords"]),
         ("single_thing", ["single_thing"])
 ))
-def test_properties(prop_str, prop_val):
+def test_properties(prop_str, prop_val, channel_eflr):
     config = make_config("Channel488")
     config["Channel488"]["name"] = "ChanChan"
     config["Channel488"]["properties"] = prop_str
 
-    channel = Channel.make_from_config(config, key="Channel488")
+    channel = channel_eflr.make_object_from_config(config, key="Channel488")
     assert channel.name == "ChanChan"
     assert channel.properties.value == prop_val
 
 
 @pytest.mark.parametrize(('dimension', 'element_limit'), (("10", None), ("10, 10", None), (None, "1, 2, 3")))
-def test_dimension_and_element_limit(dimension, element_limit):
+def test_dimension_and_element_limit(dimension, element_limit, channel_eflr):
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
@@ -77,34 +85,34 @@ def test_dimension_and_element_limit(dimension, element_limit):
     if element_limit is not None:
         config["Channel"]["element_limit"] = element_limit
 
-    channel = Channel.make_from_config(config)
+    channel = channel_eflr.make_object_from_config(config)
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
 
 
-def test_dimension_and_element_limit_not_specified():
+def test_dimension_and_element_limit_not_specified(channel_eflr):
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
-    channel = Channel.make_from_config(config)
+    channel = channel_eflr.make_object_from_config(config)
     assert channel.dimension.value is None
     assert channel.element_limit.value is None
 
 
-def test_dimension_and_element_limit_mismatch(caplog):
+def test_dimension_and_element_limit_mismatch(caplog, channel_eflr):
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
     config["Channel"]["dimension"] = "12"
     config["Channel"]["element_limit"] = "12, 10"
 
-    Channel.make_from_config(config)
+    channel_eflr.make_object_from_config(config)
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
-def test_multiple_channels_default_pattern(config_params):
-    channels = Channel.get_or_make_all_from_config(config_params)
+def test_multiple_channels_default_pattern(config_params, channel_eflr):
+    channels = channel_eflr.get_or_make_all_from_config(config_params)
 
     assert len(channels) == 9
     assert channels[0].name == "Channel 1"
@@ -125,8 +133,8 @@ def test_multiple_channels_default_pattern(config_params):
     assert channels[2].dataset_name == "amplitude"
 
 
-def test_multiple_channels_custom_pattern(config_params):
-    channels = Channel.get_or_make_all_from_config(config_params, key_pattern=r"Channel-\d")  # 1 digit only
+def test_multiple_channels_custom_pattern(config_params, channel_eflr):
+    channels = channel_eflr.get_or_make_all_from_config(config_params, key_pattern=r"Channel-\d")  # 1 digit only
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
@@ -138,8 +146,8 @@ def test_multiple_channels_custom_pattern(config_params):
     assert channels[1].units.value is None
 
 
-def test_multiple_channels_list(config_params):
-    channels = Channel.get_or_make_all_from_config(config_params, keys=["Channel-1", "Channel"])
+def test_multiple_channels_list(config_params, channel_eflr):
+    channels = channel_eflr.get_or_make_all_from_config(config_params, keys=["Channel-1", "Channel"])
 
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"

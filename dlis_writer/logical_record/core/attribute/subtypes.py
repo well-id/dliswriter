@@ -21,6 +21,16 @@ class EFLRAttribute(Attribute):
         self._object_class = object_class
         self._converter = self._convert_value
 
+    def copy(self):
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            representation_code=self._representation_code,
+            units=self._units,
+            value=self._value,
+            object_class=self._object_class
+        )
+
     def finalise_from_config(self, config):
         if not self._value:
             logger.warning(f"No object names defined for {self}")
@@ -45,7 +55,7 @@ class EFLRAttribute(Attribute):
             raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
 
         object_class = self._object_class or EFLR.get_object_class(object_name)
-        return object_class.get_or_make_from_config(object_name, config)
+        return object_class().get_or_make_from_config(object_name, config)
 
 
 class DTimeAttribute(Attribute):
@@ -114,6 +124,18 @@ class NumericAttribute(Attribute):
         super().__init__(*args, **kwargs)
         if not self._converter:
             self._converter = self._convert_number
+
+    def copy(self):
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            representation_code=self._representation_code,
+            units=self._units,
+            value=self._value,
+            converter=self._converter,
+            int_only=self._int_only,
+            float_only=self._float_only
+        )
 
     @property
     def representation_code(self):
@@ -185,3 +207,11 @@ class DimensionAttribute(NumericAttribute):
             raise TypeError(f"{self.__class__.__name__} does not accept 'converter' argument")
 
         super().__init__(*args, representation_code=representation_code, int_only=True, multivalued=True, **kwargs)
+
+    def copy(self):
+        return self.__class__(
+            label=self._label,
+            units=self._units,
+            value=self._value,
+        )
+

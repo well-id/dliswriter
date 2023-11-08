@@ -177,7 +177,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         # we first make all instances, then add all instances from all classes
         # in case some are added in non-standard order
         for c in other_classes:
-            inst = c.get_all_instances()
+            inst = c.get_all_objects()
             if not inst:
                 logger.debug(f"No instances of {c.__name__} defined")
             else:

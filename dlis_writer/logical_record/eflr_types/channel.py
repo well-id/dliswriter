@@ -4,7 +4,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
@@ -14,12 +14,9 @@ from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttrib
 logger = logging.getLogger(__name__)
 
 
-class Channel(EFLR):
-    set_type = 'CHANNEL'
-    logical_record_type = EFLRType.CHANNL
+class ChannelObject(EFLRObject):
 
-    def __init__(self, name: str, set_name: str = None, dataset_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+    def __init__(self, name, parent, dataset_name: str = None, **kwargs):
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
@@ -32,19 +29,12 @@ class Channel(EFLR):
         self.source = Attribute('source', representation_code=RepC.OBJREF)
         self.minimum_value = NumericAttribute('minimum_value', representation_code=RepC.FDOUBL, multivalued=True)
         self.maximum_value = NumericAttribute('maximum_value', representation_code=RepC.FDOUBL, multivalued=True)
-        
-        self.set_attributes(**kwargs)
-        self._set_defaults()
 
         self._dataset_name: str = dataset_name
 
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config, key=key)
+        super().__init__(name, parent, **kwargs)
 
-        obj.axis.finalise_from_config(config)
-
-        return obj
+        self.set_defaults()
 
     @property
     def dataset_name(self):
@@ -53,22 +43,6 @@ class Channel(EFLR):
     @dataset_name.setter
     def dataset_name(self, name: str):
         self._dataset_name = name
-
-    @staticmethod
-    def convert_unit(unit):
-        if unit is None:
-            return None
-
-        if not isinstance(unit, str):
-            raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
-        if unit not in UNITS:
-            raise ValueError(f"'{unit}' is not one of the allowed units")
-
-        return unit
-
-    @staticmethod
-    def convert_repr_code(rc):
-        return RepC.get_member(rc, allow_none=True)
 
     def set_dimension_and_repr_code_from_data(self, data: np.ndarray):
 
@@ -119,8 +93,8 @@ class Channel(EFLR):
             logger.debug(f"Setting representation code of {rep} to {suggested_rc.name}")
             self.representation_code.value = suggested_rc
 
-    def _set_defaults(self):
-        
+    def set_defaults(self):
+
         if not self.element_limit.value and self.dimension.value:
             logger.debug(f"Setting element limit of channel '{self.name}' to the same value "
                          f"as dimension: {self.dimension.value}")
@@ -136,3 +110,32 @@ class Channel(EFLR):
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")
             self.long_name.value = self.name
+
+    @staticmethod
+    def convert_unit(unit):
+        if unit is None:
+            return None
+
+        if not isinstance(unit, str):
+            raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
+        if unit not in UNITS:
+            raise ValueError(f"'{unit}' is not one of the allowed units")
+
+        return unit
+
+    @staticmethod
+    def convert_repr_code(rc):
+        return RepC.get_member(rc, allow_none=True)
+
+
+class Channel(EFLR):
+    set_type = 'CHANNEL'
+    logical_record_type = EFLRType.CHANNL
+    object_type = ChannelObject
+
+    def make_object_from_config(self, config: ConfigParser, key=None) -> ChannelObject:
+        obj: Self = super().make_object_from_config(config, key=key)
+
+        obj.axis.finalise_from_config(config)
+
+        return obj
