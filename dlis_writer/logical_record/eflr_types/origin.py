@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
 
@@ -9,13 +9,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute,
 logger = logging.getLogger(__name__)
 
 
-class Origin(EFLR):
-    set_type = 'ORIGIN'
-    logical_record_type = EFLRType.OLR
-
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-
-        super().__init__(name, set_name)
+class OriginObject(EFLRObject):
+    def __init__(self, name: str, parent, **kwargs):
 
         self.file_id = Attribute('file_id', representation_code=RepC.ASCII)
         self.file_set_name = Attribute('file_set_name', representation_code=RepC.IDENT)
@@ -42,4 +37,10 @@ class Origin(EFLR):
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             kwargs["creation_time"] = datetime.now()
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
+
+
+class Origin(EFLR):
+    set_type = 'ORIGIN'
+    logical_record_type = EFLRType.OLR
+    object_type = OriginObject

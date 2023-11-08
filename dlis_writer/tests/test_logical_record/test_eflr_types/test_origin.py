@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
 
-from dlis_writer.logical_record.eflr_types import Origin
+from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params):
-    origin = Origin.make_from_config(config_params)
+    origin: OriginObject = Origin().make_object_from_config(config_params)
 
     conf = config_params['Origin']
 
@@ -35,7 +35,7 @@ def test_from_config_no_dtime_in_attributes():
     config['Origin']['name'] = "Some origin name"
     config['Origin']['well_name'] = "Some well name"
 
-    origin = Origin.make_from_config(config)
+    origin: OriginObject = Origin().make_object_from_config(config)
     assert origin.name == "Some origin name"
     assert origin.well_name.value == "Some well name"
 
@@ -46,7 +46,7 @@ def test_from_config_no_attributes():
     config = make_config("Origin")
     config['Origin']['name'] = "Some origin name"
 
-    origin = Origin.make_from_config(config)
+    origin: OriginObject = Origin().make_object_from_config(config)
     assert origin.name == "Some origin name"
     assert origin.well_name.value is None
 
