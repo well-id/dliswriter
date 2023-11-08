@@ -4,18 +4,16 @@ import logging
 from numbers import Number
 import numpy as np
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types import Channel
+from dlis_writer.logical_record.eflr_types.channel import Channel, ChannelObject
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
 
 
 logger = logging.getLogger(__name__)
 
 
-class Frame(EFLR):
-    set_type = 'FRAME'
-    logical_record_type = EFLRType.FRAME
+class FrameObject(EFLRObject):
     frame_index_types = (
         'ANGULAR-DRIFT',
         'BOREHOLE-DEPTH',
@@ -24,9 +22,7 @@ class Frame(EFLR):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-
-        super().__init__(name, set_name)
+    def __init__(self, name: str, parent, **kwargs):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
@@ -38,22 +34,14 @@ class Frame(EFLR):
         self.index_min = NumericAttribute('index_min')
         self.index_max = NumericAttribute('index_max')
 
-        self.set_attributes(**kwargs)
-
-    @staticmethod
-    def parse_index_type(value):
-        if value not in Frame.frame_index_types:
-            logger.warning(f"Frame index type should be one of the following: "
-                           f"'{', '.join(Frame.frame_index_types)}'; got '{value}'")
-        return value
+        super().__init__(name, parent, **kwargs)
 
     @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config)
-
-        obj.channels.finalise_from_config(config)
-
-        return obj
+    def parse_index_type(cls, value):
+        if value not in cls.frame_index_types:
+            logger.warning(f"Frame index type should be one of the following: "
+                           f"'{', '.join(cls.frame_index_types)}'; got '{value}'")
+        return value
 
     @staticmethod
     def convert_encrypted(value):
@@ -85,7 +73,7 @@ class Frame(EFLR):
             if getattr(attr, key) is None and value is not None:
                 setattr(attr, key, value)
 
-        index_channel: Channel = self.channels.value[0]
+        index_channel: ChannelObject = self.channels.value[0]
         index_data = data[index_channel.dataset_name]
         unit = index_channel.units.value
         repr_code = index_channel.representation_code.value or RepC.FDOUBL
@@ -101,4 +89,17 @@ class Frame(EFLR):
             assign_if_none(attr, key='units', value=unit)
             if attr.assigned_representation_code is None:
                 attr.representation_code = repr_code
+
+
+class Frame(EFLR):
+    set_type = 'FRAME'
+    logical_record_type = EFLRType.FRAME
+    object_type = FrameObject
+
+    def make_object_from_config(self, config: ConfigParser, key=None) -> FrameObject:
+        obj: FrameObject = super().make_object_from_config(config, key=key)
+
+        obj.channels.finalise_from_config(config)
+
+        return obj
 
