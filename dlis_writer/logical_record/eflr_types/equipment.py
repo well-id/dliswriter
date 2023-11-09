@@ -1,14 +1,10 @@
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
 
-class Equipment(EFLR):
-    set_type = 'EQUIPMENT'
-    logical_record_type = EFLRType.STATIC
-
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+class EquipmentObject(EFLRObject):
+    def __init__(self, name: str, parent: "Equipment", **kwargs):
 
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII)
         self.status = Attribute('status', converter=int, representation_code=RepC.STATUS)
@@ -28,4 +24,11 @@ class Equipment(EFLR):
         self.radial_drift = NumericAttribute('radial_drift')
         self.angular_drift = NumericAttribute('angular_drift')
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
+
+
+class Equipment(EFLR):
+    set_type = 'EQUIPMENT'
+    logical_record_type = EFLRType.STATIC
+    object_type = EquipmentObject
+

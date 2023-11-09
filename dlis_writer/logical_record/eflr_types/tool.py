@@ -1,8 +1,6 @@
 import logging
-from typing_extensions import Self
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.logical_record.eflr_types.equipment import Equipment
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
@@ -13,12 +11,9 @@ from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 logger = logging.getLogger(__name__)
 
 
-class Tool(EFLR):
-    set_type = 'TOOL'
-    logical_record_type = EFLRType.STATIC
+class ToolObject(EFLRObject):
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+    def __init__(self, name: str, parent: "Tool", **kwargs):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII)
@@ -28,14 +23,10 @@ class Tool(EFLR):
         self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
         self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True)
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
 
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config, key=key)
 
-        for attr in (obj.parts, obj.channels, obj.parameters):
-            attr.finalise_from_config(config)
-
-        return obj
-
+class Tool(EFLR):
+    set_type = 'TOOL'
+    logical_record_type = EFLRType.STATIC
+    object_type = ToolObject
