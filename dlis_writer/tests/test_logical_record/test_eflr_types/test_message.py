@@ -8,7 +8,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 def test_message_from_config(config_params):
     key = "Message-1"
-    m = Message.make_from_config(config_params, key=key)
+    m = Message.make_object_from_config(config_params, key=key)
 
     assert m.name == "MESSAGE-1"
     assert m._type.value == 'Command'
@@ -26,7 +26,7 @@ def test_message_from_config(config_params):
 ))
 def test_comment_from_config(config_params, key, name, text):
     key = f"Comment-{key}"
-    c = Comment.make_from_config(config_params, key=key)
+    c = Comment.make_object_from_config(config_params, key=key)
 
     assert c.name == name
     assert c.text.value == text
