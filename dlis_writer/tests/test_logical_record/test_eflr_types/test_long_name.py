@@ -5,7 +5,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params):
-    w = LongName.make_from_config(config_params, 'LongName-1')
+    w = LongName.make_object_from_config(config_params, 'LongName-1')
     t = 'SOME ASCII TEXT'
 
     assert w.general_modifier.value == [t]

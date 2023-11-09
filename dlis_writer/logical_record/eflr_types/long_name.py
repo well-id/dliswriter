@@ -1,15 +1,11 @@
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute
 
 
-class LongName(EFLR):
-    set_type = 'LONG-NAME'
-    logical_record_type = EFLRType.LNAME
+class LongNameObject(EFLRObject):
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
-
+    def __init__(self, name: str, parent: "LongName", **kwargs):
         self.general_modifier = Attribute('general_modifier', representation_code=RepC.ASCII, multivalued=True)
         self.quantity = Attribute('quantity', representation_code=RepC.ASCII)
         self.quantity_modifier = Attribute('quantity_modifier', representation_code=RepC.ASCII, multivalued=True)
@@ -26,4 +22,10 @@ class LongName(EFLR):
         self.standard_symbol = Attribute('standard_symbol', representation_code=RepC.ASCII)
         self.private_symbol = Attribute('private_symbol', representation_code=RepC.ASCII)
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
+
+
+class LongName(EFLR):
+    set_type = 'LONG-NAME'
+    logical_record_type = EFLRType.LNAME
+    object_type = LongNameObject
