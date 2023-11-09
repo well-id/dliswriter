@@ -10,7 +10,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 ))
 def test_from_config(config_params, key, name, consumer_name, description):
     key = f"NoFormat-{key}"
-    w = NoFormat.make_from_config(config_params, key=key)
+    w = NoFormat.make_object_from_config(config_params, key=key)
 
     assert w.name == name
     assert w.consumer_name.value == consumer_name
