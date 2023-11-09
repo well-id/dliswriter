@@ -1,16 +1,18 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types import Group, Channel, Process
+from dlis_writer.logical_record.eflr_types.group import Group, GroupObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject
+from dlis_writer.logical_record.eflr_types.process import ProcessObject
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
 @pytest.mark.parametrize(("key", "name", "description", "object_type", "object_class", "object_names", "group_names"), (
-        ("1", "ChannelGroup", "Group of channels", "CHANNEL", Channel, ["Channel 1", "Channel 2"], []),
-        ("2", "ProcessGroup", "Group of processes", "PROCESS", Process, ["Process 1", "Prc2"], []),
+        ("1", "ChannelGroup", "Group of channels", "CHANNEL", ChannelObject, ["Channel 1", "Channel 2"], []),
+        ("2", "ProcessGroup", "Group of processes", "PROCESS", ProcessObject, ["Process 1", "Prc2"], []),
         ("3", "MultiGroup", "Group of groups", "GROUP", None, [], ["ChannelGroup", "ProcessGroup"])
 ))
 def test_group_params(config_params, key, name, description, object_type, object_class, object_names, group_names):
-    g = Group.make_from_config(config_params, f"Group-{key}")
+    g = Group.make_object_from_config(config_params, f"Group-{key}")
 
     assert g.name == name
     assert g.description.value == description
@@ -22,5 +24,5 @@ def test_group_params(config_params, key, name, description, object_type, object
 
     for i, name in enumerate(group_names):
         assert g.group_list.value[i].name == name
-        assert isinstance(g.group_list.value[i], Group)
+        assert isinstance(g.group_list.value[i], GroupObject)
 
