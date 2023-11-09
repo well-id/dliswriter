@@ -9,7 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
-from dlis_writer.logical_record.core.eflr import EFLR
 
 
 logger = logging.getLogger(__name__)
@@ -64,7 +63,7 @@ class DLISFile:
     def assign_origin_reference(logical_records: LogicalRecordCollection):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
-        val = logical_records.origin.file_set_number.value
+        val = logical_records.origin.first_object.file_set_number.value
 
         if not val:
             raise Exception('Origin object MUST have a file_set_number')
@@ -77,16 +76,12 @@ class DLISFile:
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         def wrapper():
-            for lr_class, lr_list in logical_records.collection_dict.items():
-                if issubclass(lr_class, EFLR):
-                    yield lr_class.represent_all_objects_as_bytes(instances=lr_list)
+            for lr in logical_records:
+                if isinstance(lr, MultiFrameData):
+                    for frame_data in lr:
+                        yield frame_data.represent_as_bytes()
                 else:
-                    for lr in lr_list:
-                        if isinstance(lr, MultiFrameData):
-                            for frame_data in lr:
-                                yield frame_data.represent_as_bytes()
-                        else:
-                            yield lr.represent_as_bytes()
+                    yield lr.represent_as_bytes()
 
         return wrapper()
 

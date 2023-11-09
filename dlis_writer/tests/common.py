@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types import eflr_types
 
 def clear_eflr_instance_registers():
     for eflr_type in eflr_types:
-        eflr_type.clear_objects()
+        eflr_type.clear_eflr_instance_dict()
 
 
 @pytest.fixture(scope='session')

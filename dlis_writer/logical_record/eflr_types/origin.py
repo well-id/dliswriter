@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class OriginObject(EFLRObject):
-    def __init__(self, name: str, parent, **kwargs):
+    def __init__(self, name: str, parent: "Origin", **kwargs):
 
         self.file_id = Attribute('file_id', representation_code=RepC.ASCII)
         self.file_set_name = Attribute('file_set_name', representation_code=RepC.IDENT)

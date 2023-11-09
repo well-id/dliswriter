@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.misc import FileHeader
+from dlis_writer.logical_record.misc.file_header import FileHeader, FileHeaderObject
 from dlis_writer.tests.common import base_data_path, config_params, make_config
 
 
@@ -10,7 +10,7 @@ def _check_with_config(fh, config):
 
 
 def test_from_config(config_params):
-    fh = FileHeader().make_object_from_config(config_params)
+    fh: FileHeaderObject = FileHeader.make_object_from_config(config_params)
     _check_with_config(fh, config_params)
 
 
@@ -20,5 +20,5 @@ def test_from_config_with_params(identifier, sequence_number):
     config["FileHeader"]["name"] = identifier
     config["FileHeader"]["sequence_number"] = sequence_number
 
-    fh = FileHeader().make_object_from_config(config)
+    fh: FileHeaderObject = FileHeader.make_object_from_config(config)
     _check_with_config(fh, config)

@@ -1,8 +1,5 @@
 import logging
 import numpy as np
-from typing_extensions import Self
-from configparser import ConfigParser
-
 
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.logical_record.eflr_types.axis import Axis
@@ -16,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class ChannelObject(EFLRObject):
 
-    def __init__(self, name, parent, dataset_name: str = None, **kwargs):
+    def __init__(self, name, parent: "Channel", dataset_name: str = None, **kwargs):
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
@@ -132,10 +129,3 @@ class Channel(EFLR):
     set_type = 'CHANNEL'
     logical_record_type = EFLRType.CHANNL
     object_type = ChannelObject
-
-    def make_object_from_config(self, config: ConfigParser, key=None) -> ChannelObject:
-        obj: Self = super().make_object_from_config(config, key=key)
-
-        obj.axis.finalise_from_config(config)
-
-        return obj

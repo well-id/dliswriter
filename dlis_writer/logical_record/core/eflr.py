@@ -6,7 +6,7 @@ import importlib
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
-from dlis_writer.logical_record.core.logical_record import LogicalRecord
+from dlis_writer.logical_record.core.logical_record import LogicalRecord, LRMeta
 
 
 logger = logging.getLogger(__name__)
@@ -89,7 +89,60 @@ class EFLRObject:
             setattr(attr, attr_part, attr_value)
 
 
-class EFLR(LogicalRecord):
+class EFLRMeta(LRMeta):
+    def __new__(cls, *args, **kwargs):
+        obj = super().__new__(cls, *args, **kwargs)
+        obj._instance_dict = {}
+        return obj
+
+    def clear_eflr_instance_dict(cls):
+        if cls._instance_dict:
+            logger.debug(f"Removing all defined instances of {cls.__name__}")
+            cls._instance_dict.clear()
+
+    def get_or_make_eflr(cls, set_name):
+        if set_name in cls._instance_dict:
+            return cls._instance_dict[set_name]
+
+        return cls(set_name)
+
+    def make_object(cls, name, set_name=None, **kwargs) -> EFLRObject:
+        eflr_instance = cls.get_or_make_eflr(set_name=set_name)
+
+        return eflr_instance.make_object_in_this_set(name, **kwargs)
+
+    def make_object_from_config(cls, config: ConfigParser, key=None, get_if_exists=False) -> EFLRObject:
+        key = key or cls.__name__
+
+        if key not in config.sections():
+            raise RuntimeError(f"Section '{key}' not present in the config")
+
+        name_key = "name"
+
+        if name_key not in config[key].keys():
+            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
+
+        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
+
+        obj = cls.make_object(config[key][name_key], **other_kwargs, get_if_exists=get_if_exists)
+
+        for attr in obj.attributes.values():
+            if hasattr(attr, 'finalise_from_config'):  # EFLRAttribute; cannot be imported here - circular import issue
+                attr.finalise_from_config(config)
+
+        return obj
+
+    def make_all_objects_from_config(cls, config: ConfigParser, keys: list[str] = None, key_pattern: str = None, **kwargs):
+        if not keys:
+            if key_pattern is None:
+                key_pattern = cls.__name__ + r"-\w+"
+            key_pattern = re.compile(key_pattern)
+            keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
+
+        return [cls.make_object_from_config(config, key=key, **kwargs) for key in keys]
+
+
+class EFLR(LogicalRecord, metaclass=EFLRMeta):
     """Represents an Explicitly Formatted Logical Record
 
     Attributes:
@@ -111,10 +164,27 @@ class EFLR(LogicalRecord):
         self._set_type_struct = write_struct(RepresentationCode.IDENT, self.set_type)
         self._object_dict = {}
         self._attributes = {}
+        self._origin_reference = None
+
+        self._instance_dict[self.set_name] = self
 
     def __str__(self):
         return f"EFLR class '{self.__class__.__name__}'"
-    
+
+    @property
+    def origin_reference(self):
+        return self._origin_reference
+
+    @origin_reference.setter
+    def origin_reference(self, val):
+        self._origin_reference = val
+        for obj in self._object_dict.values():
+            obj.origin_reference = val
+
+    @property
+    def first_object(self):
+        return self._object_dict[next(iter(self._object_dict.keys()))]
+
     def _make_set_component_bytes(self) -> bytes:
         """Creates component role Set
 
@@ -144,7 +214,7 @@ class EFLR(LogicalRecord):
         """
 
         _bytes = b''
-        for attr in self.attributes.values():
+        for attr in self._attributes.values():
             _bytes += attr.get_as_bytes(for_template=True)
 
         return _bytes
@@ -162,7 +232,10 @@ class EFLR(LogicalRecord):
 
         return bts
 
-    def make_object(self, name, **kwargs) -> EFLRObject:
+    def make_object_in_this_set(self, name, get_if_exists=False, **kwargs) -> EFLRObject:
+        if get_if_exists and name in self._object_dict:
+            return self._object_dict[name]
+
         obj = self.object_type(name, self, **kwargs)
         self._object_dict[name] = obj
 
@@ -170,55 +243,22 @@ class EFLR(LogicalRecord):
             for attr_name, attr in obj.attributes.items():
                 self._attributes[attr_name] = attr.copy()
 
+        obj.origin_reference = self.origin_reference
+
         return obj
 
-    def make_object_from_config(self, config: ConfigParser, key=None) -> EFLRObject:
-        key = key or self.__class__.__name__
-
-        if key not in config.sections():
-            raise RuntimeError(f"Section '{key}' not present in the config")
-
-        name_key = "name"
-
-        if name_key not in config[key].keys():
-            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
-
-        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
-
-        return self.make_object(config[key][name_key], **other_kwargs)
-
-    def get_or_make_all_from_config(self, config: ConfigParser, keys: list[str] = None, key_pattern: str = None):
-        if not keys:
-            if key_pattern is None:
-                key_pattern = self.__class__.__name__ + r"-\w+"
-            key_pattern = re.compile(key_pattern)
-            keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
-
-        return [self.get_or_make_from_config(key, config) for key in keys]
-    
-    def get_object(self, name):
-        return self._object_dict.get(name)
+    def get_object(self, *args):
+        return self._object_dict.get(*args)
 
     def get_all_objects(self):
         return list(self._object_dict.values())
 
-    def clear_objects(self):
-        if self._object_dict:
-            logger.debug(f"Removing all defined objects of {self}")
-            self._object_dict.clear()
-
-    def get_or_make_from_config(self, name, config):
-        if name in self._object_dict:
-            return self.get_object(name)
-
-        if name in config.sections():
-            if (object_name := config[name].get('name', None)) in self._object_dict:
-                return self.get_object(object_name)
-
-        return self.make_object_from_config(config, key=name)
+    @property
+    def n_objects(self):
+        return len(self._object_dict)
 
     @classmethod
-    def get_object_class(cls, object_name):
+    def get_eflr_subclass(cls, object_name):
         module = importlib.import_module('dlis_writer.logical_record.eflr_types')
 
         class_name = object_name.split('-')[0]

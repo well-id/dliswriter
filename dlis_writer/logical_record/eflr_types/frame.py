@@ -22,7 +22,7 @@ class FrameObject(EFLRObject):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, parent, **kwargs):
+    def __init__(self, name: str, parent: "Frame", **kwargs):
 
         self.description = Attribute('description', representation_code=RepC.ASCII)
         self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
@@ -95,11 +95,3 @@ class Frame(EFLR):
     set_type = 'FRAME'
     logical_record_type = EFLRType.FRAME
     object_type = FrameObject
-
-    def make_object_from_config(self, config: ConfigParser, key=None) -> FrameObject:
-        obj: FrameObject = super().make_object_from_config(config, key=key)
-
-        obj.channels.finalise_from_config(config)
-
-        return obj
-

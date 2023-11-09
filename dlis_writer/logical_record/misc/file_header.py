@@ -8,7 +8,7 @@ from dlis_writer.utils.enums import EFLRType
 class FileHeaderObject(EFLRObject):
     identifier_length_limit = 65
 
-    def __init__(self, identifier: str, parent, sequence_number: int = 1, **kwargs):
+    def __init__(self, identifier: str, parent: "FileHeader", sequence_number: int = 1, **kwargs):
 
         self.identifier = identifier
         self.sequence_number = int(sequence_number)

@@ -93,9 +93,9 @@ def test_origin(short_dlis, config_params):
 
 
 def test_frame(short_dlis, config_params):
-    assert len(short_dlis.frames) == 1
+    assert len(short_dlis.frame) == 1
 
-    frame = short_dlis.frames[0]
+    frame = short_dlis.frame[0]
 
     assert frame.name == config_params['Frame']['name']
     assert frame.index_type == config_params['Frame']['index_type']

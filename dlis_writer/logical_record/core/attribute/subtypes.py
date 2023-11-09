@@ -54,8 +54,8 @@ class EFLRAttribute(Attribute):
         if not isinstance(object_name, str):
             raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
 
-        object_class = self._object_class or EFLR.get_object_class(object_name)
-        return object_class().get_or_make_from_config(object_name, config)
+        object_class = self._object_class or EFLR.get_eflr_subclass(object_name)
+        return object_class.make_object_from_config(config, object_name, get_if_exists=True)
 
 
 class DTimeAttribute(Attribute):

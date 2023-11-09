@@ -1,13 +1,14 @@
 import numpy as np
 from typing import List
 
-from dlis_writer.logical_record.eflr_types import Frame, Channel
+from dlis_writer.logical_record.eflr_types.frame import FrameObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.iflr_types import FrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 
 
 class MultiFrameData(MultiLogicalRecord):
-    def __init__(self, frame: Frame, data: np.ndarray):
+    def __init__(self, frame: FrameObject, data: np.ndarray):
         super().__init__()
 
         self._data_array: np.ndarray = self.flatten_structured_array(data, channels=frame.channels.value)
@@ -47,7 +48,7 @@ class MultiFrameData(MultiLogicalRecord):
         return self._make_frame_data(item)
 
     @staticmethod
-    def flatten_structured_array(data: np.ndarray, channels: List[Channel] = None):
+    def flatten_structured_array(data: np.ndarray, channels: List[ChannelObject] = None):
         dtype_names = data.dtype.names
 
         if dtype_names is None:

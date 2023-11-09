@@ -1,12 +1,12 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types import Frame
+from dlis_writer.logical_record.eflr_types.frame import Frame, FrameObject
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params
 
 
 def test_from_config(config_params):
-    frame = Frame().make_object_from_config(config_params)
+    frame: FrameObject = Frame.make_object_from_config(config_params)
 
     conf = config_params['Frame']
     assert frame.name == conf['name']
@@ -28,7 +28,7 @@ def test_from_config_with_channels(channels_key, channel_entry, channel_names, c
     config_params["Frame"]["name"] = "Some frame"
     config_params["Frame"][channels_key] = channel_entry
 
-    frame = Frame().make_object_from_config(config_params)
+    frame: FrameObject = Frame.make_object_from_config(config_params)
 
     assert frame.channels.value is not None
     assert len(frame.channels.value) == len(channel_names)

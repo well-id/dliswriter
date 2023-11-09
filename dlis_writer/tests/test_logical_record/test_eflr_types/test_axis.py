@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types import Axis
+from dlis_writer.logical_record.eflr_types.axis import Axis, AxisObject
 from dlis_writer.tests.common import base_data_path, config_params
 
 
@@ -9,7 +9,7 @@ from dlis_writer.tests.common import base_data_path, config_params
         (1, "Axis-X", "Axis not added to computation", [8])
 ))
 def test_from_config(config_params, idx, name, axis_id, coordinates):
-    axis = Axis.make_from_config(config_params, key=name)
+    axis: AxisObject = Axis.make_object_from_config(config_params, key=name)
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id
