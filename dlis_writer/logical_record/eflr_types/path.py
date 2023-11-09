@@ -1,25 +1,19 @@
 import logging
-from typing_extensions import Self
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.logical_record.eflr_types.frame import Frame
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, EFLRAttribute, NumericAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttribute
 
 
 logger = logging.getLogger(__name__)
 
 
-class Path(EFLR):
-    set_type = 'PATH'
-    logical_record_type = EFLRType.FRAME
+class PathObject(EFLRObject):
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-
-        super().__init__(name, set_name)
+    def __init__(self, name: str, parent: "Path", **kwargs):
 
         self.frame_type = EFLRAttribute('frame_type', object_class=Frame)
         self.well_reference_point = EFLRAttribute('well_reference_point', object_class=WellReferencePoint)
@@ -33,14 +27,10 @@ class Path(EFLR):
         self.measure_point_offset = NumericAttribute('measure_point_offset')
         self.tool_zero_offset = NumericAttribute('tool_zero_offset')
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
 
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config, key=key)
 
-        for attr in (obj.frame_type, obj.well_reference_point, obj.value):
-            attr.finalise_from_config(config)
-
-        return obj
-
+class Path(EFLR):
+    set_type = 'PATH'
+    logical_record_type = EFLRType.FRAME
+    object_type = PathObject

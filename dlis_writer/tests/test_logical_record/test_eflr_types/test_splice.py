@@ -3,7 +3,7 @@ from dlis_writer.tests.common import base_data_path, config_params
 
 
 def test_from_config(config_params):
-    splice = Splice.make_from_config(config_params, key="Splice-1")
+    splice = Splice.make_object_from_config(config_params, key="Splice-1")
 
     assert splice.name == "splc1"
 
