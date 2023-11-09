@@ -106,6 +106,9 @@ class EFLRMeta(LRMeta):
 
         return cls(set_name)
 
+    def get_all_instances(cls):
+        return list(cls._instance_dict.values())
+
     def make_object(cls, name, set_name=None, **kwargs) -> EFLRObject:
         eflr_instance = cls.get_or_make_eflr(set_name=set_name)
 
@@ -170,6 +173,9 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
     def __str__(self):
         return f"EFLR class '{self.__class__.__name__}'"
+
+    def clear_object_dict(self):
+        self._object_dict.clear()
 
     @property
     def origin_reference(self):

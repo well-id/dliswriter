@@ -8,6 +8,8 @@ from dlis_writer.logical_record.eflr_types import eflr_types
 
 def clear_eflr_instance_registers():
     for eflr_type in eflr_types:
+        for eflr in eflr_type.get_all_instances():
+            eflr.clear_object_dict()
         eflr_type.clear_eflr_instance_dict()
 
 
