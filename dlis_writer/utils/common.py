@@ -88,6 +88,9 @@ def _write_struct_ident(value):
 
 
 def _write_struct_obname(value):
+    if value.origin_reference is None:
+        raise RuntimeError(f"Origin reference of {value} has not been specified")
+
     try:
         origin_reference = _write_struct_uvari(value.origin_reference)
         copy_number = RepresentationCode.USHORT.converter.pack(value.copy_number)
