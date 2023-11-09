@@ -1,14 +1,10 @@
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
 
-class WellReferencePoint(EFLR):
-    set_type = 'WELL-REFERENCE'
-    logical_record_type = EFLRType.OLR
-
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+class WellReferencePointObject(EFLRObject):
+    def __init__(self, name: str, parent: "WellReferencePoint", **kwargs):
 
         self.permanent_datum = Attribute('permanent_datum', representation_code=RepC.ASCII)
         self.vertical_zero = Attribute('vertical_zero', representation_code=RepC.ASCII)
@@ -22,4 +18,10 @@ class WellReferencePoint(EFLR):
         self.coordinate_3_name = Attribute('coordinate_3_name', representation_code=RepC.ASCII)
         self.coordinate_3_value = NumericAttribute('coordinate_3_value', representation_code=RepC.FDOUBL)
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
+
+
+class WellReferencePoint(EFLR):
+    set_type = 'WELL-REFERENCE'
+    logical_record_type = EFLRType.OLR
+    object_type = WellReferencePointObject
