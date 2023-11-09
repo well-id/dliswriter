@@ -3,7 +3,7 @@ from numbers import Number
 from datetime import datetime
 
 from .attribute import Attribute
-from dlis_writer.logical_record.core.eflr import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -48,7 +48,7 @@ class EFLRAttribute(Attribute):
         return v
 
     def _make_eflr_object_from_config(self, config, object_name):
-        if isinstance(object_name, EFLR):
+        if isinstance(object_name, EFLRObject):
             return object_name
 
         if not isinstance(object_name, str):

@@ -2,7 +2,7 @@ import logging
 from typing_extensions import Self
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.core import EFLR
+from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import Channel
 from dlis_writer.logical_record.eflr_types.parameter import Parameter
@@ -13,12 +13,8 @@ from dlis_writer.logical_record.core.attribute import *
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurement(EFLR):
-    set_type = 'CALIBRATION-MEASUREMENT'
-    logical_record_type = EFLRType.STATIC
-
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+class CalibrationMeasurementObject(EFLRObject):
+    def __init__(self, name: str, parent: "CalibrationMeasurement", **kwargs):
 
         self.phase = Attribute('phase', representation_code=RepC.IDENT)
         self.measurement_source = EFLRAttribute(
@@ -37,24 +33,18 @@ class CalibrationMeasurement(EFLR):
         self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True)
         self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
 
-        self.set_attributes(**kwargs)
-
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config, key=key)
-
-        for attr in (obj.measurement_source, obj.axis):
-            attr.finalise_from_config(config)
-
-        return obj
+        super().__init__(name, parent, **kwargs)
 
 
-class CalibrationCoefficient(EFLR):
-    set_type = 'CALIBRATION-COEFFICIENT'
+class CalibrationMeasurement(EFLR):
+    set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = EFLRType.STATIC
+    object_type = CalibrationMeasurementObject
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
-        super().__init__(name, set_name)
+
+class CalibrationCoefficientObject(EFLRObject):
+
+    def __init__(self, name: str, parent: "CalibrationCoefficient", **kwargs):
 
         self.label = Attribute('label', representation_code=RepC.IDENT)
         self.coefficients = NumericAttribute('coefficients', multivalued=True)
@@ -62,16 +52,18 @@ class CalibrationCoefficient(EFLR):
         self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True)
         self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True)
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
 
 
-class Calibration(EFLR):
-    set_type = 'CALIBRATION'
+class CalibrationCoefficient(EFLR):
+    set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = EFLRType.STATIC
+    object_type = CalibrationCoefficientObject
 
-    def __init__(self, name: str, set_name: str = None, **kwargs):
 
-        super().__init__(name, set_name)
+class CalibrationObject(EFLRObject):
+
+    def __init__(self, name: str, parent: "Calibration", **kwargs):
 
         self.calibrated_channels = EFLRAttribute('calibrated_channels', object_class=Channel, multivalued=True)
         self.uncalibrated_channels = EFLRAttribute('uncalibrated_channels', object_class=Channel, multivalued=True)
@@ -80,15 +72,10 @@ class Calibration(EFLR):
         self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True)
         self.method = Attribute('method', representation_code=RepC.IDENT)
 
-        self.set_attributes(**kwargs)
+        super().__init__(name, parent, **kwargs)
 
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
-        obj: Self = super().make_from_config(config, key=key)
 
-        for attr in (obj.calibrated_channels, obj.uncalibrated_channels, obj.coefficients, obj.measurements,
-                     obj.parameters):
-            attr.finalise_from_config(config)
-
-        return obj
-
+class Calibration(EFLR):
+    set_type = 'CALIBRATION'
+    logical_record_type = EFLRType.STATIC
+    object_type = CalibrationObject

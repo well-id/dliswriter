@@ -9,7 +9,7 @@ from dlis_writer.tests.common import base_data_path, config_params, make_config
 @pytest.mark.parametrize("zone_nr", (1, 2, 3, 4))
 def test_from_config(config_params, zone_nr):
     key = f"Zone-{zone_nr}"
-    zone = Zone.make_from_config(config_params, key=key)
+    zone = Zone.make_object_from_config(config_params, key=key)
     
     conf = config_params[key]
     
@@ -34,7 +34,7 @@ def test_from_config(config_params, zone_nr):
 ))
 def test_from_config_units(config_params, zone_nr, value_type, repr_code):
     key = f"Zone-{zone_nr}"
-    zone = Zone.make_from_config(config_params, key=key)
+    zone = Zone.make_object_from_config(config_params, key=key)
 
     assert isinstance(zone.maximum.value, value_type)
     assert isinstance(zone.minimum.value, value_type)

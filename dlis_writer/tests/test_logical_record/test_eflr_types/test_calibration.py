@@ -1,20 +1,23 @@
 from datetime import datetime
 
-from dlis_writer.logical_record.eflr_types import (CalibrationMeasurement, CalibrationCoefficient, Calibration,
-                                                   Channel, Axis, Parameter)
+from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, CalibrationCoefficient, Calibration
+from dlis_writer.logical_record.eflr_types.calibration import CalibrationMeasurementObject, CalibrationCoefficientObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject
+from dlis_writer.logical_record.eflr_types.axis import AxisObject
+from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
 from dlis_writer.tests.common import base_data_path, config_params
 
 
 def test_calibration_measurement_from_config(config_params):
     key = "CalibrationMeasurement-1"
-    m = CalibrationMeasurement.make_from_config(config_params, key=key)
+    m = CalibrationMeasurement.make_object_from_config(config_params, key=key)
 
     assert m.name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
-    assert isinstance(m.measurement_source.value, Channel)
+    assert isinstance(m.measurement_source.value, ChannelObject)
     assert m.measurement_source.value.name == "Channel 1"
     assert m._type.value == 'Plus'
-    assert isinstance(m.axis.value[0], Axis)
+    assert isinstance(m.axis.value[0], AxisObject)
     assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == 12
@@ -31,7 +34,7 @@ def test_calibration_measurement_from_config(config_params):
 
 def test_calibration_coefficient_from_config(config_params):
     key = "CalibrationCoefficient-1"
-    c = CalibrationCoefficient.make_from_config(config_params, key=key)
+    c = CalibrationCoefficient.make_object_from_config(config_params, key=key)
 
     assert c.name == "COEF-1"
     assert c.label.value == 'Gain'
@@ -53,12 +56,12 @@ def _check_list(objects, names, object_class):
 
 def test_calibration_from_config(config_params):
     key = "Calibration-1"
-    c = Calibration.make_from_config(config_params, key=key)
+    c = Calibration.make_object_from_config(config_params, key=key)
 
     assert c.name == "CALIB-MAIN"
 
-    _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), Channel)
-    _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), Channel)
-    _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficient)
-    _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurement)
-    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), Parameter)
+    _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), ChannelObject)
+    _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), ChannelObject)
+    _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficientObject)
+    _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurementObject)
+    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), ParameterObject)
