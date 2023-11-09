@@ -143,21 +143,14 @@ class LogicalRecordCollection(MultiLogicalRecord):
                 obj.add_frames(frame.parent)
             obj.add_frame_data_objects(multi_frame_data)
 
-        # TODO
-        # other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin)]
-        #
-        # for c in other_classes:
-        #     c.make_all_objects_from_config(config, get_if_exists=True)
-        #
-        # # the division into the two loops is on purpose
-        # # we first make all instances, then add all instances from all classes
-        # # in case some are added in non-standard order
-        # for c in other_classes:
-        #     inst = c.get_all_objects()
-        #     if not inst:
-        #         logger.debug(f"No instances of {c.__name__} defined")
-        #     else:
-        #         logger.info(f"Adding {c.__name__}(s): {', '.join(p.name for p in inst)} to the file")
-        #         obj.add_logical_records(*inst)
+        other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin)]
+
+        for c in other_classes:
+            objects = c.make_all_objects_from_config(config, get_if_exists=True)
+            if not objects:
+                logger.debug(f"No instances of {c.__name__} defined")
+            else:
+                logger.info(f"Adding {c.__name__}(s): {', '.join(o.name for o in objects)} to the file")
+                obj.add_logical_records(*set(o.parent for o in objects))
 
         return obj

@@ -106,7 +106,7 @@ def _write_struct_obname(value):
 
 
 def _write_struct_objref(value):
-    return _write_struct_ident(value.set_type) + value.obname
+    return _write_struct_ident(value.parent.set_type) + value.obname
 
 
 def _write_struct_status(value):
