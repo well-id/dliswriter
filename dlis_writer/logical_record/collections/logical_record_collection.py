@@ -5,7 +5,7 @@ import logging
 
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
-from dlis_writer.logical_record.misc import StorageUnitLabel, FileHeader
+from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.core.eflr import EFLR
@@ -168,7 +168,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
                 obj.add_frames(frame.parent)
             obj.add_frame_data_objects(multi_frame_data)
 
-        other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin)]
+        other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin, FileHeader)]
 
         for c in other_classes:
             objects = c.make_all_objects_from_config(config, get_if_exists=True)

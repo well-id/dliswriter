@@ -18,6 +18,8 @@ from dlis_writer.logical_record.eflr_types.tool import Tool
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
 from dlis_writer.logical_record.eflr_types.zone import Zone
 
+from dlis_writer.logical_record.eflr_types.file_header import FileHeader
+
 
 eflr_types = (
     Axis,
@@ -40,5 +42,6 @@ eflr_types = (
     Splice,
     Tool,
     WellReferencePoint,
-    Zone
+    Zone,
+    FileHeader
 )
