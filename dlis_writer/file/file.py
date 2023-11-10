@@ -97,7 +97,7 @@ class DLISFile:
 
     @log_progress("Creating visible records of the DLIS...")
     @profile
-    def create_visible_records(self, n_records, all_lrb_iter) -> bytes:
+    def create_visible_records(self, n_records, all_lrb_iter, chunk_size=2**32) -> bytes:
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -108,7 +108,11 @@ class DLISFile:
 
         bar = ProgressBar(max_value=n_records)
 
-        output = next(all_lrb_iter).bytes  # SUL - add as-is, don't wrap in a visible record
+        output = bytearray(chunk_size)
+        total_output_len = chunk_size
+        sul_bytes = next(all_lrb_iter).bytes
+        total_filled_len = len(sul_bytes)
+        output[:total_filled_len] = sul_bytes  # SUL - add as-is, don't wrap in a visible record
 
         current_vr_body = b''
         current_vr_body_size = 0
@@ -121,8 +125,14 @@ class DLISFile:
         remaining_lrb_size = 0
 
         def next_vr():
-            nonlocal output, current_vr_body_size, current_vr_body, remaining_vr_space
-            output += self._make_visible_record(current_vr_body, size=current_vr_body_size)
+            nonlocal output, current_vr_body_size, current_vr_body, remaining_vr_space, total_filled_len, total_output_len
+            new_len = total_filled_len + current_vr_body_size + hs
+            while new_len > total_output_len:
+                output += bytearray(chunk_size)
+                total_output_len += chunk_size
+                logger.debug(f"Making new output chunk; current total output size is {total_output_len}")
+            output[total_filled_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
+            total_filled_len = new_len
             current_vr_body = b''
             current_vr_body_size = 0
             remaining_vr_space = max_vr_body_size - 4
@@ -165,8 +175,11 @@ class DLISFile:
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
 
-        output += self._make_visible_record(current_vr_body, size=current_vr_body_size)
+        next_vr()
         bar.finish()
+
+        output = output[:total_filled_len]
+        logger.info(f"Final total file size is {total_filled_len} bytes")
 
         return output
 
