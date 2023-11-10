@@ -94,6 +94,31 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self._check_type_of_values(lrs, EFLR)
         self._other_logical_records.extend(lrs)
 
+    def check_objects(self):
+        def verify_n(names, class_name, exactly_one=False):
+            n = len(names)
+            if not n:
+                raise RuntimeError(f"No {class_name}Object defined")
+
+            if exactly_one and n > 1:
+                raise RuntimeError(f"Expected exactly one {class_name}Object, got {n} with names: "
+                                   f"{', '.join(repr(n) for n in names)}")
+
+        def check(eflr, exactly_one=False):
+            names = [o.name for o in eflr.get_all_objects()]
+            verify_n(names, eflr.__class__.__name__, exactly_one=exactly_one)
+
+        def check_list(eflr_list, class_name):
+            names = []
+            for eflr in eflr_list:
+                names.extend(o.name for o in eflr.get_all_objects())
+            verify_n(names, class_name)
+
+        check(self.file_header, exactly_one=True)
+        check(self.origin)
+        check_list(self.frames, "Frame")
+        check_list(self._channels, "Channel")
+
     @staticmethod
     def make_frame_and_data(config, data, key='Frame'):
         frame_object: FrameObject = Frame.make_object_from_config(config, key=key)

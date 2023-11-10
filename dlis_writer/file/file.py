@@ -184,6 +184,8 @@ class DLISFile:
     def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
+        logical_records.check_objects()
+
         self.assign_origin_reference(logical_records)
         all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
         all_bytes = self.create_visible_records(len(logical_records), all_lrb_iter)
