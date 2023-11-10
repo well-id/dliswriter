@@ -5,13 +5,16 @@ from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.iflr_types import FrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
+from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import ReprCodeConverter
 
 
 class MultiFrameData(MultiLogicalRecord):
     def __init__(self, frame: FrameObject, data: np.ndarray):
         super().__init__()
 
-        self._data_array: np.ndarray = self.flatten_structured_array(data, channels=frame.channels.value)
+        self._data_array: np.ndarray = self.transform_structured_array(data, channels=frame.channels.value)
+        self._data_array.byteswap(inplace=True)
         self._frame = frame
 
         self._origin_reference = None
@@ -48,21 +51,27 @@ class MultiFrameData(MultiLogicalRecord):
         return self._make_frame_data(item)
 
     @staticmethod
-    def flatten_structured_array(data: np.ndarray, channels: List[ChannelObject] = None):
+    def get_dtype(repr_code: RepresentationCode):
+        if repr_code is None:
+            return MultiFrameData.get_dtype(RepresentationCode.FDOUBL)
+
+        return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
+
+    @staticmethod
+    def transform_structured_array(data: np.ndarray, channels: List[ChannelObject]):
         dtype_names = data.dtype.names
 
         if dtype_names is None:
             return data
 
-        if channels is not None:
-            channel_name_mapping = {ch.name: ch.dataset_name for ch in channels}
+        dtype = []
+        for ch in channels:
+            dt = (ch.name, MultiFrameData.get_dtype(ch.representation_code.value))
+            if ch.dimension.value[0] > 1:
+                dt = (*dt, tuple(ch.dimension.value))
+            dtype.append(dt)
+        arr = np.zeros(data.shape[0], dtype=dtype)
+        for ch in channels:
+            arr[ch.name] = data[ch.dataset_name]
 
-            if any(cn not in dtype_names for cn in channel_name_mapping.values()):
-                raise ValueError(f"Channel names and data dtype names do not match: "
-                                 f"\n{list(channel_name_mapping.values())}\nvs\n{dtype_names}")
-            names = list(channel_name_mapping.keys())
-        else:
-            names = data.dtype.names
-            channel_name_mapping = {key: key for key in names}
-
-        return np.concatenate([np.atleast_2d(data[channel_name_mapping[key]].T) for key in names]).T
+        return arr
