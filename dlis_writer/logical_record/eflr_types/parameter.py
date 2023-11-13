@@ -1,5 +1,3 @@
-from configparser import ConfigParser
-from typing_extensions import Self
 import logging
 
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
@@ -18,11 +16,11 @@ class ParameterObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Parameter", **kwargs):
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.dimension = DimensionAttribute('dimension')
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True)
-        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True)
-        self.values = Attribute('values', converter=self.convert_value, multivalued=True)
+        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
+        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
+        self.values = Attribute('values', converter=self.convert_value, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

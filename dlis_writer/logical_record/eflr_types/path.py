@@ -15,17 +15,18 @@ class PathObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Path", **kwargs):
 
-        self.frame_type = EFLRAttribute('frame_type', object_class=Frame)
-        self.well_reference_point = EFLRAttribute('well_reference_point', object_class=WellReferencePoint)
-        self.value = EFLRAttribute('value', object_class=Channel, multivalued=True)
-        self.borehole_depth = NumericAttribute('borehole_depth')
-        self.vertical_depth = NumericAttribute('vertical_depth')
-        self.radial_drift = NumericAttribute('radial_drift')
-        self.angular_drift = NumericAttribute('angular_drift')
-        self.time = NumericAttribute('time')
-        self.depth_offset = NumericAttribute('depth_offset')
-        self.measure_point_offset = NumericAttribute('measure_point_offset')
-        self.tool_zero_offset = NumericAttribute('tool_zero_offset')
+        self.frame_type = EFLRAttribute('frame_type', object_class=Frame, parent_eflr=self)
+        self.well_reference_point = EFLRAttribute(
+            'well_reference_point', object_class=WellReferencePoint, parent_eflr=self)
+        self.value = EFLRAttribute('value', object_class=Channel, multivalued=True, parent_eflr=self)
+        self.borehole_depth = NumericAttribute('borehole_depth', parent_eflr=self)
+        self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
+        self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
+        self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
+        self.time = NumericAttribute('time', parent_eflr=self)
+        self.depth_offset = NumericAttribute('depth_offset', parent_eflr=self)
+        self.measure_point_offset = NumericAttribute('measure_point_offset', parent_eflr=self)
+        self.tool_zero_offset = NumericAttribute('tool_zero_offset', parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

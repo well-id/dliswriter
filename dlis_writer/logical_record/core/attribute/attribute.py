@@ -1,10 +1,13 @@
-from typing import Union, List, Tuple
+from typing import Union, List, Tuple, TYPE_CHECKING
 import logging
 import numpy as np
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
+
+if TYPE_CHECKING:
+    from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +41,8 @@ class Attribute:
                  representation_code: RepresentationCode = None,
                  units: str = None,
                  value: AttributeValue = None,
-                 converter: callable = None
+                 converter: callable = None,
+                 parent_eflr: "Union[EFLR, EFLRObject]" = None
                  ):
         """Initiate Attribute object."""
 
@@ -49,8 +53,10 @@ class Attribute:
         self._value = value
         self._converter = converter  # to convert value from string retrieved from config file
 
+        self._parent_eflr = parent_eflr
+
     def __str__(self):
-        return f"{self.__class__.__name__} '{self._label}'"
+        return f"{self.__class__.__name__} '{self._label}'" + (f' of {self._parent_eflr}' if self._parent_eflr else '')
 
     @property
     def label(self):
@@ -120,6 +126,10 @@ class Attribute:
         if isinstance(self._value, (list, tuple)):
             return len(self._value)
         return 1
+
+    @property
+    def parent_eflr(self):
+        return self._parent_eflr
 
     @staticmethod
     def parse_values(val):
@@ -270,6 +280,7 @@ class Attribute:
         return value
 
     def copy(self):
+        # TODO: parent
         return self.__class__(
             label=self._label,
             multivalued=self._multivalued,

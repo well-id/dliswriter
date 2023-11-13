@@ -7,8 +7,8 @@ class NoFormatObject(EFLRObject):
 
     def __init__(self, name: str, parent: "NoFormat", **kwargs):
 
-        self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT)
-        self.description = Attribute('description', representation_code=RepC.ASCII)
+        self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT, parent_eflr=self)
+        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

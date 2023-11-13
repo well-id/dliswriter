@@ -26,10 +26,10 @@ class ZoneObject(EFLRObject):
 
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII)
-        self.domain = Attribute('domain', converter=self.check_domain, representation_code=RepC.IDENT)
-        self.maximum = DTimeAttribute('maximum', allow_float=True)
-        self.minimum = DTimeAttribute('minimum', allow_float=True)
+        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.domain = Attribute('domain', converter=self.check_domain, representation_code=RepC.IDENT, parent_eflr=self)
+        self.maximum = DTimeAttribute('maximum', allow_float=True, parent_eflr=self)
+        self.minimum = DTimeAttribute('minimum', allow_float=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

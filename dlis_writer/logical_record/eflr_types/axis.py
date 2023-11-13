@@ -7,9 +7,9 @@ class AxisObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Axis", **kwargs):
 
-        self.axis_id = Attribute('axis_id', representation_code=RepC.IDENT)
-        self.coordinates = NumericAttribute('coordinates', multivalued=True)
-        self.spacing = NumericAttribute('spacing')
+        self.axis_id = Attribute('axis_id', representation_code=RepC.IDENT, parent_eflr=self)
+        self.coordinates = NumericAttribute('coordinates', multivalued=True, parent_eflr=self)
+        self.spacing = NumericAttribute('spacing', parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

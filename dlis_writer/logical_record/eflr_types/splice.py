@@ -14,9 +14,9 @@ class SpliceObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Splice", **kwargs):
 
-        self.output_channel = EFLRAttribute('output_channel', object_class=Channel)
-        self.input_channels = EFLRAttribute('input_channels', object_class=Channel, multivalued=True)
-        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True)
+        self.output_channel = EFLRAttribute('output_channel', object_class=Channel, parent_eflr=self)
+        self.input_channels = EFLRAttribute('input_channels', object_class=Channel, multivalued=True, parent_eflr=self)
+        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

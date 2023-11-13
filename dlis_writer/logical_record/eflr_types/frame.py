@@ -1,5 +1,3 @@
-from configparser import ConfigParser
-from typing_extensions import Self
 import logging
 from numbers import Number
 import numpy as np
@@ -24,15 +22,16 @@ class FrameObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Frame", **kwargs):
 
-        self.description = Attribute('description', representation_code=RepC.ASCII)
-        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
-        self.index_type = Attribute('index_type', converter=self.parse_index_type, representation_code=RepC.IDENT)
-        self.direction = Attribute('direction', representation_code=RepC.IDENT)
-        self.spacing = NumericAttribute('spacing')
+        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True, parent_eflr=self)
+        self.index_type = Attribute(
+            'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)
+        self.direction = Attribute('direction', representation_code=RepC.IDENT, parent_eflr=self)
+        self.spacing = NumericAttribute('spacing', parent_eflr=self)
         self.encrypted = NumericAttribute(
-            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
-        self.index_min = NumericAttribute('index_min')
-        self.index_max = NumericAttribute('index_max')
+            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT, parent_eflr=self)
+        self.index_min = NumericAttribute('index_min', parent_eflr=self)
+        self.index_max = NumericAttribute('index_max', parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

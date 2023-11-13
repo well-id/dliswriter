@@ -15,13 +15,13 @@ class ToolObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Tool", **kwargs):
 
-        self.description = Attribute('description', representation_code=RepC.ASCII)
-        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII)
-        self.generic_name = Attribute('generic_name', representation_code=RepC.ASCII)
-        self.parts = EFLRAttribute('parts', object_class=Equipment, multivalued=True)
-        self.status = Attribute('status', converter=int, representation_code=RepC.STATUS)
-        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True)
-        self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True)
+        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.generic_name = Attribute('generic_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.parts = EFLRAttribute('parts', object_class=Equipment, multivalued=True, parent_eflr=self)
+        self.status = Attribute('status', converter=int, representation_code=RepC.STATUS, parent_eflr=self)
+        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True, parent_eflr=self)
+        self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

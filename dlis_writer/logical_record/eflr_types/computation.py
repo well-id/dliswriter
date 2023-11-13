@@ -15,13 +15,13 @@ class ComputationObject(EFLRObject):
     logical_record_type = EFLRType.STATIC
 
     def __init__(self, name: str, parent: "Computation", **kwargs):
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
-        self.dimension = DimensionAttribute('dimension')
-        self.axis = EFLRAttribute('axis', object_class=Axis)
-        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True)
-        self.values = NumericAttribute('values', multivalued=True)
-        self.source = EFLRAttribute('source')
+        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
+        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=Axis, parent_eflr=self)
+        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
+        self.values = NumericAttribute('values', multivalued=True, parent_eflr=self)
+        self.source = EFLRAttribute('source', parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

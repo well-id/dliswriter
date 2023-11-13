@@ -7,13 +7,13 @@ class MessageObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Message", **kwargs):
 
-        self._type = Attribute('_type', representation_code=RepC.IDENT)
-        self.time = DTimeAttribute('time', allow_float=True)
-        self.borehole_drift = NumericAttribute('borehole_drift')
-        self.vertical_depth = NumericAttribute('vertical_depth')
-        self.radial_drift = NumericAttribute('radial_drift')
-        self.angular_drift = NumericAttribute('angular_drift')
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True)
+        self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
+        self.time = DTimeAttribute('time', allow_float=True, parent_eflr=self)
+        self.borehole_drift = NumericAttribute('borehole_drift', parent_eflr=self)
+        self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
+        self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
+        self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
+        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 
@@ -28,7 +28,7 @@ class CommentObject(EFLRObject):
 
     def __init__(self, name: str, parent: "Comment", **kwargs):
 
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True)
+        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 

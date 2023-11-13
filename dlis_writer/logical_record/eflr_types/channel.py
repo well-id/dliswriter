@@ -15,17 +15,21 @@ class ChannelObject(EFLRObject):
 
     def __init__(self, name, parent: "Channel", dataset_name: str = None, **kwargs):
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII)
-        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True)
+        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.properties = Attribute(
+            'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
         self.representation_code = Attribute(
-            'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT)
-        self.units = Attribute('units', converter=self.convert_unit, representation_code=RepC.IDENT)
-        self.dimension = DimensionAttribute('dimension')
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True)
-        self.element_limit = DimensionAttribute('element_limit')
-        self.source = Attribute('source', representation_code=RepC.OBJREF)
-        self.minimum_value = NumericAttribute('minimum_value', representation_code=RepC.FDOUBL, multivalued=True)
-        self.maximum_value = NumericAttribute('maximum_value', representation_code=RepC.FDOUBL, multivalued=True)
+            'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT, parent_eflr=self)
+        self.units = Attribute(
+            'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
+        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
+        self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
+        self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
+        self.minimum_value = NumericAttribute(
+            'minimum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
+        self.maximum_value = NumericAttribute(
+            'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
 
         self._dataset_name: str = dataset_name
 
