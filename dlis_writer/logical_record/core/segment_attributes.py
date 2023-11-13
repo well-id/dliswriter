@@ -1,5 +1,6 @@
+from functools import lru_cache
+
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.common import write_struct
 
 
 class SegmentAttributes:
@@ -81,17 +82,10 @@ class SegmentAttributes:
     def has_padding(self, b: bool):
         self._value[7] = b
 
-    def to_struct(self, no_padding=False):
-        value = self._value
+    def to_struct(self):
+        return ushort(sum(map(lambda x, y: x * y, self._value, self.weights)))
 
-        toggle_padding = no_padding and value[7]
 
-        if toggle_padding:
-            value[7] = False
-
-        s = sum(map(lambda x, y: x * y, value, self.weights))
-
-        if toggle_padding:
-            value[7] = True
-
-        return write_struct(RepresentationCode.USHORT, s)
+@lru_cache
+def ushort(v):
+    return RepresentationCode.USHORT.converter.pack(v)
