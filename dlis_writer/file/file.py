@@ -3,6 +3,7 @@ import logging
 from line_profiler_pycharm import profile
 from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
 from typing import Union
+import time
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -144,6 +145,7 @@ class DLISFile:
                 i += 1
                 position_in_current_lrb = 0
                 remaining_lrb_size = lrb.size  # position in current lrb is 0
+                next_vr()
             return True
 
         next_lrb()
@@ -164,7 +166,11 @@ class DLISFile:
             else:
                 segment_size = min(remaining_vr_space, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
-                if segment_size >= mbs and future_remaining_lrb_size >= mbs:
+                if future_remaining_lrb_size < mbs:
+                    diff = mbs - future_remaining_lrb_size
+                    segment_size -= diff
+                    future_remaining_lrb_size = mbs
+                if segment_size >= mbs:
                     current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
                     current_vr_body_size += segment_size + hs
                     position_in_current_lrb += segment_size
