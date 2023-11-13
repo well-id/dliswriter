@@ -87,10 +87,12 @@ class DLISFile:
         if size is None:
             size = len(body)
 
-        if size > self.visible_record_length - 4:
-            raise ValueError(f"Body length is too large; got {size}, max is {self.visible_record_length - 4}")
+        size += 4
 
-        return write_struct(RepresentationCode.UNORM, size + 4) + self._format_version + body
+        if size > self.visible_record_length:
+            raise ValueError(f"VR length is too large; got {size}, max is {self.visible_record_length}")
+
+        return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
     @log_progress("Creating visible records of the DLIS...")
     @profile
