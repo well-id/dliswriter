@@ -2,6 +2,7 @@ import re
 from configparser import ConfigParser
 import logging
 import importlib
+from functools import cached_property
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, EFLRType
@@ -35,7 +36,7 @@ class EFLRObject:
 
         return super().__setattr__(key, value)
 
-    @property
+    @cached_property
     def obname(self) -> bytes:
         """Creates OBNAME bytes according to RP66 V1 spec
 
@@ -47,11 +48,6 @@ class EFLRObject:
         """
 
         return write_struct(RepresentationCode.OBNAME, self)
-
-    def _make_obname_bytes(self) -> bytes:
-        """Creates object component"""
-
-        return b'p' + self.obname
 
     def _make_attrs_bytes(self) -> bytes:
         """Creates object bytes that follows the object component
@@ -72,7 +68,7 @@ class EFLRObject:
         return _bytes
     
     def make_object_body_bytes(self):
-        return self._make_obname_bytes() + self._make_attrs_bytes()
+        return b'p' + self.obname + self._make_attrs_bytes()
     
     def set_attributes(self, **kwargs):
         for attr_name, attr_value in kwargs.items():

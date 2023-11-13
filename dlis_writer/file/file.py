@@ -71,19 +71,15 @@ class DLISFile:
         logger.info(f"Assigning origin reference: {val} to all logical records")
         logical_records.set_origin_reference(val)
 
-    @profile
     def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection):
         """Writes bytes of entire file without Visible Record objects and splits"""
 
-        def wrapper():
-            for lr in logical_records:
-                if isinstance(lr, MultiFrameData):
-                    for frame_data in lr:
-                        yield frame_data.represent_as_bytes()
-                else:
-                    yield lr.represent_as_bytes()
-
-        return wrapper()
+        for lr in logical_records:
+            if isinstance(lr, MultiFrameData):
+                for frame_data in lr:
+                    yield frame_data.represent_as_bytes()
+            else:
+                yield lr.represent_as_bytes()
 
     def _make_visible_record(self, body, size=None) -> bytes:
 
@@ -193,7 +189,6 @@ class DLISFile:
 
         logger.info(f"Data written to file: '{filename}'")
 
-    @profile
     def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 

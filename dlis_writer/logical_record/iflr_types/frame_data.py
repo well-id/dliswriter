@@ -1,6 +1,3 @@
-import math
-from functools import lru_cache
-
 from dlis_writer.logical_record.core.iflr import IFLR
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, IFLRType
@@ -38,15 +35,8 @@ class FrameData(IFLR):
     def frame(self):
         return self._frame
 
-    @property
-    def frame_number(self) -> int:
-        return self._frame_number
-
-    @lru_cache()
     def make_body_bytes(self) -> bytes:
-        body = b''
-        body += self.frame.obname
-        body += write_struct(RepresentationCode.UVARI, self.frame_number)
+        body = self._frame.obname + write_struct(RepresentationCode.UVARI, self._frame_number)
 
         for s in self._slots:
             body += s.tobytes()
