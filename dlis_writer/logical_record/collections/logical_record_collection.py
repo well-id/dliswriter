@@ -119,6 +119,20 @@ class LogicalRecordCollection(MultiLogicalRecord):
         check_list(self.frames, "Frame")
         check_list(self._channels, "Channel")
 
+        self._check_channels()
+
+    def _check_channels(self):
+        channels_in_frames = set()
+        for frame in self._frames:
+            for frame_object in frame.get_all_objects():
+                channels_in_frames |= set(frame_object.channels.value)
+
+        for channel in self._channels:
+            for channel_object in channel.get_all_objects():
+                if channel_object not in channels_in_frames:
+                    logger.warning(f"{channel_object} has not been added to any frame; "
+                                   f"this might cause issues with opening the produced DLIS file in some software")
+
     @staticmethod
     def make_frame_and_data(config, data, key='Frame'):
         frame_object: FrameObject = Frame.make_object_from_config(config, key=key)
