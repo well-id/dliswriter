@@ -118,11 +118,11 @@ class DLISFile:
 
         lrb: LogicalRecordBytes = None
         i = 0
-        remaining_vr_space = max_vr_body_size - hs
         remaining_lrb_size = 0
+        vr_space = max_vr_body_size - hs
 
         def next_vr():
-            nonlocal output, current_vr_body_size, current_vr_body, remaining_vr_space, total_filled_len, total_output_len
+            nonlocal output, current_vr_body_size, current_vr_body, total_filled_len, total_output_len
             new_len = total_filled_len + current_vr_body_size + hs
             while new_len > total_output_len:
                 output += bytearray(chunk_size)
@@ -132,7 +132,6 @@ class DLISFile:
             total_filled_len = new_len
             current_vr_body = b''
             current_vr_body_size = 0
-            remaining_vr_space = max_vr_body_size - 4
 
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
@@ -155,16 +154,15 @@ class DLISFile:
                 if not next_lrb():
                     break
 
-            if remaining_lrb_size <= remaining_vr_space:
+            if remaining_lrb_size <= vr_space:
                 current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb)
                 # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
                 current_vr_body_size = current_vr_body_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
-                remaining_vr_space = max_vr_body_size - current_vr_body_size - hs
                 if not next_lrb():
                     break
 
             else:
-                segment_size = min(remaining_vr_space, remaining_lrb_size)
+                segment_size = min(vr_space, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if future_remaining_lrb_size < mbs:
                     diff = mbs - future_remaining_lrb_size
