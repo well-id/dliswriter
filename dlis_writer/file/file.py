@@ -122,7 +122,7 @@ class DLISFile:
         vr_space = max_vr_body_size - hs
 
         def next_vr():
-            nonlocal output, current_vr_body_size, current_vr_body, total_filled_len, total_output_len
+            nonlocal output, current_vr_body, total_filled_len, total_output_len
             new_len = total_filled_len + current_vr_body_size + hs
             while new_len > total_output_len:
                 output += bytearray(chunk_size)
@@ -131,7 +131,6 @@ class DLISFile:
             output[total_filled_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
             total_filled_len = new_len
             current_vr_body = b''
-            current_vr_body_size = 0
 
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
@@ -156,8 +155,8 @@ class DLISFile:
 
             if remaining_lrb_size <= vr_space:
                 current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb)
-                # size increased by: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
-                current_vr_body_size = current_vr_body_size + hs + remaining_lrb_size + (remaining_lrb_size % 2)
+                # VR body size: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
+                current_vr_body_size = hs + remaining_lrb_size + (remaining_lrb_size % 2)
                 if not next_lrb():
                     break
 
@@ -165,12 +164,11 @@ class DLISFile:
                 segment_size = min(vr_space, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if future_remaining_lrb_size < mbs:
-                    diff = mbs - future_remaining_lrb_size
-                    segment_size -= diff
+                    segment_size -= mbs - future_remaining_lrb_size
                     future_remaining_lrb_size = mbs
                 if segment_size >= mbs:
                     current_vr_body += lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_vr_body_size += segment_size + hs
+                    current_vr_body_size = segment_size + hs
                     position_in_current_lrb += segment_size
                     remaining_lrb_size = future_remaining_lrb_size
                 next_vr()
