@@ -17,6 +17,7 @@ def create_data(n_points: int, n_images: int = 0, n_cols: int = 128, depth_based
         data_dict = {'time':  0.5 * np.arange(n_points)}
 
     data_dict['rpm'] = 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
+    data_dict['col3'] = np.arange(n_points, dtype=int)
 
     dtype = [(key, val.dtype) for key, val in data_dict.items()]
 
