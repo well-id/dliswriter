@@ -30,9 +30,12 @@ class LogicalRecordCollection(MultiLogicalRecord):
         self.file_header.origin_reference = value
         self.origin.origin_reference = value
 
-        for iterable in (self._channels, self._frames, self._frame_data_objects):
+        for iterable in (self._channels, self._frames):
             for ob in iterable:
                 ob.origin_reference = value
+
+        for fdo in self._frame_data_objects:
+            fdo.set_origin_reference(value)
 
         for lr in self._other_logical_records:
             lr.origin_reference = value
