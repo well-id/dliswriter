@@ -11,7 +11,7 @@ from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
 from dlis_writer.utils.loaders import load_hdf5, load_config
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data
+from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
 
 
@@ -46,10 +46,6 @@ class DLISWriter:
 
         if 'spacing.units' not in config['Frame'].keys():
             config['Frame']['spacing.units'] = 'm' if depth_based else 's'
-
-    @staticmethod
-    def create_data(**kwargs):
-        return create_data(**kwargs)
 
     @staticmethod
     def load_data(input_file_name):
@@ -87,15 +83,7 @@ class DLISWriter:
 
     @classmethod
     def from_parser_args(cls, pargs):
-        if (input_file_name := pargs.input_file_name) is None:
-            data = cls.create_data(
-                n_points=int(pargs.n_points),
-                n_images=pargs.n_images,
-                n_cols=pargs.n_cols,
-                depth_based=pargs.depth_based
-            )
-        else:
-            data = cls.load_data(input_file_name)
+        data = cls.load_data(pargs.input_file_name)
 
         if pargs.config:
             config_fn = pargs.config
@@ -136,8 +124,29 @@ if __name__ == '__main__':
 
     os.makedirs(Path(pargs.output_file_name).parent, exist_ok=True)
 
-    dlis_writer = DLISWriter.from_parser_args(pargs)
-    dlis_writer.write_dlis_file(dlis_file_name=pargs.output_file_name)
+    if (input_file_name := pargs.input_file_name) is None:
+        tmp_file_name = Path('./_tmp.h5').resolve()
+        pargs.input_file_name = tmp_file_name
+        create_data_file(
+            fpath=tmp_file_name,
+            n_points=int(pargs.n_points),
+            n_images=pargs.n_images,
+            n_cols=pargs.n_cols,
+            depth_based=pargs.depth_based
+        )
+    else:
+        tmp_file_name = None
+
+    try:
+        dlis_writer = DLISWriter.from_parser_args(pargs)
+        dlis_writer.write_dlis_file(dlis_file_name=pargs.output_file_name)
+    except Exception as exc:
+        if tmp_file_name:
+            os.remove(tmp_file_name)
+        raise exc
+    else:
+        if tmp_file_name:
+            os.remove(tmp_file_name)
 
     if pargs.reference_file_name is not None:
         compare_files(pargs.output_file_name, pargs.reference_file_name)
