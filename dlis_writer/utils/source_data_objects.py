@@ -4,15 +4,13 @@ from typing import Union
 import os
 
 
-class HDF5Interface:
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
-        # open the HDF5 file and access the data found under the top-level group name
-        self._h5_data = h5py.File(data_file_name, 'r', **kwargs)
-        self._mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
+class SourceDataObject:
+    def __init__(self, data_source, mapping, n_rows):
+        self._data_source = data_source
+        self._mapping = mapping
+        self._n_rows = n_rows
 
-        self._dtype = self.determine_dtypes(self._h5_data, self._mapping)
-
-        self._n_rows = self._h5_data.get(next(iter(self._mapping.values()))).shape[0]
+        self._dtype = self.determine_dtypes(self._data_source, self._mapping)
 
     @staticmethod
     def determine_dtypes(data_object, mapping: dict):
@@ -40,15 +38,9 @@ class HDF5Interface:
 
         chunk = np.zeros(n_rows, dtype=self._dtype)
         for key, loc in self._mapping.items():
-            chunk[key] = self._h5_data.get(loc)[idx]
+            chunk[key] = self._data_source[loc][idx]
 
         return chunk
-
-    def close(self):
-        self._h5_data.close()
-
-    def __del__(self):
-        self.close()
 
     def make_chunked_generator(self, chunk_rows):
         if chunk_rows is None:
@@ -62,3 +54,21 @@ class HDF5Interface:
 
         if remainder_rows:
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
+
+
+class HDF5Interface(SourceDataObject):
+    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
+
+        # open the HDF5 file and access the data found under the top-level group name
+        h5_data = h5py.File(data_file_name, 'r', **kwargs)
+
+        mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
+        n_rows = h5_data.get(next(iter(mapping.values()))).shape[0]
+
+        super().__init__(h5_data, mapping, n_rows)
+
+    def close(self):
+        self._data_source.close()
+
+    def __del__(self):
+        self.close()
