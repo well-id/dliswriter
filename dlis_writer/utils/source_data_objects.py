@@ -13,6 +13,10 @@ class SourceDataObject:
 
         self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
 
+    @property
+    def n_rows(self):
+        return self._n_rows
+
     @staticmethod
     def determine_dtypes(data_object, mapping: dict):
         dtypes = []
