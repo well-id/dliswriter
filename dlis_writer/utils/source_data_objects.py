@@ -5,12 +5,13 @@ import os
 
 
 class SourceDataObject:
-    def __init__(self, data_source, mapping, n_rows):
+    def __init__(self, data_source, mapping):
         self._data_source = data_source
         self._mapping = mapping
-        self._n_rows = n_rows
 
         self._dtype = self.determine_dtypes(self._data_source, self._mapping)
+
+        self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
 
     @staticmethod
     def determine_dtypes(data_object, mapping: dict):
@@ -63,12 +64,40 @@ class HDF5Interface(SourceDataObject):
         h5_data = h5py.File(data_file_name, 'r', **kwargs)
 
         mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
-        n_rows = h5_data.get(next(iter(mapping.values()))).shape[0]
 
-        super().__init__(h5_data, mapping, n_rows)
+        super().__init__(h5_data, mapping)
 
     def close(self):
         self._data_source.close()
 
     def __del__(self):
         self.close()
+
+
+class NumpyInterface(SourceDataObject):
+    def __init__(self, arr: np.array, mapping: dict = None):
+        if not arr.dtype.names:
+            raise ValueError("Input must be a structured numpy array")
+
+        if not mapping:
+            mapping = {k: k for k in arr.dtype.names}
+
+        super().__init__(arr, mapping)
+
+    def load_chunk(self, start: int, stop: Union[int, None]):
+        if self._dtype == self._data_source.dtype:
+            return self._data_source[start:stop]
+
+        return super().load_chunk(start, stop)
+
+
+class DictInterface(SourceDataObject):
+    def __init__(self, data_dict, mapping: dict = None):
+        if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
+            raise ValueError(f"Dict values must be numpy arrays; "
+                             f"got {', '.join(str(type(v)) for v in data_dict.values)}")
+
+        if not mapping:
+            mapping = {k: k for k in data_dict.keys()}
+
+        super().__init__(data_dict, mapping)
