@@ -16,20 +16,21 @@ class HDF5Interface:
         self._n_rows = self._h5_data.get(next(iter(self._mapping.values()))).shape[0]
 
     @staticmethod
-    def determine_dtypes(h5_data: h5py.File, mapping: dict):
+    def determine_dtypes(data_object, mapping: dict):
         dtypes = []
-        for key, loc in mapping.items():
-            dset = h5_data.get(loc)
-            if not dset:
-                raise ValueError(f"No dataset '{loc}' found in the file")
-            key_data = h5_data.get(loc)[0:1]  # get in form of a 1-element array, not a single number
+        for dtype_name, dataset_name in mapping.items():
+            try:
+                dset = data_object[dataset_name]
+            except (ValueError, KeyError):
+                raise ValueError(f"No dataset '{dataset_name}' found in the source data")
+            dset_row0 = dset[0:1]  # get in form of a 1-element array, not a single number
 
             # determine the dtype of the data set (2- or 3-tuple)
-            dt = (key, key_data.dtype)
-            if key_data.ndim > 1:
-                if key_data.ndim > 2:
+            dt = (dtype_name, dset_row0.dtype)
+            if dset_row0.ndim > 1:
+                if dset_row0.ndim > 2:
                     raise RuntimeError("Data sets with more than 2 dimensions are not supported")
-                dt = (*dt, key_data.shape[-1])  # 3-tuple if the data set has multiple samples per row
+                dt = (*dt, dset_row0.shape[-1])  # 3-tuple if the data set has multiple samples per row
             dtypes.append(dt)
 
         return np.dtype(dtypes)
@@ -51,7 +52,11 @@ class HDF5Interface:
         self.close()
 
     def make_chunked_generator(self, chunk_rows):
-        n_full_chunks, remainder_rows = divmod(self._n_rows, chunk_rows)
+        if chunk_rows is None:
+            n_full_chunks = 1
+            remainder_rows = 0
+        else:
+            n_full_chunks, remainder_rows = divmod(self._n_rows, chunk_rows)
 
         for i in range(n_full_chunks):
             yield from self.load_chunk(i * chunk_rows, (i + 1) * chunk_rows)
