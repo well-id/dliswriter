@@ -55,20 +55,6 @@ class DLISWriter:
 
         return parser
 
-    @staticmethod
-    def h5_mapping_from_config(config: ConfigParser):
-        mapping = {}
-
-        for section in config.sections():
-            if section.startswith('Channel'):
-                cs = config[section]
-                if 'dataset_name' in cs.keys():
-                    mapping[cs['name']] = cs['dataset_name']
-                else:
-                    mapping[cs['name']] = cs['name']
-
-        return mapping
-
     @classmethod
     def from_parser_args(cls, pargs):
 
@@ -79,7 +65,7 @@ class DLISWriter:
             logger.info("Config file path not provided; creating a config based on the data")
             config = make_config_from_data_file(pargs.input_file_name)
 
-        data = HDF5Interface(pargs.input_file_name, cls.h5_mapping_from_config(config))
+        data = HDF5Interface.from_config(pargs.input_file_name, config)
 
         writer = cls(data, config)
 

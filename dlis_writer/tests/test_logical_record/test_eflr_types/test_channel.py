@@ -250,7 +250,7 @@ def test_setting_dimension_from_data_mismatched_element_limit(chan, mock_data, n
 @pytest.mark.parametrize("name", ("amp", "posix time"))
 def test_setting_dimension_from_data_no_dataset_error(chan, mock_data, name):
     chan.name = name
-    with pytest.raises(ValueError, match=f"No dataset with name '{name}'.*"):
+    with pytest.raises(ValueError, match=f"no field of name {name}.*"):
         chan.set_dimension_and_repr_code_from_data(mock_data)
 
 

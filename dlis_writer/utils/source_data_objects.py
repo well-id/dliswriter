@@ -3,13 +3,16 @@ import h5py
 from typing import Union
 import os
 import logging
+from configparser import ConfigParser
 
 
 logger = logging.getLogger(__name__)
 
 
 class SourceDataObject:
-    def __init__(self, data_source, mapping):
+    def __init__(self, data_source, mapping, **kwargs):
+        if kwargs:
+            raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataObject: {kwargs}")
         self._data_source = data_source
         self._mapping = mapping
 
@@ -47,7 +50,7 @@ class SourceDataObject:
 
     def __getitem__(self, item):
         try:
-            data = self._data_source[item]
+            data = self._data_source[self._mapping[item]]
         except (ValueError, KeyError):
             raise ValueError(f"No dataset '{item}' found in the source data")
         return data
@@ -83,6 +86,34 @@ class SourceDataObject:
             logger.debug(f"Loading chunk {total_chunks}/{total_chunks} ({remainder_rows} rows)")
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
+    @staticmethod
+    def make_mapping_from_config(config: ConfigParser):
+        mapping = {}
+
+        frame_config = config['Frame']
+        if 'channels' in frame_config:
+            frame_channels = frame_config['channels']
+        elif 'channels.value' in frame_config:
+            frame_channels = frame_config['channels.value']
+        else:
+            raise RuntimeError("No channels defined for the frame")
+        frame_channels = frame_channels.split(', ')
+
+        for section in config.sections():
+            if section.startswith('Channel') and section in frame_channels:
+                cs = config[section]
+                if 'dataset_name' in cs.keys():
+                    mapping[cs['name']] = cs['dataset_name']
+                else:
+                    mapping[cs['name']] = cs['name']
+
+        return mapping
+
+    @classmethod
+    def from_config(cls, data_source, config, **kwargs):
+        mapping = cls.make_mapping_from_config(config)
+        return cls(data_source, mapping, **kwargs)
+
 
 class HDF5Interface(SourceDataObject):
     def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
@@ -92,7 +123,7 @@ class HDF5Interface(SourceDataObject):
 
         mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
 
-        super().__init__(h5_data, mapping)
+        super().__init__(h5_data, mapping, **kwargs)
 
     def close(self):
         try:
@@ -107,14 +138,14 @@ class HDF5Interface(SourceDataObject):
 
 
 class NumpyInterface(SourceDataObject):
-    def __init__(self, arr: np.array, mapping: dict = None):
+    def __init__(self, arr: np.array, mapping: dict = None, **kwargs):
         if not arr.dtype.names:
             raise ValueError("Input must be a structured numpy array")
 
         if not mapping:
             mapping = {k: k for k in arr.dtype.names}
 
-        super().__init__(arr, mapping)
+        super().__init__(arr, mapping, **kwargs)
 
     def load_chunk(self, start: int, stop: Union[int, None]):
         if self._dtype == self._data_source.dtype:
@@ -124,7 +155,7 @@ class NumpyInterface(SourceDataObject):
 
 
 class DictInterface(SourceDataObject):
-    def __init__(self, data_dict, mapping: dict = None):
+    def __init__(self, data_dict, mapping: dict = None, **kwargs):
         if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
             raise ValueError(f"Dict values must be numpy arrays; "
                              f"got {', '.join(str(type(v)) for v in data_dict.values)}")
@@ -132,4 +163,4 @@ class DictInterface(SourceDataObject):
         if not mapping:
             mapping = {k: k for k in data_dict.keys()}
 
-        super().__init__(data_dict, mapping)
+        super().__init__(data_dict, mapping, **kwargs)

@@ -10,6 +10,12 @@ class MultiFrameData(MultiLogicalRecord):
     def __init__(self, frame: FrameObject, data: SourceDataObject, chunk_rows=None):
         super().__init__()
 
+        frame_channel_names = tuple(c.name for c in frame.channels.value)
+        data_channel_names = data.dtype.names
+        if frame_channel_names != data_channel_names:
+            raise ValueError(f"Channel names in data {data_channel_names} "
+                             f"do not match channels defined in the frame {frame_channel_names}")
+
         self._data_source = data  # TODO: check with channel names of the frame
         self._frame = frame
 

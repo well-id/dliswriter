@@ -48,7 +48,7 @@ class ChannelObject(EFLRObject):
 
     def set_dimension_and_repr_code_from_data(self, data: SourceDataObject):
 
-        sub_data = data[self.dataset_name]
+        sub_data = data[self.name]
         self._set_dimension_from_data(sub_data)
         self._set_repr_code_from_data(sub_data)
 

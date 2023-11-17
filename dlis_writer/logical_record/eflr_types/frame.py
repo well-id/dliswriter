@@ -73,7 +73,7 @@ class FrameObject(EFLRObject):
                 setattr(attr, key, value)
 
         index_channel: ChannelObject = self.channels.value[0]
-        index_data = data[index_channel.dataset_name][:]
+        index_data = data[index_channel.name][:]
         unit = index_channel.units.value
         repr_code = index_channel.representation_code.value or RepC.FDOUBL
         spacing = np.median(np.diff(index_data))

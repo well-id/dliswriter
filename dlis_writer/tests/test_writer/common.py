@@ -4,6 +4,7 @@ from dlisio import dlis
 
 from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.writer.writer import DLISWriter
+from dlis_writer.utils.source_data_objects import NumpyInterface
 
 from dlis_writer.tests.common import base_data_path, clear_eflr_instance_registers
 
@@ -37,6 +38,6 @@ def select_channel(f, name):
 
 def write_dlis_file(data, dlis_file_name, config):
     clear_eflr_instance_registers()
-    writer = DLISWriter(data, config)
+    writer = DLISWriter(NumpyInterface.from_config(data, config), config)
     writer.write_dlis_file(dlis_file_name=dlis_file_name)
 
