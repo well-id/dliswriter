@@ -1,5 +1,4 @@
 from pathlib import Path
-import numpy as np
 import logging
 import os
 from argparse import ArgumentParser
@@ -9,47 +8,22 @@ from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
-from dlis_writer.utils.loaders import load_hdf5, load_config
+from dlis_writer.utils.loaders import load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
+from dlis_writer.utils.source_data_objects import HDF5Interface, SourceDataObject
+from dlis_writer.writer.config_from_data import make_config_from_data_file
 
 
 logger = logging.getLogger(__name__)
 
 
 class DLISWriter:
-    default_config_file_name = Path(__file__).resolve().parent/'basic_config.ini',
 
-    def __init__(self, data, config):
+    def __init__(self, data: SourceDataObject, config: ConfigParser):
         self._data = data
         self._config = config
-
-    @staticmethod
-    def add_channel_config_from_data(data: np.ndarray, config: ConfigParser):
-        sections = []
-
-        for name in data.dtype.names:
-            section = f"Channel-{name}"
-            if section not in config.sections():
-                config.add_section(section)
-                config[section]['name'] = name
-            sections.append(section)
-
-        if sections:
-            config['Frame']['channels'] = ', '.join(sections)
-
-    @staticmethod
-    def add_index_config(config: ConfigParser, depth_based=False):
-        if 'index_type' not in config['Frame'].keys():
-            config['Frame']['index_type'] = 'DEPTH' if depth_based else 'TIME'
-
-        if 'spacing.units' not in config['Frame'].keys():
-            config['Frame']['spacing.units'] = 'm' if depth_based else 's'
-
-    @staticmethod
-    def load_data(input_file_name):
-        return load_hdf5(input_file_name)
 
     def write_dlis_file(self, dlis_file_name):
         def timed_func():
@@ -81,21 +55,31 @@ class DLISWriter:
 
         return parser
 
+    @staticmethod
+    def h5_mapping_from_config(config: ConfigParser):
+        mapping = {}
+
+        for section in config.sections():
+            if section.startswith('Channel'):
+                cs = config[section]
+                if 'dataset_name' in cs.keys():
+                    mapping[cs['name']] = cs['dataset_name']
+                else:
+                    mapping[cs['name']] = cs['name']
+
+        return mapping
+
     @classmethod
     def from_parser_args(cls, pargs):
-        data = cls.load_data(pargs.input_file_name)
 
         if pargs.config:
-            config_fn = pargs.config
-            add_channels_from_data = pargs.channels_from_data
+            logger.info(f"Loading config file from {pargs.config}")
+            config = load_config(pargs.config)
         else:
-            config_fn = cls.default_config_file_name
-            add_channels_from_data = True
+            logger.info("Config file path not provided; creating a config based on the data")
+            config = make_config_from_data_file(pargs.input_file_name)
 
-        config = load_config(config_fn)
-        if add_channels_from_data or ('channels' not in config['Frame'] and 'channels.value' not in config['Frame']):
-            cls.add_channel_config_from_data(data, config)
-        cls.add_index_config(config, depth_based=pargs.depth_based)
+        data = HDF5Interface(pargs.input_file_name, cls.h5_mapping_from_config(config))
 
         writer = cls(data, config)
 
@@ -132,21 +116,26 @@ if __name__ == '__main__':
             n_points=int(pargs.n_points),
             n_images=pargs.n_images,
             n_cols=pargs.n_cols,
-            depth_based=pargs.depth_based
+            depth_based=pargs.depth_based,
+            overwrite=True  # TODO
         )
     else:
         tmp_file_name = None
 
+    exception = None
     try:
         dlis_writer = DLISWriter.from_parser_args(pargs)
         dlis_writer.write_dlis_file(dlis_file_name=pargs.output_file_name)
     except Exception as exc:
+        exception = exc
+    finally:
         if tmp_file_name:
-            os.remove(tmp_file_name)
-        raise exc
-    else:
-        if tmp_file_name:
-            os.remove(tmp_file_name)
+            try:
+                os.remove(tmp_file_name)
+            except Exception as exc2:
+                logger.error(f"Error trying to remove temporary hdf5 data file: '{exc2}'")
+    if exception:
+        raise exception
 
     if pargs.reference_file_name is not None:
         compare_files(pargs.output_file_name, pargs.reference_file_name)

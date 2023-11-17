@@ -62,6 +62,9 @@ def load_hdf5(data_file_name: Union[str, bytes, os.PathLike], key: str = 'conten
 
 
 def load_config(fname):
+    if not os.path.exists(fname):
+        raise ValueError(f"Config file does not exist at {fname}")
+
     cfg = ConfigParser()
     cfg.read(fname)
     return cfg

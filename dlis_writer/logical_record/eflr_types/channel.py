@@ -6,6 +6,7 @@ from dlis_writer.logical_record.eflr_types.axis import Axis
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
+from dlis_writer.utils.source_data_objects import HDF5Interface, SourceDataObject
 
 
 logger = logging.getLogger(__name__)
@@ -45,10 +46,7 @@ class ChannelObject(EFLRObject):
     def dataset_name(self, name: str):
         self._dataset_name = name
 
-    def set_dimension_and_repr_code_from_data(self, data: np.ndarray):
-
-        if self.dataset_name not in data.dtype.names:
-            raise ValueError(f"No dataset with name '{self.dataset_name}' found in the data")
+    def set_dimension_and_repr_code_from_data(self, data: SourceDataObject):
 
         sub_data = data[self.dataset_name]
         self._set_dimension_from_data(sub_data)

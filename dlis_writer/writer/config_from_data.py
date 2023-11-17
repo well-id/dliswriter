@@ -1,3 +1,5 @@
+import os
+
 import h5py
 from configparser import ConfigParser
 from pathlib import Path
@@ -13,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 default_base_config_file_name = Path(__file__).resolve().parent / 'basic_config.ini'
+path_type = Union[str, bytes, os.PathLike]
 
 
 def make_parser():
@@ -29,7 +32,7 @@ def make_parser():
     return parser
 
 
-def add_index_config(config: ConfigParser, time_based=False):
+def add_index_config(config: ConfigParser, time_based: bool = False):
     if 'index_type' not in config['Frame'].keys():
         config['Frame']['index_type'] = 'TIME' if time_based else 'DEPTH'
 
@@ -62,12 +65,12 @@ def yield_h5_datasets(h5_object: Union[h5py.File, h5py.Group]):
             yield from yield_h5_datasets(value)
 
 
-def extend_config(data, config, time_based=False):
+def extend_config(data: h5py.File, config: ConfigParser, time_based: bool = False):
     add_index_config(config, time_based=time_based)
     add_channel_config_from_data(data, config)
 
 
-def write_config(config: ConfigParser, file_name: str):
+def write_config(config: ConfigParser, file_name: path_type):
     if Path(file_name).exists():
         logger.warning(f"Overwriting existing config file at '{file_name}'")
 
@@ -76,33 +79,47 @@ def write_config(config: ConfigParser, file_name: str):
     logger.info(f"Created new config file at '{file_name}'")
 
 
-def make_config_from_data(data: h5py.File, base_config_file_name: str, output_config_file_name: str, **kwargs):
+def make_config_from_data(data: h5py.File, base_config_file_name: path_type = None,
+                          output_config_file_name: path_type = None, **kwargs):
+    base_config_file_name = base_config_file_name or default_base_config_file_name
     logger.info(f"Loading base config from '{base_config_file_name}'")
     config: ConfigParser = load_config(base_config_file_name)
 
     extend_config(data, config, **kwargs)
-    write_config(config, output_config_file_name)
+
+    if output_config_file_name:
+        write_config(config, output_config_file_name)
+    else:
+        logger.debug("Output config file name not provided; config will not be stored to a file")
+
+    return config
 
 
-def main():
-    pargs = make_parser().parse_args()
-
-    data = h5py.File(pargs.data_file_name, 'r')
+def make_config_from_data_file(data_file_name: path_type, **kwargs):
+    data = h5py.File(data_file_name, 'r')
 
     exception = None
     try:
-        make_config_from_data(
-            data,
-            base_config_file_name=pargs.base_config_file_name,
-            output_config_file_name=pargs.config_file_name,
-            time_based=pargs.time_based
-        )
+        config = make_config_from_data(data, **kwargs)
     except Exception as exc:
         exception = exc
     finally:
         data.close()
     if exception:
         raise exception
+
+    return config
+
+
+def main():
+    pargs = make_parser().parse_args()
+
+    make_config_from_data_file(
+        pargs.data_file_name,
+        base_config_file_name=pargs.base_config_file_name,
+        output_config_file_name=pargs.config_file_name,
+        time_based=pargs.time_based
+    )
 
 
 if __name__ == '__main__':

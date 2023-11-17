@@ -2,6 +2,10 @@ import numpy as np
 import h5py
 from typing import Union
 import os
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class SourceDataObject:
@@ -16,6 +20,10 @@ class SourceDataObject:
     @property
     def n_rows(self):
         return self._n_rows
+
+    @property
+    def dtype(self):
+        return self._dtype
 
     @staticmethod
     def determine_dtypes(data_object, mapping: dict):
@@ -37,6 +45,13 @@ class SourceDataObject:
 
         return np.dtype(dtypes)
 
+    def __getitem__(self, item):
+        try:
+            data = self._data_source[item]
+        except (ValueError, KeyError):
+            raise ValueError(f"No dataset '{item}' found in the source data")
+        return data
+
     def load_chunk(self, start: int, stop: Union[int, None]):
         idx = slice(start, stop)
         n_rows = (stop or self._n_rows) - start
@@ -49,15 +64,23 @@ class SourceDataObject:
 
     def make_chunked_generator(self, chunk_rows):
         if chunk_rows is None:
+            chunk_rows = self._n_rows
             n_full_chunks = 1
             remainder_rows = 0
+            logger.debug("Data will be loaded in a single chunk")
         else:
             n_full_chunks, remainder_rows = divmod(self._n_rows, chunk_rows)
+            rem = f" plus a last, smaller chunk of {remainder_rows} rows" if remainder_rows else ""
+            logger.debug(f"Data will be loaded in {n_full_chunks} chunks of {chunk_rows} rows" + rem)
+
+        total_chunks = n_full_chunks + int(bool(remainder_rows))
 
         for i in range(n_full_chunks):
+            logger.debug(f"Loading chunk {i+1}/{total_chunks} ({chunk_rows} rows)")
             yield from self.load_chunk(i * chunk_rows, (i + 1) * chunk_rows)
 
         if remainder_rows:
+            logger.debug(f"Loading chunk {total_chunks}/{total_chunks} ({remainder_rows} rows)")
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
 
@@ -72,7 +95,12 @@ class HDF5Interface(SourceDataObject):
         super().__init__(h5_data, mapping)
 
     def close(self):
-        self._data_source.close()
+        try:
+            self._data_source.close()
+        except TypeError as exc:
+            logger.error(f"Error closing the source data file: {exc}")
+        else:
+            logger.debug("Source data file closed")
 
     def __del__(self):
         self.close()

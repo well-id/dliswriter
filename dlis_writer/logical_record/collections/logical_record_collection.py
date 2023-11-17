@@ -145,7 +145,7 @@ class LogicalRecordCollection(MultiLogicalRecord):
         else:
             ch = "(no channels defined)"
 
-        logger.info(f'Preparing frames for {data.shape[0]} rows {ch}')
+        logger.info(f'Preparing frames for {data.n_rows} rows {ch}')
         multi_frame_data = MultiFrameData(frame_object, data)
 
         return frame_object, multi_frame_data
