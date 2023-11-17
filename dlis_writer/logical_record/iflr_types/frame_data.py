@@ -39,6 +39,6 @@ class FrameData(IFLR):
         body = self._frame.obname + write_struct(RepresentationCode.UVARI, self._frame_number)
 
         for s in self._slots:
-            body += s.tobytes()
+            body += s.byteswap().tobytes()
 
         return body

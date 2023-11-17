@@ -53,7 +53,7 @@ class MultiFrameData(MultiLogicalRecord):
         return FrameData(
             frame=self._frame,
             frame_number=self._i,
-            slots=next(self._data_item_generator).byteswap(),  # TODO: byteswap earlier - at chunk level?
+            slots=next(self._data_item_generator),
             origin_reference=self._origin_reference
         )
 
