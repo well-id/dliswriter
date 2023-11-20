@@ -5,7 +5,6 @@ from dlisio import dlis
 from pathlib import Path
 import h5py
 
-from dlis_writer.utils.loaders import load_hdf5
 from dlis_writer.writer.writer import DLISWriter
 from dlis_writer.utils.source_data_objects import NumpyInterface, HDF5Interface, SourceDataObject
 
