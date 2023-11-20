@@ -15,13 +15,13 @@ def cleanup():
 
 
 @pytest.fixture(scope='session')
-def short_dlis(short_reference_data, base_data_path, config_params):
+def short_dlis(short_reference_data_path, base_data_path, config_params):
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
 
     channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
     config_params['Frame']['channels'] = ', '.join(channel_names)
 
-    write_dlis_file(data=short_reference_data, dlis_file_name=dlis_path, config=config_params)
+    write_dlis_file(data=short_reference_data_path, dlis_file_name=dlis_path, config=config_params)
 
     with load_dlis(dlis_path) as f:
         yield f

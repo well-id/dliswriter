@@ -9,6 +9,7 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data_path, reference_data, short_reference_data, short_reference_data_path  # fixtures
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
 from dlis_writer.tests.common import clear_eflr_instance_registers
+from dlis_writer.utils.source_data_objects import HDF5Interface
 
 
 @pytest.fixture(autouse=True)
@@ -33,7 +34,7 @@ def config_array_time_based(config_time_based):
     for s in c.sections():
         if s.startswith('Channel'):
             if 'dataset_name' in c[s].keys():
-                c[s]['dataset_name'] = c[s]['dataset_name'].split('/')[-1]
+                c[s]['dataset_name'] = c[s]['name']
 
     return c
 
@@ -74,8 +75,10 @@ def test_dlis_depth_based(short_reference_data, short_reference_data_path, new_d
 
         frame = f.frames[0]
         assert frame.index_type == 'DEPTH'
-        assert frame.index_min == short_reference_data['depth'].min()
-        assert frame.index_max == short_reference_data['depth'].max()
+
+        index = short_reference_data['/contents/depth'][:]
+        assert frame.index_min == index.min()
+        assert frame.index_max == index.max()
 
 
 def test_dlis_time_based(short_reference_data, short_reference_data_path, new_dlis_path, config_time_based):
@@ -89,8 +92,9 @@ def test_dlis_time_based(short_reference_data, short_reference_data_path, new_dl
 
         frame = f.frames[0]
         assert frame.index_type == 'TIME'
-        assert frame.index_max == short_reference_data['time'].max()
-        assert frame.index_min == short_reference_data['time'].min()
+        index = short_reference_data['/contents/time'][:]
+        assert frame.index_min == index.min()
+        assert frame.index_max == index.max()
 
 
 @pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
@@ -108,8 +112,9 @@ def test_repr_code(short_reference_data_path, new_dlis_path, code, value, config
 
 
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
-def test_channel_curves(reference_data, new_dlis_path, n_points, config_array_time_based):
-    write_dlis_file(data=reference_data[:n_points], dlis_file_name=new_dlis_path, config=config_array_time_based)
+def test_channel_curves(reference_data_path, reference_data, new_dlis_path, n_points, config_array_time_based, config_time_based):
+    data = HDF5Interface.from_config(reference_data_path, config_time_based)
+    write_dlis_file(data=data.load_chunk(0, n_points), dlis_file_name=new_dlis_path, config=config_array_time_based)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('posix time', 'surface rpm'):
@@ -125,9 +130,9 @@ def test_channel_curves(reference_data, new_dlis_path, n_points, config_array_ti
             data = reference_data[data_name][:n_points]
             assert pytest.approx(curve) == data
 
-        check_contents('posix time', 'time')
-        check_contents('surface rpm', 'rpm')
-        check_contents('amplitude', 'image0')
-        check_contents('radius', 'image1')
-        check_contents('radius_pooh', 'image2')
+        check_contents('posix time', '/contents/time')
+        check_contents('surface rpm', '/contents/rpm')
+        check_contents('amplitude', '/contents/image0')
+        check_contents('radius', '/contents/image1')
+        check_contents('radius_pooh', '/contents/image2')
 
