@@ -8,12 +8,11 @@ from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
-from dlis_writer.utils.loaders import load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
 from dlis_writer.utils.source_data_objects import HDF5Interface, SourceDataObject
-from dlis_writer.writer.config_from_data import make_config_from_data_file
+from dlis_writer.writer.config_from_data import DLISConfig
 
 
 logger = logging.getLogger(__name__)
@@ -60,14 +59,14 @@ class DLISWriter:
 
         if pargs.config:
             logger.info(f"Loading config file from {pargs.config}")
-            config = load_config(pargs.config)
+            config = DLISConfig.from_config_file(pargs.config)
         else:
             logger.info("Config file path not provided; creating a config based on the data")
-            config = make_config_from_data_file(pargs.input_file_name)
+            config = DLISConfig.from_h5_data_file(pargs.input_file_name)
 
-        data = HDF5Interface.from_config(pargs.input_file_name, config)
+        data = HDF5Interface.from_config(pargs.input_file_name, config.config)
 
-        writer = cls(data, config)
+        writer = cls(data, config.config)
 
         return writer
 
