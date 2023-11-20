@@ -3,7 +3,7 @@ import pytest
 from datetime import datetime
 
 from dlis_writer.tests.common import base_data_path, config_params
-from dlis_writer.tests.test_writer.common import reference_data, short_reference_data
+from dlis_writer.tests.test_writer.common import reference_data, reference_data_path, short_reference_data_path, short_reference_data
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
 from dlis_writer.tests.common import clear_eflr_instance_registers
 
