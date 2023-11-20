@@ -47,8 +47,8 @@ class DLISWriter:
                             help='Number of 2D data sets to add (ignored if input file is specified)')
         parser.add_argument('-nc', '--n-cols', type=int, default=128,
                             help='No. columns for each of the added 2D data sets (ignored if input file specified)')
-        parser.add_argument('--depth-based', action='store_true', default=False,
-                            help="Make a depth-based HDF5 file (default is time-based)")
+        parser.add_argument('--time-based', action='store_true', default=False,
+                            help="Make a time-based DLIS file (default is depth-based)")
         parser.add_argument('--channels-from-data', action='store_true', default=False,
                             help="Extend the provided config file with channel information from the data")
 
@@ -65,6 +65,10 @@ class DLISWriter:
             config = DLISConfig.from_h5_data_file(pargs.input_file_name)
 
         data = HDF5Interface.from_config(pargs.input_file_name, config.config)
+
+        if not pargs.config and pargs.channels_from_data:
+            config.add_channel_config_from_data(data)
+            config.add_index_config(time_based=pargs.time_based)
 
         writer = cls(data, config.config)
 
@@ -101,7 +105,7 @@ if __name__ == '__main__':
             n_points=int(pargs.n_points),
             n_images=pargs.n_images,
             n_cols=pargs.n_cols,
-            depth_based=pargs.depth_based,
+            time_based=pargs.time_based,
             overwrite=True  # TODO
         )
     else:

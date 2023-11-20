@@ -9,15 +9,15 @@ def make_image(n_points, n_cols, divider=11):
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def create_data(n_points: int, n_images: int = 0, n_cols: int = 128, depth_based=False) -> np.ndarray:
+def create_data(n_points: int, n_images: int = 0, n_cols: int = 128, time_based=False) -> np.ndarray:
 
-    if depth_based:
-        data_dict = {'depth': 2500 + 0.1 * np.arange(n_points)}
+    if time_based:
+        data_dict = {'time': 0.5 * np.arange(n_points)}
     else:
-        data_dict = {'time':  0.5 * np.arange(n_points)}
+        data_dict = {'depth': 2500 + 0.1 * np.arange(n_points)}
 
     data_dict['rpm'] = 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
-    data_dict['col3'] = np.arange(n_points, dtype=int)
+    data_dict['col3'] = np.arange(n_points, dtype=np.float16)
 
     dtype = [(key, val.dtype) for key, val in data_dict.items()]
 
@@ -45,9 +45,9 @@ def create_data_file(n_points, fpath, overwrite=False, **kwargs):
     data_array = create_data(n_points, **kwargs)
     exception = None
 
-    h5_file = h5py.File(fpath, 'w')
+    h5_file = h5py.File(fpath, 'w', track_order=True)
     try:
-        group = h5_file.create_group('contents')
+        group = h5_file.create_group('contents', track_order=True)
 
         for key in data_array.dtype.names:
             col = data_array[key]
