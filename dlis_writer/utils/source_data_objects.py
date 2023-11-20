@@ -5,18 +5,22 @@ import os
 import logging
 from configparser import ConfigParser
 
+from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import ReprCodeConverter
+
+
 
 logger = logging.getLogger(__name__)
 
 
 class SourceDataObject:
-    def __init__(self, data_source, mapping, **kwargs):
+    def __init__(self, data_source, mapping, known_dtypes: dict = None, **kwargs):
         if kwargs:
             raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataObject: {kwargs}")
         self._data_source = data_source
         self._mapping = mapping
 
-        self._dtype = self.determine_dtypes(self._data_source, self._mapping)
+        self._dtype = self.determine_dtypes(self._data_source, self._mapping, known_dtypes=known_dtypes)
 
         self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
 
@@ -29,7 +33,7 @@ class SourceDataObject:
         return self._dtype
 
     @staticmethod
-    def determine_dtypes(data_object, mapping: dict):
+    def determine_dtypes(data_object, mapping: dict, known_dtypes: dict = None):
         dtypes = []
         for dtype_name, dataset_name in mapping.items():
             try:
@@ -39,7 +43,7 @@ class SourceDataObject:
             dset_row0 = dset[0:1]  # get in form of a 1-element array, not a single number
 
             # determine the dtype of the data set (2- or 3-tuple)
-            dt = (dtype_name, dset_row0.dtype)
+            dt = (dtype_name, known_dtypes.get(dtype_name, dset_row0.dtype))
             if dset_row0.ndim > 1:
                 if dset_row0.ndim > 2:
                     raise RuntimeError("Data sets with more than 2 dimensions are not supported")
@@ -87,8 +91,9 @@ class SourceDataObject:
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
     @staticmethod
-    def make_mapping_from_config(config: ConfigParser):
-        mapping = {}
+    def make_mappings_from_config(config: ConfigParser):
+        name_mapping = {}
+        dtype_mapping = {}
 
         frame_config = config['Frame']
         if 'channels' in frame_config:
@@ -103,16 +108,31 @@ class SourceDataObject:
             if section.startswith('Channel') and section in frame_channels:
                 cs = config[section]
                 if 'dataset_name' in cs.keys():
-                    mapping[cs['name']] = cs['dataset_name']
+                    name_mapping[cs['name']] = cs['dataset_name']
                 else:
-                    mapping[cs['name']] = cs['name']
+                    name_mapping[cs['name']] = cs['name']
 
-        return mapping
+                repr_code = cs.get('representation_code', cs.get('representation_code.value', None))
+                if isinstance(repr_code, str) and repr_code.isdigit():
+                    repr_code = RepresentationCode(int(repr_code))
+                elif repr_code is not None:
+                    repr_code = RepresentationCode[repr_code]
+
+                dtype_mapping[cs['name']] = SourceDataObject.get_dtype(repr_code)
+
+        return name_mapping, dtype_mapping
+
+    @staticmethod
+    def get_dtype(repr_code: RepresentationCode):
+        if repr_code is None:
+            return SourceDataObject.get_dtype(RepresentationCode.FDOUBL)
+
+        return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
 
     @classmethod
     def from_config(cls, data_source, config, **kwargs):
-        mapping = cls.make_mapping_from_config(config)
-        return cls(data_source, mapping, **kwargs)
+        name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
+        return cls(data_source, name_mapping, known_dtypes=dtype_mapping, **kwargs)
 
 
 class HDF5Interface(SourceDataObject):

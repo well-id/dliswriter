@@ -1,8 +1,6 @@
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.iflr_types import FrameData
 from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
-from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.source_data_objects import SourceDataObject
 
 
@@ -56,10 +54,3 @@ class MultiFrameData(MultiLogicalRecord):
             slots=next(self._data_item_generator),
             origin_reference=self._origin_reference
         )
-
-    @staticmethod
-    def get_dtype(repr_code: RepresentationCode):
-        if repr_code is None:
-            return MultiFrameData.get_dtype(RepresentationCode.FDOUBL)
-
-        return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
