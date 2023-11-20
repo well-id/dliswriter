@@ -73,17 +73,24 @@ class ReprCodeConverter:
     }
 
     @classmethod
+    def determine_repr_code_from_numpy_dtype(cls, dt):
+        repr_code = cls.numpy_dtypes.get(dt.name, None)
+        if repr_code is None:
+            raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {dt}")
+        return repr_code
+
+    @classmethod
+    def determine_repr_code_from_generic_type(cls, t):
+        repr_code = cls.generic_types.get(t, None)
+        if not repr_code:
+            raise cls.ReprCodeError(f"Cannot determine representation code for type {t}")
+        return repr_code
+
+    @classmethod
     def _determine_repr_code_single(cls, value):
         if isinstance(value, (np.generic, np.ndarray)):
-            repr_code = cls.numpy_dtypes.get(value.dtype.name, None)
-            if repr_code is None:
-                raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {value.dtype}")
-            return repr_code
-
-        repr_code_getter = cls.generic_types.get(type(value), None)
-        if not repr_code_getter:
-            raise cls.ReprCodeError(f"Cannot determine representation code for type {type(value)} ({value})")
-        return repr_code_getter
+            return cls.determine_repr_code_from_numpy_dtype(value.dtype)
+        return cls.determine_repr_code_from_generic_type(type(value))
 
     @classmethod
     def _determine_repr_code_multiple(cls, values):
@@ -112,7 +119,7 @@ class ReprCodeConverter:
         raise cls.ReprCodeError(f"Cannot determine a representation code for values: {values}")
 
     @classmethod
-    def determine_repr_code(cls, v):
+    def determine_repr_code_from_value(cls, v):
         if isinstance(v, (list, tuple)):
             return cls._determine_repr_code_multiple(v)
         return cls._determine_repr_code_single(v)

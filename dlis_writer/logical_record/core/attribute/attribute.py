@@ -82,7 +82,7 @@ class Attribute:
                 return None
 
         try:
-            return ReprCodeConverter.determine_repr_code(self._value)
+            return ReprCodeConverter.determine_repr_code_from_value(self._value)
         except ReprCodeConverter.ReprCodeError as exc:
             logger.warning(exc.args[0])
             return None

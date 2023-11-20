@@ -9,6 +9,7 @@ import logging
 
 from dlis_writer.utils.loaders import load_config
 from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.converters import ReprCodeConverter
 
 
 logger = logging.getLogger(__name__)
@@ -51,6 +52,8 @@ def add_channel_config_from_data(data: h5py.File, config: ConfigParser):
             config.add_section(section)
             config[section]['name'] = channel_name
             config[section]['dataset_name'] = dataset_name
+            config[section]['representation_code'] = (
+                str(ReprCodeConverter.determine_repr_code_from_numpy_dtype(dataset.dtype).value))
         sections.append(section)
 
     if sections:
