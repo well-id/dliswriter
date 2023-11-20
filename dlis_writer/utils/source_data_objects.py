@@ -139,19 +139,20 @@ class HDF5Interface(SourceDataObject):
     def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
 
         # open the HDF5 file and access the data found under the top-level group name
-        h5_data = h5py.File(data_file_name, 'r', **kwargs)
+        h5_data = h5py.File(data_file_name, 'r')
 
         mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
 
         super().__init__(h5_data, mapping, **kwargs)
 
     def close(self):
-        try:
-            self._data_source.close()
-        except TypeError as exc:
-            logger.error(f"Error closing the source data file: {exc}")
-        else:
-            logger.debug("Source data file closed")
+        if hasattr(self, '_data_source'):  # object might be partially initialised
+            try:
+                self._data_source.close()
+            except TypeError as exc:
+                logger.error(f"Error closing the source data file: {exc}")
+            else:
+                logger.debug("Source data file closed")
 
     def __del__(self):
         self.close()
