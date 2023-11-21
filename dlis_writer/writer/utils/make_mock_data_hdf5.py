@@ -3,55 +3,50 @@ import os
 import h5py
 from pathlib import Path
 from argparse import ArgumentParser
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 def make_image(n_points, n_cols, divider=11):
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def create_data(n_points: int, n_images: int = 0, n_cols: int = 128, time_based=False) -> np.ndarray:
+def _fill_in_data(h5_group, n_points: int, n_images: int = 0, n_cols: int = 128, time_based=False) -> np.ndarray:
 
     if time_based:
-        data_dict = {'time': 0.5 * np.arange(n_points)}
+        logger.debug("Creating time dataset")
+        h5_group.create_dataset('time', data=0.5 * np.arange(n_points))
     else:
-        data_dict = {'depth': 2500 + 0.1 * np.arange(n_points)}
+        logger.debug("Creating depth dataset")
+        h5_group.create_dataset('depth', data=2500 + 0.1 * np.arange(n_points))
 
-    data_dict['rpm'] = 10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points))
-    data_dict['col3'] = np.arange(n_points, dtype=np.float16)
-
-    dtype = [(key, val.dtype) for key, val in data_dict.items()]
+    logger.debug("Creating two more linear datasets")
+    h5_group.create_dataset('rpm', data=10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points)))
+    h5_group.create_dataset('col3', data=np.arange(n_points, dtype=np.float16))
 
     for i in range(n_images):
-        im = make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand()))
-        im_name = f'image{i}'
-        data_dict[im_name] = im
-        dtype.append((im_name, im.dtype, n_cols))
-
-    data_array = np.zeros(n_points, dtype=dtype)
-    for key, arr in data_dict.items():
-        data_array[key] = arr
-
-    return data_array
+        logger.debug(f"Creating image dataset {i+1}/{n_images}")
+        h5_group.create_dataset(
+            f'image{i}', data=make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand())))
 
 
 def create_data_file(n_points, fpath, overwrite=False, **kwargs):
     if fpath.exists():
         if overwrite:
-            print(f"Removing existing HDF5 file at {fpath}")
+            logger.info(f"Removing existing HDF5 file at {fpath}")
             os.remove(fpath)
         else:
             raise RuntimeError(f"File '{fpath}' already exists. Cannot overwrite file.")
 
-    data_array = create_data(n_points, **kwargs)
     exception = None
 
+    logger.info(f"Creating a HDF5 file at {fpath}")
     h5_file = h5py.File(fpath, 'w', track_order=True)
     try:
         group = h5_file.create_group('contents', track_order=True)
-
-        for key in data_array.dtype.names:
-            col = data_array[key]
-            group.create_dataset(key, col.shape, col.dtype, col)
+        _fill_in_data(group, n_points, **kwargs)
     except Exception as exc:
         exception = exc
     finally:
@@ -61,7 +56,7 @@ def create_data_file(n_points, fpath, overwrite=False, **kwargs):
     if exception:
         raise exception
 
-    print(f"Fake data with {n_points} points saved to file '{fpath}'")
+    logger.info(f"Fake data with {n_points} points saved to file '{fpath}'")
 
 
 if __name__ == '__main__':
