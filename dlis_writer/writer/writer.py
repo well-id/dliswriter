@@ -24,9 +24,10 @@ class DLISWriter:
         self._data = data
         self._config = config
 
-    def write_dlis_file(self, dlis_file_name):
+    def write_dlis_file(self, dlis_file_name, chunk_rows=None):
         def timed_func():
-            logical_records = LogicalRecordCollection.from_config_and_data(self._config, self._data)
+            logical_records = LogicalRecordCollection.from_config_and_data(
+                self._config, self._data, chunk_rows=chunk_rows)
 
             dlis_file = DLISFile()
             dlis_file.write_dlis(logical_records, dlis_file_name)
@@ -51,6 +52,8 @@ class DLISWriter:
                             help="Make a time-based DLIS file (default is depth-based)")
         parser.add_argument('--channels-from-data', action='store_true', default=False,
                             help="Extend the provided config file with channel information from the data")
+        parser.add_argument('--chunk-rows', default=1e5, type=float,
+                            help="Chunk size (number of rows) for the source file to be processed in")
 
         return parser
 
@@ -114,7 +117,7 @@ if __name__ == '__main__':
     exception = None
     try:
         dlis_writer = DLISWriter.from_parser_args(pargs)
-        dlis_writer.write_dlis_file(dlis_file_name=pargs.output_file_name)
+        dlis_writer.write_dlis_file(dlis_file_name=pargs.output_file_name, chunk_rows=int(pargs.chunk_rows))
     except Exception as exc:
         exception = exc
     finally:
