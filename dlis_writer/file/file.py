@@ -3,7 +3,6 @@ import logging
 from line_profiler_pycharm import profile
 from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
 from typing import Union
-import time
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -13,18 +12,6 @@ from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBy
 
 
 logger = logging.getLogger(__name__)
-
-
-def log_progress(message):
-    """Wrap a function, so that log messages are displayed: a custom message at the start and 'Done' at the end."""
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            logger.info(message)
-            result = func(*args, **kwargs)
-            logger.debug("Done")
-            return result
-        return wrapper
-    return decorator
 
 
 class DLISFile:
@@ -94,9 +81,8 @@ class DLISFile:
 
         return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
-    @log_progress("Creating visible records of the DLIS...")
     @profile
-    def create_visible_records(self, n_records, all_lrb_iter, chunk_size=2**32) -> bytes:
+    def create_visible_records(self, n_records, all_lrb_iter, writer, chunk_size=2**32):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -108,10 +94,11 @@ class DLISFile:
         bar = ProgressBar(max_value=n_records)
 
         output = bytearray(chunk_size)
-        total_output_len = chunk_size
         sul_bytes = next(all_lrb_iter).bytes
-        total_filled_len = len(sul_bytes)
-        output[:total_filled_len] = sul_bytes  # SUL - add as-is, don't wrap in a visible record
+        total_filled_output_len = len(sul_bytes)
+        current_filled_output_len = total_filled_output_len
+        output[:current_filled_output_len] = sul_bytes  # SUL - add as-is, don't wrap in a visible record
+        first_output_chunk = True
 
         current_vr_body = b''
         current_vr_body_size = 0
@@ -124,14 +111,19 @@ class DLISFile:
         vr_space = max_vr_body_size - hs
 
         def next_vr():
-            nonlocal output, current_vr_body, total_filled_len, total_output_len
-            new_len = total_filled_len + current_vr_body_size + hs
-            while new_len > total_output_len:
-                output += bytearray(chunk_size)
-                total_output_len += chunk_size
-                logger.debug(f"Making new output chunk; current total output size is {total_output_len}")
-            output[total_filled_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
-            total_filled_len = new_len
+            nonlocal output, current_vr_body, total_filled_output_len, current_filled_output_len, first_output_chunk
+            added_len = current_vr_body_size + hs
+            new_len = current_filled_output_len + added_len
+            while new_len > chunk_size:
+                writer(output[:current_filled_output_len], append=not first_output_chunk)
+                first_output_chunk = False
+                output = bytearray(chunk_size)
+                current_filled_output_len = 0
+                new_len = added_len
+                logger.debug(f"Making new output chunk; current total output size is {total_filled_output_len}")
+            output[current_filled_output_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
+            total_filled_output_len += added_len
+            current_filled_output_len += added_len
             current_vr_body = b''
 
         def next_lrb():
@@ -147,6 +139,8 @@ class DLISFile:
                 remaining_lrb_size = lrb.size  # position in current lrb is 0
                 next_vr()
             return True
+
+        logger.info("Creating visible records of the DLIS...")
 
         next_lrb()
 
@@ -177,30 +171,30 @@ class DLISFile:
 
         next_vr()
         bar.finish()
+        writer(output[:current_filled_output_len], append=not first_output_chunk)
 
-        output = output[:total_filled_len]
-        logger.info(f"Final total file size is {total_filled_len} bytes")
-
-        return output
+        logger.info(f"Final total file size is {total_filled_output_len} bytes")
 
     @staticmethod
-    @log_progress("Writing to file...")
-    def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike]):
+    def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike], append=False):
         """Writes the bytes to a DLIS file"""
 
-        with open(filename, 'wb') as f:
-            f.write(raw_bytes)
+        mode = 'ab' if append else 'wb'
 
-        logger.info(f"Data written to file: '{filename}'")
+        logger.debug("Writing bytes to file")
+        with open(filename, mode) as f:
+            f.write(raw_bytes)
 
     def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         logical_records.check_objects()
 
+        def file_writer(bts, append=False):
+            self.write_bytes_to_file(bts, filename, append=append)
+
         self.assign_origin_reference(logical_records)
         all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
-        all_bytes = self.create_visible_records(len(logical_records), all_lrb_iter)
-        self.write_bytes_to_file(all_bytes, filename)
-        logger.info('DLIS file created.')
+        self.create_visible_records(len(logical_records), all_lrb_iter, writer=file_writer)
+        logger.info(f'DLIS file created at {filename}')
     
