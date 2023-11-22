@@ -185,9 +185,10 @@ class DLISFile:
         with open(filename, mode) as f:
             f.write(raw_bytes)
 
-    def write_dlis(self, logical_records: FileLogicalRecords, filename: Union[str, bytes, os.PathLike]):
+    def create_dlis(self, config, data, filename: Union[str, bytes, os.PathLike], chunk_rows=None):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
+        logical_records = FileLogicalRecords.from_config_and_data(config, data, chunk_rows=chunk_rows)
         logical_records.check_objects()
 
         def file_writer(bts, append=False):
@@ -197,4 +198,6 @@ class DLISFile:
         all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
         self.create_visible_records(len(logical_records), all_lrb_iter, writer=file_writer)
         logger.info(f'DLIS file created at {filename}')
+
+
     

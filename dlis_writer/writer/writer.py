@@ -6,7 +6,6 @@ from timeit import timeit
 from datetime import timedelta
 
 from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
@@ -17,12 +16,10 @@ from dlis_writer.writer.config_from_data import DLISConfig
 logger = logging.getLogger(__name__)
 
 
-def write_dlis_file(data, config, dlis_file_name, chunk_rows=None):
+def write_dlis_file(data, config, dlis_file_name, **kwargs):
     def timed_func():
-        logical_records = FileLogicalRecords.from_config_and_data(config, data, chunk_rows=chunk_rows)
-
         dlis_file = DLISFile()
-        dlis_file.write_dlis(logical_records, dlis_file_name)
+        dlis_file.create_dlis(data=data, config=config, filename=dlis_file_name, **kwargs)
 
     exec_time = timeit(timed_func, number=1)
     logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
@@ -53,7 +50,6 @@ def make_parser():
 
 
 def data_and_config_from_parser_args(pargs):
-
     if pargs.config:
         logger.info(f"Loading config file from {pargs.config}")
         config = DLISConfig.from_config_file(pargs.config)
