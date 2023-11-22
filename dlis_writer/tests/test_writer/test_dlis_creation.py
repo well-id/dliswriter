@@ -3,7 +3,7 @@ import pytest
 from copy import deepcopy
 
 from dlis_writer.utils.loaders import load_config
-from dlis_writer.writer.utils.compare_dlis_files import compare
+from dlis_writer.writer.dlis_file_comparator import compare
 from dlis_writer.utils.enums import RepresentationCode
 
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data_path, reference_data, short_reference_data, short_reference_data_path  # fixtures

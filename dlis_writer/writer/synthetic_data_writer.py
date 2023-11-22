@@ -4,7 +4,7 @@ import os
 from argparse import ArgumentParser
 
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
+from dlis_writer.writer.synthetic_data_generator import create_data_file
 from dlis_writer.writer.writer import (write_dlis_file, make_parser as make_parent_parser,
                                        data_and_config_from_parser_args, prepare_directory)
 

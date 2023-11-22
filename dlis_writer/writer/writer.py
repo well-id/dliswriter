@@ -7,9 +7,9 @@ from datetime import timedelta
 
 from dlis_writer.file import DLISFile
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.utils.compare_dlis_files import compare
+from dlis_writer.writer.dlis_file_comparator import compare
 from dlis_writer.utils.source_data_objects import HDF5Interface
-from dlis_writer.writer.config_from_data import DLISConfig
+from dlis_writer.writer.dlis_config import DLISConfig
 
 
 logger = logging.getLogger(__name__)
