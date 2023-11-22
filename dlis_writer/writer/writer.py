@@ -26,7 +26,7 @@ def write_dlis_file(data, config, dlis_file_name, **kwargs):
 
 
 def make_parser():
-    parser = ArgumentParser("DLIS file creation - minimal working example")
+    parser = ArgumentParser("DLIS file creation")
     pg = parser.add_mutually_exclusive_group()
     pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
     pg.add_argument('-ifn', '--input-file-name', help='Input file name')
@@ -66,6 +66,17 @@ def data_and_config_from_parser_args(pargs):
     return data, config.config
 
 
+def create_tmp_data_file_from_pargs(file_name, pargs):
+    create_data_file(
+        fpath=file_name,
+        n_points=int(pargs.n_points),
+        n_images=pargs.n_images,
+        n_cols=pargs.n_cols,
+        time_based=pargs.time_based,
+        overwrite=True
+    )
+
+
 def compare_files(output_file_name, reference_file_name):
     logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
     equal = compare(output_file_name, reference_file_name, verbose=True)
@@ -85,14 +96,7 @@ def main():
     if pargs.input_file_name is None:
         tmp_file_name = Path('./_tmp.h5').resolve()
         pargs.input_file_name = tmp_file_name
-        create_data_file(
-            fpath=tmp_file_name,
-            n_points=int(pargs.n_points),
-            n_images=pargs.n_images,
-            n_cols=pargs.n_cols,
-            time_based=pargs.time_based,
-            overwrite=True  # TODO
-        )
+        create_tmp_data_file_from_pargs(tmp_file_name, pargs)
     else:
         tmp_file_name = None
 
