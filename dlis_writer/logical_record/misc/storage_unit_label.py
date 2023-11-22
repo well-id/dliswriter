@@ -1,9 +1,11 @@
+from configparser import ConfigParser
+from typing_extensions import Self
+
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record import ConfigGenMixin
 from dlis_writer.logical_record.core.logical_record_bytes import BasicLogicalRecordBytes
 
 
-class StorageUnitLabel(ConfigGenMixin):
+class StorageUnitLabel:
     """Represents  the Storage Unit Label in RP66 V1
     
     This is the first part of a logical file.
@@ -80,3 +82,22 @@ class StorageUnitLabel(ConfigGenMixin):
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
             self._bytes = BasicLogicalRecordBytes(bts)
         return self._bytes
+
+    @classmethod
+    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+        key = key or cls.__name__
+
+        if key not in config.sections():
+            raise RuntimeError(f"Section '{key}' not present in the config")
+
+        name_key = "name"
+
+        if name_key not in config[key].keys():
+            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
+
+        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
+
+        obj = cls(config[key][name_key], **other_kwargs)
+
+        return obj
+
