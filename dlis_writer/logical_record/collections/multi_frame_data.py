@@ -1,10 +1,9 @@
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.iflr_types import FrameData
-from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 from dlis_writer.utils.source_data_objects import SourceDataObject
 
 
-class MultiFrameData(MultiLogicalRecord):
+class MultiFrameData:
     def __init__(self, frame: FrameObject, data: SourceDataObject, chunk_rows=None):
         super().__init__()
 

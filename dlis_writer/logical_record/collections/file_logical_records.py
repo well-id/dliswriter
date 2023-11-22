@@ -4,7 +4,6 @@ from configparser import ConfigParser
 import logging
 
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
-from dlis_writer.logical_record.collections.multi_logical_record import MultiLogicalRecord
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
@@ -14,7 +13,7 @@ from dlis_writer.logical_record.core.eflr import EFLR
 logger = logging.getLogger(__name__)
 
 
-class FileLogicalRecords(MultiLogicalRecord):
+class FileLogicalRecords:
     def __init__(self, storage_unit_label: StorageUnitLabel, file_header: FileHeader, origin: Origin):
         super().__init__()
 
