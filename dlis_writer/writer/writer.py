@@ -7,7 +7,6 @@ from datetime import timedelta
 
 from dlis_writer.file import DLISFile
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
 from dlis_writer.utils.source_data_objects import HDF5Interface
 from dlis_writer.writer.config_from_data import DLISConfig
@@ -25,18 +24,11 @@ def write_dlis_file(data, config, dlis_file_name, **kwargs):
     logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
 
 
-def make_parser():
-    parser = ArgumentParser("DLIS file creation")
-    pg = parser.add_mutually_exclusive_group()
-    pg.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
-    pg.add_argument('-ifn', '--input-file-name', help='Input file name')
-
+def make_parser(add_help=True, require_input_fname=True):
+    parser = ArgumentParser("DLIS file creation", add_help=add_help)
+    parser.add_argument('-ifn', '--input-file-name', help='Input file name', required=require_input_fname)
     parser.add_argument('-c', '--config', help="Path to config file specifying metadata")
     parser.add_argument('-ofn', '--output-file-name', help='Output file name', required=True)
-    parser.add_argument('-ni', '--n-images', type=int, default=0,
-                        help='Number of 2D data sets to add (ignored if input file is specified)')
-    parser.add_argument('-nc', '--n-cols', type=int, default=128,
-                        help='No. columns for each of the added 2D data sets (ignored if input file specified)')
     parser.add_argument('--time-based', action='store_true', default=False,
                         help="Make a time-based DLIS file (default is depth-based)")
     parser.add_argument('--channels-from-data', action='store_true', default=False,
@@ -66,17 +58,6 @@ def data_and_config_from_parser_args(pargs):
     return data, config.config
 
 
-def create_tmp_data_file_from_pargs(file_name, pargs):
-    create_data_file(
-        fpath=file_name,
-        n_points=int(pargs.n_points),
-        n_images=pargs.n_images,
-        n_cols=pargs.n_cols,
-        time_based=pargs.time_based,
-        overwrite=True
-    )
-
-
 def compare_files(output_file_name, reference_file_name):
     logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
     equal = compare(output_file_name, reference_file_name, verbose=True)
@@ -86,39 +67,24 @@ def compare_files(output_file_name, reference_file_name):
         logger.warning("Files are NOT equal")
 
 
-def main():
-    pargs = make_parser().parse_args()
-
+def prepare_directory(pargs):
     os.makedirs(Path(pargs.output_file_name).parent, exist_ok=True)
     # TODO: check write access
     # TODO: check for existing file
 
-    if pargs.input_file_name is None:
-        tmp_file_name = Path('./_tmp.h5').resolve()
-        pargs.input_file_name = tmp_file_name
-        create_tmp_data_file_from_pargs(tmp_file_name, pargs)
-    else:
-        tmp_file_name = None
 
-    exception = None
-    try:
-        data, config = data_and_config_from_parser_args(pargs)
-        write_dlis_file(
-            data=data,
-            config=config,
-            dlis_file_name=pargs.output_file_name,
-            chunk_rows=int(pargs.chunk_rows)
-        )
-    except Exception as exc:
-        exception = exc
-    finally:
-        if tmp_file_name:
-            try:
-                os.remove(tmp_file_name)
-            except Exception as exc2:
-                logger.error(f"Error trying to remove temporary hdf5 data file: '{exc2}'")
-    if exception:
-        raise exception
+def main():
+    pargs = make_parser().parse_args()
+
+    prepare_directory(pargs)
+
+    data, config = data_and_config_from_parser_args(pargs)
+    write_dlis_file(
+        data=data,
+        config=config,
+        dlis_file_name=pargs.output_file_name,
+        chunk_rows=int(pargs.chunk_rows)
+    )
 
     if pargs.reference_file_name is not None:
         compare_files(pargs.output_file_name, pargs.reference_file_name)
