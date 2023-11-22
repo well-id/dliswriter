@@ -7,7 +7,7 @@ from dlis_writer.writer.utils.compare_dlis_files import compare
 from dlis_writer.utils.enums import RepresentationCode
 
 from dlis_writer.tests.test_writer.common import base_data_path, reference_data_path, reference_data, short_reference_data, short_reference_data_path  # fixtures
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
 from dlis_writer.tests.common import clear_eflr_instance_registers
 from dlis_writer.utils.source_data_objects import HDF5Interface
 
@@ -50,14 +50,14 @@ def new_dlis_path(base_data_path):
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data_path, base_data_path, new_dlis_path, config_depth_based):
-    write_dlis_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
+    write_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_rpm_depth_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
 
 
 def test_correct_contents_rpm_and_images_time_based(reference_data_path, base_data_path, new_dlis_path, config_time_based):
-    write_dlis_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_full_time_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
@@ -65,7 +65,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data_path, base_da
 
 @pytest.mark.parametrize('include_images', (True, False))
 def test_dlis_depth_based(short_reference_data, short_reference_data_path, new_dlis_path, include_images, config_depth_based):
-    write_dlis_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
+    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
@@ -82,7 +82,7 @@ def test_dlis_depth_based(short_reference_data, short_reference_data_path, new_d
 
 
 def test_dlis_time_based(short_reference_data, short_reference_data_path, new_dlis_path, config_time_based):
-    write_dlis_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
@@ -103,7 +103,7 @@ def test_repr_code(short_reference_data_path, new_dlis_path, code, value, config
         if name.startswith('Channel'):
             config_time_based[name]['representation_code'] = str(code.value)
 
-    write_dlis_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('amplitude', 'radius', 'radius_pooh'):
@@ -114,7 +114,7 @@ def test_repr_code(short_reference_data_path, new_dlis_path, code, value, config
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
 def test_channel_curves(reference_data_path, reference_data, new_dlis_path, n_points, config_array_time_based, config_time_based):
     data = HDF5Interface.from_config(reference_data_path, config_time_based)
-    write_dlis_file(data=data.load_chunk(0, n_points), dlis_file_name=new_dlis_path, config=config_array_time_based)
+    write_file(data=data.load_chunk(0, n_points), dlis_file_name=new_dlis_path, config=config_array_time_based)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('posix time', 'surface rpm'):

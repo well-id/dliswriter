@@ -5,7 +5,7 @@ from dlisio import dlis
 from pathlib import Path
 import h5py
 
-from dlis_writer.writer.writer import DLISWriter
+from dlis_writer.writer.writer import write_dlis_file
 from dlis_writer.utils.source_data_objects import NumpyInterface, HDF5Interface, SourceDataObject
 
 from dlis_writer.tests.common import base_data_path, clear_eflr_instance_registers
@@ -51,7 +51,7 @@ def select_channel(f, name):
     return f.object("CHANNEL", name)
 
 
-def write_dlis_file(data, dlis_file_name, config):
+def write_file(data, dlis_file_name, config):
     clear_eflr_instance_registers()
 
     if isinstance(data, np.ndarray):
@@ -61,6 +61,5 @@ def write_dlis_file(data, dlis_file_name, config):
     elif not isinstance(data, SourceDataObject):
         raise TypeError(f"Expected a SourceDataObject, numpy.ndarray, or a path to a HDF5 file; got {type(data)}")
 
-    writer = DLISWriter(data, config)
-    writer.write_dlis_file(dlis_file_name=dlis_file_name)
+    write_dlis_file(data=data, config=config, dlis_file_name=dlis_file_name)
 

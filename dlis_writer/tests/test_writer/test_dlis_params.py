@@ -4,7 +4,7 @@ from datetime import datetime
 
 from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.tests.test_writer.common import reference_data, reference_data_path, short_reference_data_path, short_reference_data
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_dlis_file
+from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
 from dlis_writer.tests.common import clear_eflr_instance_registers
 
 
@@ -21,7 +21,7 @@ def short_dlis(short_reference_data_path, base_data_path, config_params):
     channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
     config_params['Frame']['channels'] = ', '.join(channel_names)
 
-    write_dlis_file(data=short_reference_data_path, dlis_file_name=dlis_path, config=config_params)
+    write_file(data=short_reference_data_path, dlis_file_name=dlis_path, config=config_params)
 
     with load_dlis(dlis_path) as f:
         yield f
