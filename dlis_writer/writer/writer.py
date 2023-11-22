@@ -7,7 +7,7 @@ from datetime import timedelta
 from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
+from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.utils.make_mock_data_hdf5 import create_data_file
 from dlis_writer.writer.utils.compare_dlis_files import compare
@@ -26,7 +26,7 @@ class DLISWriter:
 
     def write_dlis_file(self, dlis_file_name, chunk_rows=None):
         def timed_func():
-            logical_records = LogicalRecordCollection.from_config_and_data(
+            logical_records = FileLogicalRecords.from_config_and_data(
                 self._config, self._data, chunk_rows=chunk_rows)
 
             dlis_file = DLISFile()

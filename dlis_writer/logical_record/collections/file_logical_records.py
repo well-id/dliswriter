@@ -14,7 +14,7 @@ from dlis_writer.logical_record.core.eflr import EFLR
 logger = logging.getLogger(__name__)
 
 
-class LogicalRecordCollection(MultiLogicalRecord):
+class FileLogicalRecords(MultiLogicalRecord):
     def __init__(self, storage_unit_label: StorageUnitLabel, file_header: FileHeader, origin: Origin):
         super().__init__()
 

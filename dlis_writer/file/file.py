@@ -6,7 +6,7 @@ from typing import Union
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.collections.logical_record_collection import LogicalRecordCollection
+from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
@@ -48,7 +48,7 @@ class DLISFile:
             raise ValueError("Visible record length must be an even number")
 
     @staticmethod
-    def assign_origin_reference(logical_records: LogicalRecordCollection):
+    def assign_origin_reference(logical_records: FileLogicalRecords):
         """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
 
         val = logical_records.origin.first_object.file_set_number.value
@@ -59,7 +59,7 @@ class DLISFile:
         logger.info(f"Assigning origin reference: {val} to all logical records")
         logical_records.set_origin_reference(val)
 
-    def make_bytes_of_logical_records(self, logical_records: LogicalRecordCollection):
+    def make_bytes_of_logical_records(self, logical_records: FileLogicalRecords):
         """Writes bytes of entire file without Visible Record objects and splits"""
 
         for lr in logical_records:
@@ -185,7 +185,7 @@ class DLISFile:
         with open(filename, mode) as f:
             f.write(raw_bytes)
 
-    def write_dlis(self, logical_records: LogicalRecordCollection, filename: Union[str, bytes, os.PathLike]):
+    def write_dlis(self, logical_records: FileLogicalRecords, filename: Union[str, bytes, os.PathLike]):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         logical_records.check_objects()
