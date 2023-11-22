@@ -5,6 +5,8 @@ from pathlib import Path
 from argparse import ArgumentParser
 import logging
 
+from dlis_writer.utils.logging import install_logger
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +61,9 @@ def create_data_file(n_points, fpath, overwrite=False, **kwargs):
     logger.info(f"Fake data with {n_points} points saved to file '{fpath}'")
 
 
-if __name__ == '__main__':
+def main():
+    install_logger(logger)
+
     parser = ArgumentParser("Creating HFD5 file with mock well data")
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
@@ -86,3 +90,7 @@ if __name__ == '__main__':
         overwrite=parser_args.overwrite,
         depth_based=parser_args.depth_based
     )
+
+
+if __name__ == '__main__':
+    main()

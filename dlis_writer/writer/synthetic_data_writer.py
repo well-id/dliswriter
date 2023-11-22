@@ -37,6 +37,8 @@ def create_tmp_data_file_from_pargs(file_name, pargs):
 
 
 def main():
+    install_logger(logger)
+
     pargs = make_parser().parse_args()
 
     prepare_directory(pargs)
@@ -66,5 +68,4 @@ def main():
 
 
 if __name__ == '__main__':
-    install_logger(logger)
     main()

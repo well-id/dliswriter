@@ -134,11 +134,11 @@ class DLISConfig:
 
 
 def main():
+    install_logger(logger)
     pargs = DLISConfig.make_parser().parse_args()
     DLISConfig.from_parser_args(pargs)
 
 
 if __name__ == '__main__':
-    install_logger(logger)
     main()
 

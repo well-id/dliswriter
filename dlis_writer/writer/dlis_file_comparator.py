@@ -1,3 +1,10 @@
+import logging
+from dlis_writer.utils.logging import install_logger
+
+
+logger = logging.getLogger(__name__)
+
+
 def read_binary(fname):
     with open(fname, 'rb') as f:
         contents = f.read()
@@ -22,6 +29,8 @@ def compare(f1, f2, verbose=True):
 
 
 if __name__ == '__main__':
+    install_logger(logger)
+
     from sys import argv
 
     if (na := len(argv)) != 3:
