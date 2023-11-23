@@ -54,7 +54,9 @@ def main():
             data=data,
             config=config,
             dlis_file_name=pargs.output_file_name,
-            chunk_rows=int(pargs.chunk_rows)
+            input_chunk_size=int(pargs.input_chunk_size),
+            output_chunk_size=int(pargs.output_chunk_size),
+            visible_record_length=pargs.visible_record_length
         )
     except Exception as exc:
         exception = exc
