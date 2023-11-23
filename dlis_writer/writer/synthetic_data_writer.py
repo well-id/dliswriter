@@ -41,7 +41,7 @@ def main():
 
     pargs = make_parser().parse_args()
 
-    save_dir = prepare_directory(pargs.output_file_name)
+    save_dir = prepare_directory(pargs.output_file_name, overwrite=pargs.overwrite)
 
     tmp_file_name = save_dir/'_tmp.h5'
     pargs.input_file_name = tmp_file_name

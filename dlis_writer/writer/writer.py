@@ -37,6 +37,8 @@ def make_parser(add_help=True, require_input_fname=True):
                         help="Chunk size (number of rows) for the source file to be processed in")
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
+    parser.add_argument('--overwrite', action='store_true', default=False,
+                        help="Allow overwriting existing output file")
 
     return parser
 
@@ -72,8 +74,9 @@ def _check_write_access(p):
         raise RuntimeError(f"Write permissions missing for directory: {p}")
 
 
-def prepare_directory(output_file_name):
-    save_dir = Path(output_file_name).parent
+def prepare_directory(output_file_name, overwrite=False):
+    output_file_name = Path(output_file_name).resolve()
+    save_dir = output_file_name.parent
     parent_dir = save_dir.parent
 
     if not parent_dir.exists():
@@ -84,7 +87,11 @@ def prepare_directory(output_file_name):
     os.makedirs(save_dir, exist_ok=True)
     _check_write_access(save_dir)
 
-    # TODO: check for existing file
+    if os.path.exists(output_file_name):
+        if overwrite:
+            logger.warning(f"Output file at {output_file_name} will be overwritten")
+        else:
+            raise RuntimeError(f"Cannot overwrite existing file at {output_file_name}")
 
     return save_dir
 
@@ -94,7 +101,7 @@ def main():
 
     pargs = make_parser().parse_args()
 
-    prepare_directory(pargs.output_file_name)
+    prepare_directory(pargs.output_file_name, overwrite=pargs.overwrite)
 
     data, config = data_and_config_from_parser_args(pargs)
     write_dlis_file(
