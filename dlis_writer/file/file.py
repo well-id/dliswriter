@@ -1,8 +1,7 @@
 import os
 import logging
-from line_profiler_pycharm import profile
 from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
-from typing import Union
+from typing import Union, Optional
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -15,29 +14,29 @@ logger = logging.getLogger(__name__)
 
 
 class DLISFile:
-    """Top level object that creates DLIS file from given list of logical record segment bodies
-
-    Attributes:
-        storage_unit_label: A logical_record.storage_unit_label.StorageUnitLabel instance
-        file_header: A logical_record.file_header.FileHeader instance
-        origin: A logical_record.origin.Origin instance
-        visible_record_length: Maximum length of each visible record
-
-    .._RP66 V1 Maximum Visible Record Length:
-        http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
-    """
+    """Create a DLIS file given data and structure information (specification of logical records)."""
 
     def __init__(self, visible_record_length: int = 8192):
-        """Initiates the object with given parameters"""
+        """Initialise DLISFile object.
 
-        self.check_visible_record_length(visible_record_length)
-        self.visible_record_length = visible_record_length
+        Args:
+            visible_record_length   :   Maximum allowed length of visible records (physical file units) in the created
+                                        file. Expressed in bytes.
+        """
+
+        self._check_visible_record_length(visible_record_length)
+        self.visible_record_length: int = visible_record_length  #: Maximum allowed visible record length, in bytes
 
         # format version is a required part of each visible record and is fixed for a given version of the standard
         self._format_version = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
 
     @staticmethod
-    def check_visible_record_length(vrl):
+    def _check_visible_record_length(vrl: int):
+        """Check the type and value of visible record length against several criteria."""
+
+        if not isinstance(vrl, int):
+            raise TypeError(f"Visible record length must be an integer; got {type(vrl)}")
+
         if vrl < 20:
             raise ValueError("Visible record length must be at least 20 bytes")
 
@@ -48,8 +47,8 @@ class DLISFile:
             raise ValueError("Visible record length must be an even number")
 
     @staticmethod
-    def assign_origin_reference(logical_records: FileLogicalRecords):
-        """Assigns origin_reference attribute to self.origin.file_set_number for all Logical Records"""
+    def _assign_origin_reference(logical_records: FileLogicalRecords):
+        """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
 
         val = logical_records.origin.first_object.file_set_number.value
 
@@ -59,8 +58,9 @@ class DLISFile:
         logger.info(f"Assigning origin reference: {val} to all logical records")
         logical_records.set_origin_reference(val)
 
-    def make_bytes_of_logical_records(self, logical_records: FileLogicalRecords):
-        """Writes bytes of entire file without Visible Record objects and splits"""
+    @staticmethod
+    def _make_lr_bytes_generator(logical_records: FileLogicalRecords):
+        """Create a generator yielding bytes of all provided logical records."""
 
         for lr in logical_records:
             if isinstance(lr, MultiFrameData):
@@ -69,24 +69,44 @@ class DLISFile:
             else:
                 yield lr.represent_as_bytes()
 
-    def _make_visible_record(self, body, size=None) -> bytes:
+    def _make_visible_record(self, body: Union[bytes, bytearray], size: Optional[int] = None) -> bytes:
+        """Create a visible record (physical DLIS unit) from the provided body bytes.
+
+        Args:
+            body    :   Bytes to create the visible record from.
+            size    :   Number of bytes in the body. If not provided, it is calculated from the body object.
+
+        Returns:
+            Created visible record (provided body bytes preceded by header bytes) as a bytes object.
+        """
 
         if size is None:
             size = len(body)
 
-        size += 4
+        size += 4  # 4 header bytes will be added
 
         if size > self.visible_record_length:
             raise ValueError(f"VR length is too large; got {size}, max is {self.visible_record_length}")
 
         return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
-    @profile
-    def create_visible_records(self, n_records, all_lrb_iter, writer, output_chunk_size=2 ** 32):
-        """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
-        received from self.create_visible_record_dictionary()
+    def _create_visible_records(self, logical_records: FileLogicalRecords, writer: callable, output_chunk_size=2 ** 32):
+        """Create visible records constituting the DLIS file.
 
+        Bytes of each logical record are placed in a new visible record. If necessary, bytes of logical record are split
+        across several visible records.
+        The file is created in chunks. Consecutive visible records are added to a chunk until it reaches its maximum
+        size (defined by the output_chunk_size argument). The chunk is then saved to the file and a new output chunk
+        is created.
+
+        Args:
+            logical_records     :   FileLogicalRecords object containing logical records to be put in the DLIS file.
+            writer              :   Function taking care of storing output chunks into the file.
+            output_chunk_size   :   Size (in bytes) of chunks in which the output file will be created.
         """
+
+        all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
+        n_records = len(logical_records)  # total number of logical records (including Storage Unit Label)
 
         hs = 4  # header size (both for logical record segment and visible record)
         mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
@@ -94,22 +114,23 @@ class DLISFile:
         bar = ProgressBar(max_value=n_records)
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
-        output = bytearray(output_chunk_size)
-        sul_bytes = next(all_lrb_iter).bytes
-        total_filled_output_len = len(sul_bytes)
-        current_filled_output_len = total_filled_output_len
-        output[:current_filled_output_len] = sul_bytes  # SUL - add as-is, don't wrap in a visible record
-        first_output_chunk = True
 
-        current_vr_body = b''
-        current_vr_body_size = 0
-        max_vr_body_size = self.visible_record_length - hs
-        position_in_current_lrb = 0
+        output = bytearray(output_chunk_size)   # pre-allocate space for the first output chunk
+        sul_bytes = next(all_lrb_gen).bytes     # create bytes of the Storage Unit Label (first logical record)
+        total_filled_output_len = len(sul_bytes)    # total number of bytes added to the file
+        current_filled_output_len = total_filled_output_len  # number of bytes added to the current output chunk
+        output[:current_filled_output_len] = sul_bytes  # add the SUL bytes - add as-is, don't wrap in a visible record
+        first_output_chunk = True  # mark that this is the first output chunk - writing will be in 'w', not 'a' mode
 
-        lrb: LogicalRecordBytes = None
-        i = 0
-        remaining_lrb_size = 0
-        vr_space = max_vr_body_size - hs
+        current_vr_body = b''  # body of the current visible record
+        current_vr_body_size = 0  # size of the current visible record
+        max_vr_body_size = self.visible_record_length - hs  # maximal allowed size of a VR body (before adding header)
+        position_in_current_lrb = 0  # how many bytes of the current logical record have been processed
+
+        lrb: LogicalRecordBytes = None  # bytes of the current logical record
+        i = 0  # iteration number (for the progress bar) - how many logical records have been processed
+        remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
+        vr_space = max_vr_body_size - hs  # how much space still remains in the current visible record
 
         def next_vr():
             nonlocal output, current_vr_body, total_filled_output_len, current_filled_output_len, first_output_chunk
@@ -130,7 +151,7 @@ class DLISFile:
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
             try:
-                lrb = next(all_lrb_iter)
+                lrb = next(all_lrb_gen)
             except StopIteration:
                 return False
             else:
@@ -192,13 +213,17 @@ class DLISFile:
 
         logical_records = FileLogicalRecords.from_config_and_data(config, data, chunk_size=input_chunk_size)
         logical_records.check_objects()
+        self._assign_origin_reference(logical_records)
 
         def file_writer(bts, append=False):
             self.write_bytes_to_file(bts, filename, append=append)
 
-        self.assign_origin_reference(logical_records)
-        all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
-        self.create_visible_records(len(logical_records), all_lrb_iter, writer=file_writer, output_chunk_size=output_chunk_size)
+        self._create_visible_records(
+            logical_records,
+            writer=file_writer,
+            output_chunk_size=output_chunk_size
+        )
+
         logger.info(f'DLIS file created at {filename}')
 
 
