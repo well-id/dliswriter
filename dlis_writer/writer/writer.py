@@ -67,10 +67,23 @@ def compare_files(output_file_name, reference_file_name):
         logger.warning("Files are NOT equal")
 
 
-def prepare_directory(pargs):
-    save_dir = Path(pargs.output_file_name).parent
+def _check_write_access(p):
+    if not os.access(p, os.W_OK):
+        raise RuntimeError(f"Write permissions missing for directory: {p}")
+
+
+def prepare_directory(output_file_name):
+    save_dir = Path(output_file_name).parent
+    parent_dir = save_dir.parent
+
+    if not parent_dir.exists():
+        raise RuntimeError(f"Directory {parent_dir} does not exist")
+
+    _check_write_access(parent_dir)
+
     os.makedirs(save_dir, exist_ok=True)
-    # TODO: check write access
+    _check_write_access(save_dir)
+
     # TODO: check for existing file
 
     return save_dir
@@ -81,7 +94,7 @@ def main():
 
     pargs = make_parser().parse_args()
 
-    prepare_directory(pargs)
+    prepare_directory(pargs.output_file_name)
 
     data, config = data_and_config_from_parser_args(pargs)
     write_dlis_file(
