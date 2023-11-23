@@ -68,9 +68,12 @@ def compare_files(output_file_name, reference_file_name):
 
 
 def prepare_directory(pargs):
-    os.makedirs(Path(pargs.output_file_name).parent, exist_ok=True)
+    save_dir = Path(pargs.output_file_name).parent
+    os.makedirs(save_dir, exist_ok=True)
     # TODO: check write access
     # TODO: check for existing file
+
+    return save_dir
 
 
 def main():

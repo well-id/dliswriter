@@ -41,9 +41,9 @@ def main():
 
     pargs = make_parser().parse_args()
 
-    prepare_directory(pargs)
+    save_dir = prepare_directory(pargs)
 
-    tmp_file_name = Path('./_tmp.h5').resolve()  # TODO: save in the same directory as the output file
+    tmp_file_name = save_dir/'_tmp.h5'
     pargs.input_file_name = tmp_file_name
     create_tmp_data_file_from_pargs(tmp_file_name, pargs)
 
