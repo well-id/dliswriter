@@ -53,6 +53,25 @@ class DLISFile:
             self._append = True  # in the future calls, append bytes to the file
             self._total_size += (size or len(bts))
 
+    class OutputChunk:
+        def __init__(self, size):
+            self._bts = bytearray(size)
+            self._filled_size = 0
+            self._total_size = size
+
+        @property
+        def filled_size(self):
+            return self._filled_size
+
+        @property
+        def filled_bytes(self):
+            return self._bts[:self._filled_size]
+
+        def add_bytes(self, bts: bytes, size: Optional[int] = None):
+            new_size = self._filled_size + (size or len(bts))
+            self._bts[self._filled_size:new_size] = bts
+            self._filled_size = new_size
+
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
@@ -144,19 +163,16 @@ class DLISFile:
         """
 
         all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
-        n_records = len(logical_records)  # total number of logical records (including Storage Unit Label)
 
         hs = 4  # header size (both for logical record segment and visible record)
         mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
 
-        bar = ProgressBar(max_value=n_records)
+        bar = ProgressBar(max_value=len(logical_records))
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
-        output = bytearray(output_chunk_size)   # pre-allocate space for the first output chunk
-        sul_bytes = next(all_lrb_gen).bytes     # create bytes of the Storage Unit Label (first logical record)
-        current_filled_output_len = len(sul_bytes)  # number of bytes added to the current output chunk
-        output[:current_filled_output_len] = sul_bytes  # add the SUL bytes - add as-is, don't wrap in a visible record
+        current_output_chunk = self.OutputChunk(output_chunk_size)
+        current_output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
         current_vr_body = b''  # body of the current visible record
         current_vr_body_size = 0  # size of the current visible record
@@ -168,17 +184,12 @@ class DLISFile:
         remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
 
         def next_vr():
-            nonlocal output, current_vr_body, current_filled_output_len
-            added_len = current_vr_body_size + hs
-            new_len = current_filled_output_len + added_len
-            if new_len > output_chunk_size:
-                writer.write_bytes(output[:current_filled_output_len], size=current_filled_output_len)
-                output = bytearray(output_chunk_size)
-                current_filled_output_len = 0
-                new_len = added_len
+            nonlocal current_output_chunk, current_vr_body
+            if current_output_chunk.filled_size + current_vr_body_size + hs > output_chunk_size:
+                writer.write_bytes(current_output_chunk.filled_bytes, size=current_output_chunk.filled_size)
+                current_output_chunk = self.OutputChunk(output_chunk_size)
                 logger.debug(f"Making new output chunk; current total output size is {writer.total_size}")
-            output[current_filled_output_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
-            current_filled_output_len += added_len
+            current_output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
             current_vr_body = b''
 
         def next_lrb():
@@ -226,7 +237,7 @@ class DLISFile:
 
         next_vr()
         bar.finish()
-        writer.write_bytes(output[:current_filled_output_len], size=current_filled_output_len)
+        writer.write_bytes(current_output_chunk.filled_bytes, size=current_output_chunk.filled_size)
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
