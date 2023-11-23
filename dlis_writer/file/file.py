@@ -53,6 +53,9 @@ class DLISFile:
             self._append = True  # in the future calls, append bytes to the file
             self._total_size += (size or len(bts))
 
+        def write_output_chunk(self, chunk: "DLISFile.OutputChunk"):
+            self.write_bytes(chunk.filled_bytes, size=chunk.filled_size)
+
     class OutputChunk:
         def __init__(self, size):
             self._bts = bytearray(size)
@@ -186,7 +189,7 @@ class DLISFile:
         def next_vr():
             nonlocal current_output_chunk, current_vr_body
             if current_output_chunk.filled_size + current_vr_body_size + hs > output_chunk_size:
-                writer.write_bytes(current_output_chunk.filled_bytes, size=current_output_chunk.filled_size)
+                writer.write_output_chunk(current_output_chunk)
                 current_output_chunk = self.OutputChunk(output_chunk_size)
                 logger.debug(f"Making new output chunk; current total output size is {writer.total_size}")
             current_output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
@@ -237,7 +240,7 @@ class DLISFile:
 
         next_vr()
         bar.finish()
-        writer.write_bytes(current_output_chunk.filled_bytes, size=current_output_chunk.filled_size)
+        writer.write_output_chunk(current_output_chunk)
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
