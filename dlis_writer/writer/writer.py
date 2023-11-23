@@ -35,6 +35,8 @@ def make_parser(add_help=True, require_input_fname=True):
                         help="Extend the provided config file with channel information from the data")
     parser.add_argument('--input-chunk-size', default=1e5, type=float,
                         help="Chunk size (number of rows) for the input data to be processed in")
+    parser.add_argument('--output-chunk-size', default=2**32, type=float,
+                        help="Size (in bytes) of the chunks in which the output file will be created")
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
     parser.add_argument('--overwrite', action='store_true', default=False,
@@ -111,6 +113,7 @@ def main():
         config=config,
         dlis_file_name=pargs.output_file_name,
         input_chunk_size=int(pargs.input_chunk_size),
+        output_chunk_size=int(pargs.output_chunk_size),
         visible_record_length=pargs.visible_record_length
     )
 

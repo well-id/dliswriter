@@ -82,7 +82,7 @@ class DLISFile:
         return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
     @profile
-    def create_visible_records(self, n_records, all_lrb_iter, writer, chunk_size=2**32):
+    def create_visible_records(self, n_records, all_lrb_iter, writer, output_chunk_size=2 ** 32):
         """Adds visible record bytes and undertakes split operations with the guidance of vr_dict
         received from self.create_visible_record_dictionary()
 
@@ -93,7 +93,8 @@ class DLISFile:
 
         bar = ProgressBar(max_value=n_records)
 
-        output = bytearray(chunk_size)
+        logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
+        output = bytearray(output_chunk_size)
         sul_bytes = next(all_lrb_iter).bytes
         total_filled_output_len = len(sul_bytes)
         current_filled_output_len = total_filled_output_len
@@ -114,10 +115,10 @@ class DLISFile:
             nonlocal output, current_vr_body, total_filled_output_len, current_filled_output_len, first_output_chunk
             added_len = current_vr_body_size + hs
             new_len = current_filled_output_len + added_len
-            while new_len > chunk_size:
+            while new_len > output_chunk_size:
                 writer(output[:current_filled_output_len], append=not first_output_chunk)
                 first_output_chunk = False
-                output = bytearray(chunk_size)
+                output = bytearray(output_chunk_size)
                 current_filled_output_len = 0
                 new_len = added_len
                 logger.debug(f"Making new output chunk; current total output size is {total_filled_output_len}")
@@ -185,7 +186,8 @@ class DLISFile:
         with open(filename, mode) as f:
             f.write(raw_bytes)
 
-    def create_dlis(self, config, data, filename: Union[str, bytes, os.PathLike], input_chunk_size=None):
+    def create_dlis(self, config, data, filename: Union[str, bytes, os.PathLike], input_chunk_size=None,
+                    output_chunk_size=2**32):
         """Top level method that calls all the other methods to create and write DLIS bytes"""
 
         logical_records = FileLogicalRecords.from_config_and_data(config, data, chunk_size=input_chunk_size)
@@ -196,7 +198,7 @@ class DLISFile:
 
         self.assign_origin_reference(logical_records)
         all_lrb_iter = self.make_bytes_of_logical_records(logical_records)
-        self.create_visible_records(len(logical_records), all_lrb_iter, writer=file_writer)
+        self.create_visible_records(len(logical_records), all_lrb_iter, writer=file_writer, output_chunk_size=output_chunk_size)
         logger.info(f'DLIS file created at {filename}')
 
 
