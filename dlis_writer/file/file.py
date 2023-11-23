@@ -89,6 +89,15 @@ class DLISFile:
             self._bts = bytearray(self._total_size)
             self._filled_size = 0
 
+    class TrackedProgressBar(ProgressBar):
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._i = 0
+
+        def update(self, *args, **kwargs):
+            super().update(self._i)
+            self._i += 1
+
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
@@ -184,7 +193,7 @@ class DLISFile:
         hs = 4  # header size (both for logical record segment and visible record)
         mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
 
-        bar = ProgressBar(max_value=len(logical_records))
+        bar = self.TrackedProgressBar(max_value=len(logical_records))
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
@@ -197,21 +206,19 @@ class DLISFile:
         position_in_current_lrb = 0  # how many bytes of the current logical record have been processed
 
         lrb: LogicalRecordBytes = None  # bytes of the current logical record
-        i = 0  # iteration number (for the progress bar) - how many logical records have been processed
         remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
 
         def next_vr():
             output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
 
         def next_lrb():
-            nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
+            nonlocal lrb, position_in_current_lrb, remaining_lrb_size
             try:
                 lrb = next(all_lrb_gen)
             except StopIteration:
                 return False
             else:
-                bar.update(i)
-                i += 1
+                bar.update()
                 position_in_current_lrb = 0
                 remaining_lrb_size = lrb.size  # position in current lrb is 0
                 next_vr()
