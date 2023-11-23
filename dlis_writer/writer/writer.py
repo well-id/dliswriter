@@ -15,9 +15,9 @@ from dlis_writer.writer.dlis_config import DLISConfig
 logger = logging.getLogger(__name__)
 
 
-def write_dlis_file(data, config, dlis_file_name, **kwargs):
+def write_dlis_file(data, config, dlis_file_name, visible_record_length=8192, **kwargs):
     def timed_func():
-        dlis_file = DLISFile()
+        dlis_file = DLISFile(visible_record_length=visible_record_length)
         dlis_file.create_dlis(data=data, config=config, filename=dlis_file_name, **kwargs)
 
     exec_time = timeit(timed_func, number=1)
@@ -39,6 +39,8 @@ def make_parser(add_help=True, require_input_fname=True):
                         help="Another DLIS file to compare the created one against (at binary level)")
     parser.add_argument('--overwrite', action='store_true', default=False,
                         help="Allow overwriting existing output file")
+    parser.add_argument('-vrl', '--visible-record-length', type=int, default=8192,
+                        help="Maximum allowed visible record length")
 
     return parser
 
@@ -108,7 +110,8 @@ def main():
         data=data,
         config=config,
         dlis_file_name=pargs.output_file_name,
-        chunk_rows=int(pargs.chunk_rows)
+        chunk_rows=int(pargs.chunk_rows),
+        visible_record_length=pargs.visible_record_length
     )
 
     if pargs.reference_file_name is not None:
