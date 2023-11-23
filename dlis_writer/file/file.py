@@ -16,6 +16,43 @@ logger = logging.getLogger(__name__)
 class DLISFile:
     """Create a DLIS file given data and structure information (specification of logical records)."""
 
+    class DLISFileWriter:
+        """Write bytes to DLIS file."""
+
+        def __init__(self, filename: Union[str, bytes, os.PathLike]):
+            """Initialise DLISFileWriter.
+
+            Args:
+                filename    :   Name of the file the bytes should be written to.
+            """
+
+            self._filename = filename
+            self._append = False  # changes to True in first call of write_bytes
+            self._total_size = 0
+
+        @property
+        def total_size(self) -> int:
+            """Number of bytes which have been written into the file."""
+
+            return self._total_size
+
+        def write_bytes(self, bts: bytes, size: Optional[int] = None):
+            """Write (in 'wb' or 'ab' mode, as needed) the bytes into the file.
+
+            Args:
+                bts     :   Bytes to be written to the file.
+                size    :   Number of bytes to be written. If not provided, it is calculated from bts.
+            """
+
+            mode = 'ab' if self._append else 'wb'
+
+            logger.debug("Writing bytes to file")
+            with open(self._filename, mode) as f:
+                f.write(bts)
+
+            self._append = True  # in the future calls, append bytes to the file
+            self._total_size += (size or len(bts))
+
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
@@ -90,7 +127,8 @@ class DLISFile:
 
         return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
-    def _create_visible_records(self, logical_records: FileLogicalRecords, writer: callable, output_chunk_size=2 ** 32):
+    def _create_visible_records(self, logical_records: FileLogicalRecords, writer: "DLISFile.DLISFileWriter",
+                                output_chunk_size=2 ** 32):
         """Create visible records constituting the DLIS file.
 
         Bytes of each logical record are placed in a new visible record. If necessary, bytes of logical record are split
@@ -101,7 +139,7 @@ class DLISFile:
 
         Args:
             logical_records     :   FileLogicalRecords object containing logical records to be put in the DLIS file.
-            writer              :   Function taking care of storing output chunks into the file.
+            writer              :   DLISFileWriter object, taking care of writing output chunks into the file.
             output_chunk_size   :   Size (in bytes) of chunks in which the output file will be created.
         """
 
@@ -117,10 +155,8 @@ class DLISFile:
 
         output = bytearray(output_chunk_size)   # pre-allocate space for the first output chunk
         sul_bytes = next(all_lrb_gen).bytes     # create bytes of the Storage Unit Label (first logical record)
-        total_filled_output_len = len(sul_bytes)    # total number of bytes added to the file
-        current_filled_output_len = total_filled_output_len  # number of bytes added to the current output chunk
+        current_filled_output_len = len(sul_bytes)  # number of bytes added to the current output chunk
         output[:current_filled_output_len] = sul_bytes  # add the SUL bytes - add as-is, don't wrap in a visible record
-        first_output_chunk = True  # mark that this is the first output chunk - writing will be in 'w', not 'a' mode
 
         current_vr_body = b''  # body of the current visible record
         current_vr_body_size = 0  # size of the current visible record
@@ -132,18 +168,16 @@ class DLISFile:
         remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
 
         def next_vr():
-            nonlocal output, current_vr_body, total_filled_output_len, current_filled_output_len, first_output_chunk
+            nonlocal output, current_vr_body, current_filled_output_len
             added_len = current_vr_body_size + hs
             new_len = current_filled_output_len + added_len
             if new_len > output_chunk_size:
-                writer(output[:current_filled_output_len], append=not first_output_chunk)
-                first_output_chunk = False
+                writer.write_bytes(output[:current_filled_output_len], size=current_filled_output_len)
                 output = bytearray(output_chunk_size)
                 current_filled_output_len = 0
                 new_len = added_len
-                logger.debug(f"Making new output chunk; current total output size is {total_filled_output_len}")
+                logger.debug(f"Making new output chunk; current total output size is {writer.total_size}")
             output[current_filled_output_len:new_len] = self._make_visible_record(current_vr_body, size=current_vr_body_size)
-            total_filled_output_len += added_len
             current_filled_output_len += added_len
             current_vr_body = b''
 
@@ -192,19 +226,9 @@ class DLISFile:
 
         next_vr()
         bar.finish()
-        writer(output[:current_filled_output_len], append=not first_output_chunk)
+        writer.write_bytes(output[:current_filled_output_len], size=current_filled_output_len)
 
-        logger.info(f"Final total file size is {total_filled_output_len} bytes")
-
-    @staticmethod
-    def write_bytes_to_file(raw_bytes: bytes, filename: Union[str, bytes, os.PathLike], append=False):
-        """Writes the bytes to a DLIS file"""
-
-        mode = 'ab' if append else 'wb'
-
-        logger.debug("Writing bytes to file")
-        with open(filename, mode) as f:
-            f.write(raw_bytes)
+        logger.info(f"Final total file size is {writer.total_size} bytes")
 
     def create_dlis(self, config, data, filename: Union[str, bytes, os.PathLike], input_chunk_size=None,
                     output_chunk_size=2**32):
@@ -214,12 +238,9 @@ class DLISFile:
         logical_records.check_objects()
         self._assign_origin_reference(logical_records)
 
-        def file_writer(bts, append=False):
-            self.write_bytes_to_file(bts, filename, append=append)
-
         self._create_visible_records(
             logical_records,
-            writer=file_writer,
+            writer=self.DLISFileWriter(filename),
             output_chunk_size=output_chunk_size
         )
 
