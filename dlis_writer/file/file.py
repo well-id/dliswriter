@@ -75,6 +75,10 @@ class DLISFile:
             self._bts[self._filled_size:new_size] = bts
             self._filled_size = new_size
 
+        def clear(self):
+            self._bts = bytearray(self._total_size)
+            self._filled_size = 0
+
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
@@ -174,8 +178,8 @@ class DLISFile:
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
-        current_output_chunk = self.OutputChunk(output_chunk_size)
-        current_output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
+        output_chunk = self.OutputChunk(output_chunk_size)
+        output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
         current_vr_body = b''  # body of the current visible record
         current_vr_body_size = 0  # size of the current visible record
@@ -187,12 +191,12 @@ class DLISFile:
         remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
 
         def next_vr():
-            nonlocal current_output_chunk, current_vr_body
-            if current_output_chunk.filled_size + current_vr_body_size + hs > output_chunk_size:
-                writer.write_output_chunk(current_output_chunk)
-                current_output_chunk = self.OutputChunk(output_chunk_size)
+            nonlocal current_vr_body
+            if output_chunk.filled_size + current_vr_body_size + hs > output_chunk_size:
+                writer.write_output_chunk(output_chunk)
+                output_chunk.clear()
                 logger.debug(f"Making new output chunk; current total output size is {writer.total_size}")
-            current_output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
+            output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
             current_vr_body = b''
 
         def next_lrb():
@@ -240,7 +244,7 @@ class DLISFile:
 
         next_vr()
         bar.finish()
-        writer.write_output_chunk(current_output_chunk)
+        writer.write_output_chunk(output_chunk)
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
