@@ -136,7 +136,7 @@ class FileLogicalRecords:
                                    f"this might cause issues with opening the produced DLIS file in some software")
 
     @staticmethod
-    def make_frame_and_data(config, data, key='Frame', chunk_rows=None):
+    def make_frame_and_data(config, data, key='Frame', chunk_size=None):
         frame_object: FrameObject = Frame.make_object_from_config(config, key=key)
         if frame_object.channels.value:
             frame_object.setup_from_data(data)
@@ -145,7 +145,7 @@ class FileLogicalRecords:
             ch = "(no channels defined)"
 
         logger.info(f'Preparing frames for {data.n_rows} rows {ch}')
-        multi_frame_data = MultiFrameData(frame_object, data, chunk_rows=chunk_rows)
+        multi_frame_data = MultiFrameData(frame_object, data, chunk_size=chunk_size)
 
         return frame_object, multi_frame_data
 
@@ -160,7 +160,7 @@ class FileLogicalRecords:
             self.add_logical_records(*objects)
 
     @classmethod
-    def from_config_and_data(cls, config: ConfigParser, data, chunk_rows=None) -> Self:
+    def from_config_and_data(cls, config: ConfigParser, data, chunk_size=None) -> Self:
         file_header_object = FileHeader.make_object_from_config(config)
         origin_object = Origin.make_object_from_config(config)
 
@@ -174,7 +174,7 @@ class FileLogicalRecords:
 
         frame_keys = (key for key in config.sections() if key.startswith('Frame-') or key == 'Frame')
         frame_and_data_objects = [
-            cls.make_frame_and_data(config, data, key=key, chunk_rows=chunk_rows) for key in frame_keys
+            cls.make_frame_and_data(config, data, key=key, chunk_size=chunk_size) for key in frame_keys
         ]
 
         logger.info(f"Adding Channels: {', '.join(ch.name for ch in channels)} to the file")

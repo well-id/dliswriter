@@ -4,7 +4,7 @@ from dlis_writer.utils.source_data_objects import SourceDataObject
 
 
 class MultiFrameData:
-    def __init__(self, frame: FrameObject, data: SourceDataObject, chunk_rows=None):
+    def __init__(self, frame: FrameObject, data: SourceDataObject, chunk_size=None):
         super().__init__()
 
         frame_channel_names = tuple(c.name for c in frame.channels.value)
@@ -18,7 +18,7 @@ class MultiFrameData:
 
         self._origin_reference = None
 
-        self._chunk_rows = chunk_rows
+        self._chunk_rows = chunk_size
         self._i = 0
         self._data_item_generator = None
 

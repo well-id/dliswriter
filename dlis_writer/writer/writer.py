@@ -33,8 +33,8 @@ def make_parser(add_help=True, require_input_fname=True):
                         help="Make a time-based DLIS file (default is depth-based)")
     parser.add_argument('--channels-from-data', action='store_true', default=False,
                         help="Extend the provided config file with channel information from the data")
-    parser.add_argument('--chunk-rows', default=1e5, type=float,
-                        help="Chunk size (number of rows) for the source file to be processed in")
+    parser.add_argument('--input-chunk-size', default=1e5, type=float,
+                        help="Chunk size (number of rows) for the input data to be processed in")
     parser.add_argument('-ref', '--reference-file-name',
                         help="Another DLIS file to compare the created one against (at binary level)")
     parser.add_argument('--overwrite', action='store_true', default=False,
@@ -110,7 +110,7 @@ def main():
         data=data,
         config=config,
         dlis_file_name=pargs.output_file_name,
-        chunk_rows=int(pargs.chunk_rows),
+        input_chunk_size=int(pargs.input_chunk_size),
         visible_record_length=pargs.visible_record_length
     )
 
