@@ -193,7 +193,7 @@ class DLISFile:
 
         current_vr_body = b''  # body of the current visible record
         current_vr_body_size = 0  # size of the current visible record
-        max_vr_body_size = self.visible_record_length - hs  # maximal allowed size of a VR body (before adding header)
+        max_lr_segment_size = self.visible_record_length - 2 * hs  # max allowed size of a LR segment
         position_in_current_lrb = 0  # how many bytes of the current logical record have been processed
 
         lrb: LogicalRecordBytes = None  # bytes of the current logical record
@@ -201,9 +201,7 @@ class DLISFile:
         remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
 
         def next_vr():
-            nonlocal current_vr_body
             output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
-            current_vr_body = b''
 
         def next_lrb():
             nonlocal lrb, i, position_in_current_lrb, remaining_lrb_size
@@ -228,7 +226,7 @@ class DLISFile:
                 if not next_lrb():
                     break
 
-            if remaining_lrb_size <= max_vr_body_size:
+            if remaining_lrb_size <= max_lr_segment_size:
                 current_vr_body = lrb.make_segment(start_pos=position_in_current_lrb)
                 # VR body size: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
                 current_vr_body_size = hs + remaining_lrb_size + (remaining_lrb_size % 2)
@@ -236,7 +234,7 @@ class DLISFile:
                     break
 
             else:
-                segment_size = min(max_vr_body_size, remaining_lrb_size)
+                segment_size = min(max_lr_segment_size, remaining_lrb_size)
                 future_remaining_lrb_size = remaining_lrb_size - segment_size
                 if future_remaining_lrb_size < mbs:
                     segment_size -= mbs - future_remaining_lrb_size
