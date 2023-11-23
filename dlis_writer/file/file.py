@@ -57,10 +57,12 @@ class DLISFile:
             self.write_bytes(chunk.filled_bytes, size=chunk.filled_size)
 
     class OutputChunk:
-        def __init__(self, size):
+        def __init__(self, size, writer: "DLISFile.DLISFileWriter"):
             self._bts = bytearray(size)
             self._filled_size = 0
             self._total_size = size
+
+            self._writer = writer
 
         @property
         def filled_size(self):
@@ -71,7 +73,15 @@ class DLISFile:
             return self._bts[:self._filled_size]
 
         def add_bytes(self, bts: bytes, size: Optional[int] = None):
-            new_size = self._filled_size + (size or len(bts))
+            size = size or len(bts)
+            new_size = self._filled_size + size
+
+            if new_size > self._total_size:
+                self._writer.write_output_chunk(self)
+                self.clear()
+                logger.debug(f"Making new output chunk; current total output size is {self._writer.total_size}")
+                new_size = size
+
             self._bts[self._filled_size:new_size] = bts
             self._filled_size = new_size
 
@@ -178,7 +188,7 @@ class DLISFile:
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
-        output_chunk = self.OutputChunk(output_chunk_size)
+        output_chunk = self.OutputChunk(output_chunk_size, writer)
         output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
         current_vr_body = b''  # body of the current visible record
@@ -192,10 +202,6 @@ class DLISFile:
 
         def next_vr():
             nonlocal current_vr_body
-            if output_chunk.filled_size + current_vr_body_size + hs > output_chunk_size:
-                writer.write_output_chunk(output_chunk)
-                output_chunk.clear()
-                logger.debug(f"Making new output chunk; current total output size is {writer.total_size}")
             output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
             current_vr_body = b''
 
