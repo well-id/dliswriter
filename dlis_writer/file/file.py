@@ -1,13 +1,12 @@
 import os
 import logging
-from progressbar import ProgressBar  # package name is progressbar2 (added to requirements)
+from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union, Optional
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
-from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
 
 
 logger = logging.getLogger(__name__)
@@ -88,15 +87,6 @@ class DLISFile:
         def clear(self):
             self._bts = bytearray(self._total_size)
             self._filled_size = 0
-
-    class TrackedProgressBar(ProgressBar):
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self._i = 0
-
-        def update(self, *args, **kwargs):
-            super().update(self._i)
-            self._i += 1
 
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
@@ -190,24 +180,18 @@ class DLISFile:
 
         all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
 
-        bar = self.TrackedProgressBar(max_value=len(logical_records))
-
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
         output_chunk = self.OutputChunk(output_chunk_size, writer)
         output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
-        max_lr_segment_size = self.visible_record_length - 8  # max allowed size of a LR segment
+        max_lr_segment_size = self.visible_record_length - 8  # max allowed size of an LR segment
 
         logger.info("Creating visible records of the DLIS...")
 
-        for lrb in all_lrb_gen:
+        for lrb in progressbar(all_lrb_gen, max_value=len(logical_records)-1):
             for segment, segment_size in lrb.make_segments(max_lr_segment_size):
                 output_chunk.add_bytes(self._make_visible_record(segment, segment_size))
-
-            bar.update()
-
-        bar.finish()
         writer.write_output_chunk(output_chunk)
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
