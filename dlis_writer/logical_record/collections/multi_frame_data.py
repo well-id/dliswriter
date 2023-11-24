@@ -22,6 +22,10 @@ class MultiFrameData:
         self._i = 0
         self._data_item_generator = None
 
+    @property
+    def frame(self):
+        return self._frame
+
     def set_origin_reference(self, value):
         self._origin_reference = value
 
