@@ -96,43 +96,63 @@ class FileLogicalRecords:
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
     def add_channels(self, *channels: Channel):
+        """Add Channel logical records to the collection."""
+
         self._check_types(channels, Channel)
         self._channels.extend(channels)
 
     @property
-    def frames(self):
+    def frames(self) -> list[Frame]:
+        """Frame logical records added to the collection."""
+
         return self._frames
 
-    def add_frames(self, *frames):
+    def add_frames(self, *frames: Frame):
+        """Add Frame logical records to the collection."""
+
         self._check_types(frames, Frame)
         self._frames.extend(frames)
 
     @property
-    def frame_data_objects(self):
+    def frame_data_objects(self) -> list[MultiFrameData]:
+        """MultiFrameData objects (collections of FrameData objects) added to the collection."""
+
         return self._frame_data_objects
 
-    def add_frame_data_objects(self, *fds):
+    def add_frame_data_objects(self, *fds: MultiFrameData):
+        """Add MultiFrameData objects (collections of FrameData objects) to the collection."""
+
         self._check_types(fds, MultiFrameData)
         self._frame_data_objects.extend(fds)
 
-    def __len__(self):
+    def __len__(self) -> int:
+        """Calculate current number of individual logical records defined in the collection.
+
+        Adds up the numbers of all channels, frames, and other explicitly formatted logical records.
+        Takes into account the storage unit label, file header, and origin.
+        Adds the lengths of all added MultiFrameData objects - i.e. FrameData records that will be generated from them.
+        """
+
         def get_len(lr_list):
             return sum(lr.n_objects for lr in lr_list)
 
-        len_channels = get_len(self._channels)
-        len_frames = get_len(self._frames)
-        len_other = get_len(self._other_logical_records)
-        len_data = sum(len(mfd) for mfd in self.frame_data_objects)
-        return len(self.header_records) + len_channels + len_frames + len_data + len_other
+        len_channels = get_len(self._channels)                          # number of Channel EFLRs
+        len_frames = get_len(self._frames)                              # number of Frame EFLRs
+        len_other = get_len(self._other_logical_records)                # number of any other defined EFLRs
+        len_data = sum(len(mfd) for mfd in self.frame_data_objects)     # number of FrameData objects to be generated
+        return len(self.header_records) + len_channels + len_frames + len_data + len_other  # total length
 
     def __iter__(self):
-        return chain(
-            self.header_records,  # tuple of EFLRs
-            self._channels,  # list of channels
-            self._frames,  # list of frames
-            self.frame_data_objects,  # list of iterables - MultiFrameData objects
-            self._other_logical_records  # iterable of lists of EFLRs
-        )
+        """Iterate over all logical records defined in the object."""
+
+        yield from self.header_records
+        yield from self._channels
+        yield from self._frames
+
+        for fdo in self._frame_data_objects:  # list of MultiFrameData
+            yield from fdo  # FrameData objects
+
+        yield from self._other_logical_records
 
     def add_logical_records(self, *lrs):
         self._check_types(lrs, EFLR)
@@ -160,7 +180,7 @@ class FileLogicalRecords:
 
         check(self._file_header, exactly_one=True)
         check(self._origin)
-        check_list(self.frames, "Frame")
+        check_list(self._frames, "Frame")
         check_list(self._channels, "Channel")
 
         self._check_channels()

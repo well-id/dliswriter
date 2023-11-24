@@ -160,24 +160,6 @@ class DLISFile:
         logger.info(f"Assigning origin reference: {val} to all logical records")
         logical_records.set_origin_reference(val)
 
-    @staticmethod
-    def _make_lr_bytes_generator(logical_records: FileLogicalRecords):
-        """Create a generator yielding bytes of all provided logical records.
-
-        Args:
-            logical_records :   Collection of logical records to be put in the file.
-
-        Yields:
-            BasicLogicalRecordBytes :   object wrapping the bytes of a logical record.
-        """
-
-        for lr in logical_records:
-            if isinstance(lr, MultiFrameData):
-                for frame_data in lr:
-                    yield frame_data.represent_as_bytes()
-            else:
-                yield lr.represent_as_bytes()
-
     def _make_visible_record(self, body: Union[bytes, bytearray], size: Optional[int] = None) -> bytes:
         """Create a visible record (physical DLIS unit) from the provided body bytes.
 
@@ -231,7 +213,7 @@ class DLISFile:
             output_chunk_size   :   Size (in bytes) of chunks in which the output file will be created.
         """
 
-        all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
+        all_lrb_gen = (lr.represent_as_bytes() for lr in logical_records)  # generator yielding logical records' bytes
 
         # prepare BufferedOutput object - temporarily keep added bytes, store them in the file when buffer is full
         self._check_output_chunk_size(output_chunk_size)
