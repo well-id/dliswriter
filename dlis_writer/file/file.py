@@ -36,12 +36,15 @@ class DLISFile:
 
             return self._total_size
 
-        def write_bytes(self, bts: bytes, size: Optional[int] = None):
+        def write_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None):
             """Write (in 'wb' or 'ab' mode, as needed) the bytes into the file.
 
             Args:
                 bts     :   Bytes to be written to the file.
                 size    :   Number of bytes to be written. If not provided, it is calculated from bts.
+
+            Note:
+                For performance purposes, the provided size is not checked against the length of the bytes.
             """
 
             mode = 'ab' if self._append else 'wb'
@@ -54,32 +57,64 @@ class DLISFile:
             self._total_size += (size or len(bts))
 
     class BufferedOutput:
-        def __init__(self, size, writer: "DLISFile.DLISFileWriter"):
-            self._bts = bytearray(size)
-            self._filled_size = 0
-            self._total_size = size
+        """Provide an automatised buffered interface for storing bytes into a file.
 
-            self._writer = writer
+        Collect output bytes in a buffer of predefined size. Once buffer is full*, send the buffer contents to the
+        file writer object to be stored, and prepare a new, empty buffer to collect more bytes.
+        * the storing takes place when the space in the buffer is not enough to accept the provided sequence of bytes.
 
-        def add_bytes(self, bts: bytes, size: Optional[int] = None):
+        Note:
+            When last bytes have been passed to the buffer, it is necessary to explicitly call 'pass_bytes_to_writer'
+            in order to send the bytes remaining in the buffer to the file writer.
+        """
+
+        def __init__(self, size: int, writer: "DLISFile.DLISFileWriter"):
+            """Initialise BufferedOutput object.
+
+            Args:
+                size    :   Size of the buffer.
+                writer  :   File writer object.
+            """
+
+            self._bts = bytearray(size)     #: the buffer
+            self._filled_size = 0           #: how many bytes are in the current buffer
+            self._buffer_size = size        #: size of the output buffer (needed when setting up a new one)
+
+            self._writer = writer           #: file writer object
+
+        def add_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None):
+            """Add bytes to the current output buffer.
+
+            If the bytes would not fit in the current output buffer, send the currently kept bytes to the file writer,
+            set up a clean output buffer, and add the new bytes there.
+
+            Args:
+                bts     :   Bytes to be added to the output buffer.
+                size    :   Number of bytes to be added. If not provided, it is calculated from bts.
+
+            Note:
+                For performance purposes, the provided size is not checked against the length of the bytes.
+            """
+
             size = size or len(bts)
             new_size = self._filled_size + size
 
-            if new_size > self._total_size:
-                self.pass_bytes_to_writer()
+            if new_size > self._buffer_size:
+                self.pass_bytes_to_writer()  # also sets up a new output buffer
                 logger.debug(f"Making new output chunk; current total output size is {self._writer.total_size}")
                 new_size = size
 
             self._bts[self._filled_size:new_size] = bts
             self._filled_size = new_size
 
-        def clear(self):
-            self._bts = bytearray(self._total_size)
-            self._filled_size = 0
-
         def pass_bytes_to_writer(self):
+            """Send the currently kept bytes to the file writer. Set up a new, empty output buffer."""
+
             self._writer.write_bytes(self._bts[:self._filled_size], self._filled_size)
-            self.clear()
+
+            # set up a new output buffer
+            self._bts = bytearray(self._buffer_size)
+            self._filled_size = 0
 
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
