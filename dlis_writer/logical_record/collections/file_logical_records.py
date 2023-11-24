@@ -1,5 +1,6 @@
 from itertools import chain
 from typing_extensions import Self
+import typing
 from configparser import ConfigParser
 import logging
 
@@ -14,47 +15,88 @@ logger = logging.getLogger(__name__)
 
 
 class FileLogicalRecords:
-    def __init__(self, storage_unit_label: StorageUnitLabel, file_header: FileHeader, origin: Origin):
-        super().__init__()
+    """Collection of logical records to constitute a DLIS file."""
 
-        self.storage_unit_label = storage_unit_label
-        self.file_header = file_header
-        self.origin = origin
+    def __init__(self, sul: StorageUnitLabel, fh: FileHeader, orig: Origin):
+        """Initialise FileLogicalRecords object.
+
+        Args:
+            sul     :   Instance of StorageUnitLabel.
+            fh      :   Instance of FileHeader EFLR.
+            orig    :   Instance of Origin EFLR.
+        """
+
+        self._check_type(sul, StorageUnitLabel)
+        self._check_type(fh, FileHeader)
+        self._check_type(orig, Origin)
+
+        self._storage_unit_label = sul
+        self._file_header = fh
+        self._origin = orig
+
         self._channels: list[Channel] = []
         self._frames: list[Frame] = []
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[EFLR] = []
 
-    def set_origin_reference(self, value):
-        self.file_header.origin_reference = value
-        self.origin.origin_reference = value
+    def set_origin_reference(self, value: int):
+        """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
 
-        for iterable in (self._channels, self._frames):
+        self._file_header.origin_reference = value
+        self._origin.origin_reference = value
+
+        for iterable in (self._channels, self._frames, self._other_logical_records):
             for ob in iterable:
                 ob.origin_reference = value
 
         for fdo in self._frame_data_objects:
             fdo.set_origin_reference(value)
 
-        for lr in self._other_logical_records:
-            lr.origin_reference = value
+    @property
+    def origin(self) -> Origin:
+        """Origin EFLR of the collection."""
+
+        return self._origin
 
     @property
-    def other_logical_records(self):
-        return self._other_logical_records
+    def header_records(self) -> tuple[StorageUnitLabel, FileHeader, Origin]:
+        """Header records of the collection: StorageUnitLabel, FileHeader, and Origin."""
 
-    @property
-    def header_records(self):
-        return self.storage_unit_label, self.file_header, self.origin
+        return self._storage_unit_label, self._file_header, self._origin
 
     @staticmethod
-    def _check_type_of_values(values, expected_type):
+    def _check_type(value: typing.Any, expected_type: type):
+        """Check that the provided value is an instance of the expected type.
+
+        Args:
+            value           :   Value to be checked.
+            expected_type   :   Expected type of the value.
+
+        Raises:
+            TypeError   :   If the value is not an instance of the expected type.
+        """
+
+        if not isinstance(value, expected_type):
+            raise TypeError(f"Expected an instance of {expected_type.__name__}; got {type(value)}")
+
+    @staticmethod
+    def _check_types(values: typing.Iterable, expected_type: type):
+        """Check that the provided values are all instances of the expected type.
+
+        Args:
+            values          :   Values to be checked.
+            expected_type   :   Expected type of the value.
+
+        Raises:
+            TypeError   :   If any of the values is not an instance of the expected type.
+        """
+
         if not all(isinstance(v, expected_type) for v in values):
             raise TypeError(f"Expected only {expected_type.__name__} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
-    def add_channels(self, *channels):
-        self._check_type_of_values(channels, Channel)
+    def add_channels(self, *channels: Channel):
+        self._check_types(channels, Channel)
         self._channels.extend(channels)
 
     @property
@@ -62,7 +104,7 @@ class FileLogicalRecords:
         return self._frames
 
     def add_frames(self, *frames):
-        self._check_type_of_values(frames, Frame)
+        self._check_types(frames, Frame)
         self._frames.extend(frames)
 
     @property
@@ -70,7 +112,7 @@ class FileLogicalRecords:
         return self._frame_data_objects
 
     def add_frame_data_objects(self, *fds):
-        self._check_type_of_values(fds, MultiFrameData)
+        self._check_types(fds, MultiFrameData)
         self._frame_data_objects.extend(fds)
 
     def __len__(self):
@@ -93,7 +135,7 @@ class FileLogicalRecords:
         )
 
     def add_logical_records(self, *lrs):
-        self._check_type_of_values(lrs, EFLR)
+        self._check_types(lrs, EFLR)
         self._other_logical_records.extend(lrs)
 
     def check_objects(self):
@@ -116,8 +158,8 @@ class FileLogicalRecords:
                 names.extend(o.name for o in eflr.get_all_objects())
             verify_n(names, class_name)
 
-        check(self.file_header, exactly_one=True)
-        check(self.origin)
+        check(self._file_header, exactly_one=True)
+        check(self._origin)
         check_list(self.frames, "Frame")
         check_list(self._channels, "Channel")
 
@@ -165,9 +207,9 @@ class FileLogicalRecords:
         origin_object = Origin.make_object_from_config(config)
 
         obj = cls(
-            storage_unit_label=StorageUnitLabel.make_from_config(config),
-            file_header=file_header_object.parent,
-            origin=origin_object.parent
+            sul=StorageUnitLabel.make_from_config(config),
+            fh=file_header_object.parent,
+            orig=origin_object.parent
         )
 
         channels = Channel.make_all_objects_from_config(config)
