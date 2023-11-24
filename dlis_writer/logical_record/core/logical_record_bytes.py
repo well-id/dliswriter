@@ -64,3 +64,22 @@ class LogicalRecordBytes(BasicLogicalRecordBytes):
             new_bts += self.padding
 
         return new_bts
+
+    def make_segments(self, max_n_bytes):
+
+        start_pos = 0
+        remaining_size = self._size
+
+        while remaining_size > 0:
+            n_bytes = min(remaining_size, max_n_bytes)
+            future_remaining_size = remaining_size - n_bytes
+            if 0 < future_remaining_size < 12:
+                n_bytes -= (12 - future_remaining_size)
+                future_remaining_size = 12
+
+            yield self.make_segment(start_pos, n_bytes), n_bytes + 4 + (n_bytes % 2)
+
+            remaining_size = future_remaining_size
+            start_pos += n_bytes
+
+

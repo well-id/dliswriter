@@ -190,9 +190,6 @@ class DLISFile:
 
         all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
 
-        hs = 4  # header size (both for logical record segment and visible record)
-        mbs = 12  # minimum logical record body size (min LRS size is 16 incl. 4-byte header)
-
         bar = self.TrackedProgressBar(max_value=len(logical_records))
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
@@ -200,60 +197,16 @@ class DLISFile:
         output_chunk = self.OutputChunk(output_chunk_size, writer)
         output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
-        current_vr_body = b''  # body of the current visible record
-        current_vr_body_size = 0  # size of the current visible record
-        max_lr_segment_size = self.visible_record_length - 2 * hs  # max allowed size of a LR segment
-        position_in_current_lrb = 0  # how many bytes of the current logical record have been processed
-
-        lrb: LogicalRecordBytes = None  # bytes of the current logical record
-        remaining_lrb_size = 0  # how many bytes still remain in the current logical record (used if the LR is split)
-
-        def next_vr():
-            output_chunk.add_bytes(self._make_visible_record(current_vr_body, size=current_vr_body_size))
-
-        def next_lrb():
-            nonlocal lrb, position_in_current_lrb, remaining_lrb_size
-            try:
-                lrb = next(all_lrb_gen)
-            except StopIteration:
-                return False
-            else:
-                bar.update()
-                position_in_current_lrb = 0
-                remaining_lrb_size = lrb.size  # position in current lrb is 0
-                next_vr()
-            return True
+        max_lr_segment_size = self.visible_record_length - 8  # max allowed size of a LR segment
 
         logger.info("Creating visible records of the DLIS...")
 
-        next_lrb()
+        for lrb in all_lrb_gen:
+            for segment, segment_size in lrb.make_segments(max_lr_segment_size):
+                output_chunk.add_bytes(self._make_visible_record(segment, segment_size))
 
-        while True:
-            if not remaining_lrb_size:
-                if not next_lrb():
-                    break
+            bar.update()
 
-            if remaining_lrb_size <= max_lr_segment_size:
-                current_vr_body = lrb.make_segment(start_pos=position_in_current_lrb)
-                # VR body size: header (4 bytes), length of the added lrb tail, and padding (if the former is odd)
-                current_vr_body_size = hs + remaining_lrb_size + (remaining_lrb_size % 2)
-                if not next_lrb():
-                    break
-
-            else:
-                segment_size = min(max_lr_segment_size, remaining_lrb_size)
-                future_remaining_lrb_size = remaining_lrb_size - segment_size
-                if future_remaining_lrb_size < mbs:
-                    segment_size -= mbs - future_remaining_lrb_size
-                    future_remaining_lrb_size = mbs
-                if segment_size >= mbs:
-                    current_vr_body = lrb.make_segment(start_pos=position_in_current_lrb, n_bytes=segment_size)
-                    current_vr_body_size = segment_size + hs
-                    position_in_current_lrb += segment_size
-                    remaining_lrb_size = future_remaining_lrb_size
-                next_vr()
-
-        next_vr()
         bar.finish()
         writer.write_output_chunk(output_chunk)
 
