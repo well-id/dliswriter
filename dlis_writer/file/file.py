@@ -2,6 +2,7 @@ import os
 import logging
 from progressbar import progressbar  # package name is progressbar2 (added to requirements)
 from typing import Union, Optional
+from numbers import Number
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
@@ -154,6 +155,17 @@ class DLISFile:
 
         return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
 
+    def _check_output_chunk_size(self, output_chunk_size):
+        if not isinstance(output_chunk_size, Number):
+            raise TypeError(f"Output chunk size must be a number; got {type(output_chunk_size)}")
+
+        if output_chunk_size % 1:
+            raise ValueError(f"Output chunk size must be an integer; got {output_chunk_size}")
+
+        if output_chunk_size < self.visible_record_length:
+            raise ValueError(f"Output chunk size cannot be smaller than max visible record length "
+                             f"(= {self.visible_record_length}); got {output_chunk_size}")
+
     def _create_visible_records(self, logical_records: FileLogicalRecords, writer: "DLISFile.DLISFileWriter",
                                 output_chunk_size=2 ** 32):
         """Create visible records constituting the DLIS file.
@@ -172,9 +184,10 @@ class DLISFile:
 
         all_lrb_gen = self._make_lr_bytes_generator(logical_records)  # generator yielding bytes of the logical records
 
+        self._check_output_chunk_size(output_chunk_size)
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
-
         output = self.BufferedOutput(output_chunk_size, writer)
+
         output.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
         max_lr_segment_size = self.visible_record_length - 8  # max allowed size of an LR segment
