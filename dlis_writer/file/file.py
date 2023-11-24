@@ -52,10 +52,7 @@ class DLISFile:
             self._append = True  # in the future calls, append bytes to the file
             self._total_size += (size or len(bts))
 
-        def write_output_chunk(self, chunk: "DLISFile.OutputChunk"):
-            self.write_bytes(chunk.filled_bytes, size=chunk.filled_size)
-
-    class OutputChunk:
+    class BufferedOutput:
         def __init__(self, size, writer: "DLISFile.DLISFileWriter"):
             self._bts = bytearray(size)
             self._filled_size = 0
@@ -63,21 +60,12 @@ class DLISFile:
 
             self._writer = writer
 
-        @property
-        def filled_size(self):
-            return self._filled_size
-
-        @property
-        def filled_bytes(self):
-            return self._bts[:self._filled_size]
-
         def add_bytes(self, bts: bytes, size: Optional[int] = None):
             size = size or len(bts)
             new_size = self._filled_size + size
 
             if new_size > self._total_size:
-                self._writer.write_output_chunk(self)
-                self.clear()
+                self.pass_bytes_to_writer()
                 logger.debug(f"Making new output chunk; current total output size is {self._writer.total_size}")
                 new_size = size
 
@@ -87,6 +75,10 @@ class DLISFile:
         def clear(self):
             self._bts = bytearray(self._total_size)
             self._filled_size = 0
+
+        def pass_bytes_to_writer(self):
+            self._writer.write_bytes(self._bts[:self._filled_size], self._filled_size)
+            self.clear()
 
     def __init__(self, visible_record_length: int = 8192):
         """Initialise DLISFile object.
@@ -182,8 +174,8 @@ class DLISFile:
 
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
 
-        output_chunk = self.OutputChunk(output_chunk_size, writer)
-        output_chunk.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
+        output = self.BufferedOutput(output_chunk_size, writer)
+        output.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
 
         max_lr_segment_size = self.visible_record_length - 8  # max allowed size of an LR segment
 
@@ -191,8 +183,8 @@ class DLISFile:
 
         for lrb in progressbar(all_lrb_gen, max_value=len(logical_records)-1):
             for segment, segment_size in lrb.make_segments(max_lr_segment_size):
-                output_chunk.add_bytes(self._make_visible_record(segment, segment_size))
-        writer.write_output_chunk(output_chunk)
+                output.add_bytes(self._make_visible_record(segment, segment_size))
+        output.pass_bytes_to_writer()
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
