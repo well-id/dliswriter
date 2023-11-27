@@ -33,14 +33,14 @@ class LogicalRecord(metaclass=LRMeta):
         pass
 
     @abstractmethod
-    def make_body_bytes(self) -> bytes:
+    def _make_body_bytes(self) -> bytes:
         pass
 
     def represent_as_bytes(self) -> LogicalRecordBytes:
         """Writes bytes of the entire Logical Record Segment that is an EFLR object"""
 
         return LogicalRecordBytes(
-            self.make_body_bytes(),
+            self._make_body_bytes(),
             lr_type_struct=self.__class__.lr_type_struct,
             is_eflr=self.is_eflr
         )

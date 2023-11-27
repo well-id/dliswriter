@@ -12,7 +12,7 @@ class NoFormatFrameData(IFLR):
         self.no_format_object = None
         self.data = None
 
-    def make_body_bytes(self) -> bytes:
+    def _make_body_bytes(self) -> bytes:
         _body = b''
         _body += self.no_format_object.obname
         _body += self.data.encode('ascii')

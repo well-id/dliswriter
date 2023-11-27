@@ -35,7 +35,7 @@ class FrameData(IFLR):
     def frame(self):
         return self._frame
 
-    def make_body_bytes(self) -> bytes:
+    def _make_body_bytes(self) -> bytes:
         body = self._frame.obname + write_struct(RepresentationCode.UVARI, self._frame_number)
 
         for s in self._slots:

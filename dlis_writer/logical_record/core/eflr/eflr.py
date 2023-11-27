@@ -1,5 +1,6 @@
 import logging
 import importlib
+from typing import Union, Optional
 
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode, EFLRType
@@ -12,60 +13,66 @@ logger = logging.getLogger(__name__)
 
 
 class EFLR(LogicalRecord, metaclass=EFLRMeta):
-    """Represents an Explicitly Formatted Logical Record
+    """Model an Explicitly Formatted Logical Record."""
 
-    Attributes:
-        name: Identifier of a Logical Record Segment. Must be
-            distinct in a single Logical File.
-        set_name: Optional identifier of the set a Logical Record Segment belongs to.
+    set_type: str = NotImplemented                  #: set type of each particular EFLR (e.g. Channel); see the standard
+    logical_record_type: EFLRType = NotImplemented  #: int-enum denoting type of the EFLR
+    is_eflr: bool = True                            #: indication that this is an explicitly formatted LR
+    object_type: type = EFLRObject                  #: object type which can be held within an EFLR of this type
 
-    """
+    def __init__(self, set_name: Optional[str] = None):
+        """Initialise an EFLR.
 
-    set_type: str = NotImplemented
-    logical_record_type: EFLRType = NotImplemented
-    is_eflr = True
-    object_type = EFLRObject
+        Args:
+            set_name    :   Name of the set this EFLR belongs to. Multiple EFLR instances of the same type (subclass)
+                            can be included in the same file if their set names differ.
+        """
 
-    def __init__(self, set_name: str = None):
         super().__init__()
 
         self.set_name = set_name
-        self._set_type_struct = write_struct(RepresentationCode.IDENT, self.set_type)
-        self._object_dict = {}
-        self._attributes = {}
+        self._set_type_struct = write_struct(RepresentationCode.IDENT, self.set_type)  # used in the header
+        self._object_dict = {}  # instances of EFLRObject registered with this EFLR instance
+        self._attributes = {}   # attributes of this EFLR (copied from an EFLRObject instance later)
         self._origin_reference = None
 
         self._instance_dict[self.set_name] = self
 
-    def __str__(self):
-        return f"EFLR class '{self.__class__.__name__}'"
+    def __str__(self) -> str:
+        """Represent the EFLR instance as str."""
+
+        return f"{self.__class__.__name__} {repr(self.set_name)}"
 
     def clear_object_dict(self):
+        """Remove all references to EFLRObject instances from the internal dictionary."""
+
         self._object_dict.clear()
 
     @property
-    def origin_reference(self):
+    def origin_reference(self) -> Union[int, None]:
+        """Currently set origin reference of the EFLR instance."""
+
         return self._origin_reference
 
     @origin_reference.setter
-    def origin_reference(self, val):
+    def origin_reference(self, val: int):
+        """Set origin reference of the EFLR instance and all EFLRObject instances registered with it to a new value."""
+
         self._origin_reference = val
         for obj in self._object_dict.values():
             obj.origin_reference = val
 
     @property
-    def first_object(self):
+    def first_object(self) -> Union[EFLRObject, None]:
+        """Return the first EFLRObject instance registered with this EFLR or None if no instances are registered."""
+
+        if not self._object_dict:
+            return None
+
         return self._object_dict[next(iter(self._object_dict.keys()))]
 
     def _make_set_component_bytes(self) -> bytes:
-        """Creates component role Set
-
-        Returns:
-            Bytes that represent a Set component
-
-        .._RP66 Component Descriptor:
-            http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_1
-        """
+        """Create bytes describing the set of this EFLR, using set type (class attr) and name (specified at init)."""
 
         if self.set_name:
             _bytes = b'\xf8' + self._set_type_struct + write_struct(RepresentationCode.IDENT, self.set_name)
@@ -75,15 +82,9 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         return _bytes
 
     def _make_template_bytes(self) -> bytes:
-        """Creates template from EFLR object's attributes
+        """Create bytes describing the attribute template of this EFLR.
 
-        Returns:
-            Template bytes compliant with the RP66 V1
-
-        .._RP66 V1 Component Usage:
-            http://w3.energistics.org/rp66/v1/rp66v1_sec3.html#3_2_2_2
-
-        """
+        Note: if no EFLRObjects are registered, this will return an empty bytes object."""
 
         _bytes = b''
         for attr in self._attributes.values():
@@ -91,12 +92,15 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return _bytes
 
-    def make_body_bytes(self) -> bytes:
-        """Writes Logical Record Segment bytes without header"""
+    def _make_body_bytes(self) -> bytes:
+        """Create bytes describing the body of this EFLR - the values of attributes of the registered EFLRObjects.
+
+        If no EFLRObjects are registered, this will return an empty bytes object.
+        """
 
         objects = self.get_all_objects()
         if not objects:
-            return None
+            return b''
 
         bts = self._make_set_component_bytes() + self._make_template_bytes()
         for obj in objects:
@@ -104,7 +108,17 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return bts
 
-    def make_object_in_this_set(self, name, get_if_exists=False, **kwargs) -> EFLRObject:
+    def make_object_in_this_set(self, name: str, get_if_exists: bool = False, **kwargs) -> EFLRObject:
+        """Make an EFLRObject according the specifications and register it with this EFLR instance.
+
+        Args:
+            name            :   Name of the object to be created.
+            get_if_exists   :   If True and an object of the same name already exists in the internal object dictionary,
+                                return the existing object rather than overwriting it with a new one.
+            kwargs          :   Keyword arguments passed to initialisation of the object - e.g. setting the values
+                                of its attributes.
+        """
+
         if get_if_exists and name in self._object_dict:
             return self._object_dict[name]
 
@@ -119,18 +133,25 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return obj
 
-    def get_object(self, *args):
-        return self._object_dict.get(*args)
+    def get_all_objects(self) -> list[EFLRObject]:
+        """Return a list of all EFLRObject instances registered with this EFLR instance."""
 
-    def get_all_objects(self):
         return list(self._object_dict.values())
 
     @property
-    def n_objects(self):
+    def n_objects(self) -> int:
+        """Number of EFLRObject instances registered with this EFLR instance."""
+
         return len(self._object_dict)
 
     @classmethod
-    def get_eflr_subclass(cls, object_name):
+    def get_eflr_subclass(cls, object_name: str) -> EFLRMeta:
+        """Retrieve an EFLR subclass based on the provided object name.
+
+        This method is meant to be used with names of sections of a config object. The names are expected to take
+        the form: '<class-name>-<individual-name>', e.g. 'Channel-amplitude', 'Zone-4', etc.
+        """
+
         module = importlib.import_module('dlis_writer.logical_record.eflr_types')
 
         class_name = object_name.split('-')[0]
