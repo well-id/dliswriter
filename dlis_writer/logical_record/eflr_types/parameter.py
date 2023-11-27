@@ -34,10 +34,23 @@ class ParameterObject(EFLRObject):
     @classmethod
     def convert_value(cls, val):
         try:
-            val = Attribute.convert_numeric(val)
+            val = cls.convert_numeric(val)
         except ValueError:
             pass
         return val
+
+    @staticmethod
+    def convert_numeric(value):
+        for parser in (int, float):
+            try:
+                value = parser(value)
+                break
+            except ValueError:
+                pass
+        else:
+            # if loop not broken - none of the converters worked
+            raise ValueError(f"Some/all of the values: {value} could not be converted to numeric types")
+        return value
 
 
 class Parameter(EFLR):

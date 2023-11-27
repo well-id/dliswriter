@@ -1,6 +1,7 @@
 import logging
 from numbers import Number
 from datetime import datetime
+from typing import Union
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
@@ -142,7 +143,7 @@ class NumericAttribute(Attribute):
         return super().representation_code
 
     @representation_code.setter
-    def representation_code(self, rc):
+    def representation_code(self, rc: Union[RepC, str, int]):
         self._set_representation_code(rc)
         self._check_repr_code_numeric(self._representation_code)
         if self._value is not None:
