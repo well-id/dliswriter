@@ -4,8 +4,16 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute,
 
 
 class MessageObject(EFLRObject):
+    """Model an object being part of Message EFLR."""
 
     def __init__(self, name: str, parent: "Message", **kwargs):
+        """Initialise MessageObject.
+
+        Args:
+            name        :   Name of the MessageObject.
+            parent      :   Message EFLR instance this MessageObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the MessageObject Attributes.
+        """
 
         self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
         self.time = DTimeAttribute('time', allow_float=True, parent_eflr=self)
@@ -19,14 +27,24 @@ class MessageObject(EFLRObject):
 
 
 class Message(EFLR):
+    """Model Message EFLR."""
+
     set_type = 'MESSAGE'
     logical_record_type = EFLRType.SCRIPT
     object_type = MessageObject
 
 
 class CommentObject(EFLRObject):
+    """Model an object being part of Comment EFLR."""
 
     def __init__(self, name: str, parent: "Comment", **kwargs):
+        """Initialise CommentObject.
+
+        Args:
+            name        :   Name of the CommentObject.
+            parent      :   Comment EFLR instance this CommentObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the CommentObject Attributes.
+        """
 
         self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
@@ -34,6 +52,8 @@ class CommentObject(EFLRObject):
 
 
 class Comment(EFLR):
+    """Model Comment EFLR."""
+
     set_type = 'COMMENT'
     logical_record_type = EFLRType.SCRIPT
     object_type = CommentObject
