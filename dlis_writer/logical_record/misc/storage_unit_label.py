@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from typing_extensions import Self
 
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record_bytes import BasicLogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import BasicLogicalRecordBytes
 
 
 class StorageUnitLabel:

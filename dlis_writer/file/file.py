@@ -7,9 +7,7 @@ from configparser import ConfigParser
 from dlis_writer.utils.common import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
-from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.utils.source_data_objects import SourceDataObject
-from dlis_writer.logical_record.core.logical_record_bytes import BasicLogicalRecordBytes
 
 
 logger = logging.getLogger(__name__)

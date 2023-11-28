@@ -2,7 +2,7 @@ from abc import abstractmethod
 import logging
 from typing import Union
 
-from dlis_writer.logical_record.core.logical_record_bytes import LogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import RepresentationCode, EFLRType, IFLRType
 from dlis_writer.utils.common import write_struct
 
