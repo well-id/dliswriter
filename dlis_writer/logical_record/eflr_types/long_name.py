@@ -4,8 +4,17 @@ from dlis_writer.logical_record.core.attribute import Attribute
 
 
 class LongNameObject(EFLRObject):
+    """Model an object being part of LongName EFLR."""
 
     def __init__(self, name: str, parent: "LongName", **kwargs):
+        """Initialise LongNameObject.
+
+        Args:
+            name        :   Name of the LongNameObject.
+            parent      :   LongName EFLR instance this LongNameObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the LongNameObject Attributes.
+        """
+
         self.general_modifier = Attribute(
             'general_modifier', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
         self.quantity = Attribute('quantity', representation_code=RepC.ASCII, parent_eflr=self)
@@ -30,6 +39,8 @@ class LongNameObject(EFLRObject):
 
 
 class LongName(EFLR):
+    """Model LongName EFLR."""
+
     set_type = 'LONG-NAME'
     logical_record_type = EFLRType.LNAME
     object_type = LongNameObject
