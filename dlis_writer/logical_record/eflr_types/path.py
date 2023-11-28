@@ -12,8 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 class PathObject(EFLRObject):
+    """Model an object being part of Path EFLR."""
 
     def __init__(self, name: str, parent: "Path", **kwargs):
+        """Initialise PathObject.
+
+        Args:
+            name        :   Name of the PathObject.
+            parent      :   Path EFLR instance this PathObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the PathObject Attributes.
+        """
 
         self.frame_type = EFLRAttribute('frame_type', object_class=Frame, parent_eflr=self)
         self.well_reference_point = EFLRAttribute(
@@ -32,6 +40,8 @@ class PathObject(EFLRObject):
 
 
 class Path(EFLR):
+    """Model Path EFLR."""
+
     set_type = 'PATH'
     logical_record_type = EFLRType.FRAME
     object_type = PathObject
