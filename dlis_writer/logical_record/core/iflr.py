@@ -3,13 +3,17 @@ from dlis_writer.logical_record.core.logical_record import LogicalRecord
 
 
 class IFLR(LogicalRecord):
-    """Similar to EFLR object with is_eflr=False
+    """Model an Indirectly Formatted Logical Record.
 
-    Methods docstrings are not added as they are the same with EFLR.
+    This type of logical record is mainly mean for numerical data.
+
+    This is an abstract base class; see its subclasses (FrameData and NoFormatFrameData) for final implementations.
     """
 
-    logical_record_type: IFLRType
-    is_eflr = False
+    logical_record_type: IFLRType   #: int-enum denoting type of the EFLR
+    is_eflr = False                 #: indication that this is an indirectly formatted LR
 
     def __init__(self):
+        """Initialise an IFLR."""
+
         super().__init__()
