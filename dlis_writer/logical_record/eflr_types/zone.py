@@ -4,26 +4,17 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 
 
 class ZoneObject(EFLRObject):
-    set_type = 'ZONE'
-    logical_record_type = EFLRType.STATIC
-    domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')
+    """Model an object being part of Zone EFLR."""
+
+    domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
     def __init__(self, name: str, parent: "Zone", **kwargs):
-        """
+        """Initialise ZoneObject.
 
-        :description -> str
-
-        :domain -> 3 options:
-            BOREHOLE-DEPTH
-            TIME
-            VERTICAL-DEPTH
-
-        :maximum -> Depending on the 'domain' attribute, this is either
-        max-depth (dtype: float) or the latest time (dtype: datetime.datetime)
-
-        :minimum -> Depending on the 'domain' attribute, this is either
-        min-depth (dtype: float) or the earliest time (dtype: datetime.datetime)
-
+        Args:
+            name        :   Name of the ZoneObject.
+            parent      :   Zone EFLR instance this ZoneObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the ZoneObject Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
@@ -34,13 +25,17 @@ class ZoneObject(EFLRObject):
         super().__init__(name, parent, **kwargs)
 
     @classmethod
-    def check_domain(cls, domain):
+    def check_domain(cls, domain: str) -> str:
+        """Check that the provided 'domain' value is allowed by the standard. Raise a ValueError otherwise."""
+
         if domain not in cls.domains:
             raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
         return domain
 
 
 class Zone(EFLR):
+    """Model Zone EFLR."""
+
     set_type = 'ZONE'
     logical_record_type = EFLRType.STATIC
     object_type = ZoneObject
