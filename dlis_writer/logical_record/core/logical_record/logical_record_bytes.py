@@ -8,11 +8,18 @@ from dlis_writer.utils.common import write_struct
 logger = logging.getLogger(__name__)
 
 
-class BasicLogicalRecordBytes:
-    def __init__(self, bts):
+class LogicalRecordBytes:
+    """Wrap bytes of a LogicalRecord and StorageUnitLabel, adding segmenting functionalities."""
+
+    padding = write_struct(RepC.USHORT, 1)
+
+    def __init__(self, bts, lr_type_struct, is_eflr=False):
 
         self._bts = bts
         self._size = len(bts)
+
+        self.lr_type_struct = lr_type_struct
+        self.is_eflr = is_eflr
 
     @property
     def bytes(self):
@@ -21,16 +28,6 @@ class BasicLogicalRecordBytes:
     @property
     def size(self) -> int:
         return self._size
-
-
-class LogicalRecordBytes(BasicLogicalRecordBytes):
-    padding = write_struct(RepC.USHORT, 1)
-
-    def __init__(self, bts, lr_type_struct, is_eflr=False):
-        super().__init__(bts)
-
-        self.lr_type_struct = lr_type_struct
-        self.is_eflr = is_eflr
 
     def make_segment(self, start_pos=0, n_bytes=None):
         if n_bytes is None:

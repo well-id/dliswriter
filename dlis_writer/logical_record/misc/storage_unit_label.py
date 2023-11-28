@@ -2,7 +2,7 @@ from configparser import ConfigParser
 from typing_extensions import Self
 
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.logical_record.core.logical_record import BasicLogicalRecordBytes
+from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
 
 
 class StorageUnitLabel:
@@ -55,7 +55,7 @@ class StorageUnitLabel:
 
         self._bytes = None
 
-    def represent_as_bytes(self) -> BasicLogicalRecordBytes:
+    def represent_as_bytes(self) -> LogicalRecordBytes:
         """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
 
         Returns:
@@ -80,7 +80,7 @@ class StorageUnitLabel:
             _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
             bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-            self._bytes = BasicLogicalRecordBytes(bts)
+            self._bytes = LogicalRecordBytes(bts, lr_type_struct=b'')
         return self._bytes
 
     @classmethod
