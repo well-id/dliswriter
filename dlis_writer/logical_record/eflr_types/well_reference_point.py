@@ -4,7 +4,16 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 
 
 class WellReferencePointObject(EFLRObject):
+    """Model an object being part of WellReferencePoint EFLR."""
+
     def __init__(self, name: str, parent: "WellReferencePoint", **kwargs):
+        """Initialise WellReferencePointObject.
+
+        Args:
+            name        :   Name of the WellReferencePointObject.
+            parent      :   WellReferencePoint EFLR instance this WellReferencePointObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the WellReferencePointObject Attributes.
+        """
 
         self.permanent_datum = Attribute(
             'permanent_datum', representation_code=RepC.ASCII, parent_eflr=self)
@@ -33,6 +42,8 @@ class WellReferencePointObject(EFLRObject):
 
 
 class WellReferencePoint(EFLR):
+    """Model WellReferencePoint EFLR."""
+
     set_type = 'WELL-REFERENCE'
     logical_record_type = EFLRType.OLR
     object_type = WellReferencePointObject
