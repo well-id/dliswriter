@@ -12,8 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 class ToolObject(EFLRObject):
+    """Model an object being part of Tool EFLR."""
 
     def __init__(self, name: str, parent: "Tool", **kwargs):
+        """Initialise ToolObject.
+
+        Args:
+            name        :   Name of the ToolObject.
+            parent      :   Tool EFLR instance this ToolObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the ToolObject Attributes.
+        """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -27,6 +35,8 @@ class ToolObject(EFLRObject):
 
 
 class Tool(EFLR):
+    """Model Tool EFLR."""
+
     set_type = 'TOOL'
     logical_record_type = EFLRType.STATIC
     object_type = ToolObject
