@@ -4,88 +4,50 @@ from dlis_writer.utils.enums import RepresentationCode
 
 
 class SegmentAttributes:
-    weights = [2 ** i for i in range(8)][::-1]
+    """Model metadata put in the header of each logical record segment."""
 
-    def __init__(self, is_eflr=False, is_first=False, is_last=False):
+    weights = [2 ** i for i in range(8)][::-1]  # weights used to sum up the flags to represent as bytes later
+
+    def __init__(self, is_eflr: bool = False, is_first: bool = False, is_last: bool = False):
+        """Initialise SegmentAttributes.
+
+        Args:
+            is_eflr     :   True if the described logical record is an explicitly formatted one (EFLR); false otherwise.
+            is_first    :   True if this is the first segment created from this logical record (no predecessors).
+            is_last     :   True if this is the last segment created from this logical record (no successors).
+        """
+
         self._value = [
-            is_eflr,
-            not is_first,
-            not is_last,
-            False,
-            False,
-            False,
-            False,
-            False
+            is_eflr,        #: EFLR or IFLR
+            not is_first,   #: has predecessors
+            not is_last,    #: has successors
+            False,          #: is encrypted
+            False,          #: has encryption protocol
+            False,          #: has checksum
+            False,          #: has trailing length
+            False           #: has padding
         ]
 
     @property
-    def is_eflr(self) -> bool:
-        return self._value[0]
-
-    @is_eflr.setter
-    def is_eflr(self, b: bool):
-        self._value[0] = b
-
-    @property
-    def has_predecessor_segment(self) -> bool:
-        return self._value[1]
-
-    @has_predecessor_segment.setter
-    def has_predecessor_segment(self, b: bool):
-        self._value[1] = b
-
-    @property
-    def has_successor_segment(self) -> bool:
-        return self._value[2]
-
-    @has_successor_segment.setter
-    def has_successor_segment(self, b: bool):
-        self._value[2] = b
-
-    @property
-    def is_encrypted(self) -> bool:
-        return self._value[3]
-
-    @is_encrypted.setter
-    def is_encrypted(self, b: bool):
-        self._value[3] = b
-
-    @property
-    def has_encryption_protocol(self) -> bool:
-        return self._value[4]
-
-    @has_encryption_protocol.setter
-    def has_encryption_protocol(self, b: bool):
-        self._value[4] = b
-
-    @property
-    def has_checksum(self) -> bool:
-        return self._value[5]
-
-    @has_checksum.setter
-    def has_checksum(self, b: bool):
-        self._value[5] = b
-
-    @property
-    def has_trailing_length(self) -> bool:
-        return self._value[6]
-
-    @has_trailing_length.setter
-    def has_trailing_length(self, b: bool):
-        self._value[6] = b
-
-    @property
     def has_padding(self) -> bool:
+        """True if the described segment has a padding byte added; false otherwise."""
+
         return self._value[7]
 
     @has_padding.setter
     def has_padding(self, b: bool):
+        """Set whether the described segment has a padding byte added."""
+
         self._value[7] = b
 
-    def to_struct(self):
+    def to_struct(self) -> bytes:
+        """Transform the segment attributes to a number (by weighting and summing up flags) and that to bytes."""
+
         return ushort(sum(map(lambda x, y: x * y, self._value, self.weights)))
 
 
 @lru_cache
 def ushort(v):
+    """Transform a number to bytes using USHORT format. Cache the results for future calls."""
+
     return RepresentationCode.USHORT.converter.pack(v)
