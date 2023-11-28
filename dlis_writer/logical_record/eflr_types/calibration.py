@@ -12,7 +12,16 @@ logger = logging.getLogger(__name__)
 
 
 class CalibrationMeasurementObject(EFLRObject):
+    """Model an object being part of CalibrationMeasurement EFLR."""
+
     def __init__(self, name: str, parent: "CalibrationMeasurement", **kwargs):
+        """Initialise CalibrationMeasurementObject.
+
+        Args:
+            name        :   Name of the CalibrationMeasurementObject.
+            parent      :   CalibrationMeasurement EFLR instance this CalibrationMeasurementObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementObject Attributes.
+        """
 
         self.phase = Attribute('phase', representation_code=RepC.IDENT, parent_eflr=self)
         self.measurement_source = EFLRAttribute(
@@ -35,14 +44,24 @@ class CalibrationMeasurementObject(EFLRObject):
 
 
 class CalibrationMeasurement(EFLR):
+    """Model CalibrationMeasurement EFLR."""
+
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = EFLRType.STATIC
     object_type = CalibrationMeasurementObject
 
 
 class CalibrationCoefficientObject(EFLRObject):
+    """Model an object being part of CalibrationCoefficient EFLR."""
 
     def __init__(self, name: str, parent: "CalibrationCoefficient", **kwargs):
+        """Initialise CalibrationCoefficientObject.
+
+        Args:
+            name        :   Name of the CalibrationCoefficientObject.
+            parent      :   CalibrationCoefficient EFLR instance this CalibrationCoefficientObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientObject Attributes.
+        """
 
         self.label = Attribute('label', representation_code=RepC.IDENT, parent_eflr=self)
         self.coefficients = NumericAttribute('coefficients', multivalued=True, parent_eflr=self)
@@ -54,14 +73,24 @@ class CalibrationCoefficientObject(EFLRObject):
 
 
 class CalibrationCoefficient(EFLR):
+    """Model CalibrationCoefficient EFLR."""
+
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = EFLRType.STATIC
     object_type = CalibrationCoefficientObject
 
 
 class CalibrationObject(EFLRObject):
+    """Model an object being part of Calibration EFLR."""
 
     def __init__(self, name: str, parent: "Calibration", **kwargs):
+        """Initialise CalibrationObject.
+
+        Args:
+            name        :   Name of the CalibrationObject.
+            parent      :   Calibration EFLR instance this CalibrationObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationObject Attributes.
+        """
 
         self.calibrated_channels = EFLRAttribute(
             'calibrated_channels', object_class=Channel, multivalued=True, parent_eflr=self)
@@ -78,6 +107,8 @@ class CalibrationObject(EFLRObject):
 
 
 class Calibration(EFLR):
+    """Model Calibration EFLR."""
+
     set_type = 'CALIBRATION'
     logical_record_type = EFLRType.STATIC
     object_type = CalibrationObject
