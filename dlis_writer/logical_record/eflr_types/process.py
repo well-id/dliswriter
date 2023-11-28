@@ -12,9 +12,18 @@ logger = logging.getLogger(__name__)
 
 
 class ProcessObject(EFLRObject):
-    allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')
+    """Model an object being part of Process EFLR."""
+
+    allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
     def __init__(self, name: str, parent: "Process", **kwargs):
+        """Initialise ProcessObject.
+
+        Args:
+            name        :   Name of the ProcessObject.
+            parent      :   Process EFLR instance this ProcessObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the ProcessObject Attributes.
+        """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -42,7 +51,8 @@ class ProcessObject(EFLRObject):
 
 
 class Process(EFLR):
+    """Model Process EFLR."""
+
     set_type = 'PROCESS'
     logical_record_type = EFLRType.STATIC
     object_type = ProcessObject
-    allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')
