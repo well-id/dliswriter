@@ -10,7 +10,16 @@ logger = logging.getLogger(__name__)
 
 
 class OriginObject(EFLRObject):
+    """Model an object being part of Origin EFLR."""
+
     def __init__(self, name: str, parent: "Origin", **kwargs):
+        """Initialise OriginObject.
+
+        Args:
+            name        :   Name of the OriginObject.
+            parent      :   Origin EFLR instance this OriginObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the OriginObject Attributes.
+        """
 
         self.file_id = Attribute('file_id', representation_code=RepC.ASCII, parent_eflr=self)
         self.file_set_name = Attribute('file_set_name', representation_code=RepC.IDENT, parent_eflr=self)
@@ -42,6 +51,8 @@ class OriginObject(EFLRObject):
 
 
 class Origin(EFLR):
+    """Model Origin EFLR."""
+
     set_type = 'ORIGIN'
     logical_record_type = EFLRType.OLR
     object_type = OriginObject
