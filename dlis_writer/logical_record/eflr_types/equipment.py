@@ -4,7 +4,16 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 
 
 class EquipmentObject(EFLRObject):
+    """Model an object being part of Equipment EFLR."""
+
     def __init__(self, name: str, parent: "Equipment", **kwargs):
+        """Initialise EquipmentObject.
+
+        Args:
+            name        :   Name of the EquipmentObject.
+            parent      :   Equipment EFLR instance this EquipmentObject belongs to.
+            **kwargs    :   Values of to be set as characteristics of the EquipmentObject Attributes.
+        """
 
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.status = Attribute('status', converter=int, representation_code=RepC.STATUS, parent_eflr=self)
@@ -28,6 +37,8 @@ class EquipmentObject(EFLRObject):
 
 
 class Equipment(EFLR):
+    """Model Equipment EFLR."""
+
     set_type = 'EQUIPMENT'
     logical_record_type = EFLRType.STATIC
     object_type = EquipmentObject
