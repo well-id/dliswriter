@@ -1,8 +1,12 @@
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.utils.struct_writer import write_struct
+from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType
+
+
+def pack_ushort(v):
+    return RepresentationCode.USHORT.converter.pack(v)
 
 
 class FileHeaderObject(EFLRObject):
@@ -35,11 +39,11 @@ class FileHeaderObject(EFLRObject):
 
         bts = b''
 
-        bts += write_struct(RepresentationCode.USHORT, int('00100001', 2))
-        bts += write_struct(RepresentationCode.USHORT, 10)
-        bts += get_ascii_bytes(self.sequence_number, 10, justify_left=False)
-        bts += write_struct(RepresentationCode.USHORT, int('00100001', 2))
-        bts += write_struct(RepresentationCode.USHORT, 65)
+        bts += pack_ushort(int('00100001', 2))
+        bts += pack_ushort(10)
+        bts += get_ascii_bytes(str(self.sequence_number), 10, justify_left=False)
+        bts += pack_ushort(int('00100001', 2))
+        bts += pack_ushort(65)
         bts += get_ascii_bytes(self.identifier, 65, justify_left=True)
 
         return bts
@@ -57,13 +61,13 @@ class FileHeader(EFLR):
 
         bts = b''
 
-        bts += write_struct(RepresentationCode.USHORT, int('00110100', 2))
-        bts += write_struct(RepresentationCode.ASCII, 'SEQUENCE-NUMBER')
-        bts += write_struct(RepresentationCode.USHORT, 20)
+        bts += pack_ushort(int('00110100', 2))
+        bts += write_struct_ascii('SEQUENCE-NUMBER')
+        bts += pack_ushort(20)
 
-        bts += write_struct(RepresentationCode.USHORT, int('00110100', 2))
-        bts += write_struct(RepresentationCode.ASCII, 'ID')
-        bts += write_struct(RepresentationCode.USHORT, 20)
+        bts += pack_ushort(int('00110100', 2))
+        bts += write_struct_ascii('ID')
+        bts += pack_ushort(20)
 
         return bts
 

@@ -2,8 +2,8 @@ import numpy as np
 from typing import TYPE_CHECKING, Optional
 
 from dlis_writer.logical_record.core.iflr import IFLR
-from dlis_writer.utils.struct_writer import write_struct
-from dlis_writer.utils.enums import RepresentationCode, IFLRType
+from dlis_writer.utils.struct_writer import write_struct_uvari
+from dlis_writer.utils.enums import IFLRType
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.eflr_types.frame import FrameObject
@@ -43,7 +43,7 @@ class FrameData(IFLR):
         This includes: reference to the parent frame, placement of the FrameData object (the index), and the data.
         """
 
-        body = self._frame.obname + write_struct(RepresentationCode.UVARI, self._frame_number)
+        body = self._frame.obname + write_struct_uvari(self._frame_number)
 
         for s in self._slots:
             body += s.byteswap().tobytes()

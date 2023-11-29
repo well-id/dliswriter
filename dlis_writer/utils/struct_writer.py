@@ -13,7 +13,7 @@ UNORM_OFFSET = 32768        #: offset added to values packed as UNORM; '10' and 
 ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30 zeros
 
 
-def _write_struct_dtime(date_time: datetime) -> bytes:
+def write_struct_dtime(date_time: datetime) -> bytes:
     """Convert a datetime object to bytes according to the RP66 V1 standard.
 
     Args:
@@ -57,17 +57,17 @@ def _write_struct_dtime(date_time: datetime) -> bytes:
     return value
 
 
-def _write_struct_ascii(value: Any) -> bytes:
+def write_struct_ascii(value: Any) -> bytes:
     """Convert value to str, encode as ASCII, and represent as bytes.
 
     The first bytes are the number of characters in the value (converted to str).
     """
 
     value = str(value)
-    return _write_struct_uvari(len(value)) + value.encode('ascii')
+    return write_struct_uvari(len(value)) + value.encode('ascii')
 
 
-def _write_struct_uvari(value: int) -> bytes:
+def write_struct_uvari(value: int) -> bytes:
     """Convert an integer to bytes. The format (USHORT/UNORM/ULONG) is chosen depending on the provided value."""
 
     if value < 128:
@@ -80,16 +80,16 @@ def _write_struct_uvari(value: int) -> bytes:
     return RepresentationCode.ULONG.converter.pack(value + ULONG_OFFSET)
 
 
-def _write_struct_obname(value: "EFLRObject") -> bytes:
+def write_struct_obname(value: "EFLRObject") -> bytes:
     """Create a reference to an EFLRObject, based on the object's name."""
 
     if value.origin_reference is None:
         raise RuntimeError(f"Origin reference of {value} has not been specified")
 
     try:
-        origin_reference = _write_struct_uvari(value.origin_reference)
+        origin_reference = write_struct_uvari(value.origin_reference)
         copy_number = RepresentationCode.USHORT.converter.pack(value.copy_number)
-        name = _write_struct_ascii(value.name)
+        name = write_struct_ascii(value.name)
 
         obname = origin_reference + copy_number + name
 
@@ -99,13 +99,13 @@ def _write_struct_obname(value: "EFLRObject") -> bytes:
     return obname
 
 
-def _write_struct_objref(value: "EFLRObject") -> bytes:
+def write_struct_objref(value: "EFLRObject") -> bytes:
     """Create a reference to an EFLRObject, based on the object's name and set type it belongs to."""
 
-    return _write_struct_ascii(value.parent.set_type) + value.obname
+    return write_struct_ascii(value.parent.set_type) + value.obname
 
 
-def _write_struct_status(value: int) -> bytes:
+def write_struct_status(value: int) -> bytes:
     """Represent status (1 or 0) as bytes."""
 
     if value != 0 and value != 1:
@@ -116,13 +116,13 @@ def _write_struct_status(value: int) -> bytes:
 
 # dictionary collecting all the individual write_struct sub-functions for faster access in the main function below
 _struct_dict = {
-    RepresentationCode.ASCII: _write_struct_ascii,
-    RepresentationCode.UVARI: _write_struct_uvari,
-    RepresentationCode.IDENT: _write_struct_ascii,
-    RepresentationCode.DTIME: _write_struct_dtime,
-    RepresentationCode.OBNAME: _write_struct_obname,
-    RepresentationCode.OBJREF: _write_struct_objref,
-    RepresentationCode.STATUS: _write_struct_status
+    RepresentationCode.ASCII: write_struct_ascii,
+    RepresentationCode.UVARI: write_struct_uvari,
+    RepresentationCode.IDENT: write_struct_ascii,
+    RepresentationCode.DTIME: write_struct_dtime,
+    RepresentationCode.OBNAME: write_struct_obname,
+    RepresentationCode.OBJREF: write_struct_objref,
+    RepresentationCode.STATUS: write_struct_status
 }
 
 

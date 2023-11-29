@@ -2,8 +2,7 @@ import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
-from dlis_writer.utils.struct_writer import write_struct
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 
 if TYPE_CHECKING:
@@ -70,7 +69,7 @@ class EFLRObject:
         They serve as a reference to the current object - e.g. when a Parameter references a Zone.
         """
 
-        return write_struct(RepresentationCode.OBNAME, self)
+        return write_struct_obname(self)
 
     def _make_attrs_bytes(self) -> bytes:
         """Create bytes describing the values of the EFLRObject instance's Attributes."""

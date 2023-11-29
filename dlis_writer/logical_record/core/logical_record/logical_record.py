@@ -4,7 +4,6 @@ from typing import Union
 
 from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import RepresentationCode, EFLRType, IFLRType
-from dlis_writer.utils.struct_writer import write_struct
 
 
 logger = logging.getLogger(__name__)
@@ -33,7 +32,7 @@ class LRMeta(type):
         """Bytes describing the type of the logical record."""
 
         if not cls._lr_type_struct:
-            cls._lr_type_struct = write_struct(RepresentationCode.USHORT, cls.logical_record_type.value)
+            cls._lr_type_struct = RepresentationCode.USHORT.converter.pack(cls.logical_record_type.value)
         return cls._lr_type_struct
 
 

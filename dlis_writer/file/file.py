@@ -4,7 +4,6 @@ from progressbar import progressbar  # package name is progressbar2 (added to re
 from typing import Union, Optional
 from configparser import ConfigParser
 
-from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.utils.source_data_objects import SourceDataObject
@@ -128,7 +127,7 @@ class DLISFile:
         self._visible_record_length: int = visible_record_length  #: Maximum allowed visible record length, in bytes
 
         # format version is a required part of each visible record and is fixed for a given version of the standard
-        self._format_version = write_struct(RepresentationCode.USHORT, 255) + write_struct(RepresentationCode.USHORT, 1)
+        self._fmt_version = RepresentationCode.USHORT.converter.pack(255) + RepresentationCode.USHORT.converter.pack(1)
 
     @staticmethod
     def _check_visible_record_length(vrl: int):
@@ -180,7 +179,7 @@ class DLISFile:
         if size > self._visible_record_length:
             raise ValueError(f"VR length is too large; got {size}, max is {self._visible_record_length}")
 
-        return RepresentationCode.UNORM.converter.pack(size) + self._format_version + body
+        return RepresentationCode.UNORM.converter.pack(size) + self._fmt_version + body
 
     def _check_output_chunk_size(self, output_chunk_size: Union[int, float]):
         """Check output chunk size type (integer or float with zero decimal part) and value (>= max VR length)."""

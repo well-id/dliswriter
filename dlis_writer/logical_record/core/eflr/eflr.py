@@ -2,8 +2,8 @@ import logging
 import importlib
 from typing import Union, Optional
 
-from dlis_writer.utils.struct_writer import write_struct
-from dlis_writer.utils.enums import RepresentationCode, EFLRType
+from dlis_writer.utils.struct_writer import write_struct_ascii
+from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
 from dlis_writer.logical_record.core.eflr.eflr_meta import EFLRMeta
@@ -31,7 +31,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         super().__init__()
 
         self.set_name = set_name
-        self._set_type_struct = write_struct(RepresentationCode.IDENT, self.set_type)  # used in the header
+        self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
         self._object_dict = {}  # instances of EFLRObject registered with this EFLR instance
         self._attributes = {}   # attributes of this EFLR (copied from an EFLRObject instance later)
         self._origin_reference = None
@@ -75,7 +75,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         """Create bytes describing the set of this EFLR, using set type (class attr) and name (specified at init)."""
 
         if self.set_name:
-            _bytes = b'\xf8' + self._set_type_struct + write_struct(RepresentationCode.IDENT, self.set_name)
+            _bytes = b'\xf8' + self._set_type_struct + write_struct_ascii(self.set_name)
         else:
             _bytes = b'\xf0' + self._set_type_struct
 

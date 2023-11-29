@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 import numpy as np
 
-from dlis_writer.utils.struct_writer import write_struct
+from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
 from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -239,7 +239,7 @@ class Attribute:
         """Transform the attribute to bytes and characteristics needed for an EFLR template."""
 
         if self._label:
-            bts += write_struct(RepresentationCode.IDENT, self._label)
+            bts += write_struct_ascii(self._label)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -258,12 +258,12 @@ class Attribute:
         # count
         count = self.count
         if count and count != 1:
-            bts += write_struct(RepresentationCode.UVARI, count)
+            bts += write_struct_uvari(count)
             characteristics += '1'
         else:
             if self._value is not None:
                 if count is not None and count > 1:
-                    bts += write_struct(RepresentationCode.UVARI, count)
+                    bts += write_struct_uvari(count)
                     characteristics += '1'
                 else:
                     characteristics += '0'
@@ -272,14 +272,14 @@ class Attribute:
 
         # representation code
         if self.representation_code:
-            bts += write_struct(RepresentationCode.USHORT, self.representation_code.value)
+            bts += RepresentationCode.USHORT.converter.pack(self.representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
 
         # units
         if self._units:
-            bts += write_struct(RepresentationCode.IDENT, self._units)
+            bts += write_struct_ascii(self._units)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -324,7 +324,7 @@ class Attribute:
         else:
             bts, characteristics = self._write_for_body(bts, characteristics)
 
-        return write_struct(RepresentationCode.USHORT, int(characteristics, 2)) + bts
+        return RepresentationCode.USHORT.converter.pack(int(characteristics, 2)) + bts
 
     def copy(self) -> Self:
         """Create a copy of the attribute instance; do not include parent_eflr reference."""

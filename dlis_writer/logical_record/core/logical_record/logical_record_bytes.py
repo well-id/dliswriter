@@ -3,7 +3,6 @@ from typing import Optional
 
 from dlis_writer.logical_record.core.logical_record.segment_attributes import SegmentAttributes
 from dlis_writer.utils.enums import RepresentationCode as RepC
-from dlis_writer.utils.struct_writer import write_struct
 
 
 logger = logging.getLogger(__name__)
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 class LogicalRecordBytes:
     """Wrap bytes of a LogicalRecord and StorageUnitLabel, adding segmenting functionalities."""
 
-    padding = write_struct(RepC.USHORT, 1)  #: padding byte added if the number of bytes in a segment is odd
+    padding = RepC.USHORT.converter.pack(1)  #: padding byte added if the number of bytes in a segment is odd
 
     def __init__(self, bts: bytes, lr_type_struct: bytes, is_eflr: bool = False):
         """Initialise a LogicalRecordBytes object.
@@ -85,7 +84,7 @@ class LogicalRecordBytes:
             size += 1
             segment_attributes.has_padding = True
 
-        header_bytes = write_struct(RepC.UNORM, size) + segment_attributes.to_struct() + self._lr_type_struct
+        header_bytes = RepC.UNORM.converter.pack(size) + segment_attributes.to_struct() + self._lr_type_struct
 
         new_bts = header_bytes + self._bts[start_pos:end_pos]
         if segment_attributes.has_padding:
