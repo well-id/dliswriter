@@ -1,5 +1,6 @@
 from datetime import datetime
 import numpy as np
+from typing import Callable, Any, Iterable
 
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -30,18 +31,29 @@ def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False
     return padded_value.encode('ascii')
 
 
+def _filter_codes(cond: Callable) -> tuple[RepresentationCode]:
+    """Return a tuple containing all representation codes fulfilling a certain condition ('cond')."""
+
+    return tuple(code for code in RepresentationCode.__members__.values() if cond(code))
+
+
 class ReprCodeConverter:
+    """Choose a representation code based on the provided data or determine data type from a representation code."""
+
     class ReprCodeError(ValueError):
+        """Error raised if a representation code for a given value cannot be determined."""
+
         pass
 
-    float_codes = tuple(code for code in RepresentationCode.__members__.values() if code.value <= 11)
-    sint_codes = tuple(code for code in RepresentationCode.__members__.values() if 12 <= code.value <= 14)
-    uint_codes = tuple(code for code in RepresentationCode.__members__.values() if 15 <= code.value <= 18)
-    int_codes = sint_codes + uint_codes
-    numeric_codes = float_codes + int_codes
+    float_codes = _filter_codes(lambda code: code.value <= 11)          #: representation codes for floats
+    sint_codes = _filter_codes(lambda code: 12 <= code.value <= 14)     #: representation codes for signed ints
+    uint_codes = _filter_codes(lambda code: 15 <= code.value <= 18)     #: representation codes for unsigned ints
+    int_codes = sint_codes + uint_codes                                 #: representation codes for all integers
+    numeric_codes = float_codes + int_codes                             #: representation codes for all numbers
 
+    # mapping of numpy dtype names on corresponding representation codes
     # TODO: verify
-    numpy_dtypes = {
+    numpy_dtypes: dict[str, RepresentationCode] = {
         'int_': RepresentationCode.SLONG,
         'int8': RepresentationCode.SSHORT,
         'int16': RepresentationCode.SNORM,
@@ -57,7 +69,8 @@ class ReprCodeConverter:
         'float64': RepresentationCode.FDOUBL
     }
 
-    repr_codes_to_numpy_dtypes = {
+    # mapping of numerical representation codes on corresponding numpy dtypes
+    repr_codes_to_numpy_dtypes: dict[RepresentationCode, np.dtype] = {
         RepresentationCode.FDOUBL: np.float64,
         RepresentationCode.FSINGL: np.float32,
         RepresentationCode.USHORT: np.uint16,
@@ -68,7 +81,8 @@ class ReprCodeConverter:
         RepresentationCode.SLONG: np.int64
     }
 
-    generic_types = {
+    # mapping of different object types on corresponding representation codes
+    generic_types: dict[type, RepresentationCode] = {
         datetime: RepresentationCode.DTIME,
         int: RepresentationCode.SLONG,
         float: RepresentationCode.FDOUBL,
@@ -76,27 +90,42 @@ class ReprCodeConverter:
     }
 
     @classmethod
-    def determine_repr_code_from_numpy_dtype(cls, dt):
+    def determine_repr_code_from_numpy_dtype(cls, dt: np.dtype) -> RepresentationCode:
+        """Determine representation code for a given numpy dtype."""
+
         repr_code = cls.numpy_dtypes.get(dt.name, None)
         if repr_code is None:
             raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {dt}")
         return repr_code
 
     @classmethod
-    def determine_repr_code_from_generic_type(cls, t):
+    def determine_repr_code_from_generic_type(cls, t: type) -> RepresentationCode:
+        """Determine representation code for a given type (e.g. int, float, str, etc.)."""
+
         repr_code = cls.generic_types.get(t, None)
         if not repr_code:
             raise cls.ReprCodeError(f"Cannot determine representation code for type {t}")
         return repr_code
 
     @classmethod
-    def _determine_repr_code_single(cls, value):
+    def _determine_repr_code_single(cls, value: Any) -> RepresentationCode:
+        """Determine representation code for a value (which is not a list/tuple etc., but might be a numpy array)."""
+
         if isinstance(value, (np.generic, np.ndarray)):
             return cls.determine_repr_code_from_numpy_dtype(value.dtype)
         return cls.determine_repr_code_from_generic_type(type(value))
 
     @classmethod
-    def _determine_repr_code_multiple(cls, values):
+    def _determine_repr_code_multiple(cls, values: Iterable[Any]) -> RepresentationCode:
+        """Determine representation code for an iterable of values.
+
+        Note:
+            A single representation code for all values is returned. In case it is not the same representation code
+            for all values, the method will try to find one that fits all the values (e.g. SLONG if some values are
+            SLONG and some SNORM, od FDOUBL if all values are numbers). If that's not possible, a ReprCodeError
+            is raised.
+        """
+
         repr_codes = [cls._determine_repr_code_single(v) for v in values]
         if len(set(repr_codes)) == 1:
             return repr_codes[0]
@@ -122,7 +151,13 @@ class ReprCodeConverter:
         raise cls.ReprCodeError(f"Cannot determine a representation code for values: {values}")
 
     @classmethod
-    def determine_repr_code_from_value(cls, v):
+    def determine_repr_code_from_value(cls, v: Any) -> RepresentationCode:
+        """Determine representation code for a value.
+
+        In case the value is a list or a tuple, the method will try to find a single representation code which fits
+        all elements of the value.
+        """
+
         if isinstance(v, (list, tuple)):
             return cls._determine_repr_code_multiple(v)
         return cls._determine_repr_code_single(v)
