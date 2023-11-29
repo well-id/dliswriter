@@ -2,10 +2,19 @@ import logging
 import coloredlogs
 
 
-FORMAT = '%(name)s [%(levelname)s] %(asctime)s: %(message)s'
+FORMAT = '%(name)s [%(levelname)s] %(asctime)s: %(message)s'  #: format for console log messages
 
 
-def install_logger(logger, level=logging.DEBUG):
+def install_logger(logger: logging.Logger, level: int = logging.DEBUG):
+    """Set up a colored logging output.
+
+    Args:
+        logger  :   The logger to install as a colored logger.
+        level   :   The minimum level of messages for them to be displayed in the console logs.
+
+    Both arguments are passed to 'coloredlogs.install'.
+    """
+
     coloredlogs.install(
         logger=logger,
         fmt=FORMAT,
