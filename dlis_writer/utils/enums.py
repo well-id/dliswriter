@@ -1,59 +1,35 @@
 from enum import Enum, IntEnum
 from struct import Struct
+from typing import Union
+from typing_extensions import Self
 
 
-def get_enum_member(en, v, allow_none=False):
-    if allow_none:
-        if v is None:
-            return None
+class RepresentationCode(int, Enum):
+    """Collect RP66 V1 representation codes with Struct converters where possible.
 
-    if isinstance(v, en):
-        return v
+    Some representation codes can not be directly converted using Struct.
+    In these cases, the converter is set to None. These codes are still included here,
+    so that the enumeration also serves as a full list of representation codes included in the RP66 V1.
 
-    try:
-        return en(v)
-    except ValueError:
-        pass
+    The overridden '__new__' method assigns a new 'converter' attribute to each enum member. This facilitates calling
+    the member's converter on any value, e.g.:
+        RepresentationCode.FDOUBL.converter.pack(<value>)
+    """
 
-    if isinstance(v, str):
-        if v.isdigit():
-            try:
-                return en(int(v))
-            except ValueError:
-                pass
+    def __new__(cls, code: int, converter: Struct) -> Enum:
+        """When a new member is created, assign not only the integer value, but also a converter.
 
-        try:
-            return en[v]
-        except KeyError:
-            pass
+        Args:
+            code        :   Integer value of the enum member.
+            converter   :   Struct which can be used to convert a value to bytes according to the format specified
+                            when the Struct is initialised.
+        """
 
-    raise ValueError(f"{en.__name__} '{v}' is not defined")
-
-
-class _ConverterEnum(int, Enum):
-    def __new__(cls, code: int, converter: Struct):
         obj = super().__new__(cls, code)
         obj._value_ = code
         obj.converter = converter
         return obj
 
-
-class RepresentationCode(_ConverterEnum):
-    """Class serves as a lookup for RP66 V1 representation codes.
-
-    Some representation codes can not be directly converted using Struct.
-    Those have the value None. They are still included here, so that it also
-    serves as a full list of representation codes included in the RP66 V1.
-
-    Compiled using dlispy and RP66 V1 specification.
-
-    .. _dlispy:
-        https://github.com/Teradata/dlispy/blob/master/dlispy/RCReader.py
-
-    .. _RP66V1 Appendix B:
-        http://w3.energistics.org/rp66/v1/rp66v1_appb.html
-
-    """
     FSHORT = 1, Struct('>h')
     FSINGL = 2, Struct('>f')
     FSING1 = 3, Struct('>ff')
@@ -71,22 +47,57 @@ class RepresentationCode(_ConverterEnum):
     USHORT = 15, Struct('>B')
     UNORM = 16, Struct('>H')
     ULONG = 17, Struct('>I')
-    UVARI = 18, 'UVARI'
-    IDENT = 19, 'IDENT'
-    ASCII = 20, 'ASCII'
+    UVARI = 18, None
+    IDENT = 19, None
+    ASCII = 20, None
     DTIME = 21, Struct('>BBBBBBH')
-    ORIGIN = 22, 'ORIGIN'
-    OBNAME = 23, 'OBNAME'
-    OBJREF = 24, 'OBJREF'
-    ATTREF = 25, 'ATTREF'
+    ORIGIN = 22, None
+    OBNAME = 23, None
+    OBJREF = 24, None
+    ATTREF = 25, None
     STATUS = 26, Struct('>B')
 
     @classmethod
-    def get_member(cls, c, allow_none=False):
-        return get_enum_member(cls, c, allow_none=allow_none)
+    def get_member(cls, v: Union[str, int, None, Self], allow_none: bool = False) -> Union[Self, None]:
+        """Helper function: get a member of the RepresentationCode enum, given the name, value, or the member itself.
 
+        Args:
+            v           :   Name or value of the enum, the enum member itself, or None (see below).
+            allow_none  :   If True and v is None, return None. Otherwise, a ValueError will be raised.
+
+        Returns:
+            The member of the enumeration corresponding to the provided value/name/member (or None).
+        """
+
+        if allow_none:
+            if v is None:
+                return None
+
+        if isinstance(v, cls):
+            return v
+
+        try:
+            return cls(v)
+        except ValueError:
+            pass
+
+        if isinstance(v, str):
+            if v.isdigit():
+                try:
+                    return cls(int(v))
+                except ValueError:
+                    pass
+
+            try:
+                return cls[v]
+            except KeyError:
+                pass
+
+        raise ValueError(f"{cls.__name__} '{v}' is not defined")
+
+
+# all units explicitly allowed by the RP66 standard
 UNITS = (
-
     "A",
     "K",
     "cd",
@@ -193,6 +204,8 @@ UNITS = (
 
 
 class EFLRType(IntEnum):
+    """Types of explicitly formatted logical records."""
+
     FHLR = 0
     OLR = 1
     AXIS = 2
@@ -208,6 +221,8 @@ class EFLRType(IntEnum):
 
 
 class IFLRType(IntEnum):
+    """Types of indirectly formatted logical records."""
+
     FDATA = 0
     NOFMT = 1
 
