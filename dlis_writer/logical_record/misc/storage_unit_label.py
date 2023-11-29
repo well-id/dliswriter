@@ -1,38 +1,31 @@
 from configparser import ConfigParser
 from typing_extensions import Self
+from typing import Optional
 
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
 
 
 class StorageUnitLabel:
-    """Represents  the Storage Unit Label in RP66 V1
-    
-    This is the first part of a logical file.
+    """Model a Storage Unit Label - the first part of a DLIS file.
+
+    Storage Unit Label is always 80 bytes long.
     
     Format:
-        First 4 bytes are "Storage Unit Sequence Number"
-        Next 5 bytes represents "DLIS version"
-        Next 6 bytes: "Storage Unit Structure"
-        Next 5 bytes: "Maximum Record Length"
-        Next 60 bytes: "Storage Set Identifier"
+        First 4 bytes:  Storage Unit Sequence Number
+        Next 5 bytes:   DLIS version
+        Next 6 bytes:   Storage Unit Structure
+        Next 5 bytes:   Maximum Record Length
+        Next 60 bytes:  Storage Set Identifier
 
-    Quote:
-        The first 80 bytes of the Visible Envelope consist of 
-        ASCII characters and constitute a Storage Unit Label.
-        Figure 2-7 defines the format of the SUL.
-
-    .._RP66 V1 Storage Unit Label (SUL):
-        http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_2     
-    
-    .._dlispy StorageUnitLabel:
-        https://github.com/Teradata/dlispy/blob/b2d682dbfd8a6f7d0074351b603e22f97524fee6/dlispy/StorageUnitLabel.py#L9
+    Although the StorageUnitLabel is not technically a LogicalRecord subclass, its interface has been adjusted so that
+    it mocks the latter - for easier integration in the file writer.
 
     """
 
-    storage_unit_structure = 'RECORD'  # the only allowed value
-    dlis_version = 'V1.00'
-    max_record_length_limit = 16384
+    storage_unit_structure = 'RECORD'   #: storage unit structure (this is the only allowed value)
+    dlis_version = 'V1.00'              #: version of DLIS this implementation is for
+    max_record_length_limit = 16384     #: maximal allowed length of a visible record
 
     def __init__(self, set_identifier: str, sequence_number: int = 1, max_record_length: int = 8192):
         """Initialise StorageUnitLabel.
@@ -53,38 +46,46 @@ class StorageUnitLabel:
         if max_record_length > self.max_record_length_limit:
             raise ValueError(f"Max record length cannot be larger than {self.max_record_length_limit}")
 
-        self._bytes = None
-
     def represent_as_bytes(self) -> LogicalRecordBytes:
-        """Converts the arguments passed to __init__ to ASCII as per the RP66 V1 spec
+        """Create bytes describing the storage unit label.
 
         Returns:
-            Bytes of complete Storage Unit Label
+            Bytes of complete Storage Unit Label, wrapped in a LogicalRecordBytes object for consistency with
+            Logical Records - other objects handled in the same loops as the SUL.
         """
 
-        if self._bytes is None:
+        # Storage Unit Sequence Number
+        _susn_as_bytes = get_ascii_bytes(str(self.sequence_number), 4)
 
-            # Storage Unit Sequence Number
-            _susn_as_bytes = get_ascii_bytes(self.sequence_number, 4)
+        # DLIS Version
+        _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
 
-            # DLIS Version
-            _dlisv_as_bytes = get_ascii_bytes(self.dlis_version, 5, justify_left=True)
+        # Storage Unit Structure
+        _sus_as_bytes = get_ascii_bytes(self.storage_unit_structure, 6)
 
-            # Storage Unit Structure
-            _sus_as_bytes = get_ascii_bytes(self.storage_unit_structure, 6)
+        # Maximum Record Length
+        _mrl_as_bytes = get_ascii_bytes(str(self.max_record_length), 5)
 
-            # Maximum Record Length
-            _mrl_as_bytes = get_ascii_bytes(self.max_record_length, 5)
+        # Storage Set Identifier
+        _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
 
-            # Storage Set Identifier
-            _ssi_as_bytes = get_ascii_bytes(self.set_identifier, 60, justify_left=True)
+        bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
 
-            bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
-            self._bytes = LogicalRecordBytes(bts, lr_type_struct=b'')
-        return self._bytes
+        return LogicalRecordBytes(bts, lr_type_struct=b'')
 
     @classmethod
-    def make_from_config(cls, config: ConfigParser, key=None) -> Self:
+    def make_from_config(cls, config: ConfigParser, key: Optional[str] = None) -> Self:
+        """Create a StorageUnitLabel object using information from a config object.
+
+        Args:
+            config  :   Config object containing the information on the storage unit label.
+            key     :   Name of the section in the config containing the SUL information. If not provided, it is assumed
+                        to be 'StorageUnitLabel'.
+
+        Returns:
+            A configured instance of StorageUnitLabel.
+        """
+
         key = key or cls.__name__
 
         if key not in config.sections():
