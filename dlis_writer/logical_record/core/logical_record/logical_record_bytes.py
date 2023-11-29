@@ -3,7 +3,7 @@ from typing import Optional
 
 from dlis_writer.logical_record.core.logical_record.segment_attributes import SegmentAttributes
 from dlis_writer.utils.enums import RepresentationCode as RepC
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 
 
 logger = logging.getLogger(__name__)

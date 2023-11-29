@@ -1,5 +1,5 @@
 from dlis_writer.utils.converters import get_ascii_bytes
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType

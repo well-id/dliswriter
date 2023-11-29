@@ -1,8 +1,11 @@
 from datetime import datetime
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from functools import lru_cache
 
 from dlis_writer.utils.enums import RepresentationCode
+
+if TYPE_CHECKING:
+    from dlis_writer.logical_record.core.eflr import EFLRObject
 
 
 # offsets used in writing structs for UVARI representation code (see '_write_struct_uvari' function)
@@ -77,7 +80,9 @@ def _write_struct_uvari(value: int) -> bytes:
     return RepresentationCode.ULONG.converter.pack(value + ULONG_OFFSET)
 
 
-def _write_struct_obname(value):
+def _write_struct_obname(value: "EFLRObject") -> bytes:
+    """Create a reference to an EFLRObject, based on the object's name."""
+
     if value.origin_reference is None:
         raise RuntimeError(f"Origin reference of {value} has not been specified")
 
@@ -89,24 +94,27 @@ def _write_struct_obname(value):
         obname = origin_reference + copy_number + name
 
     except AttributeError:
-        raise TypeError(f"'OBNAME' struct can only be written for an EFLR object or a FileHeader; "
-                        f"got {type(value)}: {value}")
+        raise TypeError(f"'OBNAME' struct can only be written for an EFLR object; got {type(value)}: {value}")
 
     return obname
 
 
-def _write_struct_objref(value):
+def _write_struct_objref(value: "EFLRObject") -> bytes:
+    """Create a reference to an EFLRObject, based on the object's name and set type it belongs to."""
+
     return _write_struct_ascii(value.parent.set_type) + value.obname
 
 
-def _write_struct_status(value):
-    if not (value == 0 or value == 1):
-        raise ValueError("\nSTATUS must be 1 or 0\n1 indicates: ALLOWED"
-                         " / TRUE / ON\n0 indicates: DISALLOWED / FALSE / OFF")
+def _write_struct_status(value: int) -> bytes:
+    """Represent status (1 or 0) as bytes."""
+
+    if value != 0 and value != 1:
+        raise ValueError(f"STATUS must be 1 (meaning ALLOWED/TRUE/ON) or 0 (meaning DISALLOWED/FALSE/OFF); got {value}")
 
     return RepresentationCode.USHORT.converter.pack(value)
 
 
+# dictionary collecting all the individual write_struct sub-functions for faster access in the main function below
 _struct_dict = {
     RepresentationCode.ASCII: _write_struct_ascii,
     RepresentationCode.UVARI: _write_struct_uvari,
@@ -120,22 +128,18 @@ _struct_dict = {
 
 @lru_cache(maxsize=65536)
 def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
-    """Converts the value to bytes according to the RP66 V1 spec.
+    """Convert a value to bytes according to the RP66 V1 spec.
 
     Args:
-        representation_code: One of the representation codes from struct_type_dict.keys()
-        value: Could be a list, tuple, int, EFLR object, etc.
+        representation_code :   The way the value should be represented as.
+        value               :   Value to be converted.
 
     Returns:
         Value converted to bytes depending on representation_code and RP66 V1 spec.
-
-    Raises:
-        Exception: If representation_code is STATUS and value is not 1 or 0. 
-
     """
 
-    func = _struct_dict.get(representation_code, None)
+    func = _struct_dict.get(representation_code, None)  # get a converter corresponding to the repr code
     if func:
         return func(value)
 
-    return representation_code.converter.pack(value)
+    return representation_code.converter.pack(value)  # if no converter was found, use the one built in the enum

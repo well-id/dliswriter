@@ -4,7 +4,7 @@ from typing import Union
 
 from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import RepresentationCode, EFLRType, IFLRType
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 
 
 logger = logging.getLogger(__name__)

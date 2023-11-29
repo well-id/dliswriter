@@ -2,7 +2,7 @@ import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any
 
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 

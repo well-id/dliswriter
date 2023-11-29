@@ -4,7 +4,7 @@ from progressbar import progressbar  # package name is progressbar2 (added to re
 from typing import Union, Optional
 from configparser import ConfigParser
 
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.utils.source_data_objects import SourceDataObject

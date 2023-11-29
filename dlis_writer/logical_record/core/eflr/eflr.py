@@ -2,7 +2,7 @@ import logging
 import importlib
 from typing import Union, Optional
 
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject

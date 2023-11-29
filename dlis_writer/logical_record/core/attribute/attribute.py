@@ -3,7 +3,7 @@ from typing_extensions import Self
 import logging
 import numpy as np
 
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 

@@ -2,7 +2,7 @@ import numpy as np
 from typing import TYPE_CHECKING, Optional
 
 from dlis_writer.logical_record.core.iflr import IFLR
-from dlis_writer.utils.common import write_struct
+from dlis_writer.utils.struct_writer import write_struct
 from dlis_writer.utils.enums import RepresentationCode, IFLRType
 
 if TYPE_CHECKING:
