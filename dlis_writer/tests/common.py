@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 from configparser import ConfigParser
 
-from dlis_writer.utils.loaders import load_config
+from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.logical_record.eflr_types import eflr_types
 
 

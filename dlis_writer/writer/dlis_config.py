@@ -7,7 +7,6 @@ from typing import Union
 import logging
 from pkg_resources import resource_filename
 
-from dlis_writer.utils.loaders import load_config
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -17,6 +16,15 @@ logger = logging.getLogger(__name__)
 
 default_base_config_file_name = Path(resource_filename('dlis_writer', 'resources/basic_config.ini'))
 path_type = Union[str, bytes, os.PathLike]
+
+
+def load_config(fname):
+    if not os.path.exists(fname):
+        raise ValueError(f"Config file does not exist at {fname}")
+
+    cfg = ConfigParser()
+    cfg.read(fname)
+    return cfg
 
 
 class DLISConfig:
