@@ -4,6 +4,7 @@ import h5py
 from pathlib import Path
 from argparse import ArgumentParser
 import logging
+from typing import Union
 
 from dlis_writer.utils.logging import install_logger
 
@@ -11,11 +12,39 @@ from dlis_writer.utils.logging import install_logger
 logger = logging.getLogger(__name__)
 
 
-def make_image(n_points, n_cols, divider=11):
+def make_image(n_points: int, n_cols: int, divider: int = 11) -> np.ndarray:
+    """Create a 2D array with synthetic data.
+
+    Args:
+        n_points    :   Number of rows.
+        n_cols      :   Number of columns.
+        divider     :   The array will be populated with remainders of division of values in range
+                        (0, n_points x n_cols) by the divider. This creates an array with periodically repeating
+                        integers, facilitating fast visual checks whether file data has been saved and read correctly.
+
+    Returns:
+        A numpy.ndarray of shape (n_points, n_cols) with values in range (0, divider).
+    """
+
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def _fill_in_data(h5_group, n_points: int, n_images: int = 0, n_cols: int = 128, time_based=False) -> np.ndarray:
+def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols: int = 128, time_based: bool = False):
+    """Populate a HFD5 Group with synthetic datasets.
+
+    This created 3 scalar (1D) datasets ('time' or 'depth', 'rpm', and 'col3') and as many 2D datasets as specified
+    by the provided arguments.
+
+    Args:
+        h5_group    :   Group in an open HDF5 file to create the datasets in.
+        n_points    :   Length (number of points/rows) for all datasets.
+        n_images    :   Number of 2D datasets to be added.
+        n_cols      :   Number of columns for each 2D dataset.
+        time_based  :   If True, the first created dataset will be 'time'. Otherwise, it will be 'depth'.
+
+    Returns:
+
+    """
 
     if time_based:
         logger.debug("Creating time dataset")
@@ -34,8 +63,20 @@ def _fill_in_data(h5_group, n_points: int, n_images: int = 0, n_cols: int = 128,
             f'image{i}', data=make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand())))
 
 
-def create_data_file(n_points, fpath, overwrite=False, **kwargs):
-    if fpath.exists():
+def create_data_file(n_points: int, fpath: Union[str, bytes, os.PathLike], overwrite: bool = False, **kwargs):
+    """Create a synthetic HDF5 data file.
+
+    Args:
+        n_points    :   Number of rows for each dataset in the file.
+        fpath       :   Path to the file to be created.
+        overwrite   :   Used if the file already exists. If True, allow overwriting it. Otherwise, raise a RuntimeError.
+        **kwargs    :   Additional keyword arguments, including:
+                            n_images    :   Number of 2D datasets to be added.
+                            n_cols      :   Number of columns for each 2D dataset.
+                            time_based  :   If True, the first created dataset will be 'time', otherwise - 'depth'.
+    """
+
+    if os.path.exists(fpath):
         if overwrite:
             logger.info(f"Removing existing HDF5 file at {fpath}")
             os.remove(fpath)
@@ -62,6 +103,8 @@ def create_data_file(n_points, fpath, overwrite=False, **kwargs):
 
 
 def main():
+    """Create a synthetic HDF5 data file based on information from command line arguments."""
+
     install_logger(logger)
 
     parser = ArgumentParser("Creating HFD5 file with mock well data")
