@@ -2,9 +2,9 @@ import numpy as np
 import h5py
 from typing import Union, Optional
 import os
+from typing_extensions import Self
 import logging
 from configparser import ConfigParser
-from abc import abstractmethod
 
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.converters import ReprCodeConverter
@@ -44,8 +44,6 @@ class SourceDataObject:
         if kwargs:
             raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataObject: {kwargs}")
 
-        self._check_data_source(data_source)
-
         self._data_source = data_source
         self._mapping = mapping
 
@@ -54,11 +52,6 @@ class SourceDataObject:
 
         # total number of rows - guessed from the first dataset
         self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
-
-    @classmethod
-    @abstractmethod
-    def _check_data_source(cls, data_source: data_source_type):
-        pass
 
     @property
     def n_rows(self) -> int:
@@ -256,7 +249,7 @@ class SourceDataObject:
         return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
 
     @classmethod
-    def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs):
+    def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:
         """Create a SourceDataObject from the source data object and config info."""
 
         name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
@@ -264,21 +257,29 @@ class SourceDataObject:
 
 
 class HDF5Interface(SourceDataObject):
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
+    """Wrap source data provided in the form of a HDF5 file."""
 
-        # open the HDF5 file and access the data found under the top-level group name
+    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
+        """Initialise HDF5Interface.
+
+        Args:
+            data_file_name  :   Name of/path to the HDF5 file containing the source data.
+            mapping         :   Mapping of the names of data sets (data types) to be included on the corresponding
+                                data set paths in the file.
+            **kwargs        :   Additional keyword arguments passed to __init__ of SourceDataObject.
+        """
+
+        # open the file
         h5_data = h5py.File(data_file_name, 'r')
 
+        # add a forward slash at the beginning of each value in the mapping dict - if missing
         mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
 
         super().__init__(h5_data, mapping, **kwargs)
 
-    @classmethod
-    def _check_data_source(cls, data_source: data_source_type):
-        if not isinstance(data_source, h5py.File):
-            raise TypeError(f"Expected a h5py.File instance; got {type(data_source)}")
-
     def close(self):
+        """Close the HDF5 file (if open)."""
+
         if hasattr(self, '_data_source'):  # object might be partially initialised
             try:
                 self._data_source.close()
@@ -288,44 +289,93 @@ class HDF5Interface(SourceDataObject):
                 logger.debug("Source data file closed")
 
     def __del__(self):
+        """Close the HDF5 file when deleting the object (if still open at this point)."""
+
         self.close()
 
 
 class NumpyInterface(SourceDataObject):
-    def __init__(self, arr: np.array, mapping: dict = None, **kwargs):
-        if not arr.dtype.names:
-            raise ValueError("Input must be a structured numpy array")
+    """Wrap source data provided in the form of a structured numpy array."""
+
+    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs):
+        """Initialise NumpyInterface.
+
+        Args:
+            arr         :   Source data - structured numpy array.
+            mapping     :   Mapping of target data type names on the data type names found in the source array.
+                            Optional; if not provided, it is assumed that the target data types (data sets)
+                            are the same as the source ones.
+            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataObject.
+        """
+
+        self._check_source_arr(arr)
 
         if not mapping:
+            # default mapping: 1 to 1 for all existing data type names
             mapping = {k: k for k in arr.dtype.names}
 
         super().__init__(arr, mapping, **kwargs)
 
-    def load_chunk(self, start: int, stop: Union[int, None]):
+    def load_chunk(self, start: int, stop: Union[int, None]) -> np.ndarray:
+        """Load a chunk of the input data.
+
+        If the target data type (data sets names and dtypes) is the same as the one in the source array,
+        take a slice of the source array directly.
+        Otherwise, use the 'load_chunk' from the superclass to copy the relevant data sets into a new structured array.
+
+        Args:
+            start   :   Start index.
+            stop    :   Stop index. If None, all data from start index till the end will be loaded.
+
+        Returns:
+            A structured numpy array, containing the required chunks of all the relevant data sets from the source data.
+        """
+
         if self._dtype == self._data_source.dtype:
             return self._data_source[start:stop]
 
         return super().load_chunk(start, stop)
 
-    @classmethod
-    def _check_data_source(cls, data_source: data_source_type):
-        if not isinstance(data_source, np.ndarray):
-            raise TypeError(f"Expected a numpy.ndarray instance; got {type(data_source)}")
+    @staticmethod
+    def _check_source_arr(arr: np.ndarray):
+        """Check that the input array is a structured, 1D numpy array."""
+
+        if not isinstance(arr, np.ndarray):
+            raise TypeError(f"Expected a numpy.ndarray; got {type(arr)}")
+
+        if arr.ndim > 1:
+            raise ValueError("Source array must be 1-dimensional")
+
+        if not arr.dtype.names:
+            raise ValueError("Input must be a structured numpy array")
 
 
 class DictInterface(SourceDataObject):
-    def __init__(self, data_dict, mapping: dict = None, **kwargs):
-        if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
-            raise ValueError(f"Dict values must be numpy arrays; "
-                             f"got {', '.join(str(type(v)) for v in data_dict.values)}")
+    """Wrap source data provided in the form of a dictionary of numpy arrays."""
+
+    def __init__(self, data_dict: dict[str, np.ndarray], mapping: dict = None, **kwargs):
+        """Initialise DictInterface.
+
+        Args:
+            data_dict   :   Source data - dict of numpy arrays.
+            mapping     :   Mapping of target data type names on the keys found in the data dictionary.
+                            Optional; if not provided, it is assumed that all items of the data dict should be included
+                            in the target structured arrays.
+            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataObject.
+        """
+
+        self._check_source_dict(data_dict)
 
         if not mapping:
+            # default mapping: 1 to 1 for all keys of the data dict
             mapping = {k: k for k in data_dict.keys()}
 
         super().__init__(data_dict, mapping, **kwargs)
 
-    @classmethod
-    def _check_data_source(cls, data_source: data_source_type):
-        if not isinstance(data_source, dict):
-            raise TypeError(f"Expected a dict; got {type(data_source)}")
+    @staticmethod
+    def _check_source_dict(data_dict: dict[str, np.ndarray]):
+        """Check that all values of the source dictionary are numpy arrays."""
 
+        if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
+            raise ValueError(f"Dict values must be numpy arrays; "
+                             f"got {', '.join(str(type(v)) for v in data_dict.values())}")
