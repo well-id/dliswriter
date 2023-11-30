@@ -1,16 +1,21 @@
 from datetime import datetime
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, CalibrationCoefficient, Calibration
-from dlis_writer.logical_record.eflr_types.calibration import CalibrationMeasurementObject, CalibrationCoefficientObject
+from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementObject,
+                                                               CalibrationCoefficientObject, CalibrationObject)
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.eflr_types.axis import AxisObject
 from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
 from dlis_writer.tests.common import base_data_path, config_params
+from dlis_writer.logical_record.core.attribute import EFLRAttribute
 
 
-def test_calibration_measurement_from_config(config_params):
+def test_calibration_measurement_from_config(config_params: ConfigParser):
+    """Check that a CalibrationMeasurementObject is correctly set up from config info."""
+
     key = "CalibrationMeasurement-1"
-    m = CalibrationMeasurement.make_object_from_config(config_params, key=key)
+    m: CalibrationMeasurementObject = CalibrationMeasurement.make_object_from_config(config_params, key=key)
 
     assert m.name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
@@ -32,9 +37,11 @@ def test_calibration_measurement_from_config(config_params):
     assert m.minus_tolerance.value == [1]
 
 
-def test_calibration_coefficient_from_config(config_params):
+def test_calibration_coefficient_from_config(config_params: ConfigParser):
+    """Check that a CalibrationCoefficientObject is correctly set up from config info."""
+
     key = "CalibrationCoefficient-1"
-    c = CalibrationCoefficient.make_object_from_config(config_params, key=key)
+    c: CalibrationCoefficientObject = CalibrationCoefficient.make_object_from_config(config_params, key=key)
 
     assert c.name == "COEF-1"
     assert c.label.value == 'Gain'
@@ -44,7 +51,9 @@ def test_calibration_coefficient_from_config(config_params):
     assert c.minus_tolerances.value == [87.23, 214]
 
 
-def _check_list(objects, names, object_class):
+def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type):
+    """Check that the objects defined for a given EFLR attribute match the expected names and type."""
+
     objects = objects.value
 
     assert isinstance(objects, list)
@@ -54,9 +63,11 @@ def _check_list(objects, names, object_class):
         assert objects[i].name == name
 
 
-def test_calibration_from_config(config_params):
+def test_calibration_from_config(config_params: ConfigParser):
+    """Check that a CalibrationObject is correctly set up from config info."""
+
     key = "Calibration-1"
-    c = Calibration.make_object_from_config(config_params, key=key)
+    c: CalibrationObject = Calibration.make_object_from_config(config_params, key=key)
 
     assert c.name == "CALIB-MAIN"
 

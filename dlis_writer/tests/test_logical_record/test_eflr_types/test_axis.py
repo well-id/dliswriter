@@ -1,4 +1,5 @@
 import pytest
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.axis import Axis, AxisObject
 from dlis_writer.tests.common import base_data_path, config_params
@@ -8,7 +9,9 @@ from dlis_writer.tests.common import base_data_path, config_params
         (0, "Axis-1", "First axis", [40.395241, 27.792471]),
         (1, "Axis-X", "Axis not added to computation", [8])
 ))
-def test_from_config(config_params, idx, name, axis_id, coordinates):
+def test_from_config(config_params: ConfigParser, idx: int, name: str, axis_id: str, coordinates: list):
+    """Check that an AxisObject is correctly set up from config info."""
+
     axis: AxisObject = Axis.make_object_from_config(config_params, key=name)
 
     assert axis.name == name
