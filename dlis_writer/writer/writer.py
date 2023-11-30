@@ -58,7 +58,7 @@ def data_and_config_from_parser_args(pargs):
     data = HDF5Interface.from_config(pargs.input_file_name, config.config)
 
     if not pargs.config and pargs.channels_from_data:
-        config.add_channel_config_from_data(data)
+        config.add_channel_config_from_h5_data(data)
         config.add_index_config(time_based=pargs.time_based)
 
     return data, config.config
