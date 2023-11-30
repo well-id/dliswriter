@@ -1,20 +1,21 @@
 from pathlib import Path
 import logging
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.synthetic_data_generator import create_data_file
 from dlis_writer.writer.writer import (write_dlis_file, make_parser as make_parent_parser,
-                                       data_and_config_from_parser_args, prepare_directory)
+                                       data_and_config_from_parser_args, prepare_directory, path_type)
 
 
 logger = logging.getLogger(__name__)
 
 
-def make_parser():
-    parser = ArgumentParser("DLIS file creation from synthetic data",
-                            parents=[make_parent_parser(add_help=False, require_input_fname=False)])
+def make_parser() -> ArgumentParser:
+    """Define an argument parser for defining the DLIS file to be created."""
+
+    parser = make_parent_parser(require_input_fname=False)
 
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
     parser.add_argument('-ni', '--n-images', type=int, default=0,
@@ -25,7 +26,17 @@ def make_parser():
     return parser
 
 
-def create_tmp_data_file_from_pargs(file_name, pargs):
+def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
+    """Generate synthetic data and store it in a HDF5 file.
+
+    Args:
+        file_name   :   Name for the data file to be created.
+        pargs       :   Parsed command line arguments with specification of the data to be generated.
+
+    Returns:
+
+    """
+
     create_data_file(
         fpath=file_name,
         n_points=int(pargs.n_points),
@@ -37,13 +48,15 @@ def create_tmp_data_file_from_pargs(file_name, pargs):
 
 
 def main():
+    """Generate a synthetic data file. Use it as the source data for writing a DLIS file."""
+
     install_logger(logger)
 
     pargs = make_parser().parse_args()
 
-    save_dir = prepare_directory(pargs.output_file_name, overwrite=pargs.overwrite)
+    prepare_directory(pargs.output_file_name, overwrite=pargs.overwrite)
 
-    tmp_file_name = save_dir/'_tmp.h5'
+    tmp_file_name = Path(pargs.output_file_name).resolve().parent/'_tmp.h5'
     pargs.input_file_name = tmp_file_name
     create_tmp_data_file_from_pargs(tmp_file_name, pargs)
 

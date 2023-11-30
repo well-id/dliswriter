@@ -1,22 +1,46 @@
 from pathlib import Path
 import logging
 import os
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from timeit import timeit
 from datetime import timedelta
+from typing import Union
+from configparser import ConfigParser
 
 from dlis_writer.file import DLISFile
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.dlis_file_comparator import compare
-from dlis_writer.utils.source_data_objects import HDF5Interface
+from dlis_writer.utils.source_data_objects import HDF5Interface, SourceDataObject
 from dlis_writer.writer.dlis_config import DLISConfig
 
 
 logger = logging.getLogger(__name__)
 
+path_type = Union[str, bytes, os.PathLike]
 
-def write_dlis_file(data, config, dlis_file_name, visible_record_length=8192, **kwargs):
+
+def write_dlis_file(data: SourceDataObject, config: ConfigParser, dlis_file_name: path_type,
+                    visible_record_length: int = 8192, **kwargs):
+    """Create a DLIS file from data and specification info.
+
+    Args:
+        data                    :   The source data, wrapped in a (subclass of) SourceDataObject.
+        config                  :   Config object with specification on what to include in the DLIS file.
+        dlis_file_name          :   Name of the file to be created.
+        visible_record_length   :   Maximal length of visible records to be created in the file.
+        **kwargs                :   Additional keyword arguments, passed to DLISFile.create_dlis; this includes:
+                                        input_chunk_size    :   Size of the chunks (in rows) in which input data
+                                                                will be loaded to be processed.
+                                        output_chunk_size   :   Size of the buffers accumulating file bytes
+                                                                before file write action is called.
+    """
+
     def timed_func():
+        """Perform the action of creating a DLIS file.
+
+        This function is used in a timeit call to time the file creation.
+        """
+
         dlis_file = DLISFile(visible_record_length=visible_record_length)
         dlis_file.create_dlis(data=data, config=config, filename=dlis_file_name, **kwargs)
 
@@ -24,8 +48,17 @@ def write_dlis_file(data, config, dlis_file_name, visible_record_length=8192, **
     logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
 
 
-def make_parser(add_help=True, require_input_fname=True):
-    parser = ArgumentParser("DLIS file creation", add_help=add_help)
+def make_parser(require_input_fname: bool = True) -> ArgumentParser:
+    """Create a command line argument parser for a specification of the DLIS file to be created.
+
+    Args:
+        require_input_fname :   If True, set 'input_file_name' argument as required.
+
+    Returns:
+         The configured ArgumentParser instance.
+    """
+
+    parser = ArgumentParser("DLIS file creation")
     parser.add_argument('-ifn', '--input-file-name', help='Input file name', required=require_input_fname)
     parser.add_argument('-c', '--config', help="Path to config file specifying metadata")
     parser.add_argument('-ofn', '--output-file-name', help='Output file name', required=True)
@@ -47,7 +80,17 @@ def make_parser(add_help=True, require_input_fname=True):
     return parser
 
 
-def data_and_config_from_parser_args(pargs):
+def data_and_config_from_parser_args(pargs: Namespace) -> tuple[HDF5Interface, ConfigParser]:
+    """Create a SourceDataObject and a ConfigParser object based on information from the arg parser.
+
+    Args:
+        pargs   :   Parsed command line arguments.
+
+    Returns:
+        - HDF5Interface (a SourceDataObject subclass) object containing the data from the HDF5 file.
+        - ConfigParser object, created from the provided config file and/or data.
+    """
+
     if pargs.config:
         logger.info(f"Loading config file from {pargs.config}")
         config = DLISConfig.from_config_file(pargs.config)
@@ -58,13 +101,18 @@ def data_and_config_from_parser_args(pargs):
     data = HDF5Interface.from_config(pargs.input_file_name, config.config)
 
     if not pargs.config and pargs.channels_from_data:
-        config.add_channel_config_from_h5_data(data)
+        config.add_channel_config_from_h5_data(data.data_source)
         config.add_index_config(time_based=pargs.time_based)
 
     return data, config.config
 
 
-def compare_files(output_file_name, reference_file_name):
+def compare_files(output_file_name: path_type, reference_file_name: path_type):
+    """Compare two DLIS files (whose filenames are provided as the two arguments) at binary level.
+
+    Display the verdict in the log messages.
+    """
+
     logger.info(f"Comparing the newly created DLIS file with a reference file: {reference_file_name}")
     equal = compare(output_file_name, reference_file_name, verbose=True)
     if equal:
@@ -73,12 +121,25 @@ def compare_files(output_file_name, reference_file_name):
         logger.warning("Files are NOT equal")
 
 
-def _check_write_access(p):
+def _check_write_access(p: path_type):
+    """Check if the provided path supports write action. Raise a RuntimeError otherwise."""
+
     if not os.access(p, os.W_OK):
         raise RuntimeError(f"Write permissions missing for directory: {p}")
 
 
-def prepare_directory(output_file_name, overwrite=False):
+def prepare_directory(output_file_name: path_type, overwrite: bool = False):
+    """Prepare directory for the output file.
+
+    Create up to 1 top level on the path. Make sure the directory allows writing.
+    Check if a file of the given name already exists.
+
+    Args:
+        output_file_name    :   Name of the file to be created.
+        overwrite           :   Used if the file already exists. If True, include a warning in the logs and overwrite
+                                the file. If False, raise a RuntimeError.
+    """
+
     output_file_name = Path(output_file_name).resolve()
     save_dir = output_file_name.parent
     parent_dir = save_dir.parent
@@ -97,10 +158,10 @@ def prepare_directory(output_file_name, overwrite=False):
         else:
             raise RuntimeError(f"Cannot overwrite existing file at {output_file_name}")
 
-    return save_dir
-
 
 def main():
+    """Define an argument parser, parse the args and create a DLIS file based on these."""
+
     install_logger(logger)
 
     pargs = make_parser().parse_args()

@@ -60,6 +60,12 @@ class SourceDataObject:
         return self._n_rows
 
     @property
+    def data_source(self) -> data_source_type:
+        """Source data object."""
+
+        return self._data_source
+
+    @property
     def dtype(self) -> np.dtype:
         """Data type of the structured numpy arrays, in the form of which the input data chunks are loaded."""
 
