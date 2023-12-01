@@ -1,14 +1,16 @@
 from datetime import datetime
-
+from configparser import ConfigParser
 import pytest
 
-from dlis_writer.logical_record.eflr_types import Message, Comment
-from dlis_writer.tests.common import base_data_path, config_params, make_config
+from dlis_writer.logical_record.eflr_types.message import Message, Comment, MessageObject, CommentObject
+from dlis_writer.tests.common import base_data_path, config_params
 
 
-def test_message_from_config(config_params):
+def test_message_from_config(config_params: ConfigParser):
+    """Test creating MessageObject from config."""
+
     key = "Message-1"
-    m = Message.make_object_from_config(config_params, key=key)
+    m: MessageObject = Message.make_object_from_config(config_params, key=key)
 
     assert m.name == "MESSAGE-1"
     assert m._type.value == 'Command'
@@ -24,9 +26,11 @@ def test_message_from_config(config_params):
         ("1", "COMMENT-1", ["SOME COMMENT HERE"]),
         ("other", "cmt2", ["some other comment here", "and another comment"])
 ))
-def test_comment_from_config(config_params, key, name, text):
+def test_comment_from_config(config_params: ConfigParser, key: str, name: str, text: list[str]):
+    """Test creating CommentObject from config."""
+
     key = f"Comment-{key}"
-    c = Comment.make_object_from_config(config_params, key=key)
+    c: CommentObject = Comment.make_object_from_config(config_params, key=key)
 
     assert c.name == name
     assert c.text.value == text

@@ -1,16 +1,20 @@
 import pytest
+from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types import WellReferencePoint
-from dlis_writer.tests.common import base_data_path, config_params, make_config
+from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint, WellReferencePointObject
+from dlis_writer.tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("key", "name", "v_zero", "m_decl", "c1_name", "c1_value", "c2_name", "c2_value"), (
         ("1", "AQLN WELL-REF", "AQLN vertical_zero", 999.51, "Latitude", 40.395240, "Longitude", 27.792470),
         ("X", "WRP-X", "vz20", 112.3, "X", 20, "Y", -0.3)
 ))
-def test_from_config(config_params, key, name, v_zero, m_decl, c1_name, c1_value, c2_name, c2_value):
+def test_from_config(config_params: ConfigParser, key: str, name: str, v_zero: str, m_decl: float, c1_name: str,
+                     c1_value: float, c2_name: str, c2_value: float):
+    """Test creating WellReferencePoint from config."""
+
     key = f"WellReferencePoint-{key}"
-    w = WellReferencePoint.make_object_from_config(config_params, key=key)
+    w: WellReferencePointObject = WellReferencePoint.make_object_from_config(config_params, key=key)
 
     assert w.name == name
     assert w.vertical_zero.value == v_zero
