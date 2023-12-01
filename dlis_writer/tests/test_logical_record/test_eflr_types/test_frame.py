@@ -1,11 +1,14 @@
 import pytest
+from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.frame import Frame, FrameObject
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.tests.common import base_data_path, config_params
 
 
-def test_from_config(config_params):
+def test_from_config(config_params: ConfigParser):
+    """Test creating d FrameObject from config."""
+
     frame: FrameObject = Frame.make_object_from_config(config_params)
 
     conf = config_params['Frame']
@@ -24,7 +27,10 @@ def test_from_config(config_params):
         ("channels", "Channel-rpm, Channel-amplitude", ("surface rpm", "amplitude")),
         ("channels.value", "Channel, Channel-1, Channel-thirteen", ("Some Channel", "Channel 1", "Channel 13"))
 ))
-def test_from_config_with_channels(channels_key, channel_entry, channel_names, config_params):
+def test_from_config_with_channels(channels_key: str, channel_entry: str, channel_names: list[str],
+                                   config_params: ConfigParser):
+    """Test creating a FrameObject with specified channels from the config."""
+
     config_params["Frame"]["name"] = "Some frame"
     config_params["Frame"][channels_key] = channel_entry
 

@@ -1,6 +1,7 @@
 import pytest
+from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types import Equipment
+from dlis_writer.logical_record.eflr_types.equipment import Equipment, EquipmentObject
 from dlis_writer.tests.common import base_data_path, config_params
 
 
@@ -9,8 +10,10 @@ from dlis_writer.tests.common import base_data_path, config_params
         (1, "Equipment-2", "EQ2", 0, "5559101-21391"),
         (2, "Equipment-X", "EqX", 1, "12311")
 ))
-def test_from_config(config_params, idx, section, name, status, serial_number):
-    eq = Equipment.make_object_from_config(config_params, key=section)
+def test_from_config(config_params: ConfigParser, idx: int, section: str, name: str, status: int, serial_number: str):
+    """Check that EquipmentObject instances are correctly created from config."""
+
+    eq: EquipmentObject = Equipment.make_object_from_config(config_params, key=section)
 
     assert eq.name == name
     assert eq.status.value == status
@@ -19,8 +22,10 @@ def test_from_config(config_params, idx, section, name, status, serial_number):
     assert isinstance(eq.serial_number.value, str)
 
 
-def test_from_config_params_and_units(config_params):
-    eq = Equipment.make_object_from_config(config_params, key="Equipment-1")
+def test_from_config_params_and_units(config_params: ConfigParser):
+    """Check setting up EquipmentObject's parameters and units from config."""
+
+    eq: EquipmentObject = Equipment.make_object_from_config(config_params, key="Equipment-1")
 
     def check(name, val, unit):
         attr = getattr(eq, name)
