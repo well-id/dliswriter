@@ -90,6 +90,7 @@ class SourceDataObject:
         """
 
         dtypes = []  # list of data type tuples, later transformed to a np.dtype
+        known_dtypes = known_dtypes or {}
 
         for dtype_name, dataset_name in mapping.items():
             try:
