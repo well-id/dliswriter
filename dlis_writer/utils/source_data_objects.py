@@ -13,7 +13,7 @@ from dlis_writer.utils.converters import ReprCodeConverter
 logger = logging.getLogger(__name__)
 
 
-data_source_type = Union[h5py.File, np.ndarray, dict[str, np.ndarray]]
+data_source_type = Union[str, bytes, os.PathLike, np.ndarray, dict[str, np.ndarray]]
 
 
 class SourceDataObject:
