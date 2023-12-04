@@ -1,4 +1,5 @@
 from typing import Any
+import numpy as np
 
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
@@ -15,6 +16,8 @@ class DLISFile:
         self._frames = []
         self._multi_frame_data = []
         self._other = []
+
+        self._data_dict = {}
 
     @staticmethod
     def _check_already_defined(obj: Any):
@@ -36,6 +39,18 @@ class DLISFile:
         self._origin = Origin.make_object(*args, **kwargs)
         return self._origin
 
+    def add_channel(self, name, data, **kwargs):
+        if not isinstance(data, np.ndarray):
+            raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
+
+        ch = Channel.make_object(name, **kwargs)
+        self._channels.append(ch)
+
+        dataset_name = kwargs.get('dataset_name', name)
+        self._data_dict[dataset_name] = data
+
+        return ch
+
     def make_file_logical_records(self):
         req = {
             "Storage Unit Label": self._sul,
@@ -53,6 +68,8 @@ class DLISFile:
             orig=self._origin.parent
         )
 
+        flr.add_channels(*(set(c.parent for c in self._channels)))
+
         return flr
 
 
@@ -61,5 +78,9 @@ if __name__ == '__main__':
     df.add_storage_unit_label("DEFAULT STORAGE SET", sequence_number=1)
     df.add_file_header("DEFAULT FILE HEADER", sequence_number=1)
     df.add_origin("DEFAULT ORIGIN", file_set_number=1)
+
+    size = 20
+    ch1 = df.add_channel("Channel 1", data=np.arange(size))
+    ch2 = df.add_channel("amplitude", data=np.random.rand(size, 5))
 
     records = df.make_file_logical_records()
