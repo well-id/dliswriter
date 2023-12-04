@@ -23,7 +23,7 @@ class EFLRMeta(LRMeta):
     instances, e.g. from a config object.
     """
 
-    def __new__(cls, *args, **kwargs) -> "EFLR":
+    def __new__(cls, *args, **kwargs) -> "EFLRMeta":
         """Create a new EFLR class (instance of EFLRMeta).
 
         All positional and keyword arguments are passed to the super-metaclass: LRMeta.

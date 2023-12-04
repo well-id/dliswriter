@@ -32,7 +32,7 @@ class LRMeta(type):
         """Bytes describing the type of the logical record."""
 
         if not cls._lr_type_struct:
-            cls._lr_type_struct = RepresentationCode.USHORT.converter.pack(cls.logical_record_type.value)
+            cls._lr_type_struct = RepresentationCode.USHORT.convert(cls.logical_record_type.value)
         return cls._lr_type_struct
 
 

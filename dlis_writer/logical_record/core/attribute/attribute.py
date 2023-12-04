@@ -95,6 +95,12 @@ class Attribute:
 
         return self.assigned_representation_code or self.inferred_representation_code
 
+    @representation_code.setter
+    def representation_code(self, rc: Union[RepresentationCode, str, int]):
+        """Set a new representation code for the attribute."""
+
+        self._set_representation_code(rc)
+
     def _guess_repr_code(self) -> Union[RepresentationCode, None]:
         """Attempt determining representation code of the attribute from the set value.
 
@@ -128,12 +134,6 @@ class Attribute:
 
         return self._guess_repr_code()
 
-    @representation_code.setter
-    def representation_code(self, rc: Union[RepresentationCode, str, int]):
-        """Set a new representation code for the attribute."""
-
-        self._set_representation_code(rc)
-
     def _set_representation_code(self, rc: Union[RepresentationCode, str, int]):
         """Set representation code, having checked that no (other) representation code has previously been set.
 
@@ -143,11 +143,11 @@ class Attribute:
         """
 
         self._check_type(rc, RepresentationCode, str, int)
-        rc = RepresentationCode.get_member(rc, allow_none=False)
+        rcm = RepresentationCode.get_member(rc, allow_none=False)
 
-        if self._representation_code is not None and self._representation_code is not rc:
+        if self._representation_code is not None and self._representation_code is not rcm:
             raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
-        self._representation_code = rc
+        self._representation_code = rcm
 
     @property
     def units(self) -> Union[str, None]:

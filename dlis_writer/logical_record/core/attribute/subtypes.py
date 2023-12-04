@@ -21,12 +21,12 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, *args, object_class: Optional[EFLRMeta] = None, representation_code: Optional[RepC] = None,
+    def __init__(self, label: str, object_class: Optional[EFLRMeta] = None, representation_code: Optional[RepC] = None,
                  **kwargs):
         """Initialise EFLRAttribute.
 
         Args:
-            args                :   Positional arguments passed to Attribute.
+            label               :   Attribute label.
             object_class        :   EFLR subclass corresponding to the class of the object(s) - value of the attribute.
             representation_code :   Representation code to be used for the value. Can be OBNAME or OBJREF.
             kwargs              :   Keyword arguments passed to Attribute.
@@ -44,7 +44,7 @@ class EFLRAttribute(Attribute):
         if object_class is not None and not issubclass(object_class, EFLR):
             raise TypeError(f"Expected an EFLR subclass; got {object_class}")
 
-        super().__init__(*args, representation_code=representation_code, **kwargs)
+        super().__init__(label=label, representation_code=representation_code, **kwargs)
 
         self._object_class = object_class
         self._converter = self._convert_value
