@@ -8,7 +8,7 @@ from typing import Union
 import os
 from configparser import ConfigParser
 
-from dlis_writer.writer.writer import write_dlis_file
+from dlis_writer.writer.write_dlis_file import write_dlis_file
 from dlis_writer.utils.source_data_objects import NumpyInterface, HDF5Interface, SourceDataObject
 
 from dlis_writer.tests.common import base_data_path, clear_eflr_instance_registers

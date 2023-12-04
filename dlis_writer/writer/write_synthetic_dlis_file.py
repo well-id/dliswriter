@@ -5,8 +5,8 @@ from argparse import ArgumentParser, Namespace
 
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.synthetic_data_generator import create_data_file
-from dlis_writer.writer.writer import (write_dlis_file, make_parser as make_parent_parser,
-                                       data_and_config_from_parser_args, prepare_directory, path_type)
+from dlis_writer.writer.write_dlis_file import (write_dlis_file, make_parser as make_parent_parser,
+                                                data_and_config_from_parser_args, prepare_directory, path_type)
 
 
 logger = logging.getLogger(__name__)

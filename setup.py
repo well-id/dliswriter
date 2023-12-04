@@ -22,8 +22,8 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'write_file=dlis_writer.writer.writer:main',
-            'generate_synthetic_file=dlis_writer.writer.synthetic_data_writer:main',
+            'write_file=dlis_writer.writer.write_dlis_file:main',
+            'generate_synthetic_file=dlis_writer.writer.write_synthetic_dlis_file:main',
             'generate_synthetic_data=dlis_writer.writer.synthetic_data_generator:main',
             'make_config_from_file=dlis_writer.writer.config:main',
             'compare_files=dlis_writer.writer.dlis_file_comparator:main'
