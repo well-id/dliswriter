@@ -18,7 +18,7 @@ setup(
     description='Create DLIS format files for well data.',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    package_data={'': ['resources/*']},
+    package_data={'': ['resources/*', 'py.typed']},
     include_package_data=True,
     entry_points={
         'console_scripts': [

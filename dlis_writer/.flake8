@@ -1,0 +1,13 @@
+[flake8]
+extend-ignore = E203, D212, D210, D205, D411, D415, D200
+exclude =
+    .git,
+    __pycache__,
+    docs/source/conf.py,
+    old,
+    build,
+    dist
+max-complexity = 10
+max-line-length = 120
+per-file-ignores = __init__.py: F401
+docstring-convention = google
