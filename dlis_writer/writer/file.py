@@ -78,6 +78,7 @@ class DLISFile:
     def _make_multi_frame_data(self, fr: FrameObject, **kwargs):
         name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}
         data_object = DictInterface(self._data_dict, mapping=name_mapping)
+        fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 
     def make_file_logical_records(self, chunk_size: Optional[int] = None):
@@ -139,9 +140,9 @@ if __name__ == '__main__':
     df.add_origin("DEFAULT ORIGIN", file_set_number=1)
 
     size = 100
-    ch1 = df.add_channel('depth', data=np.arange(size)/10)
-    ch2 = df.add_channel("Channel 1", data=np.arange(size) % 3)
-    ch3 = df.add_channel("amplitude", data=np.random.rand(size, 5))
-    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3))
+    ch1 = df.add_channel('DEPTH', data=np.arange(size)/10, units='m')
+    ch2 = df.add_channel("RPM", data=(np.arange(size) % 10).astype(float))
+    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(size, 5))
+    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 
     df.write('./tmp.DLIS', input_chunk_size=20)
