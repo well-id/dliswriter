@@ -129,7 +129,7 @@ def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture):
 def test_multiple_channels_default_pattern(config_params: ConfigParser):
     """Test creating all channels with config section names following the default pattern (r'Channel-\w+')."""
 
-    channels = Channel.make_all_objects_from_config(config_params)
+    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params)
 
     assert len(channels) == 9
     assert channels[0].name == "Channel 1"
@@ -153,7 +153,8 @@ def test_multiple_channels_default_pattern(config_params: ConfigParser):
 def test_multiple_channels_custom_pattern(config_params: ConfigParser):
     """Test creating channels whose config section names follow a custom regex pattern."""
 
-    channels = Channel.make_all_objects_from_config(config_params, key_pattern=r"Channel-\d")  # 1 digit only
+    # pattern: 1 digit only
+    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params, key_pattern=r"Channel-\d")
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
@@ -168,7 +169,7 @@ def test_multiple_channels_custom_pattern(config_params: ConfigParser):
 def test_multiple_channels_list(config_params: ConfigParser):
     """Test creating channels by providing config section names in a list."""
 
-    channels = Channel.make_all_objects_from_config(config_params, keys=["Channel-1", "Channel"])
+    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params, keys=["Channel-1", "Channel"])
 
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"

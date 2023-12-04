@@ -25,9 +25,9 @@ def test_from_config(config_params: ConfigParser, zone_nr: int):
 
     if zone_nr != 3:
         assert isinstance(zone.maximum.units, str)
-        assert zone.maximum.units == conf['maximum.units'] or zone.maximum.units.name == conf['maximum.units']
+        assert zone.maximum.units == conf['maximum.units']
         assert isinstance(zone.minimum.units, str)
-        assert zone.minimum.units == conf['minimum.units'] or zone.minimum.units.name == conf['minimum.units']
+        assert zone.minimum.units == conf['minimum.units']
 
 
 @pytest.mark.parametrize(("zone_nr", "value_type", "repr_code"), (

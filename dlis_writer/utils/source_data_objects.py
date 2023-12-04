@@ -241,7 +241,7 @@ class SourceDataObject:
         return name_mapping, dtype_mapping
 
     @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> np.dtype:
+    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> np.dtype[Any]:
         """Determine a numpy dtype for a given representation code.
 
         Args:

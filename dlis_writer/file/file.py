@@ -127,7 +127,7 @@ class DLISFile:
         self._visible_record_length: int = visible_record_length  #: Maximum allowed visible record length, in bytes
 
         # format version is a required part of each visible record and is fixed for a given version of the standard
-        self._fmt_version = RepresentationCode.USHORT.converter.pack(255) + RepresentationCode.USHORT.converter.pack(1)
+        self._fmt_version = RepresentationCode.USHORT.convert(255) + RepresentationCode.USHORT.convert(1)
 
     @staticmethod
     def _check_visible_record_length(vrl: int):
@@ -148,6 +148,9 @@ class DLISFile:
     @staticmethod
     def _assign_origin_reference(logical_records: FileLogicalRecords):
         """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
+
+        if logical_records.origin.first_object is None:
+            raise RuntimeError("No origin defined")
 
         val = logical_records.origin.first_object.file_set_number.value
 
@@ -179,7 +182,7 @@ class DLISFile:
         if size > self._visible_record_length:
             raise ValueError(f"VR length is too large; got {size}, max is {self._visible_record_length}")
 
-        return RepresentationCode.UNORM.converter.pack(size) + self._fmt_version + body
+        return RepresentationCode.UNORM.convert(size) + self._fmt_version + body
 
     def _check_output_chunk_size(self, output_chunk_size: Union[int, float]):
         """Check output chunk size type (integer or float with zero decimal part) and value (>= max VR length)."""
@@ -230,8 +233,8 @@ class DLISFile:
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
-    def create_dlis(self, config: ConfigParser, data: SourceDataObject, filename: Union[str, bytes, os.PathLike],
-                    input_chunk_size: int = None, output_chunk_size: Union[int, float] = 2**32):
+    def create_dlis(self, config: ConfigParser, data: SourceDataObject, filename: Union[str, os.PathLike[str]],
+                    input_chunk_size: Optional[int] = None, output_chunk_size: Union[int, float] = 2**32):
         """Create a DLIS file from logical records specification (found in the config) and numerical data.
 
         Args:
