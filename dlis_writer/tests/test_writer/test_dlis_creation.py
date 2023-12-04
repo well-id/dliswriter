@@ -1,6 +1,5 @@
 import os
-
-import h5py
+import h5py    # type: ignore  # untyped library
 import pytest
 from copy import deepcopy
 from pathlib import Path

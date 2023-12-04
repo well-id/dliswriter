@@ -3,7 +3,7 @@ import pytest
 from datetime import datetime
 from pathlib import Path
 from configparser import ConfigParser
-from dlisio import dlis
+from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
 
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject

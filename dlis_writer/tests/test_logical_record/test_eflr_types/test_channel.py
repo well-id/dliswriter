@@ -222,10 +222,10 @@ def test_attribute_set_directly_error(chan: ChannelObject):
     """Test that a RuntimeError is raised if an attempt to set an Attribute directly is made."""
 
     with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'units'.*"):
-        chan.units = 'm'
+        chan.units = 'm'    # type: ignore  # mypy property setter bug
 
     with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'long_name'.*"):
-        chan.long_name = 'Lorem ipsum'
+        chan.long_name = 'Lorem ipsum'    # type: ignore  # mypy property setter bug
 
 
 @pytest.mark.parametrize(("value", "expected_value"), (

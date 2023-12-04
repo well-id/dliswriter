@@ -140,6 +140,6 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
 
     func = _struct_dict.get(representation_code, None)  # get a converter corresponding to the repr code
     if func:
-        return func(value)
+        return func(value)  # type: ignore  # that's the point, we're calling for any type
 
     return representation_code.convert(value)  # if no converter was found, use the one built in the enum

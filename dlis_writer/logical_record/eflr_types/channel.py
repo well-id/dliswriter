@@ -1,7 +1,7 @@
 import logging
 from typing import Union, Optional
 import numpy as np
-from h5py import Dataset
+from h5py import Dataset    # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.logical_record.eflr_types.axis import Axis

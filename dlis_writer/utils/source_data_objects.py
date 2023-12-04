@@ -1,5 +1,5 @@
 import numpy as np
-import h5py
+import h5py    # type: ignore  # untyped library
 from typing import Union, Optional, Any
 import os
 from typing_extensions import Self
@@ -20,7 +20,7 @@ class SourceDataObject:
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
-                 known_dtypes: Optional[dict[str, np.dtype]] = None, **kwargs):
+                 known_dtypes: Optional[dict[str, type[object]]] = None, **kwargs):
         """Initialise a SourceDataObject.
 
         Args:
@@ -73,7 +73,7 @@ class SourceDataObject:
 
     @staticmethod
     def determine_dtypes(data_object: data_source_type, mapping: dict[str, str],
-                         known_dtypes: Optional[dict[str, np.dtype]] = None) -> np.dtype:
+                         known_dtypes: Optional[dict[str, type[object]]] = None) -> np.dtype:
         """Determine the structured numpy dtype for the provided data, with given data names mapping.
 
         Args:
@@ -93,7 +93,7 @@ class SourceDataObject:
         known_dtypes = known_dtypes or {}
 
         for dtype_name, dataset_name in mapping.items():
-            dt: Union[tuple[str, np.dtype[Any]], tuple[str, np.dtype[Any], int]]
+            dt: Union[tuple[str, Any], tuple[str, Any, int]]
 
             try:
                 dset = data_object[dataset_name]
@@ -188,7 +188,7 @@ class SourceDataObject:
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
     @staticmethod
-    def make_mappings_from_config(config: ConfigParser) -> tuple[dict[str, str], dict[str, np.dtype]]:
+    def make_mappings_from_config(config: ConfigParser) -> tuple[dict[str, str], dict[str, type[object]]]:
         """Create data set name mapping and dtype mapping (where possible) from a config object.
 
         Args:
@@ -241,7 +241,7 @@ class SourceDataObject:
         return name_mapping, dtype_mapping
 
     @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> np.dtype[Any]:
+    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> type[object]:
         """Determine a numpy dtype for a given representation code.
 
         Args:

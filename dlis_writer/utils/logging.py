@@ -1,5 +1,5 @@
 import logging
-import coloredlogs
+import coloredlogs    # type: ignore  # untyped library
 
 
 FORMAT = '%(name)s [%(levelname)s] %(asctime)s: %(message)s'  #: format for console log messages

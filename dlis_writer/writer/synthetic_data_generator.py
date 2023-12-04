@@ -1,6 +1,6 @@
 import numpy as np
 import os
-import h5py
+import h5py    # type: ignore  # untyped library
 from pathlib import Path
 from argparse import ArgumentParser
 import logging

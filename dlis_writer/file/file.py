@@ -1,6 +1,6 @@
 import os
 import logging
-from progressbar import progressbar  # package name is progressbar2 (added to requirements)
+from progressbar import progressbar    # type: ignore  # untyped library
 from typing import Union, Optional
 from configparser import ConfigParser
 

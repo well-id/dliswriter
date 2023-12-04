@@ -1,5 +1,5 @@
 import os
-import h5py
+import h5py    # type: ignore  # untyped library
 from configparser import ConfigParser
 from pathlib import Path
 from argparse import ArgumentParser, Namespace

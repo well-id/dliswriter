@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 from contextlib import contextmanager
-from dlisio import dlis
+from dlisio import dlis    # type: ignore  # untyped library
 from pathlib import Path
-import h5py
+import h5py    # type: ignore  # untyped library
 from typing import Union
 import os
 from configparser import ConfigParser
