@@ -1,6 +1,6 @@
 import numpy as np
 import h5py
-from typing import Union, Optional
+from typing import Union, Optional, Any
 import os
 from typing_extensions import Self
 import logging
@@ -13,7 +13,7 @@ from dlis_writer.utils.converters import ReprCodeConverter
 logger = logging.getLogger(__name__)
 
 
-data_source_type = Union[str, bytes, os.PathLike, np.ndarray, dict[str, np.ndarray]]
+data_source_type = Union[np.ndarray, dict[str, np.ndarray], h5py.File]
 
 
 class SourceDataObject:
@@ -93,6 +93,8 @@ class SourceDataObject:
         known_dtypes = known_dtypes or {}
 
         for dtype_name, dataset_name in mapping.items():
+            dt: Union[tuple[str, np.dtype[Any]], tuple[str, np.dtype[Any], int]]
+
             try:
                 dset = data_object[dataset_name]
             except (ValueError, KeyError):
@@ -214,10 +216,10 @@ class SourceDataObject:
             frame_channels = frame_config['channels.value']
         else:
             raise RuntimeError("No channels defined for the frame")
-        frame_channels = frame_channels.split(', ')
+        frame_channels_list = frame_channels.split(', ')
 
         for section in config.sections():
-            if section.startswith('Channel') and section in frame_channels:
+            if section.startswith('Channel') and section in frame_channels_list:
                 cs = config[section]
 
                 # add channel info to the name mapping
@@ -250,8 +252,11 @@ class SourceDataObject:
             A numpy.dtype object corresponding to the given representation code.
         """
 
-        if allow_none and repr_code is None:
-            return SourceDataObject.get_dtype(RepresentationCode.FDOUBL)
+        if repr_code is None:
+            if allow_none:
+                return SourceDataObject.get_dtype(RepresentationCode.FDOUBL)
+            else:
+                raise ValueError("Expected a RepresentationCode; got None")
 
         return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
 
@@ -303,6 +308,8 @@ class HDF5Interface(SourceDataObject):
 
 class NumpyInterface(SourceDataObject):
     """Wrap source data provided in the form of a structured numpy array."""
+
+    _data_source: np.ndarray
 
     def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs):
         """Initialise NumpyInterface.
@@ -360,7 +367,7 @@ class NumpyInterface(SourceDataObject):
 class DictInterface(SourceDataObject):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
-    def __init__(self, data_dict: dict[str, np.ndarray], mapping: dict = None, **kwargs):
+    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs):
         """Initialise DictInterface.
 
         Args:

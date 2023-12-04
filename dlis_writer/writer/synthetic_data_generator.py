@@ -63,7 +63,7 @@ def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols
             f'image{i}', data=make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand())))
 
 
-def create_data_file(n_points: int, fpath: Union[str, bytes, os.PathLike], overwrite: bool = False, **kwargs):
+def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwrite: bool = False, **kwargs):
     """Create a synthetic HDF5 data file.
 
     Args:

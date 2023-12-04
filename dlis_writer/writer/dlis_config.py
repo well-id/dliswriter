@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 default_base_config_file_name = Path(resource_filename('dlis_writer', 'resources/basic_config.ini'))
-path_type = Union[str, bytes, os.PathLike]
+path_type = Union[str, os.PathLike[str]]
 
 
 def load_config(fname: path_type) -> ConfigParser:

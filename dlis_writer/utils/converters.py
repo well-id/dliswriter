@@ -31,7 +31,7 @@ def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False
     return padded_value.encode('ascii')
 
 
-def _filter_codes(cond: Callable) -> tuple[RepresentationCode]:
+def _filter_codes(cond: Callable) -> tuple[RepresentationCode, ...]:
     """Return a tuple containing all representation codes fulfilling a certain condition ('cond')."""
 
     return tuple(code for code in RepresentationCode.__members__.values() if cond(code))
@@ -70,7 +70,7 @@ class ReprCodeConverter:
     }
 
     # mapping of numerical representation codes on corresponding numpy dtypes
-    repr_codes_to_numpy_dtypes: dict[RepresentationCode, np.dtype] = {
+    repr_codes_to_numpy_dtypes = {
         RepresentationCode.FDOUBL: np.float64,
         RepresentationCode.FSINGL: np.float32,
         RepresentationCode.USHORT: np.uint16,

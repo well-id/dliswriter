@@ -1,6 +1,6 @@
 from enum import Enum, IntEnum
 from struct import Struct
-from typing import Union
+from typing import Union, Any
 from typing_extensions import Self
 
 
@@ -16,7 +16,7 @@ class RepresentationCode(int, Enum):
         RepresentationCode.FDOUBL.converter.pack(<value>)
     """
 
-    def __new__(cls, code: int, converter: Struct) -> Enum:
+    def __new__(cls, code: int, converter: Union[Struct, None] = None) -> "RepresentationCode":
         """When a new member is created, assign not only the integer value, but also a converter.
 
         Args:
@@ -57,6 +57,11 @@ class RepresentationCode(int, Enum):
     ATTREF = 25, None
     STATUS = 26, Struct('>B')
 
+    def convert(self, value: Any):
+        if self.converter is None:
+            raise RuntimeError("Converter struct not defined; cannot directly convert the value to bytes")
+        return self.converter.pack(value)
+
     @classmethod
     def get_member(cls, v: Union[str, int, None, Self], allow_none: bool = False) -> Union[Self, None]:
         """Helper function: get a member of the RepresentationCode enum, given the name, value, or the member itself.
@@ -76,10 +81,11 @@ class RepresentationCode(int, Enum):
         if isinstance(v, cls):
             return v
 
-        try:
-            return cls(v)
-        except ValueError:
-            pass
+        if isinstance(v, int):
+            try:
+                return cls(v)
+            except ValueError:
+                pass
 
         if isinstance(v, str):
             if v.isdigit():

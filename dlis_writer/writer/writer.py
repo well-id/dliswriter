@@ -16,7 +16,7 @@ from dlis_writer.writer.dlis_config import DLISConfig
 
 logger = logging.getLogger(__name__)
 
-path_type = Union[str, bytes, os.PathLike]
+path_type = Union[str, os.PathLike[str]]
 
 
 def write_dlis_file(data: SourceDataObject, config: ConfigParser, dlis_file_name: path_type,

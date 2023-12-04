@@ -46,13 +46,13 @@ def write_struct_dtime(date_time: datetime) -> bytes:
     time_zone = '{0:04b}'.format(0)  # Local Standard Time is set as default
     month = '{0:04b}'.format(date_time.month)
 
-    value += RepresentationCode.USHORT.converter.pack(date_time.year - 1900)
-    value += RepresentationCode.USHORT.converter.pack(int(time_zone + month, 2))
-    value += RepresentationCode.USHORT.converter.pack(date_time.day)
-    value += RepresentationCode.USHORT.converter.pack(date_time.hour)
-    value += RepresentationCode.USHORT.converter.pack(date_time.minute)
-    value += RepresentationCode.USHORT.converter.pack(date_time.second)
-    value += RepresentationCode.UNORM.converter.pack(date_time.microsecond // 1000)
+    value += RepresentationCode.USHORT.convert(date_time.year - 1900)
+    value += RepresentationCode.USHORT.convert(int(time_zone + month, 2))
+    value += RepresentationCode.USHORT.convert(date_time.day)
+    value += RepresentationCode.USHORT.convert(date_time.hour)
+    value += RepresentationCode.USHORT.convert(date_time.minute)
+    value += RepresentationCode.USHORT.convert(date_time.second)
+    value += RepresentationCode.UNORM.convert(date_time.microsecond // 1000)
     
     return value
 
@@ -71,13 +71,13 @@ def write_struct_uvari(value: int) -> bytes:
     """Convert an integer to bytes. The format (USHORT/UNORM/ULONG) is chosen depending on the provided value."""
 
     if value < 128:
-        return RepresentationCode.USHORT.converter.pack(value)
+        return RepresentationCode.USHORT.convert(value)
 
     if value < 16384:
-        return RepresentationCode.UNORM.converter.pack(value + UNORM_OFFSET)
+        return RepresentationCode.UNORM.convert(value + UNORM_OFFSET)
 
     # >= 16384
-    return RepresentationCode.ULONG.converter.pack(value + ULONG_OFFSET)
+    return RepresentationCode.ULONG.convert(value + ULONG_OFFSET)
 
 
 def write_struct_obname(value: "EFLRObject") -> bytes:
@@ -88,7 +88,7 @@ def write_struct_obname(value: "EFLRObject") -> bytes:
 
     try:
         origin_reference = write_struct_uvari(value.origin_reference)
-        copy_number = RepresentationCode.USHORT.converter.pack(value.copy_number)
+        copy_number = RepresentationCode.USHORT.convert(value.copy_number)
         name = write_struct_ascii(value.name)
 
         obname = origin_reference + copy_number + name
@@ -111,7 +111,7 @@ def write_struct_status(value: int) -> bytes:
     if value != 0 and value != 1:
         raise ValueError(f"STATUS must be 1 (meaning ALLOWED/TRUE/ON) or 0 (meaning DISALLOWED/FALSE/OFF); got {value}")
 
-    return RepresentationCode.USHORT.converter.pack(value)
+    return RepresentationCode.USHORT.convert(value)
 
 
 # dictionary collecting all the individual write_struct sub-functions for faster access in the main function below
@@ -142,4 +142,4 @@ def write_struct(representation_code: RepresentationCode, value: Any) -> bytes:
     if func:
         return func(value)
 
-    return representation_code.converter.pack(value)  # if no converter was found, use the one built in the enum
+    return representation_code.convert(value)  # if no converter was found, use the one built in the enum
