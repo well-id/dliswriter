@@ -1,10 +1,13 @@
-from typing import Any, Union
+from typing import Any, Union, Optional
 import numpy as np
 
+from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject
+from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
+from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 
 
 class DLISFile:
@@ -15,7 +18,6 @@ class DLISFile:
 
         self._channels = []
         self._frames = []
-        self._multi_frame_data = []
         self._other = []
 
         self._data_dict = {}
@@ -46,9 +48,7 @@ class DLISFile:
 
         ch = Channel.make_object(name, **kwargs)
         self._channels.append(ch)
-
-        dataset_name = kwargs.get('dataset_name', name)
-        self._data_dict[dataset_name] = data
+        self._data_dict[ch.dataset_name] = data
 
         return ch
 
@@ -67,7 +67,12 @@ class DLISFile:
         self._frames.append(fr)
         return fr
 
-    def make_file_logical_records(self):
+    def _make_multi_frame_data(self, fr: FrameObject, **kwargs):
+        name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}
+        data_object = DictInterface(self._data_dict, mapping=name_mapping)
+        return MultiFrameData(fr, data_object, **kwargs)
+
+    def make_file_logical_records(self, chunk_size: Optional[int] = None):
         req = {
             "Storage Unit Label": self._sul,
             "File Header": self._file_header,
@@ -89,6 +94,7 @@ class DLISFile:
 
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
+        flr.add_frame_data_objects(*(self._make_multi_frame_data(fr, chunk_size=chunk_size) for fr in self._frames))
 
         return flr
 
@@ -100,8 +106,9 @@ if __name__ == '__main__':
     df.add_origin("DEFAULT ORIGIN", file_set_number=1)
 
     size = 20
-    ch1 = df.add_channel("Channel 1", data=np.arange(size))
-    ch2 = df.add_channel("amplitude", data=np.random.rand(size, 5))
-    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2))
+    ch1 = df.add_channel('depth', data=np.arange(size)/10)
+    ch2 = df.add_channel("Channel 1", data=np.arange(size) % 3)
+    ch3 = df.add_channel("amplitude", data=np.random.rand(size, 5))
+    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3))
 
-    records = df.make_file_logical_records()
+    records = df.make_file_logical_records(chunk_size=5)
