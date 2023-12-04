@@ -51,7 +51,7 @@ class ParameterObject(EFLRObject):
         return val
 
     @staticmethod
-    def convert_numeric(value: str) -> Union[int, float]:
+    def convert_numeric(value: str) -> Union[int, float, str]:
         """Convert a string to an integer or float."""
 
         parser = float if '.' in value else int

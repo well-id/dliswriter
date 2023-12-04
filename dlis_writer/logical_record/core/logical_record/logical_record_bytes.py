@@ -84,7 +84,7 @@ class LogicalRecordBytes:
             size += 1
             segment_attributes.has_padding = True
 
-        header_bytes = RepC.UNORM.converter.pack(size) + segment_attributes.to_struct() + self._lr_type_struct
+        header_bytes = RepC.UNORM.convert(size) + segment_attributes.to_struct() + self._lr_type_struct
 
         new_bts = header_bytes + self._bts[start_pos:end_pos]
         if segment_attributes.has_padding:

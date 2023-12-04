@@ -1,6 +1,6 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Union
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
@@ -33,7 +33,7 @@ class EFLRObject:
         self.name = name                #: name of the object
         self.parent = parent            #: EFLR instance this object belongs to
 
-        self.origin_reference = None    #: origin reference value, common for all records sharing the same origin
+        self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self.copy_number = 0            #: copy number of the object
 
         self.set_attributes(**kwargs)

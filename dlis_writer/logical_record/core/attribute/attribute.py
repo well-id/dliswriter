@@ -150,7 +150,7 @@ class Attribute:
         self._representation_code = rc
 
     @property
-    def units(self) -> str:
+    def units(self) -> Union[str, None]:
         """Unit of the attribute value(s)."""
 
         return self._units
@@ -178,7 +178,7 @@ class Attribute:
         return 1
 
     @property
-    def parent_eflr(self) -> "Union[EFLR, EFLRObject]":
+    def parent_eflr(self) -> "Union[EFLR, EFLRObject, None]":
         """EFLR or ELFRObject instance the attribute belongs to."""
 
         return self._parent_eflr

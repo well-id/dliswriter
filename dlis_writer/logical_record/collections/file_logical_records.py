@@ -45,9 +45,14 @@ class FileLogicalRecords:
         self._file_header.origin_reference = value
         self._origin.origin_reference = value
 
-        for iterable in (self._channels, self._frames, self._other_logical_records):
-            for ob in iterable:
-                ob.origin_reference = value
+        for ch in self._channels:
+            ch.origin_reference = value
+
+        for fr in self._frames:
+            fr.origin_reference = value
+
+        for lr in self._other_logical_records:
+            lr.origin_reference = value
 
         for fdo in self._frame_data_objects:
             fdo.set_origin_reference(value)

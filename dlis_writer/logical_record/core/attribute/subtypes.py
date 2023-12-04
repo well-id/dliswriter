@@ -21,7 +21,7 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, *args, object_class: Optional[EFLRMeta] = None, representation_code: RepC = RepC.OBNAME,
+    def __init__(self, *args, object_class: Optional[EFLRMeta] = None, representation_code: Optional[RepC] = None,
                  **kwargs):
         """Initialise EFLRAttribute.
 
@@ -36,6 +36,8 @@ class EFLRAttribute(Attribute):
             if kwargs.get(arg_name, None) is not None:
                 raise TypeError(f"{self.__class__.__name__} does not accept '{arg_name}' argument")
 
+        if representation_code is None:
+            representation_code = RepC.OBNAME
         if representation_code not in (RepC.OBNAME, RepC.OBJREF):
             raise ValueError(f"Representation code '{representation_code.name}' is not allowed for an EFLRAttribute")
 
@@ -144,14 +146,12 @@ class DTimeAttribute(Attribute):
             raise TypeError(f"Expected a datetime object, number, or str; got {type(value)}: {value}")
 
         try:
-            value = self.parse_dtime(value)
+            return self.parse_dtime(value)
         except self.DTimeFormatError as exc:
             if self._allow_float:
-                value = float(value)
+                return float(value)
             else:
                 raise exc
-
-        return value
 
     @classmethod
     def parse_dtime(cls, dtime_string: str) -> datetime:
@@ -278,7 +278,7 @@ class NumericAttribute(Attribute):
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         rc = self._representation_code
-        if not self._representation_code:
+        if rc is None:
             try:
                 value = self._int_parser(value)
             except (ValueError, TypeError):
