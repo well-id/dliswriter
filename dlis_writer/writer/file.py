@@ -1,5 +1,9 @@
 from typing import Any, Union, Optional
 import numpy as np
+import os
+from timeit import timeit
+from datetime import timedelta
+import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
@@ -8,6 +12,10 @@ from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
+from dlis_writer.writer.writer import DLISWriter
+
+
+logger = logging.getLogger(__name__)
 
 
 class DLISFile:
@@ -98,6 +106,31 @@ class DLISFile:
 
         return flr
 
+    def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
+              input_chunk_size: Optional[int] = None, output_chunk_size: Union[int, float] = 2**32):
+        """Create a DLIS file form the current specifications.
+
+        Args:
+            dlis_file_name          :   Name of the file to be created.
+            visible_record_length   :   Maximal length of visible records to be created in the file.
+            input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
+            output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
+
+        """
+
+        def timed_func():
+            """Perform the action of creating a DLIS file.
+
+            This function is used in a timeit call to time the file creation.
+            """
+
+            dlis_file = DLISWriter(visible_record_length=visible_record_length)
+            logical_records = self.make_file_logical_records(chunk_size=input_chunk_size)
+            dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
+
+        exec_time = timeit(timed_func, number=1)
+        logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
+
 
 if __name__ == '__main__':
     df = DLISFile()
@@ -105,10 +138,10 @@ if __name__ == '__main__':
     df.add_file_header("DEFAULT FILE HEADER", sequence_number=1)
     df.add_origin("DEFAULT ORIGIN", file_set_number=1)
 
-    size = 20
+    size = 100
     ch1 = df.add_channel('depth', data=np.arange(size)/10)
     ch2 = df.add_channel("Channel 1", data=np.arange(size) % 3)
     ch3 = df.add_channel("amplitude", data=np.random.rand(size, 5))
     main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3))
 
-    records = df.make_file_logical_records(chunk_size=5)
+    df.write('./tmp.DLIS', input_chunk_size=20)

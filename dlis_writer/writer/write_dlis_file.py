@@ -42,7 +42,7 @@ def write_dlis_file(data: SourceDataObject, config: ConfigParser, dlis_file_name
         """
 
         dlis_file = DLISWriter(visible_record_length=visible_record_length)
-        dlis_file.create_dlis(data=data, config=config, filename=dlis_file_name, **kwargs)
+        dlis_file.create_dlis_from_config_and_data(data=data, config=config, filename=dlis_file_name, **kwargs)
 
     exec_time = timeit(timed_func, number=1)
     logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")

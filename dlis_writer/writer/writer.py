@@ -233,21 +233,33 @@ class DLISWriter:
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
-    def create_dlis(self, config: ConfigParser, data: SourceDataObject, filename: Union[str, os.PathLike[str]],
-                    input_chunk_size: Optional[int] = None, output_chunk_size: Union[int, float] = 2**32):
+    def create_dlis_from_config_and_data(self, config: ConfigParser, data: SourceDataObject,
+                                         input_chunk_size: Optional[int] = None, **kwargs):
         """Create a DLIS file from logical records specification (found in the config) and numerical data.
 
         Args:
             config              :   Object with information needed to create all logical records of the file.
             data                :   Object wrapping the curves and images data of the file.
-            filename            :   Name of the file to be created. Note: at this point, no file name / directory checks
-                                    (file already exists / directory write access / etc.) are performed.
             input_chunk_size    :   Size of the chunks (in rows) in which input data will be loaded to be processed.
-            output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
+            **kwargs            :   Additional keyword arguments passed to create_dlis. They can/should include:
+                                    filename and output_chunk_size.
         """
 
         # create all logical records (or generators of these) from the config and data
         logical_records = FileLogicalRecords.from_config_and_data(config, data, chunk_size=input_chunk_size)
+        return self.create_dlis(logical_records, **kwargs)
+
+    def create_dlis(self, logical_records: FileLogicalRecords, filename: Union[str, os.PathLike[str]],
+                    output_chunk_size: Union[int, float] = 2**32):
+        """Create a DLIS file from logical records specification (found in the config) and numerical data.
+
+        Args:
+            logical_records     :   Logical records to become part of the file.
+            filename            :   Name of the file to be created. Note: at this point, no file name / directory checks
+                                    (file already exists / directory write access / etc.) are performed.
+            output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
+        """
+
         logical_records.check_objects()  # check that all required objects are there
 
         self._assign_origin_reference(logical_records)
