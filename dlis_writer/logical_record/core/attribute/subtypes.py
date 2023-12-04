@@ -82,7 +82,7 @@ class EFLRAttribute(Attribute):
     def _convert_value(self, v: Union[str, type]):
         """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
 
-        object_class = self._object_class or EFLR
+        object_class = self._object_class.object_type if self._object_class else EFLRObject
         if not isinstance(v, (object_class, str)):
             raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
         return v

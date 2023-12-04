@@ -1,8 +1,9 @@
-from typing import Any
+from typing import Any, Union
 import numpy as np
 
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 
 
@@ -39,7 +40,7 @@ class DLISFile:
         self._origin = Origin.make_object(*args, **kwargs)
         return self._origin
 
-    def add_channel(self, name, data, **kwargs):
+    def add_channel(self, name, data, **kwargs) -> ChannelObject:
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
@@ -50,6 +51,21 @@ class DLISFile:
         self._data_dict[dataset_name] = data
 
         return ch
+
+    def add_frame(self, name, channels: Union[list[ChannelObject], tuple[ChannelObject, ...]], **kwargs):
+        if not isinstance(channels, (list, tuple)):
+            raise TypeError(f"Expected a list or tuple of channels, got {type(channels)}: {channels}")
+
+        if not channels:
+            raise ValueError("At least one channel must be specified for a frame")
+
+        if not all(isinstance(c, ChannelObject) for c in channels):
+            raise TypeError(f"Expected a list of ChannelObject instances; "
+                            f"got types: {', '.join(str(type(c)) for c in channels)}")
+
+        fr = Frame.make_object(name, channels=channels, **kwargs)
+        self._frames.append(fr)
+        return fr
 
     def make_file_logical_records(self):
         req = {
@@ -68,7 +84,11 @@ class DLISFile:
             orig=self._origin.parent
         )
 
-        flr.add_channels(*(set(c.parent for c in self._channels)))
+        def get_parents(objects):
+            return set(obj.parent for obj in objects)
+
+        flr.add_channels(*get_parents(self._channels))
+        flr.add_frames(*get_parents(self._frames))
 
         return flr
 
@@ -82,5 +102,6 @@ if __name__ == '__main__':
     size = 20
     ch1 = df.add_channel("Channel 1", data=np.arange(size))
     ch2 = df.add_channel("amplitude", data=np.random.rand(size, 5))
+    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2))
 
     records = df.make_file_logical_records()

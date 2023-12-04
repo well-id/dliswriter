@@ -57,7 +57,7 @@ class EFLRMeta(LRMeta):
 
         return list(cls._instance_dict.values())
 
-    def make_object(cls, name: str, set_name: Optional[str] = None, **kwargs) -> EFLRObject:
+    def make_object(cls, name: str, set_name: Optional[str] = None, **kwargs) -> "Self.object_type":
         """Create an EFLRObject corresponding to the given (sub)class of EFLR.
 
         Args:
