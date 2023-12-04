@@ -1,21 +1,31 @@
 import os
 import pytest
 from datetime import datetime
+from pathlib import Path
+from configparser import ConfigParser
+from dlisio import dlis
+from typing import Any, Union
+
+from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
 
 from dlis_writer.tests.common import base_data_path, config_params
-from dlis_writer.tests.test_writer.common import reference_data, reference_data_path, short_reference_data_path, short_reference_data
+from dlis_writer.tests.test_writer.common import reference_data_path, short_reference_data_path
 from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
 from dlis_writer.tests.common import clear_eflr_instance_registers
 
 
 @pytest.fixture(autouse=True)
 def cleanup():
+    """Remove all defined EFLR instances from the internal dicts before each test."""
+    
     clear_eflr_instance_registers()
     yield
 
 
 @pytest.fixture(scope='session')
-def short_dlis(short_reference_data_path, base_data_path, config_params):
+def short_dlis(short_reference_data_path: Path, base_data_path: Path, config_params: ConfigParser):
+    """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
+    
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
 
     channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
@@ -30,13 +40,17 @@ def short_dlis(short_reference_data_path, base_data_path, config_params):
         os.remove(dlis_path)
 
 
-def _check_list(objects, names):
+def _check_list(objects: Union[list[EFLRObject], tuple[EFLRObject, ...]], names: Union[list[str], tuple[str, ...]]):
+    """Check that names of the provided objects match the expected names (in the same order)."""
+    
     assert len(objects) == len(names)
     for i, n in enumerate(names):
         assert objects[i].name == n
 
 
-def test_channel_properties(short_dlis, config_params):
+def test_channel_properties(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check attributes of channels in the new DLIS file."""
+    
     for name in ('posix time', 'surface rpm'):
         chan = select_channel(short_dlis, name)
         assert chan.name == name
@@ -54,19 +68,25 @@ def test_channel_properties(short_dlis, config_params):
     assert short_dlis.object("CHANNEL", 'radius_pooh').units == "m"
 
 
-def test_channel_not_in_frame(short_dlis, config_params):
+def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check that channel which was not added to frame is still in the file."""
+    
     name = 'channel_x'
-    chan = select_channel(short_dlis, name)
+    chan = select_channel(short_dlis, name)  # if no error - channel is found in the file
     assert name not in config_params['Frame']['channels']
 
 
-def test_file_header(short_dlis, config_params):
+def test_file_header(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check attributes of DLIS file header."""
+    
     header = short_dlis.fileheader
     assert header.id == config_params['FileHeader']['name']
     assert header.sequencenr == config_params['FileHeader']['sequence_number']
 
 
-def test_origin(short_dlis, config_params):
+def test_origin(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check attributes of Origin in the new DLIS file."""
+    
     assert len(short_dlis.origins) == 1
 
     origin = short_dlis.origins[0]
@@ -92,7 +112,9 @@ def test_origin(short_dlis, config_params):
     assert origin.programs == []
 
 
-def test_frame(short_dlis, config_params):
+def test_frame(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check attributes of Frame in the new DLIS file."""
+    
     assert len(short_dlis.frames) == 1
 
     frame = short_dlis.frames[0]
@@ -101,14 +123,18 @@ def test_frame(short_dlis, config_params):
     assert frame.index_type == config_params['Frame']['index_type']
 
 
-def test_storage_unit_label(short_dlis, config_params):
+def test_storage_unit_label(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+    """Check attributes of Storage Unit Label in the new DLIS file."""
+    
     sul = short_dlis.storage_label()
     assert sul['id'].rstrip(' ') == config_params['StorageUnitLabel']['name']
     assert sul['sequence'] == int(config_params['StorageUnitLabel']['sequence_number'])
     assert sul['maxlen'] == 8192
 
 
-def test_zones(short_dlis):
+def test_zones(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of zones in the file matches the expected one."""
+    
     zones = short_dlis.zones
     assert len(zones) == 5
 
@@ -120,7 +146,10 @@ def test_zones(short_dlis):
         ("Zone-4", "ZONE-TIME-2", 90, 10, float),
         ("Zone-X", "Zone not added to any parameter", 10, 1, float)
 ))
-def test_zone_params(short_dlis, name, description, maximum, minimum, value_type):
+def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: str, maximum: Any, 
+                     minimum: Any, value_type: type):
+    """Check attributes of zones in the new DLIS file."""
+    
     zones = [zone for zone in short_dlis.zones if zone.name == name]
     assert len(zones) == 1
     z = zones[0]
@@ -132,7 +161,9 @@ def test_zone_params(short_dlis, name, description, maximum, minimum, value_type
     assert isinstance(z.minimum, value_type)
 
 
-def test_zone_not_in_param(short_dlis):
+def test_zone_not_in_param(short_dlis: dlis.file.LogicalFile):
+    """Check that a zone which has not been added to any parameter or other object is still in the file."""
+    
     name = 'Zone-X'
     z = [z for z in short_dlis.zones if z.name == name]
     assert len(z) == 1
@@ -141,7 +172,9 @@ def test_zone_not_in_param(short_dlis):
         assert not z
 
 
-def test_parameters(short_dlis):
+def test_parameters(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of parameters in the DLIS file matches the expected one."""
+    
     params = short_dlis.parameters
     assert len(params) == 3
 
@@ -151,7 +184,10 @@ def test_parameters(short_dlis):
         (1, "Param-2", "LATLONG", [40.395241, 27.792471], ["Zone-2", "Zone-4"]),
         (2, "Param-3", "SOME-FLOAT-PARAM", [12.5], [])
 ))
-def test_parameters_params(short_dlis, idx, name, long_name, values, zones):
+def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: str, values: list, 
+                           zones: list[str]):
+    """Check attributes of DLIS Parameter objects."""
+    
     param = short_dlis.parameters[idx]
     assert param.name == name
     assert param.long_name == long_name
@@ -160,7 +196,9 @@ def test_parameters_params(short_dlis, idx, name, long_name, values, zones):
     _check_list(param.zones, zones)
 
 
-def test_axes(short_dlis):
+def test_axes(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of axes in the DLIS file matches the expected one."""
+    
     axes = short_dlis.axes
     assert len(axes) == 2
 
@@ -169,14 +207,18 @@ def test_axes(short_dlis):
         (0, "Axis-1", "First axis", [40.395241, 27.792471]),
         (1, "Axis-X", "Axis not added to computation", [8])
 ))
-def test_axes_parameters(short_dlis, idx, name, axis_id, coordinates):
+def test_axes_parameters(short_dlis: dlis.file.LogicalFile, idx: int, name: str, axis_id: str, coordinates: list):
+    """Check attributes of axes in the DLIS file."""
+    
     axis = short_dlis.axes[idx]
     assert axis.name == name
     assert axis.axis_id == axis_id
     assert axis.coordinates == coordinates
 
 
-def test_equipment(short_dlis):
+def test_equipment(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of Equipment objects in the DLIS file matches the expected one."""
+    
     eq = short_dlis.equipments
     assert len(eq) == 3
 
@@ -186,7 +228,7 @@ def test_equipment(short_dlis):
         (1, "EQ2", 0, "5559101-21391"),
         (2, "EqX", 1, "12311")
 ))
-def test_equipment_params(short_dlis, idx, name, status, serial_number):
+def test_equipment_params(short_dlis: dlis.file.LogicalFile, idx: int,name, status, serial_number):
     eq = short_dlis.equipments[idx]
 
     assert eq.name == name
@@ -194,7 +236,7 @@ def test_equipment_params(short_dlis, idx, name, status, serial_number):
     assert eq.serial_number == serial_number
 
 
-def test_tool(short_dlis):
+def test_tool(short_dlis: dlis.file.LogicalFile):
     tools = short_dlis.tools
     assert len(tools) == 2
 
@@ -203,7 +245,7 @@ def test_tool(short_dlis):
         (0, "TOOL-1", "SOME TOOL", 1, ["Param-1", "Param-3"], ["posix time", "amplitude"]),
         (1, "Tool-X", "desc", 0, ["Param-2"], ["radius_pooh"])
 ))
-def test_tool_params(short_dlis, idx, name, description, status, param_names, channel_names):
+def test_tool_params(short_dlis: dlis.file.LogicalFile, idx: int,name, description, status, param_names, channel_names):
     tool = short_dlis.tools[idx]
     assert tool.name == name
     assert tool.description == description
@@ -213,7 +255,9 @@ def test_tool_params(short_dlis, idx, name, description, status, param_names, ch
     _check_list(tool.channels, channel_names)
 
 
-def test_computation(short_dlis):
+def test_computation(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of Computation objects in the DLIS file matches the expected one."""
+
     comps = short_dlis.computations
     assert len(comps) == 3
 
@@ -223,7 +267,10 @@ def test_computation(short_dlis):
         (1, "COMPT2", ["PROP 2", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-1", [1.5, 2.5]),
         (2, "COMPT-X", ["XYZ"], ["Zone-3"], "Axis-1", [12]),
 ))
-def test_computation_params(short_dlis, idx, name, properties, zone_names, axis_name, values):
+def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, properties: list[str],
+                            zone_names: list[str], axis_name: str, values: list[Union[int, float]]):
+    """Check attributes of Computation objects in the new DLIS file."""
+
     comp = short_dlis.computations[idx]
 
     assert comp.name == name
@@ -234,7 +281,9 @@ def test_computation_params(short_dlis, idx, name, properties, zone_names, axis_
     _check_list(comp.zones, zone_names)
 
 
-def test_process(short_dlis):
+def test_process(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of Process objects in the DLIS file matches the expected one."""
+
     procs = short_dlis.processes
     assert len(procs) == 2
 
@@ -243,7 +292,10 @@ def test_process(short_dlis):
         (0, "Process 1", ["radius"], ["amplitude", "Channel 2"], ["COMPT-1"], ["COMPT2"]),
         (1, "Prc2", ["Channel 1"], ["Channel 2"], ["COMPT2", "COMPT-1"], []),
 ))
-def test_process_params(short_dlis, idx, name, input_channels, output_channels, input_compts, output_compts):
+def test_process_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, input_channels: list[str],
+                        output_channels: list[str], input_compts: list[str], output_compts: list[str]):
+    """Check attributes of Process objects in the new DLIS file."""
+
     proc = short_dlis.processes[idx]
 
     assert proc.name == name
@@ -254,12 +306,16 @@ def test_process_params(short_dlis, idx, name, input_channels, output_channels, 
     _check_list(proc.output_computations, output_compts)
 
 
-def test_splices(short_dlis):
+def test_splices(short_dlis: dlis.file.LogicalFile):
+    """Check that the number of Splice objects in the DLIS file matches the expected one."""
+
     splices = short_dlis.splices
     assert len(splices) == 1
 
 
-def test_splice_params(short_dlis):
+def test_splice_params(short_dlis: dlis.file.LogicalFile):
+    """Test attributes of the Splice object in the new DLIS file."""
+
     splice = short_dlis.splices[0]
 
     assert splice.name == "splc1"
@@ -270,7 +326,9 @@ def test_splice_params(short_dlis):
     assert splice.output_channel.name == 'amplitude'
 
 
-def test_calibration_measurement_params(short_dlis):
+def test_calibration_measurement_params(short_dlis: dlis.file.LogicalFile):
+    """Check attributes of CalibrationMeasurement object in the DLIS file."""
+
     m = short_dlis.measurements[0]
 
     assert m.name == "CMEASURE-1"
@@ -289,7 +347,9 @@ def test_calibration_measurement_params(short_dlis):
     assert m.minus_tolerance == [1]
 
 
-def test_calibration_coefficient_params(short_dlis):
+def test_calibration_coefficient_params(short_dlis: dlis.file.LogicalFile):
+    """Check attributes of CalibrationCoefficient object in the DLIS file."""
+
     c = short_dlis.coefficients[0]
 
     assert c.name == "COEF-1"
@@ -300,7 +360,9 @@ def test_calibration_coefficient_params(short_dlis):
     assert c.minus_tolerance == [87.23, 214]
 
 
-def test_calibration_params(short_dlis):
+def test_calibration_params(short_dlis: dlis.file.LogicalFile):
+    """Check attributes of Calibration object in the DLIS file."""
+
     c = short_dlis.calibrations[0]
 
     assert c.name == 'CALIB-MAIN'
@@ -316,7 +378,10 @@ def test_calibration_params(short_dlis):
         (0, "AQLN WELL-REF", "AQLN vertical_zero", 999.51, "Latitude", 40.395240, "Longitude", 27.792470),
         (1, "WRP-X", "vz20", 112.3, "X", 20, "Y", -0.3)
 ))
-def test_well_reference_point_params(short_dlis, idx, name, v_zero, m_decl, c1_name, c1_value, c2_name, c2_value):
+def test_well_reference_point_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, v_zero: str,
+                                     m_decl: float, c1_name: str, c1_value: float, c2_name: str, c2_value: float):
+    """Check attributes of well reference point in the DLIS file."""
+
     w = short_dlis.wellrefs[idx]
 
     assert w.name == name
@@ -326,7 +391,9 @@ def test_well_reference_point_params(short_dlis, idx, name, v_zero, m_decl, c1_n
     assert w.coordinates[c2_name] == c2_value
 
 
-def test_message_params(short_dlis):
+def test_message_params(short_dlis: dlis.file.LogicalFile):
+    """Check attribute of Message object in the DLIS file."""
+
     m = short_dlis.messages[0]
 
     assert m.name == "MESSAGE-1"
@@ -343,7 +410,9 @@ def test_message_params(short_dlis):
         (0, "COMMENT-1", ["SOME COMMENT HERE"]),
         (1, "cmt2", ["some other comment here", "and another comment"])
 ))
-def test_comment_params(short_dlis, idx, name, text):
+def test_comment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, text: str):
+    """Test attributes of Comment objects in the DLIS file."""
+
     c = short_dlis.comments[idx]
 
     assert c.name == name
@@ -354,7 +423,9 @@ def test_comment_params(short_dlis, idx, name, text):
         (0, "no_format_1", "SOME TEXT NOT FORMATTED", "TESTING-NO-FORMAT"),
         (1, "no_fmt2", "xyz", "TESTING NO FORMAT 2")
 ))
-def test_no_format_params(short_dlis, idx, name, consumer_name, description):
+def test_no_format_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, consumer_name: str, description: str):
+    """Check attributes of NoFormat objects in the DLIS file."""
+
     w = short_dlis.noformats[idx]
 
     assert w.name == name
@@ -362,7 +433,9 @@ def test_no_format_params(short_dlis, idx, name, consumer_name, description):
     assert w.description == description
 
 
-def test_long_name_params(short_dlis):
+def test_long_name_params(short_dlis: dlis.file.LogicalFile):
+    """Test attributes of the LongName object in the DLIS file."""
+
     w = short_dlis.longnames[0]
     t = 'SOME ASCII TEXT'
 
@@ -388,7 +461,10 @@ def test_long_name_params(short_dlis):
         (1, "ProcessGroup", "Group of processes", "PROCESS", ["Process 1", "Prc2"], []),
         (2, "MultiGroup", "Group of groups", "GROUP", [], ["ChannelGroup", "ProcessGroup"])
 ))
-def test_group_params(short_dlis, idx, name, description, object_type, object_names, group_names):
+def test_group_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, description: str, object_type: str,
+                      object_names: list[str], group_names: list[str]):
+    """Test attributes of Group objects in the DLIS file."""
+
     g = short_dlis.groups[idx]
     assert g.name == name
     assert g.description == description
