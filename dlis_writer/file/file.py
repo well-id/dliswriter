@@ -217,7 +217,7 @@ class DLISFile:
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
         output = self.BufferedOutput(int(output_chunk_size), writer)
 
-        output.add_bytes(next(all_lrb_gen).bytes)  # add SUL bytes (don't wrap in a visible record)
+        output.add_bytes(next(all_lrb_gen).bts)  # add SUL bytes (don't wrap in a visible record)
 
         max_lr_segment_size = self._visible_record_length - 8  # max allowed size of an LR segment body
         # ^ 4 bytes reserved for VR header and another 4 for LR segment header

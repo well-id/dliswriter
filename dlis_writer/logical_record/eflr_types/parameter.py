@@ -45,7 +45,7 @@ class ParameterObject(EFLRObject):
         """Try converting a value to a number. If that fails, return the value unchanged."""
 
         try:
-            val = cls.convert_numeric(val)
+            return cls.convert_numeric(val)
         except ValueError:
             pass
         return val

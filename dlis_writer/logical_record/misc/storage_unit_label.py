@@ -39,7 +39,7 @@ class StorageUnitLabel:
 
         super().__init__()
 
-        self.sequence_number = int(sequence_number)
+        self.sequence_number = sequence_number
         self.set_identifier = set_identifier
         self.max_record_length = max_record_length
 
@@ -98,7 +98,7 @@ class StorageUnitLabel:
 
         other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
-        obj = cls(config[key][name_key], **other_kwargs)
+        obj = cls(config[key][name_key], **{k: int(v) for k, v in other_kwargs.items()})
 
         return obj
 

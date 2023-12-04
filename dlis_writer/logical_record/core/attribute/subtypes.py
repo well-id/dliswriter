@@ -1,7 +1,7 @@
 import logging
 from numbers import Number
 from datetime import datetime
-from typing import Union
+from typing import Union, Optional
 from typing_extensions import Self
 from configparser import ConfigParser
 
@@ -21,7 +21,8 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, *args, object_class: EFLRMeta = None, representation_code: RepC = RepC.OBNAME, **kwargs):
+    def __init__(self, *args, object_class: Optional[EFLRMeta] = None, representation_code: RepC = RepC.OBNAME,
+                 **kwargs):
         """Initialise EFLRAttribute.
 
         Args:
@@ -130,7 +131,7 @@ class DTimeAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_value
 
-    def _convert_value(self, value: Union[str, datetime, Number]) -> Union[datetime, float]:
+    def _convert_value(self, value: Union[str, datetime, int, float]) -> Union[datetime, float]:
         """Default value converter: parse string as date time or (if so specified at init) as a float."""
 
         if isinstance(value, datetime):
@@ -248,7 +249,7 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Union[str, Number]) -> int:
+    def _int_parser(value: Union[str, int, float]) -> int:
         """Parse a provided value as an integer."""
 
         if isinstance(value, str):
@@ -262,7 +263,7 @@ class NumericAttribute(Attribute):
         return value
 
     @staticmethod
-    def _float_parser(value: Union[str, Number]) -> float:
+    def _float_parser(value: Union[str, int, float]) -> float:
         """Parse a provided value as a float."""
 
         if isinstance(value, str):
@@ -273,7 +274,7 @@ class NumericAttribute(Attribute):
             raise TypeError(f"Cannot convert a {type(value)} object ({value}) to float")
         return value
 
-    def _convert_number(self, value: Union[str, Number]) -> Union[int, float]:
+    def _convert_number(self, value: Union[str, int, float]) -> Union[int, float]:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         rc = self._representation_code

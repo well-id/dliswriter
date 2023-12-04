@@ -196,7 +196,7 @@ class FileLogicalRecords:
         def check_list(eflr_list: list[EFLR], class_name: str):
             """Check that at least one EFLRObject is defined across the list of EFLRs of the given type."""
 
-            names = []
+            names: list[str] = []
             for eflr in eflr_list:
                 names.extend(o.name for o in eflr.get_all_objects())
             verify_n(names, class_name)
@@ -226,7 +226,8 @@ class FileLogicalRecords:
                                    f"this might cause issues with opening the produced DLIS file in some software")
 
     @staticmethod
-    def _make_frame_and_data(config: ConfigParser, data: SourceDataObject, key: str = 'Frame', chunk_size: int = None) \
+    def _make_frame_and_data(config: ConfigParser, data: SourceDataObject, key: str = 'Frame',
+                             chunk_size: typing.Optional[int] = None) \
             -> MultiFrameData:
         """Define a FrameObject and a corresponding MultiFrameData based on the provided config information.
 

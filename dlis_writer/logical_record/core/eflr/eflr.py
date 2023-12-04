@@ -7,6 +7,7 @@ from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
 from dlis_writer.logical_record.core.eflr.eflr_meta import EFLRMeta
+from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
@@ -32,9 +33,9 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         self.set_name = set_name
         self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
-        self._object_dict = {}  # instances of EFLRObject registered with this EFLR instance
-        self._attributes = {}   # attributes of this EFLR (copied from an EFLRObject instance later)
-        self._origin_reference = None
+        self._object_dict: dict[str, EFLRObject] = {}  # instances of EFLRObject registered with this EFLR instance
+        self._attributes: dict[str, Attribute] = {}   # attributes of this EFLR (cpd from an EFLRObject instance later)
+        self._origin_reference: Union[int, None] = None
 
         self._instance_dict[self.set_name] = self
 

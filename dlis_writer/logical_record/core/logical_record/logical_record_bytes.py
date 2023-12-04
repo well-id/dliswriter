@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class LogicalRecordBytes:
     """Wrap bytes of a LogicalRecord and StorageUnitLabel, adding segmenting functionalities."""
 
-    padding = RepC.USHORT.converter.pack(1)  #: padding byte added if the number of bytes in a segment is odd
+    padding = RepC.USHORT.convert(1)  #: padding byte added if the number of bytes in a segment is odd
 
     def __init__(self, bts: bytes, lr_type_struct: bytes, is_eflr: bool = False):
         """Initialise a LogicalRecordBytes object.
@@ -29,7 +29,7 @@ class LogicalRecordBytes:
         self._is_eflr = is_eflr
 
     @property
-    def bytes(self) -> bytes:
+    def bts(self) -> bytes:
         """Bytes describing a logical record."""
 
         return self._bts

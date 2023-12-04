@@ -39,7 +39,7 @@ class LRMeta(type):
 class LogicalRecord(metaclass=LRMeta):
     """Create a base for all logical record classes."""
 
-    is_eflr = NotImplemented  #: indication whether this is an explicitly or indirectly formatted LR
+    is_eflr: bool = NotImplemented  #: indication whether this is an explicitly or indirectly formatted LR
     logical_record_type: Union[EFLRType, IFLRType] = NotImplemented  #: int-enum denoting type of the logical record
 
     def __init__(self, *args, **kwargs):

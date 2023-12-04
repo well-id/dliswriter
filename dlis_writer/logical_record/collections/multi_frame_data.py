@@ -37,7 +37,7 @@ class MultiFrameData:
         self._data_source = data
         self._frame = frame
 
-        self._origin_reference = None
+        self._origin_reference: typing.Union[int, None] = None
 
         self._chunk_rows = chunk_size
         self._i = 0  # keep track of current frame number during iteration

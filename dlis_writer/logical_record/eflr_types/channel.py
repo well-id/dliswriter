@@ -1,5 +1,5 @@
 import logging
-from typing import Union
+from typing import Union, Optional
 import numpy as np
 from h5py import Dataset
 
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class ChannelObject(EFLRObject):
     """Model an object being part of Channel EFLR."""
 
-    def __init__(self, name, parent: "Channel", dataset_name: str = None, **kwargs):
+    def __init__(self, name, parent: "Channel", dataset_name: Optional[str] = None, **kwargs):
         """Initialise ChannelObject.
 
         Args:
@@ -43,7 +43,7 @@ class ChannelObject(EFLRObject):
         self.maximum_value = NumericAttribute(
             'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
 
-        self._dataset_name: str = dataset_name
+        self._dataset_name: Union[str, None] = dataset_name
 
         super().__init__(name, parent, **kwargs)
 

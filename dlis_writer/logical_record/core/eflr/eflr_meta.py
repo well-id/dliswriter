@@ -131,8 +131,7 @@ class EFLRMeta(LRMeta):
         if keys is None:
             if key_pattern is None:
                 key_pattern = cls.__name__ + r"-\w+"
-            key_pattern = re.compile(key_pattern)
-            keys = [key for key in config.sections() if key_pattern.fullmatch(key)]
+            keys = [key for key in config.sections() if re.compile(key_pattern).fullmatch(key)]
 
         return [cls.make_object_from_config(config, key=key, **kwargs) for key in keys]
 

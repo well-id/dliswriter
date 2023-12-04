@@ -1,4 +1,4 @@
-from typing import Union, Any, TYPE_CHECKING, Callable
+from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 from typing_extensions import Self
 import logging
 import numpy as np
@@ -19,9 +19,9 @@ class Attribute:
 
     settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set e.g. from config
 
-    def __init__(self, label: str, multivalued: bool = False, representation_code: RepresentationCode = None,
-                 units: str = None, value: Any = None, converter: callable = None,
-                 parent_eflr: "Union[EFLR, EFLRObject]" = None):
+    def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
+                 units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
+                 parent_eflr: "Optional[Union[EFLR, EFLRObject]]" = None):
         """Initialise an Attribute object.
 
         Args:
@@ -117,7 +117,7 @@ class Attribute:
             return None
 
     @property
-    def assigned_representation_code(self) -> RepresentationCode:
+    def assigned_representation_code(self) -> Union[RepresentationCode, None]:
         """Explicitly assigned representation code of the attribute."""
 
         return self._representation_code
@@ -272,7 +272,7 @@ class Attribute:
 
         # representation code
         if self.representation_code:
-            bts += RepresentationCode.USHORT.converter.pack(self.representation_code.value)
+            bts += RepresentationCode.USHORT.convert(self.representation_code.value)
             characteristics += '1'
         else:
             characteristics += '0'
@@ -324,7 +324,7 @@ class Attribute:
         else:
             bts, characteristics = self._write_for_body(bts, characteristics)
 
-        return RepresentationCode.USHORT.converter.pack(int(characteristics, 2)) + bts
+        return RepresentationCode.USHORT.convert(int(characteristics, 2)) + bts
 
     def copy(self) -> Self:
         """Create a copy of the attribute instance; do not include parent_eflr reference."""

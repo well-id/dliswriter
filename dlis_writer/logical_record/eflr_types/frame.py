@@ -1,5 +1,4 @@
 import logging
-from numbers import Number
 import numpy as np
 from typing import Union
 
@@ -60,7 +59,7 @@ class FrameObject(EFLRObject):
         return value
 
     @staticmethod
-    def convert_encrypted(value: Union[str, Number, bool]) -> int:
+    def convert_encrypted(value: Union[str, int, float, bool]) -> int:
         """Convert a provided 'encrypted' attribute value to an integer flag (0 or 1)."""
 
         if isinstance(value, str):
@@ -70,7 +69,7 @@ class FrameObject(EFLRObject):
                 return 0
             else:
                 raise ValueError(f"Couldn't evaluate the boolean meaning of '{value}'")
-        if isinstance(value, Number):
+        if isinstance(value, (int, float)):
             if value != 1 and value != 0:
                 raise ValueError(f"Expected a 0 or a 1; got {value}")
             return int(value)
