@@ -7,6 +7,8 @@ from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameDa
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.eflr_types.frame import FrameObject
+from dlis_writer.logical_record.eflr_types.origin import OriginObject
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject
 from dlis_writer.logical_record.core.eflr import EFLR
 from dlis_writer.utils.source_data_objects import SourceDataObject
 
@@ -273,8 +275,8 @@ class FileLogicalRecords:
             FileLogicalRecords: a configured instance of the class.
         """
 
-        file_header_object = FileHeader.make_object_from_config(config)
-        origin_object = Origin.make_object_from_config(config)
+        file_header_object: FileHeaderObject = FileHeader.make_object_from_config(config)
+        origin_object: OriginObject = Origin.make_object_from_config(config)
 
         obj = cls(
             sul=StorageUnitLabel.make_from_config(config),

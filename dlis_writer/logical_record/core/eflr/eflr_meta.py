@@ -2,6 +2,7 @@ import re
 from configparser import ConfigParser
 import logging
 from typing import TYPE_CHECKING, Optional, Union
+from typing_extensions import Self
 
 from dlis_writer.logical_record.core.logical_record import LRMeta
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
@@ -24,6 +25,7 @@ class EFLRMeta(LRMeta):
     """
 
     _instance_dict: dict[Union[str, None], "EFLR"]
+    object_type: type
 
     def __new__(cls, *args, **kwargs) -> "EFLRMeta":
         """Create a new EFLR class (instance of EFLRMeta).
@@ -72,7 +74,7 @@ class EFLRMeta(LRMeta):
         return eflr_instance.make_object_in_this_set(name, **kwargs)
 
     def make_object_from_config(cls, config: ConfigParser, key: Optional[str] = None, get_if_exists: bool = False) \
-            -> EFLRObject:
+            -> "Self.object_type":
         """Create an EFLRObject instance based on information found in the config object.
 
         Args:
@@ -109,7 +111,7 @@ class EFLRMeta(LRMeta):
         return obj
 
     def make_all_objects_from_config(cls, config: ConfigParser, keys: Optional[list[str]] = None,
-                                     key_pattern: Optional[str] = None, **kwargs) -> list[EFLRObject]:
+                                     key_pattern: Optional[str] = None, **kwargs) -> list["Self.object_type"]:
         """Create all objects corresponding to given EFLR subclass based on config object information.
 
         Use 'keys' and/or 'key_pattern' arguments (see below) to limit/precise the set of EFLRObjects created.

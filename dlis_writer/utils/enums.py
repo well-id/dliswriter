@@ -16,6 +16,8 @@ class RepresentationCode(int, Enum):
         RepresentationCode.FDOUBL.converter.pack(<value>)
     """
 
+    converter: Union[Struct, None]
+
     def __new__(cls, code: int, converter: Union[Struct, None] = None) -> "RepresentationCode":
         """When a new member is created, assign not only the integer value, but also a converter.
 
