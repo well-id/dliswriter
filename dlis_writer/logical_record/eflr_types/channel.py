@@ -17,6 +17,8 @@ logger = logging.getLogger(__name__)
 class ChannelObject(EFLRObject):
     """Model an object being part of Channel EFLR."""
 
+    parent: "Channel"
+
     def __init__(self, name, parent: "Channel", dataset_name: Optional[str] = None, **kwargs):
         """Initialise ChannelObject.
 

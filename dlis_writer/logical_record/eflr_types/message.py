@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute,
 class MessageObject(EFLRObject):
     """Model an object being part of Message EFLR."""
 
+    parent: "Message"
+
     def __init__(self, name: str, parent: "Message", **kwargs):
         """Initialise MessageObject.
 
@@ -36,6 +38,8 @@ class Message(EFLR):
 
 class CommentObject(EFLRObject):
     """Model an object being part of Comment EFLR."""
+
+    parent: "Comment"
 
     def __init__(self, name: str, parent: "Comment", **kwargs):
         """Initialise CommentObject.

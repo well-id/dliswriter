@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class PathObject(EFLRObject):
     """Model an object being part of Path EFLR."""
 
+    parent: "Path"
+
     def __init__(self, name: str, parent: "Path", **kwargs):
         """Initialise PathObject.
 

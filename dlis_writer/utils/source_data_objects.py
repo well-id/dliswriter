@@ -258,7 +258,7 @@ class SourceDataObject:
             else:
                 raise ValueError("Expected a RepresentationCode; got None")
 
-        return ReprCodeConverter.repr_codes_to_numpy_dtypes.get(repr_code)
+        return ReprCodeConverter.repr_codes_to_numpy_dtypes[repr_code]
 
     @classmethod
     def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:

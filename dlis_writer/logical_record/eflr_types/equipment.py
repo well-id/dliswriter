@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class EquipmentObject(EFLRObject):
     """Model an object being part of Equipment EFLR."""
 
+    parent: "Equipment"
+
     def __init__(self, name: str, parent: "Equipment", **kwargs):
         """Initialise EquipmentObject.
 

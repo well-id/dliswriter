@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 
 class ParameterObject(EFLRObject):
     """Model an object being part of Parameter EFLR."""
+
+    parent: "Parameter"
     
     def __init__(self, name: str, parent: "Parameter", **kwargs):
         """Initialise ParameterObject.

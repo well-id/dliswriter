@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class CalibrationMeasurementObject(EFLRObject):
     """Model an object being part of CalibrationMeasurement EFLR."""
 
+    parent: "CalibrationMeasurement"
+
     def __init__(self, name: str, parent: "CalibrationMeasurement", **kwargs):
         """Initialise CalibrationMeasurementObject.
 
@@ -54,6 +56,8 @@ class CalibrationMeasurement(EFLR):
 class CalibrationCoefficientObject(EFLRObject):
     """Model an object being part of CalibrationCoefficient EFLR."""
 
+    parent: "CalibrationCoefficient"
+
     def __init__(self, name: str, parent: "CalibrationCoefficient", **kwargs):
         """Initialise CalibrationCoefficientObject.
 
@@ -82,6 +86,8 @@ class CalibrationCoefficient(EFLR):
 
 class CalibrationObject(EFLRObject):
     """Model an object being part of Calibration EFLR."""
+
+    parent: "Calibration"
 
     def __init__(self, name: str, parent: "Calibration", **kwargs):
         """Initialise CalibrationObject.

@@ -16,6 +16,9 @@ class LRMeta(type):
     once for each LogicalRecord subclass.
     """
 
+    logical_record_type: Union[EFLRType, IFLRType]
+    _lr_type_struct: bytes
+
     def __new__(cls, *args, **kwargs):
         """Create a new LogicalRecord (sub)class.
 

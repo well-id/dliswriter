@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class ToolObject(EFLRObject):
     """Model an object being part of Tool EFLR."""
 
+    parent: "Tool"
+
     def __init__(self, name: str, parent: "Tool", **kwargs):
         """Initialise ToolObject.
 

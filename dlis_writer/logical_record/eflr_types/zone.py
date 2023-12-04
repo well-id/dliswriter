@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 class ZoneObject(EFLRObject):
     """Model an object being part of Zone EFLR."""
 
+    parent: "Zone"
+
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
     def __init__(self, name: str, parent: "Zone", **kwargs):

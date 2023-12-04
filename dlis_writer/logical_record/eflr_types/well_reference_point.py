@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class WellReferencePointObject(EFLRObject):
     """Model an object being part of WellReferencePoint EFLR."""
 
+    parent: "WellReferencePoint"
+
     def __init__(self, name: str, parent: "WellReferencePoint", **kwargs):
         """Initialise WellReferencePointObject.
 

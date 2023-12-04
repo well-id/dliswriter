@@ -1,7 +1,7 @@
 import re
 from configparser import ConfigParser
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
 from dlis_writer.logical_record.core.logical_record import LRMeta
 from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
@@ -22,6 +22,8 @@ class EFLRMeta(LRMeta):
     In addition, this metaclass implements several class methods of EFLR, mostly related to creating EFLR and EFLRObject
     instances, e.g. from a config object.
     """
+
+    _instance_dict: dict[Union[str, None], "EFLR"]
 
     def __new__(cls, *args, **kwargs) -> "EFLRMeta":
         """Create a new EFLR class (instance of EFLRMeta).

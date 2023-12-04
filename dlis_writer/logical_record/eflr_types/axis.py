@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class AxisObject(EFLRObject):
     """Model an object being part of Axis EFLR."""
 
+    parent: "Axis"
+
     def __init__(self, name: str, parent: "Axis", **kwargs):
         """Initialise AxisObject.
 

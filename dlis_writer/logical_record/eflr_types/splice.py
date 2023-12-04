@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 class SpliceObject(EFLRObject):
     """Model an object being part of Splice EFLR."""
 
+    parent: "Splice"
+
     def __init__(self, name: str, parent: "Splice", **kwargs):
         """Initialise SpliceObject.
 

@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 class GroupObject(EFLRObject):
     """Model an object being part of Group EFLR."""
 
+    parent: "Group"
+
     def __init__(self, name: str, parent: "Group", **kwargs):
         """Initialise GroupObject.
 

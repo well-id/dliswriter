@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 
 class FrameObject(EFLRObject):
     """Model an object being part of Frame EFLR."""
+
+    parent: "Frame"
     
     #: values for frame index type allowed by the standard
     frame_index_types = (

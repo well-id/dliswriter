@@ -12,6 +12,8 @@ logger = logging.getLogger(__name__)
 class OriginObject(EFLRObject):
     """Model an object being part of Origin EFLR."""
 
+    parent: "Origin"
+
     def __init__(self, name: str, parent: "Origin", **kwargs):
         """Initialise OriginObject.
 

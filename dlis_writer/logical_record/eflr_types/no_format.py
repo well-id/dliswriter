@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute
 class NoFormatObject(EFLRObject):
     """Model an object being part of NoFormat EFLR."""
 
+    parent: "NoFormat"
+
     def __init__(self, name: str, parent: "NoFormat", **kwargs):
         """Initialise NoFormatObject.
 

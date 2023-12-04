@@ -1,6 +1,7 @@
 import logging
 import importlib
 from typing import Union, Optional
+from typing_extensions import Self
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
@@ -20,6 +21,8 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
     logical_record_type: EFLRType = NotImplemented  #: int-enum denoting type of the EFLR
     is_eflr: bool = True                            #: indication that this is an explicitly formatted LR
     object_type: type = EFLRObject                  #: object type which can be held within an EFLR of this type
+
+    _instance_dict: dict[Union[str, None], "EFLR"]
 
     def __init__(self, set_name: Optional[str] = None):
         """Initialise an EFLR.
@@ -64,7 +67,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
             obj.origin_reference = val
 
     @property
-    def first_object(self) -> Union[EFLRObject, None]:
+    def first_object(self) -> Union["Self.object_type", None]:
         """Return the first EFLRObject instance registered with this EFLR or None if no instances are registered."""
 
         if not self._object_dict:

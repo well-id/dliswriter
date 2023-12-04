@@ -14,6 +14,8 @@ logger = logging.getLogger(__name__)
 class ProcessObject(EFLRObject):
     """Model an object being part of Process EFLR."""
 
+    parent: "Process"
+
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
     def __init__(self, name: str, parent: "Process", **kwargs):

@@ -6,6 +6,8 @@ from dlis_writer.logical_record.core.attribute import Attribute
 class LongNameObject(EFLRObject):
     """Model an object being part of LongName EFLR."""
 
+    parent: "LongName"
+
     def __init__(self, name: str, parent: "LongName", **kwargs):
         """Initialise LongNameObject.
 

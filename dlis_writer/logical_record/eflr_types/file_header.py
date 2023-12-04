@@ -12,6 +12,8 @@ def pack_ushort(v):
 class FileHeaderObject(EFLRObject):
     """Model an object being part of FileHeader EFLR."""
 
+    parent: "FileHeader"
+
     identifier_length_limit = 65    #: max length of the file header name
 
     def __init__(self, identifier: str, parent: "FileHeader", sequence_number: int = 1, **kwargs):

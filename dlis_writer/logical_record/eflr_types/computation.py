@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 class ComputationObject(EFLRObject):
     """Model an object being part of Computation EFLR."""
 
+    parent: "Computation"
+
     def __init__(self, name: str, parent: "Computation", **kwargs):
         """Initialise ComputationObject.
 
