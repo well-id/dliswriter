@@ -1,4 +1,4 @@
-name: projectname
+name: dlis-writer
 channels:
   - conda-forge
   - defaults
