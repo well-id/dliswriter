@@ -32,44 +32,27 @@ class DLISFile:
             file_header: Optional[Union[FileHeaderObject, kwargs_type]] = None,
             origin: Optional[Union[OriginObject, kwargs_type]] = None
     ):
-        self._sul: StorageUnitLabel = self._validate_or_make_object(
-            storage_unit_label, StorageUnitLabel, StorageUnitLabel, set_identifier="MAIN STORAGE UNIT")
 
-        self._file_header: FileHeaderObject = self._validate_or_make_object(
-            file_header, FileHeaderObject, FileHeader.make_object, name="FILE HEADER")
+        if isinstance(storage_unit_label, StorageUnitLabel):
+            self._sul = storage_unit_label
+        else:
+            self._sul = StorageUnitLabel(**({"set_identifier": "MAIN STORAGE UNIT"} | (storage_unit_label or {})))
 
-        self._origin: OriginObject = self._validate_or_make_object(
-            origin, OriginObject, Origin.make_object, name="ORIGIN", file_set_number=1)
+        if isinstance(file_header, FileHeaderObject):
+            self._file_header = file_header
+        else:
+            self._file_header = FileHeader.make_object(**({"name": "FILE HEADER"} | (file_header or {})))
+
+        if isinstance(origin, OriginObject):
+            self._origin = origin
+        else:
+            self._origin = Origin.make_object(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
 
         self._channels = []
         self._frames = []
         self._other = []
 
         self._data_dict = {}
-
-    @staticmethod
-    def _validate_or_make_object(
-            obj: Union[StorageUnitLabel, EFLRObject, kwargs_type, None],
-            expected_type: Union[type[StorageUnitLabel], type[EFLRObject]],
-            maker: Callable, **defaults
-    ) -> Union[StorageUnitLabel, EFLRObject]:
-
-        if isinstance(obj, expected_type):
-            return obj
-
-        if obj is None:
-            obj = {}
-
-        if not isinstance(obj, dict):
-            raise TypeError(f"Expected an instance of {expected_type.__name__} or a dictionary of kwargs to create one;"
-                            f" got {type(obj)}: {obj}")
-
-        return maker(**(defaults | obj))
-
-    @staticmethod
-    def _check_already_defined(obj: Any):
-        if obj is not None:
-            raise RuntimeError(f"{obj.__class__.__name__} is already defined in the file")
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
