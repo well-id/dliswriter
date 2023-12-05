@@ -2,7 +2,8 @@ import pytest
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.process import Process, ProcessObject
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("key", "name", "input_channels", "output_channels", "input_compts", "output_compts"), (

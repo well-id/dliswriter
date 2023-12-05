@@ -2,7 +2,8 @@ import pytest
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.file_header import FileHeader, FileHeaderObject
-from dlis_writer.tests.common import base_data_path, config_params, make_config
+
+from tests.common import base_data_path, config_params, make_config
 
 
 def _check_with_config(fh: FileHeaderObject, config: ConfigParser):

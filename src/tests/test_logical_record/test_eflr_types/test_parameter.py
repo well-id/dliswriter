@@ -3,7 +3,8 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("param_nr", "value_type", "n_values", "repr_code"), (

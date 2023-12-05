@@ -2,7 +2,8 @@ from datetime import datetime, timedelta
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
-from dlis_writer.tests.common import base_data_path, config_params, make_config
+
+from tests.common import base_data_path, config_params, make_config
 
 
 def test_from_config(config_params: ConfigParser):

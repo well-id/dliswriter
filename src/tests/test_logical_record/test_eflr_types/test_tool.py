@@ -2,7 +2,8 @@ import pytest
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.tool import Tool, ToolObject
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("section", "name", "description", "status", "param_names", "channel_names"), (

@@ -7,8 +7,9 @@ from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasur
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.eflr_types.axis import AxisObject
 from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
-from dlis_writer.tests.common import base_data_path, config_params
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
+
+from tests.common import base_data_path, config_params
 
 
 def test_calibration_measurement_from_config(config_params: ConfigParser):

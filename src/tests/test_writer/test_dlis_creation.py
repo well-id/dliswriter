@@ -8,12 +8,12 @@ from configparser import ConfigParser
 from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.writer.dlis_file_comparator import compare
 from dlis_writer.utils.enums import RepresentationCode
-
-from dlis_writer.tests.test_writer.common import (base_data_path, reference_data_path, reference_data,
-                                                  short_reference_data, short_reference_data_path)  # fixtures
-from dlis_writer.tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
-from dlis_writer.tests.common import clear_eflr_instance_registers
 from dlis_writer.utils.source_data_objects import HDF5Interface
+
+from tests.test_writer.common import (base_data_path, reference_data_path, reference_data,
+                                      short_reference_data, short_reference_data_path)  # fixtures
+from tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
+from tests.common import clear_eflr_instance_registers
 
 
 @pytest.fixture(autouse=True)

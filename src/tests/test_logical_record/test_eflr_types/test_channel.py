@@ -7,8 +7,9 @@ from typing import Union, Any
 from dlis_writer.logical_record.eflr_types.channel import Channel, ChannelObject
 from dlis_writer.logical_record.eflr_types.axis import AxisObject
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.tests.common import base_data_path, config_params, make_config
 from dlis_writer.utils.source_data_objects import NumpyInterface
+
+from tests.common import base_data_path, config_params, make_config
 
 
 @pytest.fixture

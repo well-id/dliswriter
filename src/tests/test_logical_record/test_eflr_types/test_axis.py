@@ -2,7 +2,8 @@ import pytest
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.axis import Axis, AxisObject
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("idx", "name", "axis_id", "coordinates"), (

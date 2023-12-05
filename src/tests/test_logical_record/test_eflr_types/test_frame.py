@@ -3,7 +3,8 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.frame import Frame, FrameObject
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 def test_from_config(config_params: ConfigParser):

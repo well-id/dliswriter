@@ -4,7 +4,8 @@ from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize("zone_nr", (1, 2, 3, 4))

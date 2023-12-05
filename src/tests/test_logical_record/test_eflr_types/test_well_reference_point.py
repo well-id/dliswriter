@@ -2,7 +2,8 @@ import pytest
 from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint, WellReferencePointObject
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("key", "name", "v_zero", "m_decl", "c1_name", "c1_value", "c2_name", "c2_value"), (

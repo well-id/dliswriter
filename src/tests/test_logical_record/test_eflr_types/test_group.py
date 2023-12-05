@@ -4,7 +4,8 @@ from configparser import ConfigParser
 from dlis_writer.logical_record.eflr_types.group import Group, GroupObject
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject
 from dlis_writer.logical_record.eflr_types.process import ProcessObject
-from dlis_writer.tests.common import base_data_path, config_params
+
+from tests.common import base_data_path, config_params
 
 
 @pytest.mark.parametrize(("key", "name", "description", "object_type", "object_class", "object_names", "group_names"), (
