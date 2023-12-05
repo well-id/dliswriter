@@ -5,11 +5,13 @@ from timeit import timeit
 from datetime import timedelta
 import logging
 
+from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.core.eflr import EFLRObject
 from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
+from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
@@ -81,13 +83,46 @@ class DLISFile:
     def origin(self) -> OriginObject:
         return self._origin
 
-    def add_channel(self, name, data, **kwargs) -> ChannelObject:
+    @property
+    def channels(self) -> list[ChannelObject]:
+        return self._channels
+
+    @property
+    def frames(self) -> list[FrameObject]:
+        return self._frames
+
+    def add_channel(
+            self,
+            name: str,
+            data: np.ndarray,
+            dataset_name: str = None,
+            long_name: Optional[str] = None,
+            properties: Optional[list[str]] = None,
+            representation_code: RepC = None,
+            units: Optional[str] = None,
+            axis: Optional[AxisObject] = None,
+            minimum_value: Optional[float] = None,
+            maximum_value: Optional[float] = None
+    ) -> ChannelObject:
+
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
-        ch = Channel.make_object(name, **kwargs)
+        ch = Channel.make_object(
+            name,
+            dataset_name=dataset_name,
+            long_name=long_name,
+            properties=properties,
+            representation_code=representation_code,
+            units=units,
+            axis=axis,
+            minimum_value=minimum_value,
+            maximum_value=maximum_value
+        )
+        # skipping dimension and element_limit because they will be determined from the data
+
         self._channels.append(ch)
-        self._data_dict[ch.dataset_name] = data
+        self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
 
         return ch
 

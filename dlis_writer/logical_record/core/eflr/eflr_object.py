@@ -36,7 +36,7 @@ class EFLRObject:
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self.copy_number = 0            #: copy number of the object
 
-        self.set_attributes(**kwargs)
+        self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
 
     @property
     def attributes(self) -> dict[str, Attribute]:
