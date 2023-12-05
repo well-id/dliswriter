@@ -1,0 +1,16 @@
+name: projectname
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - pip
+  - flake8
+  - mypy
+  - pytest
+  - numpy
+  - h5py
+  - progressbar2
+  - coloredlogs
+  - dlisio
+  - typing_extensions
