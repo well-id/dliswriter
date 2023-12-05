@@ -105,7 +105,19 @@ class DLISFile:
 
         return ch
 
-    def add_frame(self, name, channels: Union[list[ChannelObject], tuple[ChannelObject, ...]], **kwargs):
+    def add_frame(
+            self,
+            name: str,
+            channels: Union[list[ChannelObject], tuple[ChannelObject, ...]],
+            description: Optional[str] = None,
+            index_type: Optional[str] = None,
+            direction: Optional[str] = None,
+            spacing: Optional[Union[int, float]] = None,
+            encrypted: Optional[int] = None,
+            index_min: Optional[Union[int, float]] = None,
+            index_max: Optional[Union[int, float]] = None
+    ) -> FrameObject:
+
         if not isinstance(channels, (list, tuple)):
             raise TypeError(f"Expected a list or tuple of channels, got {type(channels)}: {channels}")
 
@@ -116,7 +128,18 @@ class DLISFile:
             raise TypeError(f"Expected a list of ChannelObject instances; "
                             f"got types: {', '.join(str(type(c)) for c in channels)}")
 
-        fr = Frame.make_object(name, channels=channels, **kwargs)
+        fr = Frame.make_object(
+            name,
+            channels=channels,
+            description=description,
+            index_type=index_type,
+            direction=direction,
+            spacing=spacing,
+            encrypted=encrypted,
+            index_min=index_min,
+            index_max=index_max
+        )
+
         self._frames.append(fr)
         return fr
 
