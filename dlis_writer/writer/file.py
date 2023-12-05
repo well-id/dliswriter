@@ -1,4 +1,4 @@
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, Callable
 import numpy as np
 import os
 from timeit import timeit
@@ -7,9 +7,11 @@ import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types import *
-from dlis_writer.logical_record.eflr_types.channel import ChannelObject
-from dlis_writer.logical_record.eflr_types.frame import FrameObject
+from dlis_writer.logical_record.core.eflr import EFLRObject
+from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
+from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -18,11 +20,24 @@ from dlis_writer.writer.writer import DLISWriter
 logger = logging.getLogger(__name__)
 
 
+kwargs_type = dict[str, Any]
+
+
 class DLISFile:
-    def __init__(self):
-        self._sul = None
-        self._file_header = None
-        self._origin = None
+    def __init__(
+            self,
+            storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
+            file_header: Optional[Union[FileHeaderObject, kwargs_type]] = None,
+            origin: Optional[Union[OriginObject, kwargs_type]] = None
+    ):
+        self._sul: StorageUnitLabel = self._validate_or_make_object(
+            storage_unit_label, StorageUnitLabel, StorageUnitLabel, set_identifier="MAIN STORAGE UNIT")
+
+        self._file_header: FileHeaderObject = self._validate_or_make_object(
+            file_header, FileHeaderObject, FileHeader.make_object, name="FILE HEADER")
+
+        self._origin: OriginObject = self._validate_or_make_object(
+            origin, OriginObject, Origin.make_object, name="ORIGIN", file_set_number=1)
 
         self._channels = []
         self._frames = []
@@ -31,23 +46,39 @@ class DLISFile:
         self._data_dict = {}
 
     @staticmethod
+    def _validate_or_make_object(
+            obj: Union[StorageUnitLabel, EFLRObject, kwargs_type, None],
+            expected_type: Union[type[StorageUnitLabel], type[EFLRObject]],
+            maker: Callable, **defaults
+    ) -> Union[StorageUnitLabel, EFLRObject]:
+
+        if isinstance(obj, expected_type):
+            return obj
+
+        if obj is None:
+            obj = {}
+
+        if not isinstance(obj, dict):
+            raise TypeError(f"Expected an instance of {expected_type.__name__} or a dictionary of kwargs to create one;"
+                            f" got {type(obj)}: {obj}")
+
+        return maker(**(defaults | obj))
+
+    @staticmethod
     def _check_already_defined(obj: Any):
         if obj is not None:
             raise RuntimeError(f"{obj.__class__.__name__} is already defined in the file")
 
-    def add_storage_unit_label(self, *args, **kwargs):
-        self._check_already_defined(self._sul)
-        self._sul = StorageUnitLabel(*args, **kwargs)
+    @property
+    def storage_unit_label(self) -> StorageUnitLabel:
         return self._sul
 
-    def add_file_header(self, *args, **kwargs):
-        self._check_already_defined(self._file_header)
-        self._file_header = FileHeader.make_object(*args, **kwargs)
+    @property
+    def file_header(self) -> FileHeaderObject:
         return self._file_header
 
-    def add_origin(self, *args, **kwargs):
-        self._check_already_defined(self._origin)
-        self._origin = Origin.make_object(*args, **kwargs)
+    @property
+    def origin(self) -> OriginObject:
         return self._origin
 
     def add_channel(self, name, data, **kwargs) -> ChannelObject:
@@ -82,15 +113,6 @@ class DLISFile:
         return MultiFrameData(fr, data_object, **kwargs)
 
     def make_file_logical_records(self, chunk_size: Optional[int] = None):
-        req = {
-            "Storage Unit Label": self._sul,
-            "File Header": self._file_header,
-            "Origin": self._origin
-        }
-
-        missing = [k for k, v in req.items() if v is None]
-        if any(missing):
-            raise RuntimeError(f"Required records not defined: {', '.join(missing)}")
 
         flr = FileLogicalRecords(
             sul=self._sul,
@@ -134,10 +156,9 @@ class DLISFile:
 
 
 if __name__ == '__main__':
-    df = DLISFile()
-    df.add_storage_unit_label("DEFAULT STORAGE SET", sequence_number=1)
-    df.add_file_header("DEFAULT FILE HEADER", sequence_number=1)
-    df.add_origin("DEFAULT ORIGIN", file_set_number=1)
+    orig = Origin.make_object("DEFAULT ORIGIN", file_set_number=1, company="XXX")
+    df = DLISFile(origin=orig, file_header={'sequence_number': 2})
+    df.origin.order_number.value = "352"
 
     size = 100
     ch1 = df.add_channel('DEPTH', data=np.arange(size)/10, units='m')
