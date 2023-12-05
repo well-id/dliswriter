@@ -12,5 +12,7 @@ dependencies:
   - h5py
   - progressbar2
   - coloredlogs
-  - dlisio
   - typing_extensions
+  - pip
+  - pip:
+      - dlisio
