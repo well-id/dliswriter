@@ -32,26 +32,32 @@ ax1.spacing.units = 'm'
 ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5])
 
 
-# define frame 1: depth-based with 3 channels, 100 rows each
+# define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
 ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10, units='m')     # index channel - always scalar
 ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(float), axis=ax1)  # 1D data
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5))    # image channel - 2D data
-main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.rand(n_rows_depth))
+main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_type='BOREHOLE-DEPTH')
 
 
 # define frame 2: time-based with 2 channels, 200 rows each
 n_rows_time = 200
-ch4 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s', axis=ax2)  # index channel for frame 2
-ch5 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
-second_frame = df.add_frame('TIME FRAME', channels=(ch4, ch5), index_type='NONSTANDARD')
+ch5 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s', axis=ax2)  # index channel for frame 2
+ch6 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
+second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NONSTANDARD')
 
 
-# define zones
-z1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
+# zones
+zone1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
 dt = datetime.now()
-z2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt-timedelta(hours=3), maximum=dt-timedelta(minutes=30))
-z3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20)
+zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt - timedelta(hours=3), maximum=dt - timedelta(minutes=30))
+zone3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20)
+
+
+# splices - using zones & channels
+splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch4, zones=(zone1,))
+splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zones=(zone2, zone3))
 
 
 # write the file

@@ -13,6 +13,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, 
 from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
+from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
 from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
@@ -224,6 +225,34 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_splice(
+            self,
+            name: str,
+            output_channel: ChannelObject = None,
+            input_channels: Union[list[ChannelObject], tuple[ChannelObject, ...]] = None,
+            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None
+    ) -> SpliceObject:
+        """Create a splice object.
+
+        Args:
+            name            :   Name of the splice.
+            output_channel  :   Output of the splice.
+            input_channels  :   Input of the splice.
+            zones           :   Zones the splice is defined for.
+
+        Returns:
+            A configured splice.
+        """
+
+        sp = Splice.make_object(
+            name=name,
+            output_channel=output_channel,
+            input_channels=input_channels,
+            zones=zones
+        )
+        self._other.append(sp)
+        return sp
 
     def add_zone(
             self,
