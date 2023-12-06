@@ -1,0 +1,17 @@
+name: dlis-writer
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python>=3.10
+  - flake8
+  - mypy
+  - pytest
+  - numpy
+  - h5py
+  - progressbar2
+  - coloredlogs
+  - typing_extensions
+  - pip
+  - pip:
+      - dlisio
