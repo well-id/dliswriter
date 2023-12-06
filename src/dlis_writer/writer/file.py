@@ -253,10 +253,15 @@ if __name__ == '__main__':
     df = DLISFile(origin=orig, file_header={'sequence_number': 2})
     df.origin.order_number.value = "352"
 
-    size = 100
-    ch1 = df.add_channel('DEPTH', data=np.arange(size)/10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(size) % 10).astype(float))
-    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(size, 5))
+    n_rows_depth = 100
+    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10, units='m')
+    ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(float))
+    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5))
     main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+
+    n_rows_time = 200
+    ch4 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s')
+    ch5 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
+    second_frame = df.add_frame('TIME FRAME', channels=(ch4, ch5), index_type='NONSTANDARD')
 
     df.write('./tmp.DLIS', input_chunk_size=20)
