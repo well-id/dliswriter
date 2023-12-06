@@ -24,12 +24,21 @@ kwargs_type = dict[str, Any]
 
 
 class DLISFile:
+    """Define the structure and contents of a DLIS and create a file based on the provided information."""
+
     def __init__(
             self,
             storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
             file_header: Optional[Union[FileHeaderObject, kwargs_type]] = None,
             origin: Optional[Union[OriginObject, kwargs_type]] = None
     ):
+        """Initialise DLISFile.
+
+        Args:
+            storage_unit_label  :   An instance of StorageUnitLabel or keyword arguments to create one.
+            file_header         :   An instance of FileHeaderObject or keyword arguments to create one.
+            origin              :   An instance of OriginObject or keyword arguments to create one.
+        """
 
         if isinstance(storage_unit_label, StorageUnitLabel):
             self._sul = storage_unit_label
@@ -54,29 +63,38 @@ class DLISFile:
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
+        """Storage Unit Label of the DLIS."""
+
         return self._sul
 
     @property
     def file_header(self) -> FileHeaderObject:
+        """File header of the DLIS."""
+
         return self._file_header
 
     @property
     def origin(self) -> OriginObject:
+        """Origin of the DLIS. Note: currently only adding a single origin is supported."""
+
         return self._origin
 
     @property
     def channels(self) -> list[ChannelObject]:
+        """Channels defined for the DLIS."""
+
         return self._channels
 
     @property
     def frames(self) -> list[FrameObject]:
+        """Frames defined for the DLIS."""
+
         return self._frames
 
     def add_channel(
             self,
             name: str,
             data: np.ndarray,
-            dataset_name: str = None,
             long_name: Optional[str] = None,
             properties: Optional[list[str]] = None,
             units: Optional[str] = None,
@@ -84,13 +102,27 @@ class DLISFile:
             minimum_value: Optional[float] = None,
             maximum_value: Optional[float] = None
     ) -> ChannelObject:
+        """Define a channel (ChannelObject) and add it to the DLIS.
+
+        Args:
+            name            :   Name of the channel.
+            data            :   Data associated with the channel.
+            long_name       :   Description of the channel.
+            properties      :   List of properties of the channel.
+            units           :   Unit of the channel data.
+            axis            :   Axis associated with the channel.
+            minimum_value   :   Minimum value of the channel data.
+            maximum_value   :   Maximum value of the channel data.
+
+        Returns:
+            A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
+        """
 
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
         ch = Channel.make_object(
             name,
-            dataset_name=dataset_name,
             long_name=long_name,
             properties=properties,
             units=units,
@@ -99,6 +131,7 @@ class DLISFile:
             maximum_value=maximum_value
         )
         # skipping repr code, dimension, and element limit because they will be determined from the data
+        # skipping dataset_name - using channel name instead
 
         self._channels.append(ch)
         self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
@@ -117,6 +150,27 @@ class DLISFile:
             index_min: Optional[Union[int, float]] = None,
             index_max: Optional[Union[int, float]] = None
     ) -> FrameObject:
+        """Define a frame (FrameObject) and add it to the DLIS.
+
+        Args:
+            name        :   Name of the frame.
+            channels    :   Channels associated with the frame.
+            description :   Description of the frame.
+            index_type  :   Description of the type of data defining the frame index.
+            direction   :   Indication of whether the index has increasing or decreasing values. Allowed values:
+                            'INCREASING', 'DECREASING'.
+            spacing     :   Spacing between consecutive values in the frame index.
+            encrypted   :   Indication whether the frame is encrypted (0 if not, 1 if yes).
+            index_min   :   Minimum value of the frame index.
+            index_max   :   Maximum value of the frame index.
+
+        Note:
+            Values: direction, spacing, index_min, and index_max are automatically determined if not provided.
+            However, in some cases it might be beneficial - and more accurate - to explicitly specify these values.
+
+        Returns:
+            A configured FrameObject instance, added to the DLIS.
+        """
 
         if not isinstance(channels, (list, tuple)):
             raise TypeError(f"Expected a list or tuple of channels, got {type(channels)}: {channels}")
@@ -143,13 +197,16 @@ class DLISFile:
         self._frames.append(fr)
         return fr
 
-    def _make_multi_frame_data(self, fr: FrameObject, **kwargs):
+    def _make_multi_frame_data(self, fr: FrameObject, **kwargs) -> MultiFrameData:
+        """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
+
         name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}
         data_object = DictInterface(self._data_dict, mapping=name_mapping)
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 
-    def make_file_logical_records(self, chunk_size: Optional[int] = None):
+    def make_file_logical_records(self, chunk_size: Optional[int] = None) -> FileLogicalRecords:
+        """Create an iterable object of logical records to become part of the created DLIS file."""
 
         flr = FileLogicalRecords(
             sul=self._sul,
@@ -175,7 +232,6 @@ class DLISFile:
             visible_record_length   :   Maximal length of visible records to be created in the file.
             input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
             output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
-
         """
 
         def timed_func():
