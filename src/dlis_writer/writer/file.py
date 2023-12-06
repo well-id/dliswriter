@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Union, Optional
 import numpy as np
 import os
@@ -12,6 +13,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, 
 from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
+from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -222,6 +224,42 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_zone(
+            self,
+            name: str,
+            description: str = None,
+            domain: str = None,
+            maximum: Union[datetime.datetime, int, float] = None,
+            minimum: Union[datetime.datetime, int, float] = None
+    ) -> ZoneObject:
+        """Create a zone (ZoneObject) and add it to the DLIS.
+
+        Args:
+            name        :   Name of the zone.
+            description :   Description of the zone.
+            domain      :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+            maximum     :   Maximum of the zone.
+            minimum     :   Minimum of the zone.
+
+        Note:
+            Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,
+            they should be floats.
+
+        Returns:
+            A configured zone, added to the DLIS.
+        """
+
+        z = Zone.make_object(
+            name=name,
+            description=description,
+            domain=domain,
+            maximum=maximum,
+            minimum=minimum
+        )
+
+        self._other.append(z)
+        return z
 
     def _make_multi_frame_data(self, fr: FrameObject, **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""

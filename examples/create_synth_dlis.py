@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import numpy as np
 import logging
 
@@ -44,6 +45,13 @@ n_rows_time = 200
 ch4 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s', axis=ax2)  # index channel for frame 2
 ch5 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
 second_frame = df.add_frame('TIME FRAME', channels=(ch4, ch5), index_type='NONSTANDARD')
+
+
+# define zones
+z1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
+dt = datetime.now()
+z2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt-timedelta(hours=3), maximum=dt-timedelta(minutes=30))
+z3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20)
 
 
 # write the file
