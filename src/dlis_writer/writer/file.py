@@ -9,7 +9,7 @@ from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
-from dlis_writer.logical_record.eflr_types.axis import AxisObject
+from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
@@ -90,6 +90,32 @@ class DLISFile:
         """Frames defined for the DLIS."""
 
         return self._frames
+
+    def add_axis(
+            self,
+            name: str,
+            axis_id: str = None,
+            coordinates: list[Union[int, float, str]] = None,
+            spacing: Union[int, float] = None
+    ) -> AxisObject:
+        """Define an axis (AxisObject) and add it to the DLIS.
+
+        Args:
+            name        :   Name of the axis.
+            axis_id     :   ID of the axis.
+            coordinates :   List of coordinates of the axis.
+            spacing     :   Spacing of the axis.
+        """
+
+        ax = Axis.make_object(
+            name=name,
+            axis_id=axis_id,
+            coordinates=coordinates,
+            spacing=spacing
+        )
+
+        self._other.append(ax)
+        return ax
 
     def add_channel(
             self,
@@ -220,6 +246,7 @@ class DLISFile:
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
         flr.add_frame_data_objects(*(self._make_multi_frame_data(fr, chunk_size=chunk_size) for fr in self._frames))
+        flr.add_logical_records(*get_parents(self._other))
 
         return flr
 

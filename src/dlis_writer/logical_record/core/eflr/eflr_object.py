@@ -113,3 +113,30 @@ class EFLRObject:
 
             logger.debug(f"Setting attribute '{attr_name}' of {self} to {repr(attr_value)}")
             setattr(attr, attr_part, attr_value)
+
+    @classmethod
+    def convert_maybe_numeric(cls, val: Union[str, int, float]) -> Union[str, int, float]:
+        """Try converting a value to a number. If that fails, return the value unchanged."""
+
+        if isinstance(val, (int, float)):
+            return val
+
+        if not isinstance(val, str):
+            raise TypeError(f"Expected an int, float, or str; got {type(val)}: {val}")
+        try:
+            return cls.convert_numeric(val)
+        except ValueError:
+            pass
+        return val
+
+    @staticmethod
+    def convert_numeric(value: str) -> Union[int, float, str]:
+        """Convert a string to an integer or float."""
+
+        parser = float if '.' in value else int
+
+        try:
+            value = parser(value)
+        except ValueError:
+            raise ValueError(f"Value '{value}' could not be converted to a numeric type")
+        return value

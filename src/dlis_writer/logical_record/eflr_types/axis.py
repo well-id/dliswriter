@@ -18,7 +18,8 @@ class AxisObject(EFLRObject):
         """
 
         self.axis_id = Attribute('axis_id', representation_code=RepC.IDENT, parent_eflr=self)
-        self.coordinates = NumericAttribute('coordinates', multivalued=True, parent_eflr=self)
+        self.coordinates = Attribute('coordinates', multivalued=True, parent_eflr=self,
+                                     converter=self.convert_maybe_numeric)
         self.spacing = NumericAttribute('spacing', parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
