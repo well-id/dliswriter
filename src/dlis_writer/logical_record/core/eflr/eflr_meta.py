@@ -56,24 +56,8 @@ class EFLRMeta(LRMeta):
 
         return list(cls._instance_dict.values())
 
-    def make_object(cls, name: str, set_name: Optional[str] = None, **kwargs) -> "Self.object_type":
-        """Create an EFLRObject corresponding to the given (sub)class of EFLR.
-
-        Args:
-            name        :   Name of the EFLRObject instance (e.g. channel name).
-            set_name    :   Name of the set the EFLRObject belongs to, i.e. name identifying the EFLR subclass instance.
-            **kwargs      :   Keyword arguments passed to initialisation of the EFLRObject.
-
-        Returns:
-            The created EFLRObject instance.
-        """
-
-        eflr_instance = cls.get_or_make_eflr(set_name=set_name)
-
-        return eflr_instance.make_object_in_this_set(name, **kwargs)
-
-    def make_object_from_config(cls, config: ConfigParser, key: Optional[str] = None, get_if_exists: bool = False) \
-            -> "Self.object_type":
+    def make_object_from_config(cls, config: ConfigParser, key: Optional[str] = None, get_if_exists: bool = False,
+                                set_name: Optional[str] = None) -> "Self.object_type":
         """Create an EFLRObject instance based on information found in the config object.
 
         Args:
@@ -84,6 +68,9 @@ class EFLRMeta(LRMeta):
             get_if_exists   :   If True and an EFLRObject identified by this section name already exists in the instance
                                 dictionary of the given EFLR subclass instance, return that EFLRObject. Otherwise,
                                 create a new one, overwriting the existing one in the dictionary.
+            set_name        :   Name of the set the EFLRObject belongs to, i.e. name identifying the EFLR subclass
+                                instance.
+
 
         Returns:
             The created/retrieved EFLRObject instance.
@@ -101,7 +88,8 @@ class EFLRMeta(LRMeta):
 
         other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
-        obj = cls.make_object(config[key][name_key], **other_kwargs, get_if_exists=get_if_exists)
+        eflr_instance = cls.get_or_make_eflr(set_name=set_name)
+        obj = eflr_instance.make_object_in_this_set(config[key][name_key], **other_kwargs, get_if_exists=get_if_exists)
 
         for attr in obj.attributes.values():
             if hasattr(attr, 'finalise_from_config'):  # EFLRAttribute; cannot be imported here - circular import issue
