@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC

@@ -60,5 +60,11 @@ splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch4
 splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zones=(zone2, zone3))
 
 
+# parameters - using zones and axes
+parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1, zones=(zone1,), values=[1, 2, 3.3])
+parameter1.values.unit = 'in'
+parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3), values=["val1", "val2", "val3"], dimension=[3])
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

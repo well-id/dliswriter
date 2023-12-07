@@ -13,6 +13,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, 
 from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
+from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
 from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
 from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
@@ -225,6 +226,41 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_parameter(
+            self,
+            name: str,
+            long_name: str = None,
+            dimension: list[int] = None,
+            axis: AxisObject = None,
+            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None,
+            values: Union[list[int], list[float], list[str]] = None
+    ) -> ParameterObject:
+        """Create a parameter.
+
+        Args:
+            name        :   Name of the parameter.
+            long_name   :   Description of the parameter.
+            dimension   :   Dimension of the parameter.
+            axis        :   Axis associated with the parameter.
+            zones       :   Zones the parameter is defined for.
+            values      :   Values of the parameter - numerical or textual.
+
+        Returns:
+            A configured ParameterObject instance.
+        """
+
+        p = Parameter.make_object(
+            name=name,
+            long_name=long_name,
+            dimension=dimension,
+            axis=axis,
+            zones=zones,
+            values=values
+        )
+
+        self._other.append(p)
+        return p
 
     def add_splice(
             self,
