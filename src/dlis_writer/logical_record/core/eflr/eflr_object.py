@@ -35,6 +35,7 @@ class EFLRObject:
 
         self.name = name    #: name of the object
         self.parent = self._get_parent(parent=parent, set_name=set_name)  #: EFLR instance this object belongs to
+        self.parent.register_child(self)
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self.copy_number = 0            #: copy number of the object
