@@ -13,7 +13,7 @@ class GroupObject(EFLRObject):
 
     parent: "Group"
 
-    def __init__(self, name: str, parent: "Group", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise GroupObject.
 
         Args:
@@ -27,7 +27,7 @@ class GroupObject(EFLRObject):
         self.object_list = EFLRAttribute('object_list', multivalued=True, parent_eflr=self)
         self.group_list = EFLRAttribute('group_list', object_class=Group, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Group(EFLR):
@@ -36,3 +36,6 @@ class Group(EFLR):
     set_type = 'GROUP'
     logical_record_type = EFLRType.STATIC
     object_type = GroupObject
+
+
+GroupObject.parent_eflr_class = Group

@@ -112,6 +112,20 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return bts
 
+    def register_child(self, child: EFLRObject):
+        """Register a child EFLRObject with this EFLR."""
+
+        if not isinstance(child, self.object_type):
+            raise TypeError(f"Expected an instance of {self.object_type}; got {type(child)}: {child}")
+
+        self._object_dict[child.name] = child
+
+        if len(self._object_dict) == 1:
+            for attr_name, attr in child.attributes.items():
+                self._attributes[attr_name] = attr.copy()
+
+        child.origin_reference = self.origin_reference
+
     def make_object_in_this_set(self, name: str, get_if_exists: bool = False, **kwargs) -> EFLRObject:
         """Make an EFLRObject according the specifications and register it with this EFLR instance.
 
@@ -126,14 +140,9 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         if get_if_exists and name in self._object_dict:
             return self._object_dict[name]
 
-        obj = self.object_type(name, self, **kwargs)
-        self._object_dict[name] = obj
+        obj = self.object_type(name, parent=self, **kwargs)
 
-        if len(self._object_dict) == 1:
-            for attr_name, attr in obj.attributes.items():
-                self._attributes[attr_name] = attr.copy()
-
-        obj.origin_reference = self.origin_reference
+        self.register_child(obj)
 
         return obj
 

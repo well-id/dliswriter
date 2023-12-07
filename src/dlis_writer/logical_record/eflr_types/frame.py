@@ -26,12 +26,11 @@ class FrameObject(EFLRObject):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, parent: "Frame", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise FrameObject.
 
         Args:
             name        :   Name of the FrameObject.
-            parent      :   Frame EFLR instance this FrameObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the FrameObject Attributes.
         """
 
@@ -46,7 +45,7 @@ class FrameObject(EFLRObject):
         self.index_min = NumericAttribute('index_min', parent_eflr=self)
         self.index_max = NumericAttribute('index_max', parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
     @classmethod
     def parse_index_type(cls, value: str) -> str:
@@ -136,3 +135,6 @@ class Frame(EFLR):
     set_type = 'FRAME'
     logical_record_type = EFLRType.FRAME
     object_type = FrameObject
+
+
+FrameObject.parent_eflr_class = Frame

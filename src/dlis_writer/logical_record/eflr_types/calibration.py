@@ -16,12 +16,11 @@ class CalibrationMeasurementObject(EFLRObject):
 
     parent: "CalibrationMeasurement"
 
-    def __init__(self, name: str, parent: "CalibrationMeasurement", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise CalibrationMeasurementObject.
 
         Args:
             name        :   Name of the CalibrationMeasurementObject.
-            parent      :   CalibrationMeasurement EFLR instance this CalibrationMeasurementObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementObject Attributes.
         """
 
@@ -42,7 +41,7 @@ class CalibrationMeasurementObject(EFLRObject):
         self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True, parent_eflr=self)
         self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class CalibrationMeasurement(EFLR):
@@ -58,12 +57,11 @@ class CalibrationCoefficientObject(EFLRObject):
 
     parent: "CalibrationCoefficient"
 
-    def __init__(self, name: str, parent: "CalibrationCoefficient", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise CalibrationCoefficientObject.
 
         Args:
             name        :   Name of the CalibrationCoefficientObject.
-            parent      :   CalibrationCoefficient EFLR instance this CalibrationCoefficientObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientObject Attributes.
         """
 
@@ -73,7 +71,7 @@ class CalibrationCoefficientObject(EFLRObject):
         self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True, parent_eflr=self)
         self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class CalibrationCoefficient(EFLR):
@@ -89,12 +87,11 @@ class CalibrationObject(EFLRObject):
 
     parent: "Calibration"
 
-    def __init__(self, name: str, parent: "Calibration", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise CalibrationObject.
 
         Args:
             name        :   Name of the CalibrationObject.
-            parent      :   Calibration EFLR instance this CalibrationObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the CalibrationObject Attributes.
         """
 
@@ -109,7 +106,7 @@ class CalibrationObject(EFLRObject):
         self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True, parent_eflr=self)
         self.method = Attribute('method', representation_code=RepC.IDENT, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Calibration(EFLR):
@@ -118,3 +115,8 @@ class Calibration(EFLR):
     set_type = 'CALIBRATION'
     logical_record_type = EFLRType.STATIC
     object_type = CalibrationObject
+
+
+CalibrationMeasurementObject.parent_eflr_class = CalibrationMeasurement
+CalibrationCoefficientObject.parent_eflr_class = CalibrationCoefficient
+CalibrationObject.parent_eflr_class = Calibration

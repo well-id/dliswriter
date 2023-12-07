@@ -15,12 +15,11 @@ class ComputationObject(EFLRObject):
 
     parent: "Computation"
 
-    def __init__(self, name: str, parent: "Computation", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise ComputationObject.
 
         Args:
             name            :   Name of the ComputationObject.
-            parent          :   Computation EFLR instance this ComputationObject belongs to.
             **kwargs        :   Values of to be set as characteristics of the ComputationObject Attributes.
         """
 
@@ -32,7 +31,7 @@ class ComputationObject(EFLRObject):
         self.values = NumericAttribute('values', multivalued=True, parent_eflr=self)
         self.source = EFLRAttribute('source', parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
         self._set_defaults()
         self.check_values_and_zones()
@@ -58,3 +57,6 @@ class Computation(EFLR):
     set_type = 'COMPUTATION'
     logical_record_type = EFLRType.STATIC
     object_type = ComputationObject
+
+
+ComputationObject.parent_eflr_class = Computation

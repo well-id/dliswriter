@@ -19,12 +19,11 @@ class ChannelObject(EFLRObject):
 
     parent: "Channel"
 
-    def __init__(self, name, parent: "Channel", dataset_name: Optional[str] = None, **kwargs):
+    def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
         """Initialise ChannelObject.
 
         Args:
             name            :   Name of the ChannelObject.
-            parent          :   Channel EFLR instance this ChannelObject belongs to.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataObject.
             **kwargs        :   Values of to be set as characteristics of the ChannelObject Attributes.
         """
@@ -47,7 +46,7 @@ class ChannelObject(EFLRObject):
 
         self._dataset_name: Union[str, None] = dataset_name
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
         self.set_defaults()
 
@@ -157,3 +156,6 @@ class Channel(EFLR):
     set_type = 'CHANNEL'
     logical_record_type = EFLRType.CHANNL
     object_type = ChannelObject
+
+
+ChannelObject.parent_eflr_class = Channel

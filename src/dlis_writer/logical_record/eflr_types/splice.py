@@ -15,12 +15,11 @@ class SpliceObject(EFLRObject):
 
     parent: "Splice"
 
-    def __init__(self, name: str, parent: "Splice", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise SpliceObject.
 
         Args:
             name        :   Name of the SpliceObject.
-            parent      :   Splice EFLR instance this SpliceObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the SpliceObject Attributes.
         """
 
@@ -28,7 +27,7 @@ class SpliceObject(EFLRObject):
         self.input_channels = EFLRAttribute('input_channels', object_class=Channel, multivalued=True, parent_eflr=self)
         self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Splice(EFLR):
@@ -37,3 +36,6 @@ class Splice(EFLR):
     set_type = 'SPLICE'
     logical_record_type = EFLRType.STATIC
     object_type = SpliceObject
+
+
+SpliceObject.parent_eflr_class = Splice

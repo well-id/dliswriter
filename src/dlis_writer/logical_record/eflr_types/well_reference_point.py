@@ -8,12 +8,11 @@ class WellReferencePointObject(EFLRObject):
 
     parent: "WellReferencePoint"
 
-    def __init__(self, name: str, parent: "WellReferencePoint", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise WellReferencePointObject.
 
         Args:
             name        :   Name of the WellReferencePointObject.
-            parent      :   WellReferencePoint EFLR instance this WellReferencePointObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the WellReferencePointObject Attributes.
         """
 
@@ -40,7 +39,7 @@ class WellReferencePointObject(EFLRObject):
         self.coordinate_3_value = NumericAttribute(
             'coordinate_3_value', representation_code=RepC.FDOUBL, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class WellReferencePoint(EFLR):
@@ -49,3 +48,6 @@ class WellReferencePoint(EFLR):
     set_type = 'WELL-REFERENCE'
     logical_record_type = EFLRType.OLR
     object_type = WellReferencePointObject
+
+
+WellReferencePointObject.parent_eflr_class = WellReferencePoint

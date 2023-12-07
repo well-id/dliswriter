@@ -8,12 +8,11 @@ class AxisObject(EFLRObject):
 
     parent: "Axis"
 
-    def __init__(self, name: str, parent: "Axis", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise AxisObject.
 
         Args:
             name        :   Name of the AxisObject.
-            parent      :   Axis EFLR instance this AxisObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the AxisObject Attributes.
         """
 
@@ -22,7 +21,7 @@ class AxisObject(EFLRObject):
                                      converter=self.convert_maybe_numeric)
         self.spacing = NumericAttribute('spacing', parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Axis(EFLR):
@@ -32,3 +31,5 @@ class Axis(EFLR):
     logical_record_type = EFLRType.AXIS
     object_type = AxisObject
 
+
+AxisObject.parent_eflr_class = Axis
