@@ -126,7 +126,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         if get_if_exists and name in self._object_dict:
             return self._object_dict[name]
 
-        obj = self.object_type(name, self, **kwargs)
+        obj = self.object_type(name, parent=self, **kwargs)
         self._object_dict[name] = obj
 
         if len(self._object_dict) == 1:

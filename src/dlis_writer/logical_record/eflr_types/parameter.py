@@ -15,12 +15,11 @@ class ParameterObject(EFLRObject):
 
     parent: "Parameter"
     
-    def __init__(self, name: str, parent: "Parameter", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise ParameterObject.
 
         Args:
             name        :   Name of the ParameterObject.
-            parent      :   Parameter EFLR instance this ParameterObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the ParameterObject Attributes.
         """
 
@@ -30,7 +29,7 @@ class ParameterObject(EFLRObject):
         self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
         self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
         self._set_defaults()
 
@@ -49,3 +48,5 @@ class Parameter(EFLR):
     logical_record_type = EFLRType.STATIC
     object_type = ParameterObject
 
+
+ParameterObject.parent_eflr_class = Parameter

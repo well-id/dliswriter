@@ -14,12 +14,11 @@ class OriginObject(EFLRObject):
 
     parent: "Origin"
 
-    def __init__(self, name: str, parent: "Origin", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise OriginObject.
 
         Args:
             name        :   Name of the OriginObject.
-            parent      :   Origin EFLR instance this OriginObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the OriginObject Attributes.
         """
 
@@ -49,7 +48,7 @@ class OriginObject(EFLRObject):
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             kwargs["creation_time"] = datetime.now()
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Origin(EFLR):
@@ -58,3 +57,6 @@ class Origin(EFLR):
     set_type = 'ORIGIN'
     logical_record_type = EFLRType.OLR
     object_type = OriginObject
+
+
+OriginObject.parent_eflr_class = Origin

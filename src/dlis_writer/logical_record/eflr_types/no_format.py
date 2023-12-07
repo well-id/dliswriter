@@ -8,19 +8,18 @@ class NoFormatObject(EFLRObject):
 
     parent: "NoFormat"
 
-    def __init__(self, name: str, parent: "NoFormat", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise NoFormatObject.
 
         Args:
             name        :   Name of the NoFormatObject.
-            parent      :   NoFormat EFLR instance this NoFormatObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the NoFormatObject Attributes.
         """
 
         self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT, parent_eflr=self)
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class NoFormat(EFLR):
@@ -29,3 +28,6 @@ class NoFormat(EFLR):
     set_type = 'NO-FORMAT'
     logical_record_type = EFLRType.UDI
     object_type = NoFormatObject
+
+
+NoFormatObject.parent_eflr_class = NoFormat

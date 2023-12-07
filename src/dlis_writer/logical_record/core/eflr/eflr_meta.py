@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Optional, Union
 from typing_extensions import Self
 
 from dlis_writer.logical_record.core.logical_record import LRMeta
-from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr import EFLR

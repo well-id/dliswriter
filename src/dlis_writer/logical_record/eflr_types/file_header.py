@@ -16,12 +16,11 @@ class FileHeaderObject(EFLRObject):
 
     identifier_length_limit = 65    #: max length of the file header name
 
-    def __init__(self, identifier: str, parent: "FileHeader", sequence_number: int = 1, **kwargs):
+    def __init__(self, identifier: str, sequence_number: int = 1, **kwargs):
         """Initialise FileHeaderObject.
 
         Args:
             identifier      :   Name of the FileHeaderObject.
-            parent          :   FileHeader EFLR instance this FileHeaderObject belongs to.
             sequence_number :   Sequence number of the file.
             **kwargs        :   Values of to be set as characteristics of the FileHeaderObject Attributes.
         """
@@ -34,7 +33,7 @@ class FileHeaderObject(EFLRObject):
         if len(identifier) > self.identifier_length_limit:
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
 
-        super().__init__(name='0', parent=parent, **kwargs)
+        super().__init__(name='0', **kwargs)
 
     def _make_attrs_bytes(self) -> bytes:
         """Create bytes describing the values of attributes of FIleHeaderObject."""
@@ -73,3 +72,5 @@ class FileHeader(EFLR):
 
         return bts
 
+
+FileHeaderObject.parent_eflr_class = FileHeader

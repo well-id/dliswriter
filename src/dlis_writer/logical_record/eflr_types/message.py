@@ -8,12 +8,11 @@ class MessageObject(EFLRObject):
 
     parent: "Message"
 
-    def __init__(self, name: str, parent: "Message", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise MessageObject.
 
         Args:
             name        :   Name of the MessageObject.
-            parent      :   Message EFLR instance this MessageObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the MessageObject Attributes.
         """
 
@@ -25,7 +24,7 @@ class MessageObject(EFLRObject):
         self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
         self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Message(EFLR):
@@ -41,18 +40,17 @@ class CommentObject(EFLRObject):
 
     parent: "Comment"
 
-    def __init__(self, name: str, parent: "Comment", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise CommentObject.
 
         Args:
             name        :   Name of the CommentObject.
-            parent      :   Comment EFLR instance this CommentObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the CommentObject Attributes.
         """
 
         self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Comment(EFLR):
@@ -61,3 +59,7 @@ class Comment(EFLR):
     set_type = 'COMMENT'
     logical_record_type = EFLRType.SCRIPT
     object_type = CommentObject
+
+
+MessageObject.parent_eflr_class = Message
+CommentObject.parent_eflr_class = Comment

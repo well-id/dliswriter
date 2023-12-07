@@ -16,12 +16,11 @@ class PathObject(EFLRObject):
 
     parent: "Path"
 
-    def __init__(self, name: str, parent: "Path", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise PathObject.
 
         Args:
             name        :   Name of the PathObject.
-            parent      :   Path EFLR instance this PathObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the PathObject Attributes.
         """
 
@@ -38,7 +37,7 @@ class PathObject(EFLRObject):
         self.measure_point_offset = NumericAttribute('measure_point_offset', parent_eflr=self)
         self.tool_zero_offset = NumericAttribute('tool_zero_offset', parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Path(EFLR):
@@ -47,3 +46,6 @@ class Path(EFLR):
     set_type = 'PATH'
     logical_record_type = EFLRType.FRAME
     object_type = PathObject
+
+
+PathObject.parent_eflr_class = Path

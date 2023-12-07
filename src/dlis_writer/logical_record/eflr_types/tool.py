@@ -16,12 +16,11 @@ class ToolObject(EFLRObject):
 
     parent: "Tool"
 
-    def __init__(self, name: str, parent: "Tool", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise ToolObject.
 
         Args:
             name        :   Name of the ToolObject.
-            parent      :   Tool EFLR instance this ToolObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the ToolObject Attributes.
         """
 
@@ -33,7 +32,7 @@ class ToolObject(EFLRObject):
         self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True, parent_eflr=self)
         self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Tool(EFLR):
@@ -42,3 +41,6 @@ class Tool(EFLR):
     set_type = 'TOOL'
     logical_record_type = EFLRType.STATIC
     object_type = ToolObject
+
+
+ToolObject.parent_eflr_class = Tool

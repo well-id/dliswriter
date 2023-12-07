@@ -8,12 +8,11 @@ class LongNameObject(EFLRObject):
 
     parent: "LongName"
 
-    def __init__(self, name: str, parent: "LongName", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise LongNameObject.
 
         Args:
             name        :   Name of the LongNameObject.
-            parent      :   LongName EFLR instance this LongNameObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the LongNameObject Attributes.
         """
 
@@ -37,7 +36,7 @@ class LongNameObject(EFLRObject):
         self.standard_symbol = Attribute('standard_symbol', representation_code=RepC.ASCII, parent_eflr=self)
         self.private_symbol = Attribute('private_symbol', representation_code=RepC.ASCII, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class LongName(EFLR):
@@ -46,3 +45,6 @@ class LongName(EFLR):
     set_type = 'LONG-NAME'
     logical_record_type = EFLRType.LNAME
     object_type = LongNameObject
+
+
+LongNameObject.parent_eflr_class = LongName

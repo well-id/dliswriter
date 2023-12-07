@@ -18,12 +18,11 @@ class ProcessObject(EFLRObject):
 
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
-    def __init__(self, name: str, parent: "Process", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise ProcessObject.
 
         Args:
             name        :   Name of the ProcessObject.
-            parent      :   Process EFLR instance this ProcessObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the ProcessObject Attributes.
         """
 
@@ -43,7 +42,7 @@ class ProcessObject(EFLRObject):
         self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True, parent_eflr=self)
         self.comments = Attribute('comments', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
     @classmethod
     def check_status(cls, status):
@@ -58,3 +57,6 @@ class Process(EFLR):
     set_type = 'PROCESS'
     logical_record_type = EFLRType.STATIC
     object_type = ProcessObject
+
+
+ProcessObject.parent_eflr_class = Process

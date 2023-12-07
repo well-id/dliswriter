@@ -8,12 +8,11 @@ class EquipmentObject(EFLRObject):
 
     parent: "Equipment"
 
-    def __init__(self, name: str, parent: "Equipment", **kwargs):
+    def __init__(self, name: str, **kwargs):
         """Initialise EquipmentObject.
 
         Args:
             name        :   Name of the EquipmentObject.
-            parent      :   Equipment EFLR instance this EquipmentObject belongs to.
             **kwargs    :   Values of to be set as characteristics of the EquipmentObject Attributes.
         """
 
@@ -35,7 +34,7 @@ class EquipmentObject(EFLRObject):
         self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
         self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
 
-        super().__init__(name, parent, **kwargs)
+        super().__init__(name, **kwargs)
 
 
 class Equipment(EFLR):
@@ -45,3 +44,5 @@ class Equipment(EFLR):
     logical_record_type = EFLRType.STATIC
     object_type = EquipmentObject
 
+
+EquipmentObject.parent_eflr_class = Equipment

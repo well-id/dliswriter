@@ -1,6 +1,6 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union
+from typing import TYPE_CHECKING, Any, Union, Optional
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
@@ -15,12 +15,15 @@ logger = logging.getLogger(__name__)
 class EFLRObject:
     """Model an object belonging to an Explicitly Formatted Logical Record - e.g. a particular channel."""
 
-    def __init__(self, name: str, parent: "EFLR", **kwargs):
+    parent_eflr_class: type["EFLR"] = NotImplemented
+
+    def __init__(self, name: str, parent: Optional["EFLR"] = None, set_name: Optional[str] = None, **kwargs):
         """Initialise an EFLRObject.
 
         Args:
             name        :   Name of the object. This will be the name it is stored with in the created DLIS file.
-            parent      :   EFLR instance this object belongs to.
+            parent      :   EFLR instance this object belongs to. If not provided, retrieved/made based on set_name.
+            set_name    :   Set name of the parent EFLR instance.
             **kwargs    :   Values to be set in attributes of this object.
 
         Note:
@@ -30,13 +33,38 @@ class EFLRObject:
 
         """
 
-        self.name = name                #: name of the object
-        self.parent = parent            #: EFLR instance this object belongs to
+        self.name = name    #: name of the object
+        self.parent = self._get_parent(parent=parent, set_name=set_name)  #: EFLR instance this object belongs to
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self.copy_number = 0            #: copy number of the object
 
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
+
+    @classmethod
+    def _get_parent(cls, parent: Optional["EFLR"] = None, set_name: Optional[str] = None) -> "EFLR":
+        """Validate, retrieve, or create a parent EFLR instance.
+
+        Args:
+            parent      :   Parent EFLR instance. If not provided, set_name will be used to retrieve/make one.
+            set_name    :   Set name of the parent EFLR instance. If parent is provided, it is checked against its
+                            set_name.
+
+        Returns:
+            The parent EFLR instance.
+        """
+
+        if parent is not None:
+            if not isinstance(parent, cls.parent_eflr_class):
+                raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
+                                f"got a {type(parent)}: {parent}")
+            if parent.set_name != set_name and set_name is not None:
+                raise ValueError(f"The provided set name: {set_name} does not match the set name of the "
+                                 f"provided parent EFLR: {parent.set_name}")
+
+            return parent
+
+        return cls.parent_eflr_class.get_or_make_eflr(set_name=set_name)
 
     @property
     def attributes(self) -> dict[str, Attribute]:
