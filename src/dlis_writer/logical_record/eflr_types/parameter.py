@@ -1,5 +1,4 @@
 import logging
-from typing import Union
 
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
@@ -29,7 +28,7 @@ class ParameterObject(EFLRObject):
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
         self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
-        self.values = Attribute('values', converter=self.convert_value, multivalued=True, parent_eflr=self)
+        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
 
@@ -41,28 +40,6 @@ class ParameterObject(EFLRObject):
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
             self.dimension.value = [1]
-
-    @classmethod
-    def convert_value(cls, val: str) -> Union[str, int, float]:
-        """Try converting a value to a number. If that fails, return the value unchanged."""
-
-        try:
-            return cls.convert_numeric(val)
-        except ValueError:
-            pass
-        return val
-
-    @staticmethod
-    def convert_numeric(value: str) -> Union[int, float, str]:
-        """Convert a string to an integer or float."""
-
-        parser = float if '.' in value else int
-
-        try:
-            value = parser(value)
-        except ValueError:
-            raise ValueError(f"Value '{value}' could not be converted to a numeric type")
-        return value
 
 
 class Parameter(EFLR):

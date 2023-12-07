@@ -1,3 +1,4 @@
+import datetime
 from typing import Any, Union, Optional
 import numpy as np
 import os
@@ -7,11 +8,15 @@ import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
-from dlis_writer.logical_record.eflr_types.axis import AxisObject
+from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
+from dlis_writer.logical_record.eflr_types.equipment import Equipment, EquipmentObject
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
+from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
+from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
+from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
+from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -21,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 kwargs_type = dict[str, Any]
+number_type = Union[int, float]
 
 
 class DLISFile:
@@ -91,6 +97,32 @@ class DLISFile:
 
         return self._frames
 
+    def add_axis(
+            self,
+            name: str,
+            axis_id: str = None,
+            coordinates: list[Union[int, float, str]] = None,
+            spacing: number_type = None
+    ) -> AxisObject:
+        """Define an axis (AxisObject) and add it to the DLIS.
+
+        Args:
+            name        :   Name of the axis.
+            axis_id     :   ID of the axis.
+            coordinates :   List of coordinates of the axis.
+            spacing     :   Spacing of the axis.
+        """
+
+        ax = Axis.make_object(
+            name=name,
+            axis_id=axis_id,
+            coordinates=coordinates,
+            spacing=spacing
+        )
+
+        self._other.append(ax)
+        return ax
+
     def add_channel(
             self,
             name: str,
@@ -137,6 +169,77 @@ class DLISFile:
         self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
 
         return ch
+
+    def add_equipment(
+            self,
+            name: str,
+            trademark_name: str = None,
+            status: int = None,
+            eq_type: str = None,
+            serial_number: str = None,
+            location: str = None,
+            height: number_type = None,
+            length: number_type = None,
+            minimum_diameter: number_type = None,
+            maximum_diameter: number_type = None,
+            volume: number_type = None,
+            weight: number_type = None,
+            hole_size: number_type = None,
+            pressure: number_type = None,
+            temperature: number_type = None,
+            vertical_depth: number_type = None,
+            radial_drift: number_type = None,
+            angular_drift: number_type = None
+    ) -> EquipmentObject:
+        """Define an equipment object.
+
+        Args:
+            name                :   Name of the equipment.
+            trademark_name      :   Trademark name.
+            status              :   Status of the equipment: integer, 1 or 0.
+            eq_type             :   Type of the equipment.
+            serial_number       :   Serial number of the equipment.
+            location            :   Location of the equipment.
+            height              :   Height.
+            length              :   Length.
+            minimum_diameter    :   Maximum diameter.
+            maximum_diameter    :   Minimum diameter.
+            volume              :   Volume.
+            weight              :   Weight of the equipment.
+            hole_size           :   Hole size.
+            pressure            :   Pressure.
+            temperature         :   Temperature.
+            vertical_depth      :   Vertical depth.
+            radial_drift        :   Radial drift.
+            angular_drift       :   Angular drift.
+
+        Returns:
+            A configured EquipmentObject instance.
+        """
+
+        eq = Equipment.make_object(
+            name=name,
+            trademark_name=trademark_name,
+            status=status,
+            _type=eq_type,
+            serial_number=serial_number,
+            location=location,
+            height=height,
+            length=length,
+            minimum_diameter=minimum_diameter,
+            maximum_diameter=maximum_diameter,
+            volume=volume,
+            weight=weight,
+            hole_size=hole_size,
+            pressure=pressure,
+            temperature=temperature,
+            vertical_depth=vertical_depth,
+            radial_drift=radial_drift,
+            angular_drift=angular_drift
+        )
+
+        self._other.append(eq)
+        return eq
 
     def add_frame(
             self,
@@ -197,6 +300,105 @@ class DLISFile:
         self._frames.append(fr)
         return fr
 
+    def add_parameter(
+            self,
+            name: str,
+            long_name: str = None,
+            dimension: list[int] = None,
+            axis: AxisObject = None,
+            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None,
+            values: Union[list[int], list[float], list[str]] = None
+    ) -> ParameterObject:
+        """Create a parameter.
+
+        Args:
+            name        :   Name of the parameter.
+            long_name   :   Description of the parameter.
+            dimension   :   Dimension of the parameter.
+            axis        :   Axis associated with the parameter.
+            zones       :   Zones the parameter is defined for.
+            values      :   Values of the parameter - numerical or textual.
+
+        Returns:
+            A configured ParameterObject instance.
+        """
+
+        p = Parameter.make_object(
+            name=name,
+            long_name=long_name,
+            dimension=dimension,
+            axis=axis,
+            zones=zones,
+            values=values
+        )
+
+        self._other.append(p)
+        return p
+
+    def add_splice(
+            self,
+            name: str,
+            output_channel: ChannelObject = None,
+            input_channels: Union[list[ChannelObject], tuple[ChannelObject, ...]] = None,
+            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None
+    ) -> SpliceObject:
+        """Create a splice object.
+
+        Args:
+            name            :   Name of the splice.
+            output_channel  :   Output of the splice.
+            input_channels  :   Input of the splice.
+            zones           :   Zones the splice is defined for.
+
+        Returns:
+            A configured splice.
+        """
+
+        sp = Splice.make_object(
+            name=name,
+            output_channel=output_channel,
+            input_channels=input_channels,
+            zones=zones
+        )
+        self._other.append(sp)
+        return sp
+
+    def add_zone(
+            self,
+            name: str,
+            description: str = None,
+            domain: str = None,
+            maximum: Union[datetime.datetime, int, float] = None,
+            minimum: Union[datetime.datetime, int, float] = None
+    ) -> ZoneObject:
+        """Create a zone (ZoneObject) and add it to the DLIS.
+
+        Args:
+            name        :   Name of the zone.
+            description :   Description of the zone.
+            domain      :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+            maximum     :   Maximum of the zone.
+            minimum     :   Minimum of the zone.
+
+        Note:
+            Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,
+            they should be floats.
+
+        Returns:
+            A configured zone, added to the DLIS.
+        """
+
+        z = Zone.make_object(
+            name=name,
+            description=description,
+            domain=domain,
+            maximum=maximum,
+            minimum=minimum
+        )
+
+        self._other.append(z)
+        return z
+
     def _make_multi_frame_data(self, fr: FrameObject, **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
@@ -220,11 +422,12 @@ class DLISFile:
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
         flr.add_frame_data_objects(*(self._make_multi_frame_data(fr, chunk_size=chunk_size) for fr in self._frames))
+        flr.add_logical_records(*get_parents(self._other))
 
         return flr
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
-              input_chunk_size: Optional[int] = None, output_chunk_size: Union[int, float] = 2**32):
+              input_chunk_size: Optional[int] = None, output_chunk_size: number_type = 2**32):
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -249,14 +452,15 @@ class DLISFile:
 
 
 if __name__ == '__main__':
-    orig = Origin.make_object("DEFAULT ORIGIN", file_set_number=1, company="XXX")
-    df = DLISFile(origin=orig, file_header={'sequence_number': 2})
-    df.origin.order_number.value = "352"
+    # basic example for creating a DLIS file
+    # for a more advanced example, see dlis-writer/examples/create_synth_dlis.py
 
-    size = 100
-    ch1 = df.add_channel('DEPTH', data=np.arange(size)/10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(size) % 10).astype(float))
-    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(size, 5))
+    df = DLISFile()
+
+    n_rows = 100
+    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
+    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
+    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
     main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 
     df.write('./tmp.DLIS', input_chunk_size=20)

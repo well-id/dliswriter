@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
@@ -25,6 +27,13 @@ class ZoneObject(EFLRObject):
         self.minimum = DTimeAttribute('minimum', allow_float=True, parent_eflr=self)
 
         super().__init__(name, parent, **kwargs)
+
+        if self.domain.value == 'TIME':
+            if not all(isinstance(v, (datetime, type(None))) for v in (self.minimum.value, self.minimum.value)):
+                raise TypeError("Zone maximum and minimum should be instances of datetime.datetime")
+        else:
+            if not all(isinstance(v, ((int, float), type(None))) for v in (self.minimum.value, self.minimum.value)):
+                raise TypeError("Zone maximum and minimum should be numbers")
 
     @classmethod
     def check_domain(cls, domain: str) -> str:
