@@ -8,11 +8,12 @@ import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
 from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
 from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
+from dlis_writer.logical_record.eflr_types.equipment import Equipment, EquipmentObject
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
 from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
+from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
 from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
 from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
 from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
@@ -25,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 kwargs_type = dict[str, Any]
+number_type = Union[int, float]
 
 
 class DLISFile:
@@ -100,7 +102,7 @@ class DLISFile:
             name: str,
             axis_id: str = None,
             coordinates: list[Union[int, float, str]] = None,
-            spacing: Union[int, float] = None
+            spacing: number_type = None
     ) -> AxisObject:
         """Define an axis (AxisObject) and add it to the DLIS.
 
@@ -167,6 +169,77 @@ class DLISFile:
         self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
 
         return ch
+
+    def add_equipment(
+            self,
+            name: str,
+            trademark_name: str = None,
+            status: int = None,
+            eq_type: str = None,
+            serial_number: str = None,
+            location: str = None,
+            height: number_type = None,
+            length: number_type = None,
+            minimum_diameter: number_type = None,
+            maximum_diameter: number_type = None,
+            volume: number_type = None,
+            weight: number_type = None,
+            hole_size: number_type = None,
+            pressure: number_type = None,
+            temperature: number_type = None,
+            vertical_depth: number_type = None,
+            radial_drift: number_type = None,
+            angular_drift: number_type = None
+    ) -> EquipmentObject:
+        """Define an equipment object.
+
+        Args:
+            name                :   Name of the equipment.
+            trademark_name      :   Trademark name.
+            status              :   Status of the equipment: integer, 1 or 0.
+            eq_type             :   Type of the equipment.
+            serial_number       :   Serial number of the equipment.
+            location            :   Location of the equipment.
+            height              :   Height.
+            length              :   Length.
+            minimum_diameter    :   Maximum diameter.
+            maximum_diameter    :   Minimum diameter.
+            volume              :   Volume.
+            weight              :   Weight of the equipment.
+            hole_size           :   Hole size.
+            pressure            :   Pressure.
+            temperature         :   Temperature.
+            vertical_depth      :   Vertical depth.
+            radial_drift        :   Radial drift.
+            angular_drift       :   Angular drift.
+
+        Returns:
+            A configured EquipmentObject instance.
+        """
+
+        eq = Equipment.make_object(
+            name=name,
+            trademark_name=trademark_name,
+            status=status,
+            _type=eq_type,
+            serial_number=serial_number,
+            location=location,
+            height=height,
+            length=length,
+            minimum_diameter=minimum_diameter,
+            maximum_diameter=maximum_diameter,
+            volume=volume,
+            weight=weight,
+            hole_size=hole_size,
+            pressure=pressure,
+            temperature=temperature,
+            vertical_depth=vertical_depth,
+            radial_drift=radial_drift,
+            angular_drift=angular_drift
+        )
+
+        self._other.append(eq)
+        return eq
 
     def add_frame(
             self,
@@ -354,7 +427,7 @@ class DLISFile:
         return flr
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
-              input_chunk_size: Optional[int] = None, output_chunk_size: Union[int, float] = 2**32):
+              input_chunk_size: Optional[int] = None, output_chunk_size: number_type = 2**32):
         """Create a DLIS file form the current specifications.
 
         Args:
