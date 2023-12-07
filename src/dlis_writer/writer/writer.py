@@ -3,6 +3,7 @@ import logging
 from progressbar import progressbar    # type: ignore  # untyped library
 from typing import Union, Optional
 from configparser import ConfigParser
+from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
@@ -271,7 +272,7 @@ class DLISWriter:
             output_chunk_size=output_chunk_size
         )
 
-        logger.info(f'DLIS file created at {filename}')
+        logger.info(f'DLIS file created at {Path(filename).resolve()}')
 
 
     
