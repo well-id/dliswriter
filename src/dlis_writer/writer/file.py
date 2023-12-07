@@ -8,15 +8,15 @@ import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.axis import AxisObject, Axis
-from dlis_writer.logical_record.eflr_types.channel import ChannelObject, Channel
-from dlis_writer.logical_record.eflr_types.equipment import Equipment, EquipmentObject
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject, FileHeader
-from dlis_writer.logical_record.eflr_types.frame import FrameObject, Frame
-from dlis_writer.logical_record.eflr_types.origin import OriginObject, Origin
-from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
-from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
-from dlis_writer.logical_record.eflr_types.zone import Zone, ZoneObject
+from dlis_writer.logical_record.eflr_types.axis import AxisObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelObject
+from dlis_writer.logical_record.eflr_types.equipment import EquipmentObject
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject
+from dlis_writer.logical_record.eflr_types.frame import FrameObject
+from dlis_writer.logical_record.eflr_types.origin import OriginObject
+from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
+from dlis_writer.logical_record.eflr_types.splice import SpliceObject
+from dlis_writer.logical_record.eflr_types.zone import ZoneObject
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -54,12 +54,12 @@ class DLISFile:
         if isinstance(file_header, FileHeaderObject):
             self._file_header = file_header
         else:
-            self._file_header = FileHeader.make_object(**({"name": "FILE HEADER"} | (file_header or {})))
+            self._file_header = FileHeaderObject(**({"identifier": "FILE HEADER"} | (file_header or {})))
 
         if isinstance(origin, OriginObject):
             self._origin = origin
         else:
-            self._origin = Origin.make_object(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
+            self._origin = OriginObject(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
 
         self._channels = []
         self._frames = []
@@ -113,7 +113,7 @@ class DLISFile:
             spacing     :   Spacing of the axis.
         """
 
-        ax = Axis.make_object(
+        ax = AxisObject(
             name=name,
             axis_id=axis_id,
             coordinates=coordinates,
@@ -153,7 +153,7 @@ class DLISFile:
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
-        ch = Channel.make_object(
+        ch = ChannelObject(
             name,
             long_name=long_name,
             properties=properties,
@@ -217,7 +217,7 @@ class DLISFile:
             A configured EquipmentObject instance.
         """
 
-        eq = Equipment.make_object(
+        eq = EquipmentObject(
             name=name,
             trademark_name=trademark_name,
             status=status,
@@ -285,7 +285,7 @@ class DLISFile:
             raise TypeError(f"Expected a list of ChannelObject instances; "
                             f"got types: {', '.join(str(type(c)) for c in channels)}")
 
-        fr = Frame.make_object(
+        fr = FrameObject(
             name,
             channels=channels,
             description=description,
@@ -323,7 +323,7 @@ class DLISFile:
             A configured ParameterObject instance.
         """
 
-        p = Parameter.make_object(
+        p = ParameterObject(
             name=name,
             long_name=long_name,
             dimension=dimension,
@@ -354,7 +354,7 @@ class DLISFile:
             A configured splice.
         """
 
-        sp = Splice.make_object(
+        sp = SpliceObject(
             name=name,
             output_channel=output_channel,
             input_channels=input_channels,
@@ -388,7 +388,7 @@ class DLISFile:
             A configured zone, added to the DLIS.
         """
 
-        z = Zone.make_object(
+        z = ZoneObject(
             name=name,
             description=description,
             domain=domain,

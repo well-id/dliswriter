@@ -16,7 +16,7 @@ from tests.common import base_data_path, config_params, make_config
 def chan():
     """Mock ChannelObject instance for tests."""
 
-    yield Channel.make_object("some_channel")
+    yield ChannelObject("some_channel")
 
 
 @pytest.fixture
