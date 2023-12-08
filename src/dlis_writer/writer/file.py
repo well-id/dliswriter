@@ -19,6 +19,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
+from dlis_writer.logical_record.eflr_types.path import PathItem
 from dlis_writer.logical_record.eflr_types.process import ProcessItem
 from dlis_writer.logical_record.eflr_types.splice import SpliceItem
 from dlis_writer.logical_record.eflr_types.tool import ToolItem
@@ -552,6 +553,62 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
+            set_name=set_name
+        )
+
+        self._other.append(p)
+        return p
+
+    def add_path(
+            self,
+            name: str,
+            frame_type: Optional[FrameItem] = None,
+            well_reference_point: Optional[WellReferencePointItem] = None,
+            value: list_or_tuple_type(ChannelItem) = None,
+            borehole_depth: Optional[number_type] = None,
+            vertical_depth: Optional[number_type] = None,
+            radial_drift: Optional[number_type] = None,
+            angular_drift: Optional[number_type] = None,
+            time: Optional[number_type] = None,
+            depth_offset: Optional[number_type] = None,
+            measure_point_offset: Optional[number_type] = None,
+            tool_zero_offset: Optional[number_type] = None,
+            set_name: Optional[str] = None
+    ) -> PathItem:
+        """Define a Path and add it to the DLIS.
+
+        Args:
+            name                    :   Name of the path.
+            frame_type              :   Frame associated with the path.
+            well_reference_point    :   Well reference of the path.
+            value                   :   Channels associated with the path.
+            borehole_depth          :   Borehole depth.
+            vertical_depth          :   Vertical depth.
+            radial_drift            :   Radial drift.
+            angular_drift           :   Angular drift.
+            time                    :   Time.
+            depth_offset            :   Depth offset.
+            measure_point_offset    :   Measure point offset.
+            tool_zero_offset        :   Tool zero offset.
+            set_name                :   Name of the PathTable this path should be added to.
+
+        Returns:
+            A configured Path instance.
+        """
+
+        p = PathItem(
+            name=name,
+            frame_type=frame_type,
+            well_reference_point=well_reference_point,
+            value=value,
+            borehole_depth=borehole_depth,
+            vertical_depth=vertical_depth,
+            radial_drift=radial_drift,
+            angular_drift=angular_drift,
+            time=time,
+            depth_offset=depth_offset,
+            measure_point_offset=measure_point_offset,
+            tool_zero_offset=tool_zero_offset,
             set_name=set_name
         )
 

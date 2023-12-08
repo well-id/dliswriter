@@ -125,5 +125,13 @@ wrp = df.add_well_reference_point("WELL-REF", coordinate_1_name="Latitude", coor
                                   coordinate_2_name='Longitude', coordinate_2_value=23.4232)
 
 
+# path - using frame, well reference point, and channels
+# Note: DeepView doesn't open files with Path defined - to be fixed
+# example for future use:
+# path1 = df.add_path('PATH-1', frame_type=main_frame, well_reference_point=wrp, value=(ch1, ch3, ch4),
+#                     borehole_depth=122.12, vertical_depth=211.1, radial_drift=12, angular_drift=1.11, time=13)
+# path2 = df.add_path('PATH-2', frame_type=second_frame, value=(ch5, ch6), tool_zero_offset=1231.1, time=11.1)
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)
