@@ -1,3 +1,4 @@
+import re
 import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional
@@ -218,3 +219,34 @@ class EFLRItem:
                 attr.finalise_from_config(config)
 
         return eflr_item
+
+    @classmethod
+    def all_from_config(cls, config: ConfigParser, keys: Optional[list[str]] = None,
+                        key_pattern: Optional[str] = None, **kwargs) -> list[Self]:
+        """Create all items corresponding to given EFLRTable subclass based on config object information.
+
+        Use 'keys' and/or 'key_pattern' arguments (see below) to limit/precise the set of EFLRItems created.
+        If both are provided, 'key_pattern' is ignored.
+        If neither is provided, all config sections whose names begin with the EFLRTable class name followed by a dash
+        will be created.
+
+        Args:
+            config      :   Config object containing the information on the objects to be created.
+            keys        :   List of config section names identifying the objects to be created.
+            key_pattern :   Regex pattern to create a list of section names for objects to be created.
+            **kwargs    :   Keyword arguments passed to 'make_eflr_item_from_config' for each item.
+
+        Returns:
+            List of the created EFLRItem (subclass) instances.
+        """
+
+        if keys is not None and key_pattern is not None:
+            logger.warning("Both 'keys' and 'key_pattern' arguments provided; ignoring the latter")
+
+        if keys is None:
+            if key_pattern is None:
+                key_pattern = cls.parent_eflr_class.eflr_name + r"-\w+"
+            keys = [key for key in config.sections() if re.compile(key_pattern).fullmatch(key)]
+
+        return [cls.from_config(config, key=key, **kwargs) for key in keys]
+

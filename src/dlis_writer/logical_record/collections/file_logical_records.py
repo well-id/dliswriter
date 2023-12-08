@@ -8,6 +8,7 @@ from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.core.eflr import EFLRTable
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
@@ -284,7 +285,7 @@ class FileLogicalRecords:
             orig=origin_object.parent
         )
 
-        channels = ChannelTable.make_all_eflr_items_from_config(config)
+        channels = ChannelItem.all_from_config(config)
 
         frame_keys = (key for key in config.sections() if key.startswith('Frame-') or key == 'Frame')
         frame_and_data_objects = [
@@ -304,7 +305,7 @@ class FileLogicalRecords:
         other_classes = [c for c in eflr_types if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
 
         for c in other_classes:
-            objects = c.make_all_eflr_items_from_config(config, get_if_exists=True)
+            objects = c.item_type.all_from_config(config, get_if_exists=True)
             if not objects:
                 logger.debug(f"No instances of {c.__name__} defined")
             else:
