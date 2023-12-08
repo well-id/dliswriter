@@ -7,9 +7,11 @@ from datetime import timedelta
 import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper
+from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
+from dlis_writer.logical_record.eflr_types.computation import ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
@@ -28,6 +30,7 @@ logger = logging.getLogger(__name__)
 
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
+values_type = Optional[Union[list[str], list[int], list[float]]]
 
 
 def list_or_tuple_type(obj: type, optional=True):
@@ -109,7 +112,7 @@ class DLISFile:
             self,
             name: str,
             axis_id: str = None,
-            coordinates: list[Union[int, float, str]] = None,
+            coordinates: values_type = None,
             spacing: number_type = None,
             set_name: Optional[str] = None
     ) -> AxisItem:
@@ -146,7 +149,7 @@ class DLISFile:
             maximum_value: Optional[float] = None,
             set_name: Optional[str] = None
     ) -> ChannelItem:
-        """Define a channel (ChannelObject) and add it to the DLIS.
+        """Define a channel (ChannelItem) and add it to the DLIS.
 
         Args:
             name            :   Name of the channel.
@@ -183,6 +186,50 @@ class DLISFile:
         self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
 
         return ch
+
+    def add_computation(
+            self,
+            name: str,
+            long_name: Optional[str] = None,
+            properties: Optional[list[str]] = None,
+            dimension: Optional[list[int]] = None,
+            axis: Optional[AxisItem] = None,
+            zones: list_or_tuple_type(ZoneItem) = None,
+            values: Optional[list[number_type]] = None,
+            source: Optional[EFLRItem] = None,
+            set_name: Optional[str] = None
+    ) -> ComputationItem:
+        """Create a computation item and add it to the DLIS.
+
+        Args:
+            name        :   Name of the computation.
+            long_name   :   Description of the computation.
+            properties  :   Properties of the computation.
+            dimension   :   Dimension of the computation.
+            axis        :   Axis associated with the computation.
+            zones       :   Zones associated with the computation.
+            values      :   Values of the computation.
+            source      :   Source of the computation.
+            set_name    :   Name of the ComputationTable this computation should be added to.
+
+        Returns:
+            A configured computation item.
+        """
+
+        c = ComputationItem(
+            name=name,
+            long_name=long_name,
+            properties=properties,
+            dimension=dimension,
+            axis=axis,
+            zones=zones,
+            values=values,
+            source=source,
+            set_name=set_name
+        )
+
+        self._other.append(c)
+        return c
 
     def add_equipment(
             self,
@@ -265,10 +312,10 @@ class DLISFile:
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
-            spacing: Optional[Union[int, float]] = None,
+            spacing: Optional[number_type] = None,
             encrypted: Optional[int] = None,
-            index_min: Optional[Union[int, float]] = None,
-            index_max: Optional[Union[int, float]] = None,
+            index_min: Optional[number_type] = None,
+            index_max: Optional[number_type] = None,
             set_name: Optional[str] = None
     ) -> FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
@@ -327,7 +374,7 @@ class DLISFile:
             dimension: Optional[list[int]] = None,
             axis: Optional[AxisItem] = None,
             zones: list_or_tuple_type(ZoneItem) = None,
-            values: Optional[Union[list[int], list[float], list[str]]] = None,
+            values: values_type = None,
             set_name: Optional[str] = None
     ) -> ParameterItem:
         """Create a parameter.
