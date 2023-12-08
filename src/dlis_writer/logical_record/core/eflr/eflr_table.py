@@ -6,23 +6,23 @@ from typing_extensions import Self
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
-from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
-from dlis_writer.logical_record.core.eflr.eflr_meta import EFLRMeta
+from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
+from dlis_writer.logical_record.core.eflr.eflr_table_meta import EFLRTableMeta
 from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLR(LogicalRecord, metaclass=EFLRMeta):
+class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
     """Model an Explicitly Formatted Logical Record."""
 
     set_type: str = NotImplemented                  #: set type of each particular EFLR (e.g. Channel); see the standard
     logical_record_type: EFLRType = NotImplemented  #: int-enum denoting type of the EFLR
     is_eflr: bool = True                            #: indication that this is an explicitly formatted LR
-    object_type: type = EFLRObject                  #: object type which can be held within an EFLR of this type
+    object_type: type = EFLRItem                  #: object type which can be held within an EFLR of this type
 
-    _instance_dict: dict[Union[str, None], "EFLR"]
+    _instance_dict: dict[Union[str, None], "EFLRTable"]
 
     def __init__(self, set_name: Optional[str] = None):
         """Initialise an EFLR.
@@ -36,7 +36,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         self.set_name = set_name
         self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
-        self._object_dict: dict[str, EFLRObject] = {}  # instances of EFLRObject registered with this EFLR instance
+        self._object_dict: dict[str, EFLRItem] = {}  # instances of EFLRObject registered with this EFLR instance
         self._attributes: dict[str, Attribute] = {}   # attributes of this EFLR (cpd from an EFLRObject instance later)
         self._origin_reference: Union[int, None] = None
 
@@ -112,7 +112,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return bts
 
-    def register_child(self, child: EFLRObject):
+    def register_child(self, child: EFLRItem):
         """Register a child EFLRObject with this EFLR."""
 
         if not isinstance(child, self.object_type):
@@ -126,7 +126,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         child.origin_reference = self.origin_reference
 
-    def make_object_in_this_set(self, name: str, get_if_exists: bool = False, **kwargs) -> EFLRObject:
+    def make_object_in_this_set(self, name: str, get_if_exists: bool = False, **kwargs) -> EFLRItem:
         """Make an EFLRObject according the specifications and register it with this EFLR instance.
 
         Args:
@@ -144,7 +144,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         return obj
 
-    def get_all_objects(self) -> list[EFLRObject]:
+    def get_all_objects(self) -> list[EFLRItem]:
         """Return a list of all EFLRObject instances registered with this EFLR instance."""
 
         return list(self._object_dict.values())
@@ -156,7 +156,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
         return len(self._object_dict)
 
     @classmethod
-    def get_eflr_subclass(cls, object_name: str) -> EFLRMeta:
+    def get_eflr_subclass(cls, object_name: str) -> EFLRTableMeta:
         """Retrieve an EFLR subclass based on the provided object name.
 
         This method is meant to be used with names of sections of a config object. The names are expected to take
@@ -165,7 +165,7 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         module = importlib.import_module('dlis_writer.logical_record.eflr_types')
 
-        class_name = object_name.split('-')[0]
+        class_name = object_name.split('-')[0] + 'Table'
         the_class = getattr(module, class_name, None)
         if the_class is None:
             raise ValueError(f"No EFLR class of name '{class_name}' found")

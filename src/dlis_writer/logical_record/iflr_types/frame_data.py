@@ -6,7 +6,7 @@ from dlis_writer.utils.struct_writer import write_struct_uvari
 from dlis_writer.utils.enums import IFLRType
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.eflr_types.frame import FrameObject
+    from dlis_writer.logical_record.eflr_types.frame import FrameItem
 
 
 class FrameData(IFLR):
@@ -17,7 +17,7 @@ class FrameData(IFLR):
 
     logical_record_type = IFLRType.FDATA
 
-    def __init__(self, frame: "FrameObject", frame_number: int, slots: np.ndarray,
+    def __init__(self, frame: "FrameItem", frame_number: int, slots: np.ndarray,
                  origin_reference: Optional[int] = None):
         """Initialise a FrameData.
 

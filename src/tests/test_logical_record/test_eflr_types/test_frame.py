@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.frame import Frame, FrameObject
+from dlis_writer.logical_record.eflr_types.frame import FrameTable, FrameItem
 from dlis_writer.utils.enums import RepresentationCode
 
 from tests.common import base_data_path, config_params
@@ -10,7 +10,7 @@ from tests.common import base_data_path, config_params
 def test_from_config(config_params: ConfigParser):
     """Test creating d FrameObject from config."""
 
-    frame: FrameObject = Frame.make_object_from_config(config_params)
+    frame: FrameItem = FrameTable.make_object_from_config(config_params)
 
     conf = config_params['Frame']
     assert frame.name == conf['name']
@@ -35,7 +35,7 @@ def test_from_config_with_channels(channels_key: str, channel_entry: str, channe
     config_params["Frame"]["name"] = "Some frame"
     config_params["Frame"][channels_key] = channel_entry
 
-    frame: FrameObject = Frame.make_object_from_config(config_params)
+    frame: FrameItem = FrameTable.make_object_from_config(config_params)
 
     assert frame.channels.value is not None
     assert len(frame.channels.value) == len(channel_names)

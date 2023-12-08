@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.parameter import Parameter, ParameterObject
+from dlis_writer.logical_record.eflr_types.parameter import ParameterTable, ParameterItem
 from dlis_writer.utils.enums import RepresentationCode
 
 from tests.common import base_data_path, config_params
@@ -18,7 +18,7 @@ def test_from_config(config_params: ConfigParser, param_nr: int, value_type: typ
     """Test creating ParameterObject from config."""
 
     key = f"Parameter-{param_nr}"
-    param: ParameterObject = Parameter.make_object_from_config(config_params, key=key)
+    param: ParameterItem = ParameterTable.make_object_from_config(config_params, key=key)
     
     conf = config_params[key]
     

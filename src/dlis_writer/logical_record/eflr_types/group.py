@@ -1,6 +1,6 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
@@ -8,10 +8,10 @@ from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 logger = logging.getLogger(__name__)
 
 
-class GroupObject(EFLRObject):
+class GroupItem(EFLRItem):
     """Model an object being part of Group EFLR."""
 
-    parent: "Group"
+    parent: "GroupTable"
 
     def __init__(self, name: str, **kwargs):
         """Initialise GroupObject.
@@ -25,17 +25,17 @@ class GroupObject(EFLRObject):
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
         self.object_type = Attribute('object_type', representation_code=RepC.IDENT, parent_eflr=self)
         self.object_list = EFLRAttribute('object_list', multivalued=True, parent_eflr=self)
-        self.group_list = EFLRAttribute('group_list', object_class=Group, multivalued=True, parent_eflr=self)
+        self.group_list = EFLRAttribute('group_list', object_class=GroupTable, multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 
 
-class Group(EFLR):
+class GroupTable(EFLRTable):
     """Model Group EFLR."""
 
     set_type = 'GROUP'
     logical_record_type = EFLRType.STATIC
-    object_type = GroupObject
+    object_type = GroupItem
 
 
-GroupObject.parent_eflr_class = Group
+GroupItem.parent_eflr_class = GroupTable

@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.no_format import NoFormat, NoFormatObject
+from dlis_writer.logical_record.eflr_types.no_format import NoFormatTable, NoFormatItem
 
 from tests.common import base_data_path, config_params
 
@@ -14,7 +14,7 @@ def test_from_config(config_params: ConfigParser, key: str, name: str, consumer_
     """Test creating NoFormatObject from config."""
 
     key = f"NoFormat-{key}"
-    w: NoFormatObject = NoFormat.make_object_from_config(config_params, key=key)
+    w: NoFormatItem = NoFormatTable.make_object_from_config(config_params, key=key)
 
     assert w.name == name
     assert w.consumer_name.value == consumer_name

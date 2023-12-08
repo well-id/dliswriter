@@ -6,7 +6,7 @@ from typing_extensions import Self
 from configparser import ConfigParser
 
 from .attribute import Attribute
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject, EFLRMeta
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem, EFLRTableMeta
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -21,7 +21,7 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, label: str, object_class: Optional[EFLRMeta] = None, representation_code: Optional[RepC] = None,
+    def __init__(self, label: str, object_class: Optional[EFLRTableMeta] = None, representation_code: Optional[RepC] = None,
                  **kwargs):
         """Initialise EFLRAttribute.
 
@@ -41,7 +41,7 @@ class EFLRAttribute(Attribute):
         if representation_code not in (RepC.OBNAME, RepC.OBJREF):
             raise ValueError(f"Representation code '{representation_code.name}' is not allowed for an EFLRAttribute")
 
-        if object_class is not None and not issubclass(object_class, EFLR):
+        if object_class is not None and not issubclass(object_class, EFLRTable):
             raise TypeError(f"Expected an EFLR subclass; got {object_class}")
 
         super().__init__(label=label, representation_code=representation_code, **kwargs)
@@ -82,24 +82,24 @@ class EFLRAttribute(Attribute):
     def _convert_value(self, v: Union[str, type]):
         """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
 
-        object_class = self._object_class.object_type if self._object_class else EFLRObject
+        object_class = self._object_class.object_type if self._object_class else EFLRItem
         if not isinstance(v, (object_class, str)):
             raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
 
-    def _make_eflr_object_from_config(self, config: ConfigParser, object_name: Union[str, EFLRObject]) -> EFLRObject:
+    def _make_eflr_object_from_config(self, config: ConfigParser, object_name: Union[str, EFLRItem]) -> EFLRItem:
         """Create or retrieve an EFLRObject based on its name and the provided config object.
 
         If the value (object_name) is already an EFLRObject, return it as-is.
         """
 
-        if isinstance(object_name, EFLRObject):
+        if isinstance(object_name, EFLRItem):
             return object_name
 
         if not isinstance(object_name, str):
             raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
 
-        object_class = self._object_class or EFLR.get_eflr_subclass(object_name)
+        object_class = self._object_class or EFLRTable.get_eflr_subclass(object_name)
         return object_class.make_object_from_config(config=config, key=object_name, get_if_exists=True)
 
 

@@ -7,13 +7,13 @@ from typing_extensions import Self
 from dlis_writer.logical_record.core.logical_record import LRMeta
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr.eflr import EFLR
+    from dlis_writer.logical_record.core.eflr.eflr_table import EFLRTable
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLRMeta(LRMeta):
+class EFLRTableMeta(LRMeta):
     """Define a metaclass for EFLR - Explicitly Formatted Logical Record.
 
     The main motivation for defining this metaclass is to be able to use an instance dictionary (see _instance_dict
@@ -23,10 +23,12 @@ class EFLRMeta(LRMeta):
     instances, e.g. from a config object.
     """
 
-    _instance_dict: dict[Union[str, None], "EFLR"]
+    _instance_dict: dict[Union[str, None], "EFLRTable"]
     object_type: type
+    eflr_name: str
+    eflr_name_pattern = re.compile(r'(?P<name>\w+)Table')
 
-    def __new__(cls, *args, **kwargs) -> "EFLRMeta":
+    def __new__(cls, *args, **kwargs) -> "EFLRTableMeta":
         """Create a new EFLR class (instance of EFLRMeta).
 
         All positional and keyword arguments are passed to the super-metaclass: LRMeta.
@@ -34,6 +36,7 @@ class EFLRMeta(LRMeta):
 
         obj = super().__new__(cls, *args, **kwargs)
         obj._instance_dict = {}
+        obj.eflr_name = cls.eflr_name_pattern.fullmatch(obj.__name__).group('name')
         return obj
 
     def clear_eflr_instance_dict(cls):
@@ -43,7 +46,7 @@ class EFLRMeta(LRMeta):
             logger.debug(f"Removing all defined instances of {cls.__name__}")
             cls._instance_dict.clear()
 
-    def get_or_make_eflr(cls, set_name: Optional[str] = None) -> "EFLR":
+    def get_or_make_eflr(cls, set_name: Optional[str] = None) -> "EFLRTable":
         """Retrieve an EFLR instance with given set name from the internal dict - if exists. Otherwise, create one."""
 
         if set_name in cls._instance_dict:
@@ -51,7 +54,7 @@ class EFLRMeta(LRMeta):
 
         return cls(set_name)
 
-    def get_all_instances(cls) -> list["EFLR"]:
+    def get_all_instances(cls) -> list["EFLRTable"]:
         """Return a list of all EFLR (subclass) instances which are stored in the internal dictionary."""
 
         return list(cls._instance_dict.values())
@@ -76,7 +79,7 @@ class EFLRMeta(LRMeta):
             The created/retrieved EFLRObject instance.
         """
 
-        key = key or cls.__name__
+        key = key or cls.eflr_name
 
         if key not in config.sections():
             raise RuntimeError(f"Section '{key}' not present in the config")
@@ -121,7 +124,7 @@ class EFLRMeta(LRMeta):
 
         if keys is None:
             if key_pattern is None:
-                key_pattern = cls.__name__ + r"-\w+"
+                key_pattern = cls.eflr_name + r"-\w+"
             keys = [key for key in config.sections() if re.compile(key_pattern).fullmatch(key)]
 
         return [cls.make_object_from_config(config, key=key, **kwargs) for key in keys]

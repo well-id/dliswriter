@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.splice import Splice, SpliceObject
+from dlis_writer.logical_record.eflr_types.splice import SpliceTable, SpliceItem
 
 from tests.common import base_data_path, config_params
 
@@ -8,7 +8,7 @@ from tests.common import base_data_path, config_params
 def test_from_config(config_params: ConfigParser):
     """Test creating SpliceObject from config."""
 
-    splice: SpliceObject = Splice.make_object_from_config(config_params, key="Splice-1")
+    splice: SpliceItem = SpliceTable.make_object_from_config(config_params, key="Splice-1")
 
     assert splice.name == "splc1"
 

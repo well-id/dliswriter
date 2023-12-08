@@ -1,12 +1,12 @@
 from datetime import datetime
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types import CalibrationMeasurement, CalibrationCoefficient, Calibration
-from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementObject,
-                                                               CalibrationCoefficientObject, CalibrationObject)
-from dlis_writer.logical_record.eflr_types.channel import ChannelObject
-from dlis_writer.logical_record.eflr_types.axis import AxisObject
-from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
+from dlis_writer.logical_record.eflr_types import CalibrationMeasurementTable, CalibrationCoefficientTable, CalibrationTable
+from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementItem,
+                                                               CalibrationCoefficientItem, CalibrationItem)
+from dlis_writer.logical_record.eflr_types.channel import ChannelItem
+from dlis_writer.logical_record.eflr_types.axis import AxisItem
+from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
 
 from tests.common import base_data_path, config_params
@@ -16,14 +16,14 @@ def test_calibration_measurement_from_config(config_params: ConfigParser):
     """Check that a CalibrationMeasurementObject is correctly set up from config info."""
 
     key = "CalibrationMeasurement-1"
-    m: CalibrationMeasurementObject = CalibrationMeasurement.make_object_from_config(config_params, key=key)
+    m: CalibrationMeasurementItem = CalibrationMeasurementTable.make_object_from_config(config_params, key=key)
 
     assert m.name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
-    assert isinstance(m.measurement_source.value, ChannelObject)
+    assert isinstance(m.measurement_source.value, ChannelItem)
     assert m.measurement_source.value.name == "Channel 1"
     assert m._type.value == 'Plus'
-    assert isinstance(m.axis.value[0], AxisObject)
+    assert isinstance(m.axis.value[0], AxisItem)
     assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == 12
@@ -42,7 +42,7 @@ def test_calibration_coefficient_from_config(config_params: ConfigParser):
     """Check that a CalibrationCoefficientObject is correctly set up from config info."""
 
     key = "CalibrationCoefficient-1"
-    c: CalibrationCoefficientObject = CalibrationCoefficient.make_object_from_config(config_params, key=key)
+    c: CalibrationCoefficientItem = CalibrationCoefficientTable.make_object_from_config(config_params, key=key)
 
     assert c.name == "COEF-1"
     assert c.label.value == 'Gain'
@@ -68,12 +68,12 @@ def test_calibration_from_config(config_params: ConfigParser):
     """Check that a CalibrationObject is correctly set up from config info."""
 
     key = "Calibration-1"
-    c: CalibrationObject = Calibration.make_object_from_config(config_params, key=key)
+    c: CalibrationItem = CalibrationTable.make_object_from_config(config_params, key=key)
 
     assert c.name == "CALIB-MAIN"
 
-    _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), ChannelObject)
-    _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), ChannelObject)
-    _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficientObject)
-    _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurementObject)
-    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), ParameterObject)
+    _check_list(c.calibrated_channels, ("Channel 1", "Channel 2"), ChannelItem)
+    _check_list(c.uncalibrated_channels, ("amplitude", "radius", "radius_pooh"), ChannelItem)
+    _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficientItem)
+    _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurementItem)
+    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), ParameterItem)

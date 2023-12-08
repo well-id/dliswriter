@@ -1,9 +1,9 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
-from dlis_writer.logical_record.eflr_types.frame import Frame
-from dlis_writer.logical_record.eflr_types.channel import Channel
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.eflr_types.frame import FrameTable
+from dlis_writer.logical_record.eflr_types.channel import ChannelTable
+from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointTable
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttribute
 
@@ -11,10 +11,10 @@ from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttr
 logger = logging.getLogger(__name__)
 
 
-class PathObject(EFLRObject):
+class PathItem(EFLRItem):
     """Model an object being part of Path EFLR."""
 
-    parent: "Path"
+    parent: "PathTable"
 
     def __init__(self, name: str, **kwargs):
         """Initialise PathObject.
@@ -24,10 +24,10 @@ class PathObject(EFLRObject):
             **kwargs    :   Values of to be set as characteristics of the PathObject Attributes.
         """
 
-        self.frame_type = EFLRAttribute('frame_type', object_class=Frame, parent_eflr=self)
+        self.frame_type = EFLRAttribute('frame_type', object_class=FrameTable, parent_eflr=self)
         self.well_reference_point = EFLRAttribute(
-            'well_reference_point', object_class=WellReferencePoint, parent_eflr=self)
-        self.value = EFLRAttribute('value', object_class=Channel, multivalued=True, parent_eflr=self)
+            'well_reference_point', object_class=WellReferencePointTable, parent_eflr=self)
+        self.value = EFLRAttribute('value', object_class=ChannelTable, multivalued=True, parent_eflr=self)
         self.borehole_depth = NumericAttribute('borehole_depth', parent_eflr=self)
         self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
         self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
@@ -40,12 +40,12 @@ class PathObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class Path(EFLR):
+class PathTable(EFLRTable):
     """Model Path EFLR."""
 
     set_type = 'PATH'
     logical_record_type = EFLRType.FRAME
-    object_type = PathObject
+    object_type = PathItem
 
 
-PathObject.parent_eflr_class = Path
+PathItem.parent_eflr_class = PathTable

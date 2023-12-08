@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.process import Process, ProcessObject
+from dlis_writer.logical_record.eflr_types.process import ProcessTable, ProcessItem
 
 from tests.common import base_data_path, config_params
 
@@ -14,7 +14,7 @@ def test_process_params(config_params: ConfigParser, key: str, name: str, input_
                         output_channels: list[str], input_compts: list[str], output_compts: list[str]):
     """Test creating ProcessObject from config."""
 
-    proc: ProcessObject = Process.make_object_from_config(config_params, key=key)
+    proc: ProcessItem = ProcessTable.make_object_from_config(config_params, key=key)
 
     assert proc.name == name
 

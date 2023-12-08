@@ -1,19 +1,19 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types.zone import Zone
-from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.eflr_types.zone import ZoneTable
+from dlis_writer.logical_record.eflr_types.axis import AxisTable
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute
 
 
 logger = logging.getLogger(__name__)
 
 
-class ParameterObject(EFLRObject):
+class ParameterItem(EFLRItem):
     """Model an object being part of Parameter EFLR."""
 
-    parent: "Parameter"
+    parent: "ParameterTable"
     
     def __init__(self, name: str, **kwargs):
         """Initialise ParameterObject.
@@ -25,8 +25,8 @@ class ParameterObject(EFLRObject):
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=Zone, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
+        self.zones = EFLRAttribute('zones', object_class=ZoneTable, multivalued=True, parent_eflr=self)
         self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
@@ -41,12 +41,12 @@ class ParameterObject(EFLRObject):
             self.dimension.value = [1]
 
 
-class Parameter(EFLR):
+class ParameterTable(EFLRTable):
     """Model Parameter EFLR."""
 
     set_type = 'PARAMETER'
     logical_record_type = EFLRType.STATIC
-    object_type = ParameterObject
+    object_type = ParameterItem
 
 
-ParameterObject.parent_eflr_class = Parameter
+ParameterItem.parent_eflr_class = ParameterTable

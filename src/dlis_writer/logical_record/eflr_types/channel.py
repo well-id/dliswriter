@@ -3,8 +3,8 @@ from typing import Union, Optional
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
-from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.eflr_types.axis import AxisTable
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
@@ -14,10 +14,10 @@ from dlis_writer.utils.source_data_objects import SourceDataObject
 logger = logging.getLogger(__name__)
 
 
-class ChannelObject(EFLRObject):
+class ChannelItem(EFLRItem):
     """Model an object being part of Channel EFLR."""
 
-    parent: "Channel"
+    parent: "ChannelTable"
 
     def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
         """Initialise ChannelObject.
@@ -36,7 +36,7 @@ class ChannelObject(EFLRObject):
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
         self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
         self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
         self.minimum_value = NumericAttribute(
@@ -150,12 +150,12 @@ class ChannelObject(EFLRObject):
         return RepC.get_member(rc, allow_none=True)
 
 
-class Channel(EFLR):
+class ChannelTable(EFLRTable):
     """Model Channel EFLR."""
 
     set_type = 'CHANNEL'
     logical_record_type = EFLRType.CHANNL
-    object_type = ChannelObject
+    object_type = ChannelItem
 
 
-ChannelObject.parent_eflr_class = Channel
+ChannelItem.parent_eflr_class = ChannelTable

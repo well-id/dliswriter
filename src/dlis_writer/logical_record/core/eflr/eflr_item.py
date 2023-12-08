@@ -6,18 +6,18 @@ from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr.eflr import EFLR
+    from dlis_writer.logical_record.core.eflr.eflr_table import EFLRTable
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLRObject:
+class EFLRItem:
     """Model an object belonging to an Explicitly Formatted Logical Record - e.g. a particular channel."""
 
-    parent_eflr_class: type["EFLR"] = NotImplemented
+    parent_eflr_class: type["EFLRTable"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLR"] = None, set_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None, **kwargs):
         """Initialise an EFLRObject.
 
         Args:
@@ -43,7 +43,7 @@ class EFLRObject:
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
 
     @classmethod
-    def _get_parent(cls, parent: Optional["EFLR"] = None, set_name: Optional[str] = None) -> "EFLR":
+    def _get_parent(cls, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None) -> "EFLRTable":
         """Validate, retrieve, or create a parent EFLR instance.
 
         Args:

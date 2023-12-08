@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.computation import Computation, ComputationObject
+from dlis_writer.logical_record.eflr_types.computation import ComputationTable, ComputationItem
 
 from tests.common import base_data_path, config_params
 
@@ -15,7 +15,7 @@ def test_from_config(config_params: ConfigParser, section: str, name: str, prope
                      axis_name: str, values: list):
     """Check that ComputationObject instances are correctly created from config."""
 
-    comp: ComputationObject = Computation.make_object_from_config(config_params, key=section)
+    comp: ComputationItem = ComputationTable.make_object_from_config(config_params, key=section)
 
     assert comp.name == name
     assert comp.properties.value == properties

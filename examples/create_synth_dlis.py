@@ -3,7 +3,7 @@ import numpy as np
 import logging
 
 from dlis_writer.writer.file import DLISFile
-from dlis_writer.logical_record.eflr_types.origin import OriginObject
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -14,7 +14,7 @@ install_logger(logger)
 
 
 # set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginObject("DEFAULT ORIGIN", file_set_number=1, company="XXX")
+origin = OriginItem("DEFAULT ORIGIN", file_set_number=1, company="XXX")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
 file_header = {'sequence_number': 2}
 

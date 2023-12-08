@@ -8,15 +8,15 @@ import logging
 
 from dlis_writer.utils.source_data_objects import DictInterface
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.axis import AxisObject
-from dlis_writer.logical_record.eflr_types.channel import ChannelObject
-from dlis_writer.logical_record.eflr_types.equipment import EquipmentObject
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject
-from dlis_writer.logical_record.eflr_types.frame import FrameObject
-from dlis_writer.logical_record.eflr_types.origin import OriginObject
-from dlis_writer.logical_record.eflr_types.parameter import ParameterObject
-from dlis_writer.logical_record.eflr_types.splice import SpliceObject
-from dlis_writer.logical_record.eflr_types.zone import ZoneObject
+from dlis_writer.logical_record.eflr_types.axis import AxisItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelItem
+from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
+from dlis_writer.logical_record.eflr_types.frame import FrameItem
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
+from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
+from dlis_writer.logical_record.eflr_types.splice import SpliceItem
+from dlis_writer.logical_record.eflr_types.zone import ZoneItem
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -35,8 +35,8 @@ class DLISFile:
     def __init__(
             self,
             storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
-            file_header: Optional[Union[FileHeaderObject, kwargs_type]] = None,
-            origin: Optional[Union[OriginObject, kwargs_type]] = None
+            file_header: Optional[Union[FileHeaderItem, kwargs_type]] = None,
+            origin: Optional[Union[OriginItem, kwargs_type]] = None
     ):
         """Initialise DLISFile.
 
@@ -51,15 +51,15 @@ class DLISFile:
         else:
             self._sul = StorageUnitLabel(**({"set_identifier": "MAIN STORAGE UNIT"} | (storage_unit_label or {})))
 
-        if isinstance(file_header, FileHeaderObject):
+        if isinstance(file_header, FileHeaderItem):
             self._file_header = file_header
         else:
-            self._file_header = FileHeaderObject(**({"identifier": "FILE HEADER"} | (file_header or {})))
+            self._file_header = FileHeaderItem(**({"identifier": "FILE HEADER"} | (file_header or {})))
 
-        if isinstance(origin, OriginObject):
+        if isinstance(origin, OriginItem):
             self._origin = origin
         else:
-            self._origin = OriginObject(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
+            self._origin = OriginItem(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
 
         self._channels = []
         self._frames = []
@@ -74,25 +74,25 @@ class DLISFile:
         return self._sul
 
     @property
-    def file_header(self) -> FileHeaderObject:
+    def file_header(self) -> FileHeaderItem:
         """File header of the DLIS."""
 
         return self._file_header
 
     @property
-    def origin(self) -> OriginObject:
+    def origin(self) -> OriginItem:
         """Origin of the DLIS. Note: currently only adding a single origin is supported."""
 
         return self._origin
 
     @property
-    def channels(self) -> list[ChannelObject]:
+    def channels(self) -> list[ChannelItem]:
         """Channels defined for the DLIS."""
 
         return self._channels
 
     @property
-    def frames(self) -> list[FrameObject]:
+    def frames(self) -> list[FrameItem]:
         """Frames defined for the DLIS."""
 
         return self._frames
@@ -103,7 +103,7 @@ class DLISFile:
             axis_id: str = None,
             coordinates: list[Union[int, float, str]] = None,
             spacing: number_type = None
-    ) -> AxisObject:
+    ) -> AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
 
         Args:
@@ -113,7 +113,7 @@ class DLISFile:
             spacing     :   Spacing of the axis.
         """
 
-        ax = AxisObject(
+        ax = AxisItem(
             name=name,
             axis_id=axis_id,
             coordinates=coordinates,
@@ -130,10 +130,10 @@ class DLISFile:
             long_name: Optional[str] = None,
             properties: Optional[list[str]] = None,
             units: Optional[str] = None,
-            axis: Optional[AxisObject] = None,
+            axis: Optional[AxisItem] = None,
             minimum_value: Optional[float] = None,
             maximum_value: Optional[float] = None
-    ) -> ChannelObject:
+    ) -> ChannelItem:
         """Define a channel (ChannelObject) and add it to the DLIS.
 
         Args:
@@ -153,7 +153,7 @@ class DLISFile:
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
-        ch = ChannelObject(
+        ch = ChannelItem(
             name,
             long_name=long_name,
             properties=properties,
@@ -190,7 +190,7 @@ class DLISFile:
             vertical_depth: number_type = None,
             radial_drift: number_type = None,
             angular_drift: number_type = None
-    ) -> EquipmentObject:
+    ) -> EquipmentItem:
         """Define an equipment object.
 
         Args:
@@ -217,7 +217,7 @@ class DLISFile:
             A configured EquipmentObject instance.
         """
 
-        eq = EquipmentObject(
+        eq = EquipmentItem(
             name=name,
             trademark_name=trademark_name,
             status=status,
@@ -244,7 +244,7 @@ class DLISFile:
     def add_frame(
             self,
             name: str,
-            channels: Union[list[ChannelObject], tuple[ChannelObject, ...]],
+            channels: Union[list[ChannelItem], tuple[ChannelItem, ...]],
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
@@ -252,7 +252,7 @@ class DLISFile:
             encrypted: Optional[int] = None,
             index_min: Optional[Union[int, float]] = None,
             index_max: Optional[Union[int, float]] = None
-    ) -> FrameObject:
+    ) -> FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
 
         Args:
@@ -281,11 +281,11 @@ class DLISFile:
         if not channels:
             raise ValueError("At least one channel must be specified for a frame")
 
-        if not all(isinstance(c, ChannelObject) for c in channels):
+        if not all(isinstance(c, ChannelItem) for c in channels):
             raise TypeError(f"Expected a list of ChannelObject instances; "
                             f"got types: {', '.join(str(type(c)) for c in channels)}")
 
-        fr = FrameObject(
+        fr = FrameItem(
             name,
             channels=channels,
             description=description,
@@ -305,10 +305,10 @@ class DLISFile:
             name: str,
             long_name: str = None,
             dimension: list[int] = None,
-            axis: AxisObject = None,
-            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None,
+            axis: AxisItem = None,
+            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None,
             values: Union[list[int], list[float], list[str]] = None
-    ) -> ParameterObject:
+    ) -> ParameterItem:
         """Create a parameter.
 
         Args:
@@ -323,7 +323,7 @@ class DLISFile:
             A configured ParameterObject instance.
         """
 
-        p = ParameterObject(
+        p = ParameterItem(
             name=name,
             long_name=long_name,
             dimension=dimension,
@@ -338,10 +338,10 @@ class DLISFile:
     def add_splice(
             self,
             name: str,
-            output_channel: ChannelObject = None,
-            input_channels: Union[list[ChannelObject], tuple[ChannelObject, ...]] = None,
-            zones: Union[list[ZoneObject], tuple[ZoneObject, ...]] = None
-    ) -> SpliceObject:
+            output_channel: ChannelItem = None,
+            input_channels: Union[list[ChannelItem], tuple[ChannelItem, ...]] = None,
+            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None
+    ) -> SpliceItem:
         """Create a splice object.
 
         Args:
@@ -354,7 +354,7 @@ class DLISFile:
             A configured splice.
         """
 
-        sp = SpliceObject(
+        sp = SpliceItem(
             name=name,
             output_channel=output_channel,
             input_channels=input_channels,
@@ -370,7 +370,7 @@ class DLISFile:
             domain: str = None,
             maximum: Union[datetime.datetime, int, float] = None,
             minimum: Union[datetime.datetime, int, float] = None
-    ) -> ZoneObject:
+    ) -> ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
 
         Args:
@@ -388,7 +388,7 @@ class DLISFile:
             A configured zone, added to the DLIS.
         """
 
-        z = ZoneObject(
+        z = ZoneItem(
             name=name,
             description=description,
             domain=domain,
@@ -399,7 +399,7 @@ class DLISFile:
         self._other.append(z)
         return z
 
-    def _make_multi_frame_data(self, fr: FrameObject, **kwargs) -> MultiFrameData:
+    def _make_multi_frame_data(self, fr: FrameItem, **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
         name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}

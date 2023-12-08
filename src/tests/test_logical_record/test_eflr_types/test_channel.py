@@ -4,8 +4,8 @@ import numpy as np
 from configparser import ConfigParser
 from typing import Union, Any
 
-from dlis_writer.logical_record.eflr_types.channel import Channel, ChannelObject
-from dlis_writer.logical_record.eflr_types.axis import AxisObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
+from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_objects import NumpyInterface
 
@@ -16,7 +16,7 @@ from tests.common import base_data_path, config_params, make_config
 def chan():
     """Mock ChannelObject instance for tests."""
 
-    yield ChannelObject("some_channel")
+    yield ChannelItem("some_channel")
 
 
 @pytest.fixture
@@ -30,7 +30,7 @@ def mock_data() -> NumpyInterface:
 def test_from_config(config_params: ConfigParser):
     """Check that a ChannelObject is correctly set up from config info."""
 
-    channel: ChannelObject = Channel.make_object_from_config(config_params)
+    channel: ChannelItem = ChannelTable.make_object_from_config(config_params)
 
     conf = config_params['Channel']
 
@@ -44,7 +44,7 @@ def test_from_config(config_params: ConfigParser):
     assert channel.units.value == 'acre'
     assert channel.dimension.value == [12]
     assert isinstance(channel.axis.value, list)
-    assert isinstance(channel.axis.value[0], AxisObject)
+    assert isinstance(channel.axis.value[0], AxisItem)
     assert channel.axis.value[0].name == 'Axis-1'
     assert channel.element_limit.value == [12]
     assert channel.source.value == 'some source'
@@ -52,13 +52,13 @@ def test_from_config(config_params: ConfigParser):
     assert isinstance(channel.minimum_value.value[0], float)
     assert channel.maximum_value.value == [127.6]
 
-    assert isinstance(channel.parent, Channel)
+    assert isinstance(channel.parent, ChannelTable)
 
 
 def test_from_config_alternative_name(config_params: ConfigParser):
     """Check that a CalibrationObject is correctly set up from config info and explicitly specified section name."""
 
-    channel: ChannelObject = Channel.make_object_from_config(config_params, key="Channel-1")
+    channel: ChannelItem = ChannelTable.make_object_from_config(config_params, key="Channel-1")
 
     assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
@@ -79,7 +79,7 @@ def test_properties(prop_str: str, prop_val: list[str]):
     config["Channel488"]["name"] = "ChanChan"
     config["Channel488"]["properties"] = prop_str
 
-    channel: ChannelObject = Channel.make_object_from_config(config, key="Channel488")
+    channel: ChannelItem = ChannelTable.make_object_from_config(config, key="Channel488")
     assert channel.name == "ChanChan"
     assert channel.properties.value == prop_val
 
@@ -97,7 +97,7 @@ def test_dimension_and_element_limit(dimension: Union[str, None], element_limit:
     if element_limit is not None:
         config["Channel"]["element_limit"] = element_limit
 
-    channel: ChannelObject = Channel.make_object_from_config(config)
+    channel: ChannelItem = ChannelTable.make_object_from_config(config)
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
@@ -109,7 +109,7 @@ def test_dimension_and_element_limit_not_specified():
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
-    channel: ChannelObject = Channel.make_object_from_config(config)
+    channel: ChannelItem = ChannelTable.make_object_from_config(config)
     assert channel.dimension.value is None
     assert channel.element_limit.value is None
 
@@ -123,14 +123,14 @@ def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture):
     config["Channel"]["dimension"] = "12"
     config["Channel"]["element_limit"] = "12, 10"
 
-    Channel.make_object_from_config(config)
+    ChannelTable.make_object_from_config(config)
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
 def test_multiple_channels_default_pattern(config_params: ConfigParser):
     """Test creating all channels with config section names following the default pattern (r'Channel-\w+')."""
 
-    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params)
+    channels: list[ChannelItem] = ChannelTable.make_all_objects_from_config(config_params)
 
     assert len(channels) == 9
     assert channels[0].name == "Channel 1"
@@ -155,7 +155,7 @@ def test_multiple_channels_custom_pattern(config_params: ConfigParser):
     """Test creating channels whose config section names follow a custom regex pattern."""
 
     # pattern: 1 digit only
-    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params, key_pattern=r"Channel-\d")
+    channels: list[ChannelItem] = ChannelTable.make_all_objects_from_config(config_params, key_pattern=r"Channel-\d")
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"
     assert channels[1].name == "Channel 2"
@@ -170,7 +170,7 @@ def test_multiple_channels_custom_pattern(config_params: ConfigParser):
 def test_multiple_channels_list(config_params: ConfigParser):
     """Test creating channels by providing config section names in a list."""
 
-    channels: list[ChannelObject] = Channel.make_all_objects_from_config(config_params, keys=["Channel-1", "Channel"])
+    channels: list[ChannelItem] = ChannelTable.make_all_objects_from_config(config_params, keys=["Channel-1", "Channel"])
 
     assert len(channels) == 2
     assert channels[0].name == "Channel 1"
@@ -184,14 +184,14 @@ def test_multiple_channels_list(config_params: ConfigParser):
 
 
 @pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("T", 'T')))
-def test_setting_unit(chan: ChannelObject, val: str, unit: str):
+def test_setting_unit(chan: ChannelItem, val: str, unit: str):
     """Test setting Attribute 'units' of Channel."""
 
     chan.units.value = val
     assert chan.units.value is unit
 
 
-def test_clearing_unit(chan: ChannelObject):
+def test_clearing_unit(chan: ChannelItem):
     """Test removing previously defined channel unit."""
 
     chan.units.value = None
@@ -205,21 +205,21 @@ def test_clearing_unit(chan: ChannelObject):
         ('15', RepresentationCode.USHORT),
         (RepresentationCode.UVARI, RepresentationCode.UVARI)
 ))
-def test_setting_repr_code(chan: ChannelObject, val: Union[str, int, RepresentationCode], repc: RepresentationCode):
+def test_setting_repr_code(chan: ChannelItem, val: Union[str, int, RepresentationCode], repc: RepresentationCode):
     """Test that representation code is correctly set, whether the name, value, or the enum member itself is passed."""
 
     chan.representation_code.value = val
     assert chan.representation_code.value is repc
 
 
-def test_clearing_repr_code(chan: ChannelObject):
+def test_clearing_repr_code(chan: ChannelItem):
     """Test removing previously defined representation code."""
 
     chan.representation_code.value = None
     assert chan.representation_code.value is None
 
 
-def test_attribute_set_directly_error(chan: ChannelObject):
+def test_attribute_set_directly_error(chan: ChannelItem):
     """Test that a RuntimeError is raised if an attempt to set an Attribute directly is made."""
 
     with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'units'.*"):
@@ -238,7 +238,7 @@ def test_attribute_set_directly_error(chan: ChannelObject):
         ("10, 11", [10, 11]),
         ("10, 11,  ", [10, 11]),
 ))
-def test_setting_dimension(chan: ChannelObject, value: Union[int, str], expected_value: list[int]):
+def test_setting_dimension(chan: ChannelItem, value: Union[int, str], expected_value: list[int]):
     """Test that channel dimension is correctly parsed from str or int."""
 
     chan.dimension.value = value
@@ -246,7 +246,7 @@ def test_setting_dimension(chan: ChannelObject, value: Union[int, str], expected
 
 
 @pytest.mark.parametrize('value', ("", "10,, 10", 10.6, [10, 11.2]))
-def test_setting_dimension_error(chan: ChannelObject, value: Any):
+def test_setting_dimension_error(chan: ChannelItem, value: Any):
     """Test that a ValueError is raised if an un-parsable value is attempted to be set as dimension."""
 
     with pytest.raises(ValueError):
@@ -259,7 +259,7 @@ def test_setting_dimension_error(chan: ChannelObject, value: Any):
         ("other. punctuation; signs", ["other. punctuation; signs"]),
         (["list, of, things"], ["list, of, things"])
 ))
-def test_setting_properties(chan: ChannelObject, value: Union[str, list[str]], expected_value: list[str]):
+def test_setting_properties(chan: ChannelItem, value: Union[str, list[str]], expected_value: list[str]):
     """Test that 'properties' attribute of channel parses the input correctly (splitting str at commas)."""
 
     chan.properties.value = value
@@ -267,7 +267,7 @@ def test_setting_properties(chan: ChannelObject, value: Union[str, list[str]], e
 
 
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12])))
-def test_setting_dimension_from_data(chan: ChannelObject, mock_data: NumpyInterface, name: str, dim: list[int]):
+def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyInterface, name: str, dim: list[int]):
     """Check that dimension and element limit are correctly inferred from data."""
 
     chan.name = name
@@ -277,7 +277,7 @@ def test_setting_dimension_from_data(chan: ChannelObject, mock_data: NumpyInterf
 
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [30]), ("amplitude", [10], [1])))
-def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelObject, mock_data: NumpyInterface, name: str,
+def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, mock_data: NumpyInterface, name: str,
                                                           dim: list[int], prev_dim: list[int],
                                                           caplog: LogCaptureFixture):
     """Test that if dimension from data does not match the previously set one, a warning is included in logs."""
@@ -290,8 +290,8 @@ def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelObject, m
 
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12], [10])))
-def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelObject, mock_data: NumpyInterface, name: str, 
-                                                              dim: list[int], prev_dim: list[int], 
+def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem, mock_data: NumpyInterface, name: str,
+                                                              dim: list[int], prev_dim: list[int],
                                                               caplog: LogCaptureFixture):
     """Test that if element limit from data does not match the previously set one, a warning is included in logs."""
 
