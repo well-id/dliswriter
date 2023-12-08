@@ -1,9 +1,7 @@
-import re
 import logging
 import importlib
 from typing import Union, Optional, Any
 from typing_extensions import Self
-from configparser import ConfigParser
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
@@ -150,7 +148,7 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
         return len(self._eflr_item_dict)
 
     @classmethod
-    def get_eflr_subclass(cls, object_name: str) -> EFLRTableMeta:
+    def get_table_subclass(cls, object_name: str) -> EFLRTableMeta:
         """Retrieve an EFLRTable subclass based on the provided object name.
 
         This method is meant to be used with names of sections of a config object. The names are expected to take
@@ -167,7 +165,7 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
         return the_class
 
     @classmethod
-    def clear_eflr_table_instance_dict(cls):
+    def clear_table_instance_dict(cls):
         """Remove all instances of the EFLRTable (sub)class from the internal dictionary."""
 
         if cls._eflr_table_instance_dict:
@@ -175,7 +173,7 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
             cls._eflr_table_instance_dict.clear()
 
     @classmethod
-    def get_or_make_eflr_table(cls, set_name: Optional[str] = None) -> "EFLRTable":
+    def get_or_make_table(cls, set_name: Optional[str] = None) -> "EFLRTable":
         """Retrieve an EFLRTable instance with given set name from the internal dict or create one."""
 
         if set_name in cls._eflr_table_instance_dict:
@@ -184,7 +182,7 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
         return cls(set_name)
 
     @classmethod
-    def get_all_eflr_table_instances(cls) -> list["EFLRTable"]:
+    def get_all_tables(cls) -> list["EFLRTable"]:
         """Return a list of all EFLRTable (subclass) instances which are stored in the internal dictionary."""
 
         return list(cls._eflr_table_instance_dict.values())

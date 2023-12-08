@@ -10,9 +10,9 @@ def clear_eflr_instance_registers():
     """Remove all defined instances of EFLR from the internal dicts. Clear the EFLRObject dicts of the instances."""
 
     for eflr_type in eflr_types:
-        for eflr in eflr_type.get_all_eflr_table_instances():
+        for eflr in eflr_type.get_all_tables():
             eflr.clear_eflr_item_dict()
-        eflr_type.clear_eflr_table_instance_dict()
+        eflr_type.clear_table_instance_dict()
 
 
 @pytest.fixture(scope='session')

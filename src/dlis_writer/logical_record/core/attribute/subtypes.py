@@ -99,7 +99,7 @@ class EFLRAttribute(Attribute):
         if not isinstance(object_name, str):
             raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
 
-        object_class = self._object_class or EFLRTable.get_eflr_subclass(object_name)
+        object_class = self._object_class or EFLRTable.get_table_subclass(object_name)
         return object_class.item_type.from_config(config=config, key=object_name, get_if_exists=True)
 
 

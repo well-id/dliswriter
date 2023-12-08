@@ -68,7 +68,7 @@ class EFLRItem:
 
             return parent
 
-        return cls.parent_eflr_class.get_or_make_eflr_table(set_name=set_name)
+        return cls.parent_eflr_class.get_or_make_table(set_name=set_name)
 
     @property
     def attributes(self) -> dict[str, Attribute]:
@@ -207,7 +207,7 @@ class EFLRItem:
         other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
         item_name = config[key][name_key]
-        eflr_table = cls.parent_eflr_class.get_or_make_eflr_table(set_name=set_name)
+        eflr_table = cls.parent_eflr_class.get_or_make_table(set_name=set_name)
         eflr_item = None
         if get_if_exists:
             eflr_item = eflr_table.get_eflr_item(item_name, None)
