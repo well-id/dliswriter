@@ -107,5 +107,13 @@ coef2 = df.add_calibration_coefficient('CC2', coefficients=[1.2, 2.2, 3.4])
 coef3 = df.add_calibration_coefficient('CC3', coefficients=[2])
 
 
+# calibration measurement - use Axis and Channel
+cmeas1 = df.add_calibration_measurement('CM1', phase='BEFORE', measurement_type='Plus', axis=ax1,
+                                        measurement_source=ch1, measurement=[2.1, 2.5, 2.4], sample_count=3,
+                                        begin_time=15, standard=[20, 25])
+cmeas2 = df.add_calibration_measurement('CM2', measurement_source=ch5, measurement=[30, 40, 55, 61],
+                                        begin_time=datetime.now()-timedelta(hours=20))
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

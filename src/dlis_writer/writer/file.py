@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
+dtime_or_number_type = Union[datetime.datetime, int, float]
 values_type = Optional[Union[list[str], list[int], list[float]]]
 
 
@@ -177,6 +178,75 @@ class DLISFile:
 
         self._other.append(c)
         return c
+
+    def add_calibration_measurement(
+            self,
+            name: str,
+            phase: Optional[str] = None,
+            measurement_source: Optional[ChannelItem] = None,
+            measurement_type: Optional[str] = None,
+            dimension: Optional[list[int]] = None,
+            axis: Optional[AxisItem] = None,
+            measurement: Optional[list[number_type]] = None,
+            sample_count: Optional[int] = None,
+            maximum_deviation: Optional[list[number_type]] = None,
+            standard_deviation: Optional[list[number_type]] = None,
+            begin_time: Optional[dtime_or_number_type] = None,
+            duration: Optional[number_type] = None,
+            reference: Optional[list[number_type]] = None,
+            standard: Optional[list[number_type]] = None,
+            plus_tolerance: Optional[list[number_type]] = None,
+            minus_tolerance: Optional[list[number_type]] = None,
+            set_name: Optional[str] = None
+    ) -> CalibrationMeasurementItem:
+        """Define a calibration measurement item and add it to the DLIS.
+
+        Args:
+            name                :   Name of the calibration measurement.
+            phase               :   Phase of the measurement.
+            measurement_source  :   Source of the measurement.
+            measurement_type    :   Type of the measurement.
+            dimension           :   Dimension of the measurement.
+            axis                :   Axis of the measurement.
+            measurement         :   Measured values.
+            sample_count        :   Number of samples.
+            maximum_deviation   :   Maximum deviation of the measurement.
+            standard_deviation  :   Standard deviation of the measurement.
+            begin_time          :   Start time of the measurement; date-time or number of seconds/minutes/etc.
+                                    from a certain event.
+            duration            :   Duration of the measurement.
+            reference           :   Reference of the measurement.
+            standard            :   Standard of the measurement.
+            plus_tolerance      :   Plus tolerance of the measurement.
+            minus_tolerance     :   Minus tolerance of the measurement.
+            set_name            :   Name of the CorrelationMeasurementTable this measurement should be added to.
+
+        Returns:
+            A configured CalibrationMeasurementItem instance.
+        """
+
+        m = CalibrationMeasurementItem(
+            name=name,
+            phase=phase,
+            measurement_source=measurement_source,
+            _type=measurement_type,
+            dimension=dimension,
+            axis=axis,
+            measurement=measurement,
+            sample_count=sample_count,
+            maximum_deviation=maximum_deviation,
+            standard_deviation=standard_deviation,
+            begin_time=begin_time,
+            duration=duration,
+            reference=reference,
+            standard=standard,
+            plus_tolerance=plus_tolerance,
+            minus_tolerance=minus_tolerance,
+            set_name=set_name
+        )
+
+        self._other.append(m)
+        return m
 
     def add_channel(
             self,
@@ -582,8 +652,8 @@ class DLISFile:
             name: str,
             description: str = None,
             domain: str = None,
-            maximum: Union[datetime.datetime, int, float] = None,
-            minimum: Union[datetime.datetime, int, float] = None,
+            maximum: dtime_or_number_type = None,
+            minimum: dtime_or_number_type = None,
             set_name: Optional[str] = None
     ) -> ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
