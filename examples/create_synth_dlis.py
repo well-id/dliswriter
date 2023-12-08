@@ -83,5 +83,10 @@ equipment3 = df.add_equipment('EQ3')
 equipment3.status.value = 0
 
 
+# tool - using equipment, channels, and parameters
+tool1 = df.add_tool('TOOL1', status=1, parts=(equipment1, equipment2), channels=(ch5, ch6), description='...')
+tool2 = df.add_tool('TOOL2', parameters=(parameter1, parameter2), channels=(ch1, ch2, ch3), parts=(equipment1,))
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

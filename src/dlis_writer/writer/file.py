@@ -16,6 +16,7 @@ from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.eflr_types.splice import SpliceItem
+from dlis_writer.logical_record.eflr_types.tool import ToolItem
 from dlis_writer.logical_record.eflr_types.zone import ZoneItem
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
@@ -27,6 +28,13 @@ logger = logging.getLogger(__name__)
 
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
+
+
+def list_or_tuple_type(obj: type, optional=True):
+    tt = Union[list[obj], tuple[obj, ...]]
+    if optional:
+        tt = Optional[tt]
+    return tt
 
 
 class DLISFile:
@@ -253,7 +261,7 @@ class DLISFile:
     def add_frame(
             self,
             name: str,
-            channels: Union[list[ChannelItem], tuple[ChannelItem, ...]],
+            channels: list_or_tuple_type(ChannelItem),
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
@@ -315,11 +323,11 @@ class DLISFile:
     def add_parameter(
             self,
             name: str,
-            long_name: str = None,
-            dimension: list[int] = None,
-            axis: AxisItem = None,
-            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None,
-            values: Union[list[int], list[float], list[str]] = None,
+            long_name: Optional[str] = None,
+            dimension: Optional[list[int]] = None,
+            axis: Optional[AxisItem] = None,
+            zones: list_or_tuple_type(ZoneItem) = None,
+            values: Optional[Union[list[int], list[float], list[str]]] = None,
             set_name: Optional[str] = None
     ) -> ParameterItem:
         """Create a parameter.
@@ -354,8 +362,8 @@ class DLISFile:
             self,
             name: str,
             output_channel: ChannelItem = None,
-            input_channels: Union[list[ChannelItem], tuple[ChannelItem, ...]] = None,
-            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None,
+            input_channels: list_or_tuple_type(ChannelItem) = None,
+            zones: list_or_tuple_type(ZoneItem) = None,
             set_name: Optional[str] = None
     ) -> SpliceItem:
         """Create a splice object.
@@ -380,6 +388,50 @@ class DLISFile:
         )
         self._other.append(sp)
         return sp
+
+    def add_tool(
+            self,
+            name: str,
+            description: Optional[str] = None,
+            trademark_name: Optional[str] = None,
+            generic_name: Optional[str] = None,
+            parts: list_or_tuple_type(EquipmentItem) = None,
+            status: Optional[int] = None,
+            channels: list_or_tuple_type(ChannelItem) = None,
+            parameters: list_or_tuple_type(ParameterItem) = None,
+            set_name: Optional[str] = None
+    ) -> ToolItem:
+        """Create a tool object.
+
+        Args:
+            name            :   Name of the tool.
+            description     :   Description of the tool.
+            trademark_name  :   Trademark name.
+            generic_name    :   Generic name.
+            parts           :   Equipment this tool consists of.
+            status          :   Status of the tool: 1 or 0.
+            channels        :   Channels associated with this tool.
+            parameters      :   Parameters associated with this tool.
+            set_name        :   Name of the ToolTable this tool should be added to.
+
+        Returns:
+            A configured tool.
+        """
+
+        t = ToolItem(
+            name=name,
+            description=description,
+            trademark_name=trademark_name,
+            generic_name=generic_name,
+            parts=parts,
+            status=status,
+            channels=channels,
+            parameters=parameters,
+            set_name=set_name
+        )
+
+        self._other.append(t)
+        return t
 
     def add_zone(
             self,
