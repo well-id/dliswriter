@@ -120,6 +120,10 @@ calibration1 = df.add_calibration('CALIB-1', calibrated_channels=(ch4,), uncalib
                                   coefficients=(coef1, coef2, coef3), measurements=(cmeas1, cmeas2),
                                   parameters=(parameter2,), method='Two-point linear')
 
+# well reference point
+wrp = df.add_well_reference_point("WELL-REF", coordinate_1_name="Latitude", coordinate_1_value=40.34,
+                                  coordinate_2_name='Longitude', coordinate_2_value=23.4232)
+
 
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

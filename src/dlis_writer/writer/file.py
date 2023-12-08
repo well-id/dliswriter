@@ -22,6 +22,7 @@ from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.eflr_types.process import ProcessItem
 from dlis_writer.logical_record.eflr_types.splice import SpliceItem
 from dlis_writer.logical_record.eflr_types.tool import ToolItem
+from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointItem
 from dlis_writer.logical_record.eflr_types.zone import ZoneItem
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
@@ -687,6 +688,62 @@ class DLISFile:
 
         self._other.append(t)
         return t
+
+    def add_well_reference_point(
+            self,
+            name: str,
+            permanent_datum: Optional[str] = None,
+            vertical_zero: Optional[str] = None,
+            permanent_datum_elevation: Optional[number_type] = None,
+            above_permanent_datum: Optional[number_type] = None,
+            magnetic_declination: Optional[number_type] = None,
+            coordinate_1_name: Optional[str] = None,
+            coordinate_1_value: Optional[number_type] = None,
+            coordinate_2_name: Optional[str] = None,
+            coordinate_2_value: Optional[number_type] = None,
+            coordinate_3_name: Optional[str] = None,
+            coordinate_3_value: Optional[number_type] = None,
+            set_name: Optional[str] = None
+    ) -> WellReferencePointItem:
+        """Define a well reference point and add it to the DLIS.
+
+        Args:
+            name                        :   Name of the well reference point.
+            permanent_datum             :   Permanent datum (name).
+            vertical_zero               :   Vertical zero (name).
+            permanent_datum_elevation   :   Elevation of the permanent datum.
+            above_permanent_datum       :   Value above permanent datum.
+            magnetic_declination        :   Magnetic declination.
+            coordinate_1_name           :   Name of coordinate 1.
+            coordinate_1_value          :   Value of coordinate 1.
+            coordinate_2_name           :   Name of coordinate 2.
+            coordinate_2_value          :   Value of coordinate 2.
+            coordinate_3_name           :   Name of coordinate 3.
+            coordinate_3_value          :   Value of coordinate 3.
+            set_name                    :   Name of the WellReferencePointTable this item should be added to.
+
+        Returns:
+            A configured WellReferencePointItem instance.
+        """
+
+        w = WellReferencePointItem(
+            name=name,
+            permanent_datum=permanent_datum,
+            vertical_zero=vertical_zero,
+            permanent_datum_elevation=permanent_datum_elevation,
+            above_permanent_datum=above_permanent_datum,
+            magnetic_declination=magnetic_declination,
+            coordinate_1_name=coordinate_1_name,
+            coordinate_1_value=coordinate_1_value,
+            coordinate_2_name=coordinate_2_name,
+            coordinate_2_value=coordinate_2_value,
+            coordinate_3_name=coordinate_3_name,
+            coordinate_3_value=coordinate_3_value,
+            set_name=set_name
+        )
+
+        self._other.append(w)
+        return w
 
     def add_zone(
             self,
