@@ -100,5 +100,12 @@ process1 = df.add_process("PROC", input_channels=(ch1, ch2), output_channels=(ch
                           output_computations=(computation2, computation3), properties=['a', 'b', 'c'])
 
 
+# calibration coefficient
+coef1 = df.add_calibration_coefficient('CC1', label='Gain', coefficients=[100.1, 100.2], references=[122, 123],
+                                       plus_tolerances=[2, 2.5], minus_tolerances=[3, 2.4])
+coef2 = df.add_calibration_coefficient('CC2', coefficients=[1.2, 2.2, 3.4])
+coef3 = df.add_calibration_coefficient('CC3', coefficients=[2])
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

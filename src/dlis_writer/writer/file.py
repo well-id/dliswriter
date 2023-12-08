@@ -10,6 +10,8 @@ from dlis_writer.utils.source_data_wrappers import DictDataWrapper
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
+from dlis_writer.logical_record.eflr_types.calibration import (CalibrationCoefficientItem, CalibrationMeasurementItem,
+                                                               CalibrationItem)
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.computation import ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
@@ -137,6 +139,44 @@ class DLISFile:
 
         self._other.append(ax)
         return ax
+
+    def add_calibration_coefficient(
+            self,
+            name: str,
+            label: Optional[str] = None,
+            coefficients: Optional[list[number_type]] = None,
+            references: Optional[list[number_type]] = None,
+            plus_tolerances: Optional[list[number_type]] = None,
+            minus_tolerances: Optional[list[number_type]] = None,
+            set_name: Optional[str] = None,
+    ) -> CalibrationCoefficientItem:
+        """Define a calibration coefficient object and add it to the DLIS.
+
+        Args:
+            name                :   Name of the calibration coefficient.
+            label               :   Label of the calibration coefficient.
+            coefficients        :   Coefficients of the item.
+            references          :   References of the item.
+            plus_tolerances     :   Plus tolerances of the item.
+            minus_tolerances    :   Minus tolerances of the item.
+            set_name            :   Name of the CorrelationCoefficientTable this item should be added to.
+
+        Returns:
+            A configured calibration coefficient item.
+        """
+
+        c = CalibrationCoefficientItem(
+            name=name,
+            label=label,
+            coefficients=coefficients,
+            references=references,
+            plus_tolerances=plus_tolerances,
+            minus_tolerances=minus_tolerances,
+            set_name=set_name
+        )
+
+        self._other.append(c)
+        return c
 
     def add_channel(
             self,
