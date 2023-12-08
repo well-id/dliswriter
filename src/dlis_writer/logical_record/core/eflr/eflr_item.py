@@ -35,7 +35,7 @@ class EFLRItem:
 
         self.name = name    #: name of the item
         self.parent = self._get_parent(parent=parent, set_name=set_name)  #: EFLRTable instance this item belongs to
-        self.parent.register_child(self)
+        self.parent.register_item(self)
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self.copy_number = 0            #: copy number of the item

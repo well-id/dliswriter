@@ -91,14 +91,19 @@ class EFLRTableMeta(LRMeta):
 
         other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
-        eflr_instance = cls.get_or_make_eflr_table(set_name=set_name)
-        obj = eflr_instance.make_eflr_item_in_this_table(config[key][name_key], **other_kwargs, get_if_exists=get_if_exists)
+        item_name = config[key][name_key]
+        eflr_table = cls.get_or_make_eflr_table(set_name=set_name)
+        eflr_item = None
+        if get_if_exists:
+            eflr_item = eflr_table.get_eflr_item(item_name, None)
+        if eflr_item is None:
+            eflr_item = eflr_table.item_type(item_name, parent=eflr_table, **other_kwargs)
 
-        for attr in obj.attributes.values():
+        for attr in eflr_item.attributes.values():
             if hasattr(attr, 'finalise_from_config'):  # EFLRAttribute; cannot be imported here - circular import issue
                 attr.finalise_from_config(config)
 
-        return obj
+        return eflr_item
 
     def make_all_eflr_items_from_config(cls, config: ConfigParser, keys: Optional[list[str]] = None,
                                         key_pattern: Optional[str] = None, **kwargs) -> list["Self.item_type"]:

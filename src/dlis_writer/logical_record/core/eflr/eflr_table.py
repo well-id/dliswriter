@@ -1,6 +1,6 @@
 import logging
 import importlib
-from typing import Union, Optional
+from typing import Union, Optional, Any
 from typing_extensions import Self
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
@@ -112,7 +112,17 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
 
         return bts
 
-    def register_child(self, child: EFLRItem):
+    def get_eflr_item(self, name: str, *args: Any) -> Union[EFLRItem, Any]:
+        """Get an EFLRItem instance from the internal dict by its name.
+
+        Args:
+            name    :   Name of the EFLR item (under which it was registered).
+            *args   :   A maximum of 1 arg is allowed. It is used as the fallback value if the item is not found.
+        """
+
+        return self._eflr_item_dict.get(name, *args)
+
+    def register_item(self, child: EFLRItem):
         """Register a child EFLRItem with this EFLRTable."""
 
         if not isinstance(child, self.item_type):
@@ -125,24 +135,6 @@ class EFLRTable(LogicalRecord, metaclass=EFLRTableMeta):
                 self._attributes[attr_name] = attr.copy()
 
         child.origin_reference = self.origin_reference
-
-    def make_eflr_item_in_this_table(self, name: str, get_if_exists: bool = False, **kwargs) -> EFLRItem:
-        """Make an EFLRItem according the specifications and register it with this EFLRTable instance.
-
-        Args:
-            name            :   Name of the item to be created.
-            get_if_exists   :   If True and an item of the same name already exists in the internal eflr item dict,
-                                return the existing item rather than overwriting it with a new one.
-            kwargs          :   Keyword arguments passed to initialisation of the item - e.g. setting the values
-                                of its attributes.
-        """
-
-        if get_if_exists and name in self._eflr_item_dict:
-            return self._eflr_item_dict[name]
-
-        obj = self.item_type(name, parent=self, **kwargs)
-
-        return obj
 
     def get_all_eflr_items(self) -> list[EFLRItem]:
         """Return a list of all EFLRItem instances registered with this EFLRTable instance."""
