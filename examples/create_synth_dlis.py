@@ -115,5 +115,11 @@ cmeas2 = df.add_calibration_measurement('CM2', measurement_source=ch5, measureme
                                         begin_time=datetime.now()-timedelta(hours=20))
 
 
+# calibration - using calibration coefficient & measurement, channels, and parameters
+calibration1 = df.add_calibration('CALIB-1', calibrated_channels=(ch4,), uncalibrated_channels=(ch1, ch5),
+                                  coefficients=(coef1, coef2, coef3), measurements=(cmeas1, cmeas2),
+                                  parameters=(parameter2,), method='Two-point linear')
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

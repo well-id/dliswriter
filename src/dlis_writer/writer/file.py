@@ -141,6 +141,47 @@ class DLISFile:
         self._other.append(ax)
         return ax
 
+    def add_calibration(
+            self,
+            name: str,
+            calibrated_channels: list_or_tuple_type(ChannelItem) = None,
+            uncalibrated_channels: list_or_tuple_type(ChannelItem) = None,
+            coefficients: list_or_tuple_type(CalibrationCoefficientItem) = None,
+            measurements: list_or_tuple_type(CalibrationMeasurementItem) = None,
+            parameters: list_or_tuple_type(ParameterItem) = None,
+            method: Optional[str] = None,
+            set_name: Optional[str] = None
+    ) -> CalibrationItem:
+        """Define a calibration item and add it to the DLIS.
+
+        Args:
+            name                    :   Name of the calibration.
+            calibrated_channels     :   Calibrated channels.
+            uncalibrated_channels   :   Uncalibrated channels.
+            coefficients            :   Coefficients of the calibration.
+            measurements            :   Measurements made for the calibration.
+            parameters              :   Parameters of the calibration.
+            method                  :   Calibration method.
+            set_name                :   Name of the CalibrationTable this calibration should be added to.
+
+        Returns:
+            A configured calibration object.
+        """
+
+        c = CalibrationItem(
+            name=name,
+            calibrated_channels=calibrated_channels,
+            uncalibrated_channels=uncalibrated_channels,
+            coefficients=coefficients,
+            measurements=measurements,
+            parameters=parameters,
+            method=method,
+            set_name=set_name
+        )
+
+        self._other.append(c)
+        return c
+
     def add_calibration_coefficient(
             self,
             name: str,
