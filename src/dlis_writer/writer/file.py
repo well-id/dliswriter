@@ -17,6 +17,7 @@ from dlis_writer.logical_record.eflr_types.computation import ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
+from dlis_writer.logical_record.eflr_types.message import MessageItem, CommentItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.eflr_types.path import PathItem
@@ -520,6 +521,50 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_message(
+            self,
+            name: str,
+            message_type: Optional[str] = None,
+            time: Optional[dtime_or_number_type] = None,
+            borehole_drift: Optional[number_type] = None,
+            vertical_depth: Optional[number_type] = None,
+            radial_drift: Optional[number_type] = None,
+            angular_drift: Optional[number_type] = None,
+            text: Optional[list[str]] = None,
+            set_name: Optional[str] = None,
+    ) -> MessageItem:
+        """Create a message and add it to DLIS.
+
+        Args:
+            name            :   Name of the message.
+            message_type    :   Type of the message.
+            time            :   Time of the message.
+            borehole_drift  :   Borehole drift.
+            vertical_depth  :   Vertical depth.
+            radial_drift    :   Radial drift.
+            angular_drift   :   Angular drift.
+            text            :   Text of the message.
+            set_name        :   Name of the MessageTable this message should be added to.
+
+        Returns:
+            A configured message.
+        """
+
+        m = MessageItem(
+            name=name,
+            _type=message_type,
+            time=time,
+            borehole_drift=borehole_drift,
+            vertical_depth=vertical_depth,
+            radial_drift=radial_drift,
+            angular_drift=angular_drift,
+            text=text,
+            set_name=set_name
+        )
+
+        self._other.append(m)
+        return m
 
     def add_parameter(
             self,

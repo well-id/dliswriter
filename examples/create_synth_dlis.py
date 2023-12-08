@@ -133,5 +133,11 @@ wrp = df.add_well_reference_point("WELL-REF", coordinate_1_name="Latitude", coor
 # path2 = df.add_path('PATH-2', frame_type=second_frame, value=(ch5, ch6), tool_zero_offset=1231.1, time=11.1)
 
 
+# message
+message1 = df.add_message('MSG1', text=["Some message", "part 2 of the message"], time=datetime.now())
+message2 = df.add_message("MSG2", text=["You have a message"], message_type="Command")
+message3 = df.add_message("MSG3", vertical_depth=213.1, text=["More", "text"], time=121.22)
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)
