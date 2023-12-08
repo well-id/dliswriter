@@ -7,7 +7,7 @@ from typing import Union, Any
 from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.source_data_objects import NumpyInterface
+from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 from tests.common import base_data_path, config_params, make_config
 
@@ -20,11 +20,11 @@ def chan():
 
 
 @pytest.fixture
-def mock_data() -> NumpyInterface:
+def mock_data() -> NumpyDataWrapper:
     """Mock data (structured numpy array) for tests."""
 
     dt = np.dtype([('time', float), ('amplitude', float, (10,)), ('radius', float, (12,))])
-    return NumpyInterface(np.zeros(30, dtype=dt))
+    return NumpyDataWrapper(np.zeros(30, dtype=dt))
 
 
 def test_from_config(config_params: ConfigParser):
@@ -267,7 +267,7 @@ def test_setting_properties(chan: ChannelItem, value: Union[str, list[str]], exp
 
 
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12])))
-def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyInterface, name: str, dim: list[int]):
+def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str, dim: list[int]):
     """Check that dimension and element limit are correctly inferred from data."""
 
     chan.name = name
@@ -277,7 +277,7 @@ def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyInterfac
 
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [30]), ("amplitude", [10], [1])))
-def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, mock_data: NumpyInterface, name: str,
+def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str,
                                                           dim: list[int], prev_dim: list[int],
                                                           caplog: LogCaptureFixture):
     """Test that if dimension from data does not match the previously set one, a warning is included in logs."""
@@ -290,7 +290,7 @@ def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, moc
 
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12], [10])))
-def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem, mock_data: NumpyInterface, name: str,
+def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str,
                                                               dim: list[int], prev_dim: list[int],
                                                               caplog: LogCaptureFixture):
     """Test that if element limit from data does not match the previously set one, a warning is included in logs."""

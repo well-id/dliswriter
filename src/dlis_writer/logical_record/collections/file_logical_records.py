@@ -10,7 +10,7 @@ from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.core.eflr import EFLRTable
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -233,7 +233,7 @@ class FileLogicalRecords:
                                    f"this might cause issues with opening the produced DLIS file in some software")
 
     @staticmethod
-    def _make_frame_and_data(config: ConfigParser, data: SourceDataObject, key: str = 'Frame',
+    def _make_frame_and_data(config: ConfigParser, data: SourceDataWrapper, key: str = 'Frame',
                              chunk_size: typing.Optional[int] = None) \
             -> MultiFrameData:
         """Define a FrameObject and a corresponding MultiFrameData based on the provided config information.
@@ -261,7 +261,7 @@ class FileLogicalRecords:
         return MultiFrameData(frame_object, data, chunk_size=chunk_size)
 
     @classmethod
-    def from_config_and_data(cls, config: ConfigParser, data: SourceDataObject,
+    def from_config_and_data(cls, config: ConfigParser, data: SourceDataWrapper,
                              chunk_size: typing.Optional[int] = None) -> Self:
         """Create a FileLogicalRecords object from a config object and data.
 

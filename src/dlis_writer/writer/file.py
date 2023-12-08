@@ -6,7 +6,7 @@ from timeit import timeit
 from datetime import timedelta
 import logging
 
-from dlis_writer.utils.source_data_objects import DictInterface
+from dlis_writer.utils.source_data_wrappers import DictDataWrapper
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
@@ -403,7 +403,7 @@ class DLISFile:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
         name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}
-        data_object = DictInterface(self._data_dict, mapping=name_mapping)
+        data_object = DictDataWrapper(self._data_dict, mapping=name_mapping)
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 

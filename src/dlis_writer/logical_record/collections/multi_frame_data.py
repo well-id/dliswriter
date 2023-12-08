@@ -3,7 +3,7 @@ from typing_extensions import Self
 
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.iflr_types import FrameData
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 class MultiFrameData:
@@ -13,7 +13,7 @@ class MultiFrameData:
     SourceDataObject (specifying numerical data, channel names, data types etc.)
     """
 
-    def __init__(self, frame: FrameItem, data: SourceDataObject, chunk_size: typing.Optional[int] = None):
+    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: typing.Optional[int] = None):
         """Initialise MultiFrameData object.
 
         Args:
@@ -25,7 +25,7 @@ class MultiFrameData:
         super().__init__()
 
         self._check_type(frame, FrameItem)
-        self._check_type(data, SourceDataObject)
+        self._check_type(data, SourceDataWrapper)
         self._check_type(chunk_size, int, type(None))
 
         frame_channel_names = tuple(c.name for c in frame.channels.value)

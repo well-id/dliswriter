@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisTable
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class ChannelItem(EFLRItem):
 
         Args:
             name            :   Name of the ChannelItem.
-            dataset_name    :   Name of the data corresponding to this channel in the SourceDataObject.
+            dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
@@ -52,7 +52,7 @@ class ChannelItem(EFLRItem):
 
     @property
     def dataset_name(self) -> str:
-        """Name of the data corresponding to this channel in the SourceDataObject."""
+        """Name of the data corresponding to this channel in the SourceDataWrapper."""
 
         return self._dataset_name if self._dataset_name is not None else self.name
 
@@ -62,7 +62,7 @@ class ChannelItem(EFLRItem):
 
         self._dataset_name = name
 
-    def set_dimension_and_repr_code_from_data(self, data: SourceDataObject):
+    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper):
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
 
         sub_data = data[self.name]
@@ -70,7 +70,7 @@ class ChannelItem(EFLRItem):
         self._set_repr_code_from_data(sub_data)
 
     def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]):
-        """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataObject."""
+        """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dim = list(sub_data.shape[1:]) or [1]
 
@@ -89,7 +89,7 @@ class ChannelItem(EFLRItem):
             self.element_limit.value = dim
 
     def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]):
-        """Determine representation code of the Channel data from a relevant subset of a SourceDataObject."""
+        """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dt = sub_data.dtype
 

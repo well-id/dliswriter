@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -79,7 +79,7 @@ class FrameItem(EFLRItem):
         else:
             raise TypeError(f"Cannot convert {type(value)} object ({value}) to integer")
 
-    def setup_from_data(self, data: SourceDataObject):
+    def setup_from_data(self, data: SourceDataWrapper):
         """Set up attributes of the frame and its channels based on the source data."""
 
         if not self.channels.value:
@@ -90,7 +90,7 @@ class FrameItem(EFLRItem):
 
         self._setup_frame_params_from_data(data)
 
-    def _setup_frame_params_from_data(self, data: SourceDataObject):
+    def _setup_frame_params_from_data(self, data: SourceDataWrapper):
         """Set up the index characteristics of the frame based on the source data.
 
         The index characteristics include: min and max value, spacing, and direction (increasing/decreasing).

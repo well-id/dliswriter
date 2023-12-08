@@ -9,7 +9,7 @@ import os
 from configparser import ConfigParser
 
 from dlis_writer.writer.write_dlis_file import write_dlis_file
-from dlis_writer.utils.source_data_objects import NumpyInterface, HDF5Interface, SourceDataObject
+from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper, HDF5DataWrapper, SourceDataWrapper
 
 from tests.common import base_data_path, clear_eflr_instance_registers
 
@@ -66,17 +66,17 @@ def select_channel(f: dlis.file.LogicalFile, name: str) -> dlis.channel.Channel:
     return f.object("CHANNEL", name)
 
 
-def write_file(data: Union[np.ndarray, str, Path, SourceDataObject], dlis_file_name: Union[str, Path],
+def write_file(data: Union[np.ndarray, str, Path, SourceDataWrapper], dlis_file_name: Union[str, Path],
                config: ConfigParser):
     """Load / adapt the provided data and write a DLIS file using the provided config information."""
 
     clear_eflr_instance_registers()
 
     if isinstance(data, np.ndarray):
-        data = NumpyInterface.from_config(data, config)
+        data = NumpyDataWrapper.from_config(data, config)
     elif isinstance(data, (str, Path)):
-        data = HDF5Interface.from_config(data, config)
-    elif not isinstance(data, SourceDataObject):
+        data = HDF5DataWrapper.from_config(data, config)
+    elif not isinstance(data, SourceDataWrapper):
         raise TypeError(f"Expected a SourceDataObject, numpy.ndarray, or a path to a HDF5 file; got {type(data)}")
 
     write_dlis_file(data=data, config=config, dlis_file_name=dlis_file_name)
