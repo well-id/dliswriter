@@ -55,7 +55,7 @@ class FileHeaderTable(EFLRTable):
 
     set_type = 'FILE-HEADER'
     logical_record_type = EFLRType.FHLR
-    object_type = FileHeaderItem
+    item_type = FileHeaderItem
 
     def _make_template_bytes(self) -> bytes:
         """Create bytes describing the template - kinds of attributes to be found in the FileHeader EFLR."""

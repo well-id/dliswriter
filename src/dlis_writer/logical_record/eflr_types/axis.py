@@ -29,7 +29,7 @@ class AxisTable(EFLRTable):
 
     set_type = 'AXIS'
     logical_record_type = EFLRType.AXIS
-    object_type = AxisItem
+    item_type = AxisItem
 
 
 AxisItem.parent_eflr_class = AxisTable

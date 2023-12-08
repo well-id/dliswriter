@@ -13,7 +13,7 @@ def test_from_config(config_params: ConfigParser, zone_nr: int):
     """Test creating ZoneObject from config."""
 
     key = f"Zone-{zone_nr}"
-    zone: ZoneItem = ZoneTable.make_object_from_config(config_params, key=key)
+    zone: ZoneItem = ZoneTable.make_eflr_item_from_config(config_params, key=key)
     
     conf = config_params[key]
     
@@ -40,7 +40,7 @@ def test_from_config_units(config_params: ConfigParser, zone_nr: int, value_type
     """Test creating ZoneObject from config for different types of values. Check that the repr code is correct."""
 
     key = f"Zone-{zone_nr}"
-    zone: ZoneItem = ZoneTable.make_object_from_config(config_params, key=key)
+    zone: ZoneItem = ZoneTable.make_eflr_item_from_config(config_params, key=key)
 
     assert isinstance(zone.maximum.value, value_type)
     assert isinstance(zone.minimum.value, value_type)

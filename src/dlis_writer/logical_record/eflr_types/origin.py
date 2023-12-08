@@ -56,7 +56,7 @@ class OriginTable(EFLRTable):
 
     set_type = 'ORIGIN'
     logical_record_type = EFLRType.OLR
-    object_type = OriginItem
+    item_type = OriginItem
 
 
 OriginItem.parent_eflr_class = OriginTable

@@ -11,7 +11,7 @@ def test_message_from_config(config_params: ConfigParser):
     """Test creating MessageObject from config."""
 
     key = "Message-1"
-    m: MessageItem = MessageTable.make_object_from_config(config_params, key=key)
+    m: MessageItem = MessageTable.make_eflr_item_from_config(config_params, key=key)
 
     assert m.name == "MESSAGE-1"
     assert m._type.value == 'Command'
@@ -31,7 +31,7 @@ def test_comment_from_config(config_params: ConfigParser, key: str, name: str, t
     """Test creating CommentObject from config."""
 
     key = f"Comment-{key}"
-    c: CommentItem = CommentTable.make_object_from_config(config_params, key=key)
+    c: CommentItem = CommentTable.make_eflr_item_from_config(config_params, key=key)
 
     assert c.name == name
     assert c.text.value == text

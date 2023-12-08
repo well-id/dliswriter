@@ -35,7 +35,7 @@ class GroupTable(EFLRTable):
 
     set_type = 'GROUP'
     logical_record_type = EFLRType.STATIC
-    object_type = GroupItem
+    item_type = GroupItem
 
 
 GroupItem.parent_eflr_class = GroupTable

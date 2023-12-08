@@ -39,7 +39,7 @@ class ZoneTable(EFLRTable):
 
     set_type = 'ZONE'
     logical_record_type = EFLRType.STATIC
-    object_type = ZoneItem
+    item_type = ZoneItem
 
 
 ZoneItem.parent_eflr_class = ZoneTable

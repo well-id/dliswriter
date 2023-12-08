@@ -141,7 +141,7 @@ class FileLogicalRecords:
         """
 
         def get_len(lr_list):
-            return sum(lr.n_objects for lr in lr_list)
+            return sum(lr.n_items for lr in lr_list)
 
         len_channels = get_len(self._channels)                          # number of Channel EFLRs
         len_frames = get_len(self._frames)                              # number of Frame EFLRs
@@ -197,7 +197,7 @@ class FileLogicalRecords:
         def check(eflr: EFLRTable, exactly_one: bool = False):
             """Check that at least/exactly one EFLRObject is defined for the provided EFLR."""
 
-            names = [o.name for o in eflr.get_all_objects()]
+            names = [o.name for o in eflr.get_all_eflr_items()]
             verify_n(names, eflr.__class__.__name__, exactly_one=exactly_one)
 
         def check_list(eflr_list: list[EFLRTable], class_name: str):
@@ -205,7 +205,7 @@ class FileLogicalRecords:
 
             names: list[str] = []
             for eflr in eflr_list:
-                names.extend(o.name for o in eflr.get_all_objects())
+                names.extend(o.name for o in eflr.get_all_eflr_items())
             verify_n(names, class_name)
 
         check(self._file_header, exactly_one=True)
@@ -223,11 +223,11 @@ class FileLogicalRecords:
 
         channels_in_frames = set()
         for frm in self._frames:
-            for frame_object in frm.get_all_objects():
+            for frame_object in frm.get_all_eflr_items():
                 channels_in_frames |= set(frame_object.channels.value)
 
         for ch in self._channels:
-            for channel_object in ch.get_all_objects():
+            for channel_object in ch.get_all_eflr_items():
                 if channel_object not in channels_in_frames:
                     logger.warning(f"{channel_object} has not been added to any frame; "
                                    f"this might cause issues with opening the produced DLIS file in some software")
@@ -249,7 +249,7 @@ class FileLogicalRecords:
             MultiFrameData object, containing the information on the frame and frame data records.
         """
 
-        frame_object: FrameItem = FrameTable.make_object_from_config(config, key=key)
+        frame_object: FrameItem = FrameTable.make_eflr_item_from_config(config, key=key)
 
         if frame_object.channels.value:
             frame_object.setup_from_data(data)
@@ -275,8 +275,8 @@ class FileLogicalRecords:
             FileLogicalRecords: a configured instance of the class.
         """
 
-        file_header_object: FileHeaderItem = FileHeaderTable.make_object_from_config(config)
-        origin_object: OriginItem = OriginTable.make_object_from_config(config)
+        file_header_object: FileHeaderItem = FileHeaderTable.make_eflr_item_from_config(config)
+        origin_object: OriginItem = OriginTable.make_eflr_item_from_config(config)
 
         obj = cls(
             sul=StorageUnitLabel.make_from_config(config),
@@ -284,7 +284,7 @@ class FileLogicalRecords:
             orig=origin_object.parent
         )
 
-        channels = ChannelTable.make_all_objects_from_config(config)
+        channels = ChannelTable.make_all_eflr_items_from_config(config)
 
         frame_keys = (key for key in config.sections() if key.startswith('Frame-') or key == 'Frame')
         frame_and_data_objects = [
@@ -304,7 +304,7 @@ class FileLogicalRecords:
         other_classes = [c for c in eflr_types if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
 
         for c in other_classes:
-            objects = c.make_all_objects_from_config(config, get_if_exists=True)
+            objects = c.make_all_eflr_items_from_config(config, get_if_exists=True)
             if not objects:
                 logger.debug(f"No instances of {c.__name__} defined")
             else:

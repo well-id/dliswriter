@@ -35,7 +35,7 @@ class SpliceTable(EFLRTable):
 
     set_type = 'SPLICE'
     logical_record_type = EFLRType.STATIC
-    object_type = SpliceItem
+    item_type = SpliceItem
 
 
 SpliceItem.parent_eflr_class = SpliceTable

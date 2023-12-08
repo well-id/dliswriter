@@ -44,7 +44,7 @@ class LongNameTable(EFLRTable):
 
     set_type = 'LONG-NAME'
     logical_record_type = EFLRType.LNAME
-    object_type = LongNameItem
+    item_type = LongNameItem
 
 
 LongNameItem.parent_eflr_class = LongNameTable

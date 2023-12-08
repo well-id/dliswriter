@@ -17,7 +17,7 @@ def test_group_params(config_params: ConfigParser, key: str, name: str, descript
                       object_class: type, object_names: list[str], group_names: list[str]):
     """Test creating GroupObject from config."""
 
-    g: GroupItem = GroupTable.make_object_from_config(config_params, f"Group-{key}")
+    g: GroupItem = GroupTable.make_eflr_item_from_config(config_params, f"Group-{key}")
 
     assert g.name == name
     assert g.description.value == description

@@ -14,7 +14,7 @@ def test_process_params(config_params: ConfigParser, key: str, name: str, input_
                         output_channels: list[str], input_compts: list[str], output_compts: list[str]):
     """Test creating ProcessObject from config."""
 
-    proc: ProcessItem = ProcessTable.make_object_from_config(config_params, key=key)
+    proc: ProcessItem = ProcessTable.make_eflr_item_from_config(config_params, key=key)
 
     assert proc.name == name
 

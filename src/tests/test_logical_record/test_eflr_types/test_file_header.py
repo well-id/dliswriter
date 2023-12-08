@@ -16,7 +16,7 @@ def _check_with_config(fh: FileHeaderItem, config: ConfigParser):
 def test_from_config(config_params: ConfigParser):
     """Test creating a FileHeaderObject from config."""
 
-    fh: FileHeaderItem = FileHeaderTable.make_object_from_config(config_params)
+    fh: FileHeaderItem = FileHeaderTable.make_eflr_item_from_config(config_params)
     _check_with_config(fh, config_params)
 
 
@@ -28,5 +28,5 @@ def test_from_config_with_params(identifier: str, sequence_number: str):
     config["FileHeader"]["name"] = identifier
     config["FileHeader"]["sequence_number"] = sequence_number
 
-    fh: FileHeaderItem = FileHeaderTable.make_object_from_config(config)
+    fh: FileHeaderItem = FileHeaderTable.make_eflr_item_from_config(config)
     _check_with_config(fh, config)

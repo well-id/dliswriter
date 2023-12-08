@@ -27,7 +27,7 @@ class NoFormatTable(EFLRTable):
     
     set_type = 'NO-FORMAT'
     logical_record_type = EFLRType.UDI
-    object_type = NoFormatItem
+    item_type = NoFormatItem
 
 
 NoFormatItem.parent_eflr_class = NoFormatTable

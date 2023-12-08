@@ -56,7 +56,7 @@ class ProcessTable(EFLRTable):
 
     set_type = 'PROCESS'
     logical_record_type = EFLRType.STATIC
-    object_type = ProcessItem
+    item_type = ProcessItem
 
 
 ProcessItem.parent_eflr_class = ProcessTable

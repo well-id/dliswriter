@@ -155,7 +155,7 @@ class ChannelTable(EFLRTable):
 
     set_type = 'CHANNEL'
     logical_record_type = EFLRType.CHANNL
-    object_type = ChannelItem
+    item_type = ChannelItem
 
 
 ChannelItem.parent_eflr_class = ChannelTable

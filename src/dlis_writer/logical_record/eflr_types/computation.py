@@ -56,7 +56,7 @@ class ComputationTable(EFLRTable):
 
     set_type = 'COMPUTATION'
     logical_record_type = EFLRType.STATIC
-    object_type = ComputationItem
+    item_type = ComputationItem
 
 
 ComputationItem.parent_eflr_class = ComputationTable

@@ -134,7 +134,7 @@ class FrameTable(EFLRTable):
 
     set_type = 'FRAME'
     logical_record_type = EFLRType.FRAME
-    object_type = FrameItem
+    item_type = FrameItem
 
 
 FrameItem.parent_eflr_class = FrameTable

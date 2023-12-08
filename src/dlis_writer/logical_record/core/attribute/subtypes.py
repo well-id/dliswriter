@@ -82,7 +82,7 @@ class EFLRAttribute(Attribute):
     def _convert_value(self, v: Union[str, type]):
         """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
 
-        object_class = self._object_class.object_type if self._object_class else EFLRItem
+        object_class = self._object_class.item_type if self._object_class else EFLRItem
         if not isinstance(v, (object_class, str)):
             raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
@@ -100,7 +100,7 @@ class EFLRAttribute(Attribute):
             raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
 
         object_class = self._object_class or EFLRTable.get_eflr_subclass(object_name)
-        return object_class.make_object_from_config(config=config, key=object_name, get_if_exists=True)
+        return object_class.make_eflr_item_from_config(config=config, key=object_name, get_if_exists=True)
 
 
 class DTimeAttribute(Attribute):

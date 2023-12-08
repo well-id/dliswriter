@@ -49,7 +49,7 @@ class CalibrationMeasurementTable(EFLRTable):
 
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationMeasurementItem
+    item_type = CalibrationMeasurementItem
 
 
 class CalibrationCoefficientItem(EFLRItem):
@@ -79,7 +79,7 @@ class CalibrationCoefficientTable(EFLRTable):
 
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationCoefficientItem
+    item_type = CalibrationCoefficientItem
 
 
 class CalibrationItem(EFLRItem):
@@ -114,7 +114,7 @@ class CalibrationTable(EFLRTable):
 
     set_type = 'CALIBRATION'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationItem
+    item_type = CalibrationItem
 
 
 CalibrationMeasurementItem.parent_eflr_class = CalibrationMeasurementTable

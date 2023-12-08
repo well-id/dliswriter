@@ -46,7 +46,7 @@ class ParameterTable(EFLRTable):
 
     set_type = 'PARAMETER'
     logical_record_type = EFLRType.STATIC
-    object_type = ParameterItem
+    item_type = ParameterItem
 
 
 ParameterItem.parent_eflr_class = ParameterTable

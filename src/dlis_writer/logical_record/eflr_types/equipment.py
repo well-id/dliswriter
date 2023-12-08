@@ -42,7 +42,7 @@ class EquipmentTable(EFLRTable):
 
     set_type = 'EQUIPMENT'
     logical_record_type = EFLRType.STATIC
-    object_type = EquipmentItem
+    item_type = EquipmentItem
 
 
 EquipmentItem.parent_eflr_class = EquipmentTable

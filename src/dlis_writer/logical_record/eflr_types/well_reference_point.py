@@ -47,7 +47,7 @@ class WellReferencePointTable(EFLRTable):
 
     set_type = 'WELL-REFERENCE'
     logical_record_type = EFLRType.OLR
-    object_type = WellReferencePointItem
+    item_type = WellReferencePointItem
 
 
 WellReferencePointItem.parent_eflr_class = WellReferencePointTable

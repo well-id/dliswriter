@@ -45,7 +45,7 @@ class PathTable(EFLRTable):
 
     set_type = 'PATH'
     logical_record_type = EFLRType.FRAME
-    object_type = PathItem
+    item_type = PathItem
 
 
 PathItem.parent_eflr_class = PathTable

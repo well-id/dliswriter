@@ -40,7 +40,7 @@ class ToolTable(EFLRTable):
 
     set_type = 'TOOL'
     logical_record_type = EFLRType.STATIC
-    object_type = ToolItem
+    item_type = ToolItem
 
 
 ToolItem.parent_eflr_class = ToolTable

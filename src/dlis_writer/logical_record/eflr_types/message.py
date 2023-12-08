@@ -32,7 +32,7 @@ class MessageTable(EFLRTable):
 
     set_type = 'MESSAGE'
     logical_record_type = EFLRType.SCRIPT
-    object_type = MessageItem
+    item_type = MessageItem
 
 
 class CommentItem(EFLRItem):
@@ -58,7 +58,7 @@ class CommentTable(EFLRTable):
 
     set_type = 'COMMENT'
     logical_record_type = EFLRType.SCRIPT
-    object_type = CommentItem
+    item_type = CommentItem
 
 
 MessageItem.parent_eflr_class = MessageTable
