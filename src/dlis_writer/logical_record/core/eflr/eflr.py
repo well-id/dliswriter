@@ -142,8 +142,6 @@ class EFLR(LogicalRecord, metaclass=EFLRMeta):
 
         obj = self.object_type(name, parent=self, **kwargs)
 
-        self.register_child(obj)
-
         return obj
 
     def get_all_objects(self) -> list[EFLRObject]:
