@@ -102,7 +102,8 @@ class DLISFile:
             name: str,
             axis_id: str = None,
             coordinates: list[Union[int, float, str]] = None,
-            spacing: number_type = None
+            spacing: number_type = None,
+            set_name: Optional[str] = None
     ) -> AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
 
@@ -111,13 +112,15 @@ class DLISFile:
             axis_id     :   ID of the axis.
             coordinates :   List of coordinates of the axis.
             spacing     :   Spacing of the axis.
+            set_name    :   Name of the AxisTable this axis should be added to.
         """
 
         ax = AxisItem(
             name=name,
             axis_id=axis_id,
             coordinates=coordinates,
-            spacing=spacing
+            spacing=spacing,
+            set_name=set_name
         )
 
         self._other.append(ax)
@@ -132,7 +135,8 @@ class DLISFile:
             units: Optional[str] = None,
             axis: Optional[AxisItem] = None,
             minimum_value: Optional[float] = None,
-            maximum_value: Optional[float] = None
+            maximum_value: Optional[float] = None,
+            set_name: Optional[str] = None
     ) -> ChannelItem:
         """Define a channel (ChannelObject) and add it to the DLIS.
 
@@ -145,6 +149,7 @@ class DLISFile:
             axis            :   Axis associated with the channel.
             minimum_value   :   Minimum value of the channel data.
             maximum_value   :   Maximum value of the channel data.
+            set_name        :   Name of the ChannelTable this channel should be added to.
 
         Returns:
             A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
@@ -160,7 +165,8 @@ class DLISFile:
             units=units,
             axis=axis,
             minimum_value=minimum_value,
-            maximum_value=maximum_value
+            maximum_value=maximum_value,
+            set_name=set_name
         )
         # skipping repr code, dimension, and element limit because they will be determined from the data
         # skipping dataset_name - using channel name instead
@@ -189,7 +195,8 @@ class DLISFile:
             temperature: number_type = None,
             vertical_depth: number_type = None,
             radial_drift: number_type = None,
-            angular_drift: number_type = None
+            angular_drift: number_type = None,
+            set_name: Optional[str] = None
     ) -> EquipmentItem:
         """Define an equipment object.
 
@@ -212,6 +219,7 @@ class DLISFile:
             vertical_depth      :   Vertical depth.
             radial_drift        :   Radial drift.
             angular_drift       :   Angular drift.
+            set_name            :   Name of the EquipmentTable this equipment should be added to.
 
         Returns:
             A configured EquipmentObject instance.
@@ -235,7 +243,8 @@ class DLISFile:
             temperature=temperature,
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
-            angular_drift=angular_drift
+            angular_drift=angular_drift,
+            set_name=set_name
         )
 
         self._other.append(eq)
@@ -251,7 +260,8 @@ class DLISFile:
             spacing: Optional[Union[int, float]] = None,
             encrypted: Optional[int] = None,
             index_min: Optional[Union[int, float]] = None,
-            index_max: Optional[Union[int, float]] = None
+            index_max: Optional[Union[int, float]] = None,
+            set_name: Optional[str] = None
     ) -> FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
 
@@ -266,6 +276,7 @@ class DLISFile:
             encrypted   :   Indication whether the frame is encrypted (0 if not, 1 if yes).
             index_min   :   Minimum value of the frame index.
             index_max   :   Maximum value of the frame index.
+            set_name    :   Name of the FrameTable this frame should be added to.
 
         Note:
             Values: direction, spacing, index_min, and index_max are automatically determined if not provided.
@@ -294,7 +305,8 @@ class DLISFile:
             spacing=spacing,
             encrypted=encrypted,
             index_min=index_min,
-            index_max=index_max
+            index_max=index_max,
+            set_name=set_name
         )
 
         self._frames.append(fr)
@@ -307,7 +319,8 @@ class DLISFile:
             dimension: list[int] = None,
             axis: AxisItem = None,
             zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None,
-            values: Union[list[int], list[float], list[str]] = None
+            values: Union[list[int], list[float], list[str]] = None,
+            set_name: Optional[str] = None
     ) -> ParameterItem:
         """Create a parameter.
 
@@ -318,6 +331,7 @@ class DLISFile:
             axis        :   Axis associated with the parameter.
             zones       :   Zones the parameter is defined for.
             values      :   Values of the parameter - numerical or textual.
+            set_name    :   Name of the ParameterTable this parameter should be added to.
 
         Returns:
             A configured ParameterObject instance.
@@ -329,7 +343,8 @@ class DLISFile:
             dimension=dimension,
             axis=axis,
             zones=zones,
-            values=values
+            values=values,
+            set_name=set_name
         )
 
         self._other.append(p)
@@ -340,7 +355,8 @@ class DLISFile:
             name: str,
             output_channel: ChannelItem = None,
             input_channels: Union[list[ChannelItem], tuple[ChannelItem, ...]] = None,
-            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None
+            zones: Union[list[ZoneItem], tuple[ZoneItem, ...]] = None,
+            set_name: Optional[str] = None
     ) -> SpliceItem:
         """Create a splice object.
 
@@ -349,6 +365,7 @@ class DLISFile:
             output_channel  :   Output of the splice.
             input_channels  :   Input of the splice.
             zones           :   Zones the splice is defined for.
+            set_name        :   Name of the SpliceTable this splice should be added to.
 
         Returns:
             A configured splice.
@@ -358,7 +375,8 @@ class DLISFile:
             name=name,
             output_channel=output_channel,
             input_channels=input_channels,
-            zones=zones
+            zones=zones,
+            set_name=set_name
         )
         self._other.append(sp)
         return sp
@@ -369,7 +387,8 @@ class DLISFile:
             description: str = None,
             domain: str = None,
             maximum: Union[datetime.datetime, int, float] = None,
-            minimum: Union[datetime.datetime, int, float] = None
+            minimum: Union[datetime.datetime, int, float] = None,
+            set_name: Optional[str] = None
     ) -> ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
 
@@ -379,6 +398,7 @@ class DLISFile:
             domain      :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
             maximum     :   Maximum of the zone.
             minimum     :   Minimum of the zone.
+            set_name    :   Name of the ZoneTable this zone should be added to.
 
         Note:
             Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,
@@ -393,7 +413,8 @@ class DLISFile:
             description=description,
             domain=domain,
             maximum=maximum,
-            minimum=minimum
+            minimum=minimum,
+            set_name=set_name
         )
 
         self._other.append(z)
