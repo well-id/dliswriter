@@ -95,5 +95,10 @@ computation2 = df.add_computation('CMPT2', values=[2.3, 11.12312, 2231213.22])
 computation3 = df.add_computation('CMPT3', values=[3.14])
 
 
+# process - using channels, computations, and parameters
+process1 = df.add_process("PROC", input_channels=(ch1, ch2), output_channels=(ch4,), input_computations=(computation1,),
+                          output_computations=(computation2, computation3), properties=['a', 'b', 'c'])
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

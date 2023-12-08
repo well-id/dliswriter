@@ -17,6 +17,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
+from dlis_writer.logical_record.eflr_types.process import ProcessItem
 from dlis_writer.logical_record.eflr_types.splice import SpliceItem
 from dlis_writer.logical_record.eflr_types.tool import ToolItem
 from dlis_writer.logical_record.eflr_types.zone import ZoneItem
@@ -399,6 +400,62 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
+            set_name=set_name
+        )
+
+        self._other.append(p)
+        return p
+
+    def add_process(
+            self,
+            name: str,
+            description: Optional[str] = None,
+            trademark_name: Optional[str] = None,
+            version: Optional[str] = None,
+            properties: Optional[list[str]] = None,
+            status: Optional[str] = None,
+            input_channels: list_or_tuple_type(ChannelItem) = None,
+            output_channels: list_or_tuple_type(ChannelItem) = None,
+            input_computations: list_or_tuple_type(ComputationItem) = None,
+            output_computations: list_or_tuple_type(ComputationItem) = None,
+            parameters: list_or_tuple_type(ParameterItem) = None,
+            comments: Optional[list[str]] = None,
+            set_name: Optional[str] = None
+    ) -> ProcessItem:
+        """Define a process item and add it to DLIS.
+
+        Args:
+            name                :   Name of the process.
+            description         :   Description of the process.
+            trademark_name      :   Trademark name of the process.
+            version             :   Version of the process.
+            properties          :   Properties of the process.
+            status              :   Status of the process; 1 or 0.
+            input_channels      :   Channels serving as input for the process.
+            output_channels     :   Channels serving as output for the process.
+            input_computations  :   Input computations of the process.
+            output_computations :   Output computations of the process.
+            parameters          :   Parameters of the process.
+            comments            :   Comments.
+            set_name            :   Name of the ProcessTable this process should be added to.
+
+        Returns:
+            A configured ProcessItem instance.
+        """
+
+        p = ProcessItem(
+            name=name,
+            description=description,
+            trademark_name=trademark_name,
+            version=version,
+            properties=properties,
+            status=status,
+            input_channels=input_channels,
+            output_channels=output_channels,
+            input_computations=input_computations,
+            output_computations=output_computations,
+            parameters=parameters,
+            comments=comments,
             set_name=set_name
         )
 
