@@ -9,7 +9,7 @@ from tests.common import base_data_path, config_params, make_config
 def test_from_config(config_params: ConfigParser):
     """Test creating OriginObject from config."""
 
-    origin: OriginItem = OriginTable.make_eflr_item_from_config(config_params)
+    origin: OriginItem = OriginItem.from_config(config_params)
 
     conf = config_params['Origin']
 
@@ -41,7 +41,7 @@ def test_from_config_no_dtime_in_attributes():
     config['Origin']['name'] = "Some origin name"
     config['Origin']['well_name'] = "Some well name"
 
-    origin: OriginItem = OriginTable.make_eflr_item_from_config(config)
+    origin: OriginItem = OriginItem.from_config(config)
     assert origin.name == "Some origin name"
     assert origin.well_name.value == "Some well name"
 
@@ -54,7 +54,7 @@ def test_from_config_no_attributes():
     config = make_config("Origin")
     config['Origin']['name'] = "Some origin name"
 
-    origin: OriginItem = OriginTable.make_eflr_item_from_config(config)
+    origin: OriginItem = OriginItem.from_config(config)
     assert origin.name == "Some origin name"
     assert origin.well_name.value is None
 

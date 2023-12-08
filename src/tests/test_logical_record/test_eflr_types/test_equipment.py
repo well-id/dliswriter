@@ -14,7 +14,7 @@ from tests.common import base_data_path, config_params
 def test_from_config(config_params: ConfigParser, idx: int, section: str, name: str, status: int, serial_number: str):
     """Check that EquipmentObject instances are correctly created from config."""
 
-    eq: EquipmentItem = EquipmentTable.make_eflr_item_from_config(config_params, key=section)
+    eq: EquipmentItem = EquipmentItem.from_config(config_params, key=section)
 
     assert eq.name == name
     assert eq.status.value == status
@@ -26,7 +26,7 @@ def test_from_config(config_params: ConfigParser, idx: int, section: str, name: 
 def test_from_config_params_and_units(config_params: ConfigParser):
     """Check setting up EquipmentObject's parameters and units from config."""
 
-    eq: EquipmentItem = EquipmentTable.make_eflr_item_from_config(config_params, key="Equipment-1")
+    eq: EquipmentItem = EquipmentItem.from_config(config_params, key="Equipment-1")
 
     def check(name, val, unit):
         attr = getattr(eq, name)

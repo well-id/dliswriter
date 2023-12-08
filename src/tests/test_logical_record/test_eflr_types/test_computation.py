@@ -15,7 +15,7 @@ def test_from_config(config_params: ConfigParser, section: str, name: str, prope
                      axis_name: str, values: list):
     """Check that ComputationObject instances are correctly created from config."""
 
-    comp: ComputationItem = ComputationTable.make_eflr_item_from_config(config_params, key=section)
+    comp: ComputationItem = ComputationItem.from_config(config_params, key=section)
 
     assert comp.name == name
     assert comp.properties.value == properties

@@ -14,7 +14,7 @@ def test_from_config(config_params: ConfigParser, key: str, name: str, consumer_
     """Test creating NoFormatObject from config."""
 
     key = f"NoFormat-{key}"
-    w: NoFormatItem = NoFormatTable.make_eflr_item_from_config(config_params, key=key)
+    w: NoFormatItem = NoFormatItem.from_config(config_params, key=key)
 
     assert w.name == name
     assert w.consumer_name.value == consumer_name

@@ -1,6 +1,8 @@
 import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional
+from typing_extensions import Self
+from configparser import ConfigParser
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
@@ -169,3 +171,50 @@ class EFLRItem:
         except ValueError:
             raise ValueError(f"Value '{value}' could not be converted to a numeric type")
         return value
+
+    @classmethod
+    def from_config(cls, config: ConfigParser, key: Optional[str] = None, get_if_exists: bool = False,
+                    set_name: Optional[str] = None) -> Self:
+        """Create an EFLRItem instance based on information found in the config object.
+
+        Args:
+            config          :   Config object containing the information on the EFLRItem to be created.
+            key             :   Name of the section describing the EFLRItem to be created (e.g. 'Channel-X').
+                                If not provided, it is assumed to be the same as the name of the EFLRTable subclass
+                                 (e.g. 'Channel').
+            get_if_exists   :   If True and an EFLRItem identified by this section name already exists in the instance
+                                dictionary of the given EFLRTable subclass instance, return that EFLRItem. Otherwise,
+                                create a new one, overwriting the existing one in the dictionary.
+            set_name        :   Name of the set the EFLRItem belongs to, i.e. name identifying the EFLRTable subclass
+                                instance.
+
+
+        Returns:
+            The created/retrieved EFLRItem instance.
+        """
+
+        key = key or cls.parent_eflr_class.eflr_name
+
+        if key not in config.sections():
+            raise RuntimeError(f"Section '{key}' not present in the config")
+
+        name_key = "name"
+
+        if name_key not in config[key].keys():
+            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
+
+        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
+
+        item_name = config[key][name_key]
+        eflr_table = cls.parent_eflr_class.get_or_make_eflr_table(set_name=set_name)
+        eflr_item = None
+        if get_if_exists:
+            eflr_item = eflr_table.get_eflr_item(item_name, None)
+        if eflr_item is None:
+            eflr_item = cls(item_name, parent=eflr_table, **other_kwargs)
+
+        for attr in eflr_item.attributes.values():
+            if hasattr(attr, 'finalise_from_config'):  # EFLRAttribute; cannot be imported here - circular import issue
+                attr.finalise_from_config(config)
+
+        return eflr_item

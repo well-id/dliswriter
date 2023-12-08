@@ -249,7 +249,7 @@ class FileLogicalRecords:
             MultiFrameData object, containing the information on the frame and frame data records.
         """
 
-        frame_object: FrameItem = FrameTable.make_eflr_item_from_config(config, key=key)
+        frame_object: FrameItem = FrameItem.from_config(config, key=key)
 
         if frame_object.channels.value:
             frame_object.setup_from_data(data)
@@ -275,8 +275,8 @@ class FileLogicalRecords:
             FileLogicalRecords: a configured instance of the class.
         """
 
-        file_header_object: FileHeaderItem = FileHeaderTable.make_eflr_item_from_config(config)
-        origin_object: OriginItem = OriginTable.make_eflr_item_from_config(config)
+        file_header_object: FileHeaderItem = FileHeaderItem.from_config(config)
+        origin_object: OriginItem = OriginItem.from_config(config)
 
         obj = cls(
             sul=StorageUnitLabel.make_from_config(config),

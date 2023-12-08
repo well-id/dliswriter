@@ -18,7 +18,7 @@ def test_from_config(config_params: ConfigParser, param_nr: int, value_type: typ
     """Test creating ParameterObject from config."""
 
     key = f"Parameter-{param_nr}"
-    param: ParameterItem = ParameterTable.make_eflr_item_from_config(config_params, key=key)
+    param: ParameterItem = ParameterItem.from_config(config_params, key=key)
     
     conf = config_params[key]
     

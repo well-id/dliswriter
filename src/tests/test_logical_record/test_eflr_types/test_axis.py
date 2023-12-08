@@ -13,7 +13,7 @@ from tests.common import base_data_path, config_params
 def test_from_config(config_params: ConfigParser, idx: int, name: str, axis_id: str, coordinates: list):
     """Check that an AxisObject is correctly set up from config info."""
 
-    axis: AxisItem = AxisTable.make_eflr_item_from_config(config_params, key=name)
+    axis: AxisItem = AxisItem.from_config(config_params, key=name)
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id

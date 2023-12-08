@@ -15,7 +15,7 @@ def test_from_config(config_params: ConfigParser, key: str, name: str, v_zero: s
     """Test creating WellReferencePoint from config."""
 
     key = f"WellReferencePoint-{key}"
-    w: WellReferencePointItem = WellReferencePointTable.make_eflr_item_from_config(config_params, key=key)
+    w: WellReferencePointItem = WellReferencePointItem.from_config(config_params, key=key)
 
     assert w.name == name
     assert w.vertical_zero.value == v_zero

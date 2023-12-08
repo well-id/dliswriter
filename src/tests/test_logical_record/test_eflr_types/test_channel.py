@@ -30,7 +30,7 @@ def mock_data() -> NumpyDataWrapper:
 def test_from_config(config_params: ConfigParser):
     """Check that a ChannelObject is correctly set up from config info."""
 
-    channel: ChannelItem = ChannelTable.make_eflr_item_from_config(config_params)
+    channel: ChannelItem = ChannelItem.from_config(config_params)
 
     conf = config_params['Channel']
 
@@ -58,7 +58,7 @@ def test_from_config(config_params: ConfigParser):
 def test_from_config_alternative_name(config_params: ConfigParser):
     """Check that a CalibrationObject is correctly set up from config info and explicitly specified section name."""
 
-    channel: ChannelItem = ChannelTable.make_eflr_item_from_config(config_params, key="Channel-1")
+    channel: ChannelItem = ChannelItem.from_config(config_params, key="Channel-1")
 
     assert channel.name == "Channel 1"
     assert channel.dataset_name == "Channel 1"  # not specified in config - same as channel name
@@ -79,7 +79,7 @@ def test_properties(prop_str: str, prop_val: list[str]):
     config["Channel488"]["name"] = "ChanChan"
     config["Channel488"]["properties"] = prop_str
 
-    channel: ChannelItem = ChannelTable.make_eflr_item_from_config(config, key="Channel488")
+    channel: ChannelItem = ChannelItem.from_config(config, key="Channel488")
     assert channel.name == "ChanChan"
     assert channel.properties.value == prop_val
 
@@ -97,7 +97,7 @@ def test_dimension_and_element_limit(dimension: Union[str, None], element_limit:
     if element_limit is not None:
         config["Channel"]["element_limit"] = element_limit
 
-    channel: ChannelItem = ChannelTable.make_eflr_item_from_config(config)
+    channel: ChannelItem = ChannelItem.from_config(config)
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
@@ -109,7 +109,7 @@ def test_dimension_and_element_limit_not_specified():
     config = make_config("Channel")
     config["Channel"]["name"] = "some channel"
 
-    channel: ChannelItem = ChannelTable.make_eflr_item_from_config(config)
+    channel: ChannelItem = ChannelItem.from_config(config)
     assert channel.dimension.value is None
     assert channel.element_limit.value is None
 
@@ -123,7 +123,7 @@ def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture):
     config["Channel"]["dimension"] = "12"
     config["Channel"]["element_limit"] = "12, 10"
 
-    ChannelTable.make_eflr_item_from_config(config)
+    ChannelItem.from_config(config)
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 

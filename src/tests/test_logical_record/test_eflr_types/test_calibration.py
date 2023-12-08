@@ -16,7 +16,7 @@ def test_calibration_measurement_from_config(config_params: ConfigParser):
     """Check that a CalibrationMeasurementObject is correctly set up from config info."""
 
     key = "CalibrationMeasurement-1"
-    m: CalibrationMeasurementItem = CalibrationMeasurementTable.make_eflr_item_from_config(config_params, key=key)
+    m: CalibrationMeasurementItem = CalibrationMeasurementItem.from_config(config_params, key=key)
 
     assert m.name == "CMEASURE-1"
     assert m.phase.value == 'BEFORE'
@@ -42,7 +42,7 @@ def test_calibration_coefficient_from_config(config_params: ConfigParser):
     """Check that a CalibrationCoefficientObject is correctly set up from config info."""
 
     key = "CalibrationCoefficient-1"
-    c: CalibrationCoefficientItem = CalibrationCoefficientTable.make_eflr_item_from_config(config_params, key=key)
+    c: CalibrationCoefficientItem = CalibrationCoefficientItem.from_config(config_params, key=key)
 
     assert c.name == "COEF-1"
     assert c.label.value == 'Gain'
@@ -68,7 +68,7 @@ def test_calibration_from_config(config_params: ConfigParser):
     """Check that a CalibrationObject is correctly set up from config info."""
 
     key = "Calibration-1"
-    c: CalibrationItem = CalibrationTable.make_eflr_item_from_config(config_params, key=key)
+    c: CalibrationItem = CalibrationItem.from_config(config_params, key=key)
 
     assert c.name == "CALIB-MAIN"
 
