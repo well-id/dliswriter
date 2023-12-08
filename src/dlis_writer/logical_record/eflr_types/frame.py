@@ -27,11 +27,11 @@ class FrameItem(EFLRItem):
     )
 
     def __init__(self, name: str, **kwargs):
-        """Initialise FrameObject.
+        """Initialise FrameItem.
 
         Args:
-            name        :   Name of the FrameObject.
-            **kwargs    :   Values of to be set as characteristics of the FrameObject Attributes.
+            name        :   Name of the FrameItem.
+            **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)

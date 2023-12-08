@@ -9,11 +9,11 @@ class NoFormatItem(EFLRItem):
     parent: "NoFormatTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise NoFormatObject.
+        """Initialise NoFormatItem.
 
         Args:
-            name        :   Name of the NoFormatObject.
-            **kwargs    :   Values of to be set as characteristics of the NoFormatObject Attributes.
+            name        :   Name of the NoFormatItem.
+            **kwargs    :   Values of to be set as characteristics of the NoFormatItem Attributes.
         """
 
         self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT, parent_eflr=self)

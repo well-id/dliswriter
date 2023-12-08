@@ -9,11 +9,11 @@ class WellReferencePointItem(EFLRItem):
     parent: "WellReferencePointTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise WellReferencePointObject.
+        """Initialise WellReferencePointItem.
 
         Args:
-            name        :   Name of the WellReferencePointObject.
-            **kwargs    :   Values of to be set as characteristics of the WellReferencePointObject Attributes.
+            name        :   Name of the WellReferencePointItem.
+            **kwargs    :   Values of to be set as characteristics of the WellReferencePointItem Attributes.
         """
 
         self.permanent_datum = Attribute(

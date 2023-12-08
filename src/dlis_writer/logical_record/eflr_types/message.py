@@ -9,11 +9,11 @@ class MessageItem(EFLRItem):
     parent: "MessageTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise MessageObject.
+        """Initialise MessageItem.
 
         Args:
-            name        :   Name of the MessageObject.
-            **kwargs    :   Values of to be set as characteristics of the MessageObject Attributes.
+            name        :   Name of the MessageItem.
+            **kwargs    :   Values of to be set as characteristics of the MessageItem Attributes.
         """
 
         self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
@@ -41,11 +41,11 @@ class CommentItem(EFLRItem):
     parent: "CommentTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CommentObject.
+        """Initialise CommentItem.
 
         Args:
-            name        :   Name of the CommentObject.
-            **kwargs    :   Values of to be set as characteristics of the CommentObject Attributes.
+            name        :   Name of the CommentItem.
+            **kwargs    :   Values of to be set as characteristics of the CommentItem Attributes.
         """
 
         self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)

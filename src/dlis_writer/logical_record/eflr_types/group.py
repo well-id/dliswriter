@@ -14,12 +14,12 @@ class GroupItem(EFLRItem):
     parent: "GroupTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise GroupObject.
+        """Initialise GroupItem.
 
         Args:
-            name        :   Name of the GroupObject.
-            parent      :   Group EFLR instance this GroupObject belongs to.
-            **kwargs    :   Values of to be set as characteristics of the GroupObject Attributes.
+            name        :   Name of the GroupItem.
+            parent      :   Group EFLR instance this GroupItem belongs to.
+            **kwargs    :   Values of to be set as characteristics of the GroupItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)

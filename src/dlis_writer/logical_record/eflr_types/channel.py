@@ -20,12 +20,12 @@ class ChannelItem(EFLRItem):
     parent: "ChannelTable"
 
     def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
-        """Initialise ChannelObject.
+        """Initialise ChannelItem.
 
         Args:
-            name            :   Name of the ChannelObject.
+            name            :   Name of the ChannelItem.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataObject.
-            **kwargs        :   Values of to be set as characteristics of the ChannelObject Attributes.
+            **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -63,7 +63,7 @@ class ChannelItem(EFLRItem):
         self._dataset_name = name
 
     def set_dimension_and_repr_code_from_data(self, data: SourceDataObject):
-        """Determine and dimension and representation code attributes of the ChannelObject based on the source data."""
+        """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
 
         sub_data = data[self.name]
         self._set_dimension_from_data(sub_data)
@@ -111,7 +111,7 @@ class ChannelItem(EFLRItem):
             self.representation_code.value = suggested_rc
 
     def set_defaults(self):
-        """Set up default values of ChannelObject parameters if not explicitly set previously."""
+        """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:
             logger.debug(f"Setting element limit of channel '{self.name}' to the same value "

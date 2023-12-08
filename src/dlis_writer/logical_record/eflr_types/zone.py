@@ -11,11 +11,11 @@ class ZoneItem(EFLRItem):
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
     def __init__(self, name: str, **kwargs):
-        """Initialise ZoneObject.
+        """Initialise ZoneItem.
 
         Args:
-            name        :   Name of the ZoneObject.
-            **kwargs    :   Values of to be set as characteristics of the ZoneObject Attributes.
+            name        :   Name of the ZoneItem.
+            **kwargs    :   Values of to be set as characteristics of the ZoneItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)

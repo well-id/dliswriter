@@ -9,11 +9,11 @@ class EquipmentItem(EFLRItem):
     parent: "EquipmentTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise EquipmentObject.
+        """Initialise EquipmentItem.
 
         Args:
-            name        :   Name of the EquipmentObject.
-            **kwargs    :   Values of to be set as characteristics of the EquipmentObject Attributes.
+            name        :   Name of the EquipmentItem.
+            **kwargs    :   Values of to be set as characteristics of the EquipmentItem Attributes.
         """
 
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)

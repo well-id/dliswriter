@@ -15,11 +15,11 @@ class OriginItem(EFLRItem):
     parent: "OriginTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise OriginObject.
+        """Initialise OriginItem.
 
         Args:
-            name        :   Name of the OriginObject.
-            **kwargs    :   Values of to be set as characteristics of the OriginObject Attributes.
+            name        :   Name of the OriginItem.
+            **kwargs    :   Values of to be set as characteristics of the OriginItem Attributes.
         """
 
         self.file_id = Attribute('file_id', representation_code=RepC.ASCII, parent_eflr=self)

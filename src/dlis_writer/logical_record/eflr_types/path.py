@@ -17,11 +17,11 @@ class PathItem(EFLRItem):
     parent: "PathTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise PathObject.
+        """Initialise PathItem.
 
         Args:
-            name        :   Name of the PathObject.
-            **kwargs    :   Values of to be set as characteristics of the PathObject Attributes.
+            name        :   Name of the PathItem.
+            **kwargs    :   Values of to be set as characteristics of the PathItem Attributes.
         """
 
         self.frame_type = EFLRAttribute('frame_type', object_class=FrameTable, parent_eflr=self)

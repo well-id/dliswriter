@@ -16,11 +16,11 @@ class SpliceItem(EFLRItem):
     parent: "SpliceTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise SpliceObject.
+        """Initialise SpliceItem.
 
         Args:
-            name        :   Name of the SpliceObject.
-            **kwargs    :   Values of to be set as characteristics of the SpliceObject Attributes.
+            name        :   Name of the SpliceItem.
+            **kwargs    :   Values of to be set as characteristics of the SpliceItem Attributes.
         """
 
         self.output_channel = EFLRAttribute('output_channel', object_class=ChannelTable, parent_eflr=self)

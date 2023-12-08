@@ -17,11 +17,11 @@ class ToolItem(EFLRItem):
     parent: "ToolTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise ToolObject.
+        """Initialise ToolItem.
 
         Args:
-            name        :   Name of the ToolObject.
-            **kwargs    :   Values of to be set as characteristics of the ToolObject Attributes.
+            name        :   Name of the ToolItem.
+            **kwargs    :   Values of to be set as characteristics of the ToolItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)

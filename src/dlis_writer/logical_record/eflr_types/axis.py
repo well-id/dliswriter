@@ -9,11 +9,11 @@ class AxisItem(EFLRItem):
     parent: "AxisTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise AxisObject.
+        """Initialise AxisItem.
 
         Args:
-            name        :   Name of the AxisObject.
-            **kwargs    :   Values of to be set as characteristics of the AxisObject Attributes.
+            name        :   Name of the AxisItem.
+            **kwargs    :   Values of to be set as characteristics of the AxisItem Attributes.
         """
 
         self.axis_id = Attribute('axis_id', representation_code=RepC.IDENT, parent_eflr=self)

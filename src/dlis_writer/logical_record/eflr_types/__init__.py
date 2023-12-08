@@ -14,7 +14,7 @@ from dlis_writer.logical_record.eflr_types.parameter import ParameterTable
 from dlis_writer.logical_record.eflr_types.path import PathTable
 from dlis_writer.logical_record.eflr_types.process import ProcessTable
 from dlis_writer.logical_record.eflr_types.splice import SpliceTable
-from dlis_writer.logical_record.eflr_types.tooltable import ToolTable
+from dlis_writer.logical_record.eflr_types.tool import ToolTable
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointTable
 from dlis_writer.logical_record.eflr_types.zone import ZoneTable
 

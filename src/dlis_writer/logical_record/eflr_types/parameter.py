@@ -16,11 +16,11 @@ class ParameterItem(EFLRItem):
     parent: "ParameterTable"
     
     def __init__(self, name: str, **kwargs):
-        """Initialise ParameterObject.
+        """Initialise ParameterItem.
 
         Args:
-            name        :   Name of the ParameterObject.
-            **kwargs    :   Values of to be set as characteristics of the ParameterObject Attributes.
+            name        :   Name of the ParameterItem.
+            **kwargs    :   Values of to be set as characteristics of the ParameterItem Attributes.
         """
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)

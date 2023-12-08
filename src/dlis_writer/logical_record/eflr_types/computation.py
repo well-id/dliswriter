@@ -16,11 +16,11 @@ class ComputationItem(EFLRItem):
     parent: "ComputationTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise ComputationObject.
+        """Initialise ComputationItem.
 
         Args:
-            name            :   Name of the ComputationObject.
-            **kwargs        :   Values of to be set as characteristics of the ComputationObject Attributes.
+            name            :   Name of the ComputationItem.
+            **kwargs        :   Values of to be set as characteristics of the ComputationItem Attributes.
         """
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -37,7 +37,7 @@ class ComputationItem(EFLRItem):
         self.check_values_and_zones()
 
     def _set_defaults(self):
-        """Set up default values of ComputationObject parameters if not explicitly set previously."""
+        """Set up default values of ComputationItem parameters if not explicitly set previously."""
 
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")

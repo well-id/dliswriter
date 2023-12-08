@@ -17,11 +17,11 @@ class CalibrationMeasurementItem(EFLRItem):
     parent: "CalibrationMeasurementTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationMeasurementObject.
+        """Initialise CalibrationMeasurementItem.
 
         Args:
-            name        :   Name of the CalibrationMeasurementObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementObject Attributes.
+            name        :   Name of the CalibrationMeasurementItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
         self.phase = Attribute('phase', representation_code=RepC.IDENT, parent_eflr=self)
@@ -58,11 +58,11 @@ class CalibrationCoefficientItem(EFLRItem):
     parent: "CalibrationCoefficientTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationCoefficientObject.
+        """Initialise CalibrationCoefficientItem.
 
         Args:
-            name        :   Name of the CalibrationCoefficientObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientObject Attributes.
+            name        :   Name of the CalibrationCoefficientItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
         self.label = Attribute('label', representation_code=RepC.IDENT, parent_eflr=self)
@@ -88,11 +88,11 @@ class CalibrationItem(EFLRItem):
     parent: "CalibrationTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationObject.
+        """Initialise CalibrationItem.
 
         Args:
-            name        :   Name of the CalibrationObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationObject Attributes.
+            name        :   Name of the CalibrationItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationItem Attributes.
         """
 
         self.calibrated_channels = EFLRAttribute(

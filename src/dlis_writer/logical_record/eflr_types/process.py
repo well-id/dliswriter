@@ -19,11 +19,11 @@ class ProcessItem(EFLRItem):
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
     def __init__(self, name: str, **kwargs):
-        """Initialise ProcessObject.
+        """Initialise ProcessItem.
 
         Args:
-            name        :   Name of the ProcessObject.
-            **kwargs    :   Values of to be set as characteristics of the ProcessObject Attributes.
+            name        :   Name of the ProcessItem.
+            **kwargs    :   Values of to be set as characteristics of the ProcessItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)

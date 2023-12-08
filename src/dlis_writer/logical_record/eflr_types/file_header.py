@@ -17,12 +17,12 @@ class FileHeaderItem(EFLRItem):
     identifier_length_limit = 65    #: max length of the file header name
 
     def __init__(self, identifier: str, sequence_number: int = 1, **kwargs):
-        """Initialise FileHeaderObject.
+        """Initialise FileHeaderItem.
 
         Args:
-            identifier      :   Name of the FileHeaderObject.
+            identifier      :   Name of the FileHeaderItem.
             sequence_number :   Sequence number of the file.
-            **kwargs        :   Values of to be set as characteristics of the FileHeaderObject Attributes.
+            **kwargs        :   Values of to be set as characteristics of the FileHeaderItem Attributes.
         """
 
         self.identifier = identifier
@@ -36,7 +36,7 @@ class FileHeaderItem(EFLRItem):
         super().__init__(name='0', **kwargs)
 
     def _make_attrs_bytes(self) -> bytes:
-        """Create bytes describing the values of attributes of FIleHeaderObject."""
+        """Create bytes describing the values of attributes of FIleHeaderItem."""
 
         bts = b''
 

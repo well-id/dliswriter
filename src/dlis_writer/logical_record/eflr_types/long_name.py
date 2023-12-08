@@ -9,11 +9,11 @@ class LongNameItem(EFLRItem):
     parent: "LongNameTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise LongNameObject.
+        """Initialise LongNameItem.
 
         Args:
-            name        :   Name of the LongNameObject.
-            **kwargs    :   Values of to be set as characteristics of the LongNameObject Attributes.
+            name        :   Name of the LongNameItem.
+            **kwargs    :   Values of to be set as characteristics of the LongNameItem Attributes.
         """
 
         self.general_modifier = Attribute(
