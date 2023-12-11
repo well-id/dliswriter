@@ -17,6 +17,7 @@ from dlis_writer.logical_record.eflr_types.computation import ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
+from dlis_writer.logical_record.eflr_types.long_name import LongNameItem
 from dlis_writer.logical_record.eflr_types.message import MessageItem, CommentItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
@@ -349,6 +350,9 @@ class DLISFile:
             name        :   Name of the comment.
             text        :   Content of the comment.
             set_name    :   Name of the CommentTable this comment should be added to.
+
+        Returns:
+            A configured comment item.
         """
 
         c = CommentItem(
@@ -539,6 +543,74 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_long_name(
+            self,
+            name: str,
+            general_modifier: Optional[list[str]] = None,
+            quantity: Optional[str] = None,
+            quantity_modifier: Optional[list[str]] = None,
+            altered_form: Optional[str] = None,
+            entity: Optional[str] = None,
+            entity_modifier: Optional[list[str]] = None,
+            entity_number: Optional[str] = None,
+            entity_part: Optional[str] = None,
+            entity_part_number: Optional[str] = None,
+            generic_source: Optional[str] = None,
+            source_part: Optional[list[str]] = None,
+            source_part_number: Optional[list[str]] = None,
+            conditions: Optional[list[str]] = None,
+            standard_symbol: Optional[str] = None,
+            private_symbol: Optional[str] = None,
+            set_name: Optional[str] = None
+    ) -> LongNameItem:
+        """Create a long name item and add it to the DLIS.
+
+        Args:
+            name                :   Name of the long name item.
+            general_modifier    :   General modifier(s).
+            quantity            :   Quantity.
+            quantity_modifier   :   Quantity modifier(s).
+            altered_form        :   Altered form.
+            entity              :   Entity.
+            entity_modifier     :   Entity modifier(s).
+            entity_number       :   Entity number.
+            entity_part         :   Entity part.
+            entity_part_number  :   Entity part number.
+            generic_source      :   Generic source.
+            source_part         :   Source part(s).
+            source_part_number  :   Source part number(s).
+            conditions          :   Conditions.
+            standard_symbol     :   Standard symbol.
+            private_symbol      :   Private symbol.
+            set_name            :   Name of the LongNameTable this long name item should be added to.
+
+        Returns:
+            A configured long name item.
+        """
+
+        ln = LongNameItem(
+            name=name,
+            general_modifier=general_modifier,
+            quantity=quantity,
+            quantity_modifier=quantity_modifier,
+            altered_form=altered_form,
+            entity=entity,
+            entity_modifier=entity_modifier,
+            entity_number=entity_number,
+            entity_part=entity_part,
+            entity_part_number=entity_part_number,
+            generic_source=generic_source,
+            source_part=source_part,
+            source_part_number=source_part_number,
+            conditions=conditions,
+            standard_symbol=standard_symbol,
+            private_symbol=private_symbol,
+            set_name=set_name
+        )
+
+        self._other.append(ln)
+        return ln
 
     def add_message(
             self,

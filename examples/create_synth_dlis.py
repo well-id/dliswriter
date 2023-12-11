@@ -144,5 +144,9 @@ comment1 = df.add_comment("CMT1", text=["Part 1 of the comment", "Part 2 of the 
 comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
 
 
+# long name
+long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)
