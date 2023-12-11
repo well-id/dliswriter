@@ -47,7 +47,7 @@ main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_typ
 n_rows_time = 200
 ch5 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s', axis=ax2)  # index channel for frame 2
 ch6 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
-second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NONSTANDARD')
+second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NON-STANDARD')
 
 
 # zones
@@ -156,5 +156,14 @@ nfd1_2 = df.add_no_format_frame_data(no_format1, data="ABC")
 nfd2_1 = df.add_no_format_frame_data(no_format2, data="Lorem ipsum")
 
 
+# groups
+group1 = df.add_group("DEPTH ZONES", description='Zones describing depth', object_type='ZONE',
+                      object_list=(zone1, zone3))
+group2 = df.add_group("MESSAGES", object_type="MESSAGE", object_list=(message1, message2, message3))
+group3 = df.add_group("INDEX CHANNELS", object_type="CHANNEL", object_list=(ch1, ch5))
+df.add_group("ALL CHANNELS", object_type="CHANNEL", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
+group5 = df.add_group("GROUPS", group_list=(group1, group2, group3))
+
+
 # write the file
-df.write('./tmp.DLIS', input_chunk_size=20)
+df.write('./tmp.DLIS', input_chunk_size=20, output_chunk_size=2**13)

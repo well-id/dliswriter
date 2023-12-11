@@ -17,6 +17,7 @@ from dlis_writer.logical_record.eflr_types.computation import ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
+from dlis_writer.logical_record.eflr_types.group import GroupItem
 from dlis_writer.logical_record.eflr_types.long_name import LongNameItem
 from dlis_writer.logical_record.eflr_types.message import MessageItem, CommentItem
 from dlis_writer.logical_record.eflr_types.no_format import NoFormatItem
@@ -546,6 +547,41 @@ class DLISFile:
 
         self._frames.append(fr)
         return fr
+
+    def add_group(
+            self,
+            name: str,
+            description: Optional[str] = None,
+            object_type: Optional[str] = None,
+            object_list: list_or_tuple_type(EFLRItem) = None,
+            group_list: list_or_tuple_type(GroupItem) = None,
+            set_name: Optional[str] = None
+    ) -> GroupItem:
+        """Create a group of EFLR items and add it to the DLIS.
+
+        Args:
+            name        :   Name of the group.
+            description :   Description of the group.
+            object_type :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
+            object_list :   List of the EFLR items to be added to this group.
+            group_list  :   List of group items to be added to this group.
+            set_name    :   Name of the FrameTable this frame should be added to.
+
+        Returns:
+            A configured group item.
+        """
+
+        g = GroupItem(
+            name=name,
+            description=description,
+            object_type=object_type,
+            object_list=object_list,
+            group_list=group_list,
+            set_name=set_name
+        )
+
+        self._other_eflr.append(g)
+        return g
 
     def add_long_name(
             self,
