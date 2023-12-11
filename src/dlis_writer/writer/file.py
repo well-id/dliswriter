@@ -19,6 +19,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.long_name import LongNameItem
 from dlis_writer.logical_record.eflr_types.message import MessageItem, CommentItem
+from dlis_writer.logical_record.eflr_types.no_format import NoFormatItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.eflr_types.path import PathItem
@@ -655,6 +656,35 @@ class DLISFile:
 
         self._other.append(m)
         return m
+
+    def add_no_format(
+            self,
+            name: str,
+            consumer_name: Optional[str] = None,
+            description: Optional[str] = None,
+            set_name: Optional[str] = None
+    ) -> NoFormatItem:
+        """Create a no-format item and add it to the DLIS.
+
+        Args:
+            name            :   Name of the no-format item.
+            consumer_name   :   Consumer name.
+            description     :   Description.
+            set_name        :   Name of the NoFormatTable this item should be added to.
+
+        Returns:
+            A configured no-format item.
+        """
+
+        nf = NoFormatItem(
+            name=name,
+            consumer_name=consumer_name,
+            description=description,
+            set_name=set_name
+        )
+
+        self._other.append(nf)
+        return nf
 
     def add_parameter(
             self,

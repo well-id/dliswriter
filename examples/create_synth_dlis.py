@@ -148,5 +148,10 @@ comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
 long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
 
 
+# no-format
+no_format1 = df.add_no_format("NF1", consumer_name="Some consumer", description="Some description")
+no_format2 = df.add_no_format("NF2", description="XYZ")
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)
