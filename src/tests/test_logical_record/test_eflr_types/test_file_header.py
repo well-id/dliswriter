@@ -1,12 +1,12 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.file_header import FileHeader, FileHeaderObject
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderTable, FileHeaderItem
 
 from tests.common import base_data_path, config_params, make_config
 
 
-def _check_with_config(fh: FileHeaderObject, config: ConfigParser):
+def _check_with_config(fh: FileHeaderItem, config: ConfigParser):
     """Check that identifier and sequence number of the file header match the ones specified in the config."""
 
     assert fh.identifier == config['FileHeader']['name']
@@ -16,7 +16,7 @@ def _check_with_config(fh: FileHeaderObject, config: ConfigParser):
 def test_from_config(config_params: ConfigParser):
     """Test creating a FileHeaderObject from config."""
 
-    fh: FileHeaderObject = FileHeader.make_object_from_config(config_params)
+    fh: FileHeaderItem = FileHeaderItem.from_config(config_params)
     _check_with_config(fh, config_params)
 
 
@@ -28,5 +28,5 @@ def test_from_config_with_params(identifier: str, sequence_number: str):
     config["FileHeader"]["name"] = identifier
     config["FileHeader"]["sequence_number"] = sequence_number
 
-    fh: FileHeaderObject = FileHeader.make_object_from_config(config)
+    fh: FileHeaderItem = FileHeaderItem.from_config(config)
     _check_with_config(fh, config)

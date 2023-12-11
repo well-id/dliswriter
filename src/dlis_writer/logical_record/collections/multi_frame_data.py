@@ -1,9 +1,9 @@
 import typing
 from typing_extensions import Self
 
-from dlis_writer.logical_record.eflr_types.frame import FrameObject
+from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.iflr_types import FrameData
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 class MultiFrameData:
@@ -13,7 +13,7 @@ class MultiFrameData:
     SourceDataObject (specifying numerical data, channel names, data types etc.)
     """
 
-    def __init__(self, frame: FrameObject, data: SourceDataObject, chunk_size: typing.Optional[int] = None):
+    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: typing.Optional[int] = None):
         """Initialise MultiFrameData object.
 
         Args:
@@ -24,8 +24,8 @@ class MultiFrameData:
 
         super().__init__()
 
-        self._check_type(frame, FrameObject)
-        self._check_type(data, SourceDataObject)
+        self._check_type(frame, FrameItem)
+        self._check_type(data, SourceDataWrapper)
         self._check_type(chunk_size, int, type(None))
 
         frame_channel_names = tuple(c.name for c in frame.channels.value)
@@ -52,7 +52,7 @@ class MultiFrameData:
             raise TypeError(f"Expected an instance of {tp}; got {type(value)}: {value}")
 
     @property
-    def frame(self) -> FrameObject:
+    def frame(self) -> FrameItem:
         """FrameObject the data (and FrameData objects) belong to."""
 
         return self._frame

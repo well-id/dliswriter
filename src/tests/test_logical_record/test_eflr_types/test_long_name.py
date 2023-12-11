@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.long_name import LongName, LongNameObject
+from dlis_writer.logical_record.eflr_types.long_name import LongNameTable, LongNameItem
 
 from tests.common import base_data_path, config_params
 
@@ -8,7 +8,7 @@ from tests.common import base_data_path, config_params
 def test_from_config(config_params: ConfigParser):
     """Test creating LongNameObject from config."""
 
-    w: LongNameObject = LongName.make_object_from_config(config_params, 'LongName-1')
+    w: LongNameItem = LongNameItem.from_config(config_params, 'LongName-1')
     t = 'SOME ASCII TEXT'
 
     assert w.general_modifier.value == [t]

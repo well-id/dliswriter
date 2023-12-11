@@ -6,11 +6,13 @@ import logging
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
-from dlis_writer.logical_record.eflr_types.frame import FrameObject
-from dlis_writer.logical_record.eflr_types.origin import OriginObject
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderObject
-from dlis_writer.logical_record.core.eflr import EFLR
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.logical_record.eflr_types.frame import FrameItem
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelItem
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
+from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
+from dlis_writer.logical_record.core.eflr import EFLRTable
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -19,7 +21,7 @@ logger = logging.getLogger(__name__)
 class FileLogicalRecords:
     """Collection of logical records to constitute a DLIS file."""
 
-    def __init__(self, sul: StorageUnitLabel, fh: FileHeader, orig: Origin):
+    def __init__(self, sul: StorageUnitLabel, fh: FileHeaderTable, orig: OriginTable):
         """Initialise FileLogicalRecords object.
 
         Args:
@@ -29,17 +31,17 @@ class FileLogicalRecords:
         """
 
         self._check_type(sul, StorageUnitLabel)
-        self._check_type(fh, FileHeader)
-        self._check_type(orig, Origin)
+        self._check_type(fh, FileHeaderTable)
+        self._check_type(orig, OriginTable)
 
         self._storage_unit_label = sul
         self._file_header = fh
         self._origin = orig
 
-        self._channels: list[Channel] = []
-        self._frames: list[Frame] = []
+        self._channels: list[ChannelTable] = []
+        self._frames: list[FrameTable] = []
         self._frame_data_objects: list[MultiFrameData] = []
-        self._other_logical_records: list[EFLR] = []
+        self._other_logical_records: list[typing.Union[EFLRTable, NoFormatFrameData]] = []
 
     def set_origin_reference(self, value: int):
         """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
@@ -60,13 +62,13 @@ class FileLogicalRecords:
             fdo.set_origin_reference(value)
 
     @property
-    def origin(self) -> Origin:
+    def origin(self) -> OriginTable:
         """Origin EFLR of the collection."""
 
         return self._origin
 
     @property
-    def header_records(self) -> tuple[StorageUnitLabel, FileHeader, Origin]:
+    def header_records(self) -> tuple[StorageUnitLabel, FileHeaderTable, OriginTable]:
         """Header records of the collection: StorageUnitLabel, FileHeader, and Origin."""
 
         return self._storage_unit_label, self._file_header, self._origin
@@ -87,7 +89,7 @@ class FileLogicalRecords:
             raise TypeError(f"Expected an instance of {expected_type.__name__}; got {type(value)}")
 
     @staticmethod
-    def _check_types(values: typing.Iterable, expected_type: type):
+    def _check_types(values: typing.Iterable, expected_type: typing.Union[type, tuple[type, ...]]):
         """Check that the provided values are all instances of the expected type.
 
         Args:
@@ -99,25 +101,27 @@ class FileLogicalRecords:
         """
 
         if not all(isinstance(v, expected_type) for v in values):
-            raise TypeError(f"Expected only {expected_type.__name__} objects; "
+            if not isinstance(expected_type, tuple):
+                expected_type = expected_type,
+            raise TypeError(f"Expected only {' / '.join(t.__name__ for t in expected_type)} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
-    def add_channels(self, *channels: Channel):
+    def add_channels(self, *channels: ChannelTable):
         """Add Channel logical records to the collection."""
 
-        self._check_types(channels, Channel)
+        self._check_types(channels, ChannelTable)
         self._channels.extend(channels)
 
     @property
-    def frames(self) -> list[Frame]:
+    def frames(self) -> list[FrameTable]:
         """Frame logical records added to the collection."""
 
         return self._frames
 
-    def add_frames(self, *frames: Frame):
+    def add_frames(self, *frames: FrameTable):
         """Add Frame logical records to the collection."""
 
-        self._check_types(frames, Frame)
+        self._check_types(frames, FrameTable)
         self._frames.extend(frames)
 
     @property
@@ -141,7 +145,7 @@ class FileLogicalRecords:
         """
 
         def get_len(lr_list):
-            return sum(lr.n_objects for lr in lr_list)
+            return sum(lr.n_items for lr in lr_list)
 
         len_channels = get_len(self._channels)                          # number of Channel EFLRs
         len_frames = get_len(self._frames)                              # number of Frame EFLRs
@@ -164,10 +168,10 @@ class FileLogicalRecords:
 
         yield from self._other_logical_records
 
-    def add_logical_records(self, *lrs: EFLR):
+    def add_logical_records(self, *lrs: typing.Union[EFLRTable, NoFormatFrameData]):
         """Add other EFLR objects (other than Channel, Frame, Origin, FileHeader) to the collection."""
 
-        self._check_types(lrs, EFLR)
+        self._check_types(lrs, (EFLRTable, NoFormatFrameData))
         self._other_logical_records.extend(lrs)
 
     def check_objects(self):
@@ -194,18 +198,18 @@ class FileLogicalRecords:
                 raise RuntimeError(f"Expected exactly one {class_name}Object, got {n} with names: "
                                    f"{', '.join(repr(n) for n in names)}")
 
-        def check(eflr: EFLR, exactly_one: bool = False):
+        def check(eflr: EFLRTable, exactly_one: bool = False):
             """Check that at least/exactly one EFLRObject is defined for the provided EFLR."""
 
-            names = [o.name for o in eflr.get_all_objects()]
+            names = [o.name for o in eflr.get_all_eflr_items()]
             verify_n(names, eflr.__class__.__name__, exactly_one=exactly_one)
 
-        def check_list(eflr_list: list[EFLR], class_name: str):
+        def check_list(eflr_list: list[EFLRTable], class_name: str):
             """Check that at least one EFLRObject is defined across the list of EFLRs of the given type."""
 
             names: list[str] = []
             for eflr in eflr_list:
-                names.extend(o.name for o in eflr.get_all_objects())
+                names.extend(o.name for o in eflr.get_all_eflr_items())
             verify_n(names, class_name)
 
         check(self._file_header, exactly_one=True)
@@ -223,17 +227,17 @@ class FileLogicalRecords:
 
         channels_in_frames = set()
         for frm in self._frames:
-            for frame_object in frm.get_all_objects():
+            for frame_object in frm.get_all_eflr_items():
                 channels_in_frames |= set(frame_object.channels.value)
 
         for ch in self._channels:
-            for channel_object in ch.get_all_objects():
+            for channel_object in ch.get_all_eflr_items():
                 if channel_object not in channels_in_frames:
                     logger.warning(f"{channel_object} has not been added to any frame; "
                                    f"this might cause issues with opening the produced DLIS file in some software")
 
     @staticmethod
-    def _make_frame_and_data(config: ConfigParser, data: SourceDataObject, key: str = 'Frame',
+    def _make_frame_and_data(config: ConfigParser, data: SourceDataWrapper, key: str = 'Frame',
                              chunk_size: typing.Optional[int] = None) \
             -> MultiFrameData:
         """Define a FrameObject and a corresponding MultiFrameData based on the provided config information.
@@ -249,7 +253,7 @@ class FileLogicalRecords:
             MultiFrameData object, containing the information on the frame and frame data records.
         """
 
-        frame_object: FrameObject = Frame.make_object_from_config(config, key=key)
+        frame_object: FrameItem = FrameItem.from_config(config, key=key)
 
         if frame_object.channels.value:
             frame_object.setup_from_data(data)
@@ -261,7 +265,7 @@ class FileLogicalRecords:
         return MultiFrameData(frame_object, data, chunk_size=chunk_size)
 
     @classmethod
-    def from_config_and_data(cls, config: ConfigParser, data: SourceDataObject,
+    def from_config_and_data(cls, config: ConfigParser, data: SourceDataWrapper,
                              chunk_size: typing.Optional[int] = None) -> Self:
         """Create a FileLogicalRecords object from a config object and data.
 
@@ -275,8 +279,8 @@ class FileLogicalRecords:
             FileLogicalRecords: a configured instance of the class.
         """
 
-        file_header_object: FileHeaderObject = FileHeader.make_object_from_config(config)
-        origin_object: OriginObject = Origin.make_object_from_config(config)
+        file_header_object: FileHeaderItem = FileHeaderItem.from_config(config)
+        origin_object: OriginItem = OriginItem.from_config(config)
 
         obj = cls(
             sul=StorageUnitLabel.make_from_config(config),
@@ -284,7 +288,7 @@ class FileLogicalRecords:
             orig=origin_object.parent
         )
 
-        channels = Channel.make_all_objects_from_config(config)
+        channels = ChannelItem.all_from_config(config)
 
         frame_keys = (key for key in config.sections() if key.startswith('Frame-') or key == 'Frame')
         frame_and_data_objects = [
@@ -301,10 +305,10 @@ class FileLogicalRecords:
                 obj.add_frames(fr.parent)
             obj.add_frame_data_objects(multi_frame_data)
 
-        other_classes = [c for c in eflr_types if c not in (Channel, Frame, Origin, FileHeader)]
+        other_classes = [c for c in eflr_tables if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
 
         for c in other_classes:
-            objects = c.make_all_objects_from_config(config, get_if_exists=True)
+            objects = c.item_type.all_from_config(config, get_if_exists=True)
             if not objects:
                 logger.debug(f"No instances of {c.__name__} defined")
             else:

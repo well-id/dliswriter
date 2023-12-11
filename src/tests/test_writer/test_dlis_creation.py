@@ -8,7 +8,7 @@ from configparser import ConfigParser
 from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.writer.dlis_file_comparator import compare
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.source_data_objects import HDF5Interface
+from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
 from tests.test_writer.common import (base_data_path, reference_data_path, reference_data,
                                       short_reference_data, short_reference_data_path)  # fixtures
@@ -145,7 +145,7 @@ def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, ne
                         config_array_time_based: ConfigParser, config_time_based: ConfigParser):
     """Create a DLIS file with varying number of points. Check that the data for each channel are correct."""
 
-    data = HDF5Interface.from_config(reference_data_path, config_time_based)
+    data = HDF5DataWrapper.from_config(reference_data_path, config_time_based)
     write_file(data=data.load_chunk(0, n_points), dlis_file_name=new_dlis_path, config=config_array_time_based)
 
     with load_dlis(new_dlis_path) as f:

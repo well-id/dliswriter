@@ -10,7 +10,7 @@ from configparser import ConfigParser
 from dlis_writer.writer.writer import DLISWriter
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.writer.dlis_file_comparator import compare
-from dlis_writer.utils.source_data_objects import HDF5Interface, SourceDataObject
+from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper, SourceDataWrapper
 from dlis_writer.writer.dlis_config import DLISConfig
 
 
@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 path_type = Union[str, os.PathLike[str]]
 
 
-def write_dlis_file(data: SourceDataObject, config: ConfigParser, dlis_file_name: path_type,
+def write_dlis_file(data: SourceDataWrapper, config: ConfigParser, dlis_file_name: path_type,
                     visible_record_length: int = 8192, **kwargs):
     """Create a DLIS file from data and specification info.
 
     Args:
-        data                    :   The source data, wrapped in a (subclass of) SourceDataObject.
+        data                    :   The source data, wrapped in a (subclass of) SourceDataWrapper.
         config                  :   Config object with specification on what to include in the DLIS file.
         dlis_file_name          :   Name of the file to be created.
         visible_record_length   :   Maximal length of visible records to be created in the file.
@@ -80,14 +80,14 @@ def make_parser(require_input_fname: bool = True) -> ArgumentParser:
     return parser
 
 
-def data_and_config_from_parser_args(pargs: Namespace) -> tuple[HDF5Interface, ConfigParser]:
-    """Create a SourceDataObject and a ConfigParser object based on information from the arg parser.
+def data_and_config_from_parser_args(pargs: Namespace) -> tuple[HDF5DataWrapper, ConfigParser]:
+    """Create a SourceDataWrapper and a ConfigParser object based on information from the arg parser.
 
     Args:
         pargs   :   Parsed command line arguments.
 
     Returns:
-        - HDF5Interface (a SourceDataObject subclass) object containing the data from the HDF5 file.
+        - HDF5Interface (a SourceDataWrapper subclass) object containing the data from the HDF5 file.
         - ConfigParser object, created from the provided config file and/or data.
     """
 
@@ -98,7 +98,7 @@ def data_and_config_from_parser_args(pargs: Namespace) -> tuple[HDF5Interface, C
         logger.info("Config file path not provided; creating a config based on the data")
         config = DLISConfig.from_h5_data_file(pargs.input_file_name)
 
-    data = HDF5Interface.from_config(pargs.input_file_name, config.config)
+    data = HDF5DataWrapper.from_config(pargs.input_file_name, config.config)
 
     if not pargs.config and pargs.channels_from_data:
         config.add_channel_config_from_h5_data(data.data_source)

@@ -1,19 +1,19 @@
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
 
-class WellReferencePointObject(EFLRObject):
+class WellReferencePointItem(EFLRItem):
     """Model an object being part of WellReferencePoint EFLR."""
 
-    parent: "WellReferencePoint"
+    parent: "WellReferencePointTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise WellReferencePointObject.
+        """Initialise WellReferencePointItem.
 
         Args:
-            name        :   Name of the WellReferencePointObject.
-            **kwargs    :   Values of to be set as characteristics of the WellReferencePointObject Attributes.
+            name        :   Name of the WellReferencePointItem.
+            **kwargs    :   Values of to be set as characteristics of the WellReferencePointItem Attributes.
         """
 
         self.permanent_datum = Attribute(
@@ -42,12 +42,12 @@ class WellReferencePointObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class WellReferencePoint(EFLR):
+class WellReferencePointTable(EFLRTable):
     """Model WellReferencePoint EFLR."""
 
     set_type = 'WELL-REFERENCE'
     logical_record_type = EFLRType.OLR
-    object_type = WellReferencePointObject
+    item_type = WellReferencePointItem
 
 
-WellReferencePointObject.parent_eflr_class = WellReferencePoint
+WellReferencePointItem.parent_eflr_class = WellReferencePointTable

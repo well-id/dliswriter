@@ -5,7 +5,7 @@ from functools import lru_cache
 from dlis_writer.utils.enums import RepresentationCode
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr import EFLRObject
+    from dlis_writer.logical_record.core.eflr import EFLRItem
 
 
 # offsets used in writing structs for UVARI representation code (see '_write_struct_uvari' function)
@@ -80,7 +80,7 @@ def write_struct_uvari(value: int) -> bytes:
     return RepresentationCode.ULONG.convert(value + ULONG_OFFSET)
 
 
-def write_struct_obname(value: "EFLRObject") -> bytes:
+def write_struct_obname(value: "EFLRItem") -> bytes:
     """Create a reference to an EFLRObject, based on the object's name."""
 
     if value.origin_reference is None:
@@ -99,7 +99,7 @@ def write_struct_obname(value: "EFLRObject") -> bytes:
     return obname
 
 
-def write_struct_objref(value: "EFLRObject") -> bytes:
+def write_struct_objref(value: "EFLRItem") -> bytes:
     """Create a reference to an EFLRObject, based on the object's name and set type it belongs to."""
 
     return write_struct_ascii(value.parent.set_type) + value.obname

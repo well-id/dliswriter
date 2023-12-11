@@ -7,7 +7,7 @@ from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
@@ -150,10 +150,10 @@ class DLISWriter:
     def _assign_origin_reference(logical_records: FileLogicalRecords):
         """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
 
-        if logical_records.origin.first_object is None:
+        if logical_records.origin.first_item is None:
             raise RuntimeError("No origin defined")
 
-        val = logical_records.origin.first_object.file_set_number.value
+        val = logical_records.origin.first_item.file_set_number.value
 
         if not val:
             raise Exception('Origin object MUST have a file_set_number')
@@ -234,7 +234,7 @@ class DLISWriter:
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
-    def create_dlis_from_config_and_data(self, config: ConfigParser, data: SourceDataObject,
+    def create_dlis_from_config_and_data(self, config: ConfigParser, data: SourceDataWrapper,
                                          input_chunk_size: Optional[int] = None, **kwargs):
         """Create a DLIS file from logical records specification (found in the config) and numerical data.
 

@@ -1,35 +1,35 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types.channel import Channel
-from dlis_writer.logical_record.eflr_types.parameter import Parameter
-from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.eflr_types.channel import ChannelTable
+from dlis_writer.logical_record.eflr_types.parameter import ParameterTable
+from dlis_writer.logical_record.eflr_types.axis import AxisTable
 from dlis_writer.logical_record.core.attribute import *
 
 
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurementObject(EFLRObject):
+class CalibrationMeasurementItem(EFLRItem):
     """Model an object being part of CalibrationMeasurement EFLR."""
 
-    parent: "CalibrationMeasurement"
+    parent: "CalibrationMeasurementTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationMeasurementObject.
+        """Initialise CalibrationMeasurementItem.
 
         Args:
-            name        :   Name of the CalibrationMeasurementObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementObject Attributes.
+            name        :   Name of the CalibrationMeasurementItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
         self.phase = Attribute('phase', representation_code=RepC.IDENT, parent_eflr=self)
         self.measurement_source = EFLRAttribute(
-            'measurement_source', representation_code=RepC.OBJREF, object_class=Channel, parent_eflr=self)
+            'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelTable, parent_eflr=self)
         self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
         self.measurement = NumericAttribute('measurement', multivalued=True, parent_eflr=self)
         self.sample_count = NumericAttribute('sample_count', int_only=True, parent_eflr=self)
         self.maximum_deviation = NumericAttribute('maximum_deviation', parent_eflr=self)
@@ -44,25 +44,25 @@ class CalibrationMeasurementObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class CalibrationMeasurement(EFLR):
+class CalibrationMeasurementTable(EFLRTable):
     """Model CalibrationMeasurement EFLR."""
 
     set_type = 'CALIBRATION-MEASUREMENT'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationMeasurementObject
+    item_type = CalibrationMeasurementItem
 
 
-class CalibrationCoefficientObject(EFLRObject):
+class CalibrationCoefficientItem(EFLRItem):
     """Model an object being part of CalibrationCoefficient EFLR."""
 
-    parent: "CalibrationCoefficient"
+    parent: "CalibrationCoefficientTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationCoefficientObject.
+        """Initialise CalibrationCoefficientItem.
 
         Args:
-            name        :   Name of the CalibrationCoefficientObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientObject Attributes.
+            name        :   Name of the CalibrationCoefficientItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
         self.label = Attribute('label', representation_code=RepC.IDENT, parent_eflr=self)
@@ -74,49 +74,49 @@ class CalibrationCoefficientObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class CalibrationCoefficient(EFLR):
+class CalibrationCoefficientTable(EFLRTable):
     """Model CalibrationCoefficient EFLR."""
 
     set_type = 'CALIBRATION-COEFFICIENT'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationCoefficientObject
+    item_type = CalibrationCoefficientItem
 
 
-class CalibrationObject(EFLRObject):
+class CalibrationItem(EFLRItem):
     """Model an object being part of Calibration EFLR."""
 
-    parent: "Calibration"
+    parent: "CalibrationTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise CalibrationObject.
+        """Initialise CalibrationItem.
 
         Args:
-            name        :   Name of the CalibrationObject.
-            **kwargs    :   Values of to be set as characteristics of the CalibrationObject Attributes.
+            name        :   Name of the CalibrationItem.
+            **kwargs    :   Values of to be set as characteristics of the CalibrationItem Attributes.
         """
 
         self.calibrated_channels = EFLRAttribute(
-            'calibrated_channels', object_class=Channel, multivalued=True, parent_eflr=self)
+            'calibrated_channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
         self.uncalibrated_channels = EFLRAttribute(
-            'uncalibrated_channels', object_class=Channel, multivalued=True, parent_eflr=self)
+            'uncalibrated_channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
         self.coefficients = EFLRAttribute(
-            'coefficients', object_class=CalibrationCoefficient, multivalued=True, parent_eflr=self)
+            'coefficients', object_class=CalibrationCoefficientTable, multivalued=True, parent_eflr=self)
         self.measurements = EFLRAttribute(
-            'measurements', object_class=CalibrationMeasurement, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=Parameter, multivalued=True, parent_eflr=self)
+            'measurements', object_class=CalibrationMeasurementTable, multivalued=True, parent_eflr=self)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterTable, multivalued=True, parent_eflr=self)
         self.method = Attribute('method', representation_code=RepC.IDENT, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 
 
-class Calibration(EFLR):
+class CalibrationTable(EFLRTable):
     """Model Calibration EFLR."""
 
     set_type = 'CALIBRATION'
     logical_record_type = EFLRType.STATIC
-    object_type = CalibrationObject
+    item_type = CalibrationItem
 
 
-CalibrationMeasurementObject.parent_eflr_class = CalibrationMeasurement
-CalibrationCoefficientObject.parent_eflr_class = CalibrationCoefficient
-CalibrationObject.parent_eflr_class = Calibration
+CalibrationMeasurementItem.parent_eflr_class = CalibrationMeasurementTable
+CalibrationCoefficientItem.parent_eflr_class = CalibrationCoefficientTable
+CalibrationItem.parent_eflr_class = CalibrationTable

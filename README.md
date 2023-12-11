@@ -915,7 +915,7 @@ from logical_record.group import Group
 group_1 = Group('GRP-1')
 
 group_1.description.value = 'MULTI-DIMENSIONAL CHANNELS'
-group_1.object_type.value = 'CHANNEL'
+group_1.item_type.value = 'CHANNEL'
 group_1.object_list.value = [multi_dim_channel, image_channel]
 
 ```

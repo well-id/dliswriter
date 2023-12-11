@@ -3,29 +3,29 @@ from typing import Union, Optional
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
-from dlis_writer.logical_record.eflr_types.axis import Axis
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.eflr_types.axis import AxisTable
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
 
 
-class ChannelObject(EFLRObject):
+class ChannelItem(EFLRItem):
     """Model an object being part of Channel EFLR."""
 
-    parent: "Channel"
+    parent: "ChannelTable"
 
     def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
-        """Initialise ChannelObject.
+        """Initialise ChannelItem.
 
         Args:
-            name            :   Name of the ChannelObject.
-            dataset_name    :   Name of the data corresponding to this channel in the SourceDataObject.
-            **kwargs        :   Values of to be set as characteristics of the ChannelObject Attributes.
+            name            :   Name of the ChannelItem.
+            dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
+            **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -36,7 +36,7 @@ class ChannelObject(EFLRObject):
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=Axis, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
         self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
         self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
         self.minimum_value = NumericAttribute(
@@ -52,7 +52,7 @@ class ChannelObject(EFLRObject):
 
     @property
     def dataset_name(self) -> str:
-        """Name of the data corresponding to this channel in the SourceDataObject."""
+        """Name of the data corresponding to this channel in the SourceDataWrapper."""
 
         return self._dataset_name if self._dataset_name is not None else self.name
 
@@ -62,15 +62,15 @@ class ChannelObject(EFLRObject):
 
         self._dataset_name = name
 
-    def set_dimension_and_repr_code_from_data(self, data: SourceDataObject):
-        """Determine and dimension and representation code attributes of the ChannelObject based on the source data."""
+    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper):
+        """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
 
         sub_data = data[self.name]
         self._set_dimension_from_data(sub_data)
         self._set_repr_code_from_data(sub_data)
 
     def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]):
-        """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataObject."""
+        """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dim = list(sub_data.shape[1:]) or [1]
 
@@ -89,7 +89,7 @@ class ChannelObject(EFLRObject):
             self.element_limit.value = dim
 
     def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]):
-        """Determine representation code of the Channel data from a relevant subset of a SourceDataObject."""
+        """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dt = sub_data.dtype
 
@@ -111,7 +111,7 @@ class ChannelObject(EFLRObject):
             self.representation_code.value = suggested_rc
 
     def set_defaults(self):
-        """Set up default values of ChannelObject parameters if not explicitly set previously."""
+        """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:
             logger.debug(f"Setting element limit of channel '{self.name}' to the same value "
@@ -150,12 +150,12 @@ class ChannelObject(EFLRObject):
         return RepC.get_member(rc, allow_none=True)
 
 
-class Channel(EFLR):
+class ChannelTable(EFLRTable):
     """Model Channel EFLR."""
 
     set_type = 'CHANNEL'
     logical_record_type = EFLRType.CHANNL
-    object_type = ChannelObject
+    item_type = ChannelItem
 
 
-ChannelObject.parent_eflr_class = Channel
+ChannelItem.parent_eflr_class = ChannelTable

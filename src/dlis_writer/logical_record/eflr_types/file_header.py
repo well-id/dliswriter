@@ -1,7 +1,7 @@
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType
 
 
@@ -9,20 +9,20 @@ def pack_ushort(v):
     return RepresentationCode.USHORT.converter.pack(v)
 
 
-class FileHeaderObject(EFLRObject):
+class FileHeaderItem(EFLRItem):
     """Model an object being part of FileHeader EFLR."""
 
-    parent: "FileHeader"
+    parent: "FileHeaderTable"
 
     identifier_length_limit = 65    #: max length of the file header name
 
     def __init__(self, identifier: str, sequence_number: int = 1, **kwargs):
-        """Initialise FileHeaderObject.
+        """Initialise FileHeaderItem.
 
         Args:
-            identifier      :   Name of the FileHeaderObject.
+            identifier      :   Name of the FileHeaderItem.
             sequence_number :   Sequence number of the file.
-            **kwargs        :   Values of to be set as characteristics of the FileHeaderObject Attributes.
+            **kwargs        :   Values of to be set as characteristics of the FileHeaderItem Attributes.
         """
 
         self.identifier = identifier
@@ -36,7 +36,7 @@ class FileHeaderObject(EFLRObject):
         super().__init__(name='0', **kwargs)
 
     def _make_attrs_bytes(self) -> bytes:
-        """Create bytes describing the values of attributes of FIleHeaderObject."""
+        """Create bytes describing the values of attributes of FIleHeaderItem."""
 
         bts = b''
 
@@ -50,12 +50,12 @@ class FileHeaderObject(EFLRObject):
         return bts
 
 
-class FileHeader(EFLR):
+class FileHeaderTable(EFLRTable):
     """Model FileHeader EFLR."""
 
     set_type = 'FILE-HEADER'
     logical_record_type = EFLRType.FHLR
-    object_type = FileHeaderObject
+    item_type = FileHeaderItem
 
     def _make_template_bytes(self) -> bytes:
         """Create bytes describing the template - kinds of attributes to be found in the FileHeader EFLR."""
@@ -73,4 +73,4 @@ class FileHeader(EFLR):
         return bts
 
 
-FileHeaderObject.parent_eflr_class = FileHeader
+FileHeaderItem.parent_eflr_class = FileHeaderTable

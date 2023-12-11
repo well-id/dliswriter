@@ -1,3 +1,3 @@
-from .eflr import EFLR
-from .eflr_meta import EFLRMeta
-from .eflr_object import EFLRObject
+from .eflr_table import EFLRTable
+from .eflr_table_meta import EFLRTableMeta
+from .eflr_item import EFLRItem

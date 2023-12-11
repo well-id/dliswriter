@@ -1,19 +1,19 @@
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
 
-class EquipmentObject(EFLRObject):
+class EquipmentItem(EFLRItem):
     """Model an object being part of Equipment EFLR."""
 
-    parent: "Equipment"
+    parent: "EquipmentTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise EquipmentObject.
+        """Initialise EquipmentItem.
 
         Args:
-            name        :   Name of the EquipmentObject.
-            **kwargs    :   Values of to be set as characteristics of the EquipmentObject Attributes.
+            name        :   Name of the EquipmentItem.
+            **kwargs    :   Values of to be set as characteristics of the EquipmentItem Attributes.
         """
 
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
@@ -37,12 +37,12 @@ class EquipmentObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class Equipment(EFLR):
+class EquipmentTable(EFLRTable):
     """Model Equipment EFLR."""
 
     set_type = 'EQUIPMENT'
     logical_record_type = EFLRType.STATIC
-    object_type = EquipmentObject
+    item_type = EquipmentItem
 
 
-EquipmentObject.parent_eflr_class = Equipment
+EquipmentItem.parent_eflr_class = EquipmentTable

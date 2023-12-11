@@ -2,20 +2,20 @@ import logging
 import numpy as np
 from typing import Union
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types.channel import Channel, ChannelObject
+from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
-from dlis_writer.utils.source_data_objects import SourceDataObject
+from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
 
 
-class FrameObject(EFLRObject):
+class FrameItem(EFLRItem):
     """Model an object being part of Frame EFLR."""
 
-    parent: "Frame"
+    parent: "FrameTable"
     
     #: values for frame index type allowed by the standard
     frame_index_types = (
@@ -27,15 +27,15 @@ class FrameObject(EFLRObject):
     )
 
     def __init__(self, name: str, **kwargs):
-        """Initialise FrameObject.
+        """Initialise FrameItem.
 
         Args:
-            name        :   Name of the FrameObject.
-            **kwargs    :   Values of to be set as characteristics of the FrameObject Attributes.
+            name        :   Name of the FrameItem.
+            **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=Channel, multivalued=True, parent_eflr=self)
+        self.channels = EFLRAttribute('channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
         self.index_type = Attribute(
             'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)
         self.direction = Attribute('direction', representation_code=RepC.IDENT, parent_eflr=self)
@@ -79,7 +79,7 @@ class FrameObject(EFLRObject):
         else:
             raise TypeError(f"Cannot convert {type(value)} object ({value}) to integer")
 
-    def setup_from_data(self, data: SourceDataObject):
+    def setup_from_data(self, data: SourceDataWrapper):
         """Set up attributes of the frame and its channels based on the source data."""
 
         if not self.channels.value:
@@ -90,7 +90,7 @@ class FrameObject(EFLRObject):
 
         self._setup_frame_params_from_data(data)
 
-    def _setup_frame_params_from_data(self, data: SourceDataObject):
+    def _setup_frame_params_from_data(self, data: SourceDataWrapper):
         """Set up the index characteristics of the frame based on the source data.
 
         The index characteristics include: min and max value, spacing, and direction (increasing/decreasing).
@@ -111,7 +111,7 @@ class FrameObject(EFLRObject):
             if getattr(attr, key) is None and value is not None:
                 setattr(attr, key, value)
 
-        index_channel: ChannelObject = self.channels.value[0]
+        index_channel: ChannelItem = self.channels.value[0]
         index_data = data[index_channel.name][:]
         unit = index_channel.units.value
         repr_code = index_channel.representation_code.value or RepC.FDOUBL
@@ -129,12 +129,12 @@ class FrameObject(EFLRObject):
                 at.representation_code = repr_code
 
 
-class Frame(EFLR):
+class FrameTable(EFLRTable):
     """Model Frame EFLR."""
 
     set_type = 'FRAME'
     logical_record_type = EFLRType.FRAME
-    object_type = FrameObject
+    item_type = FrameItem
 
 
-FrameObject.parent_eflr_class = Frame
+FrameItem.parent_eflr_class = FrameTable

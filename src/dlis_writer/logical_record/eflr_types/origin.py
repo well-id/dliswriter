@@ -1,7 +1,7 @@
 from datetime import datetime
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
 
@@ -9,17 +9,17 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute,
 logger = logging.getLogger(__name__)
 
 
-class OriginObject(EFLRObject):
+class OriginItem(EFLRItem):
     """Model an object being part of Origin EFLR."""
 
-    parent: "Origin"
+    parent: "OriginTable"
 
     def __init__(self, name: str, **kwargs):
-        """Initialise OriginObject.
+        """Initialise OriginItem.
 
         Args:
-            name        :   Name of the OriginObject.
-            **kwargs    :   Values of to be set as characteristics of the OriginObject Attributes.
+            name        :   Name of the OriginItem.
+            **kwargs    :   Values of to be set as characteristics of the OriginItem Attributes.
         """
 
         self.file_id = Attribute('file_id', representation_code=RepC.ASCII, parent_eflr=self)
@@ -51,12 +51,12 @@ class OriginObject(EFLRObject):
         super().__init__(name, **kwargs)
 
 
-class Origin(EFLR):
+class OriginTable(EFLRTable):
     """Model Origin EFLR."""
 
     set_type = 'ORIGIN'
     logical_record_type = EFLRType.OLR
-    object_type = OriginObject
+    item_type = OriginItem
 
 
-OriginObject.parent_eflr_class = Origin
+OriginItem.parent_eflr_class = OriginTable

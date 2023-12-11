@@ -1,21 +1,21 @@
-from dlis_writer.logical_record.core.eflr import EFLR, EFLRObject
+from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 
 
-class ZoneObject(EFLRObject):
+class ZoneItem(EFLRItem):
     """Model an object being part of Zone EFLR."""
 
-    parent: "Zone"
+    parent: "ZoneTable"
 
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
     def __init__(self, name: str, **kwargs):
-        """Initialise ZoneObject.
+        """Initialise ZoneItem.
 
         Args:
-            name        :   Name of the ZoneObject.
-            **kwargs    :   Values of to be set as characteristics of the ZoneObject Attributes.
+            name        :   Name of the ZoneItem.
+            **kwargs    :   Values of to be set as characteristics of the ZoneItem Attributes.
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
@@ -34,12 +34,12 @@ class ZoneObject(EFLRObject):
         return domain
 
 
-class Zone(EFLR):
+class ZoneTable(EFLRTable):
     """Model Zone EFLR."""
 
     set_type = 'ZONE'
     logical_record_type = EFLRType.STATIC
-    object_type = ZoneObject
+    item_type = ZoneItem
 
 
-ZoneObject.parent_eflr_class = Zone
+ZoneItem.parent_eflr_class = ZoneTable

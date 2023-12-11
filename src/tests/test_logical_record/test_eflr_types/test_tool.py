@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.tool import Tool, ToolObject
+from dlis_writer.logical_record.eflr_types.tool import ToolTable, ToolItem
 
 from tests.common import base_data_path, config_params
 
@@ -14,7 +14,7 @@ def test_from_config(config_params: ConfigParser, section: str, name: str, descr
                      param_names: list[str], channel_names: list[str]):
     """Test creating ToolObject from config."""
 
-    tool: ToolObject = Tool.make_object_from_config(config_params, key=section)
+    tool: ToolItem = ToolItem.from_config(config_params, key=section)
 
     assert tool.name == name
     assert tool.description.value == description

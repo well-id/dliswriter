@@ -3,7 +3,7 @@ import numpy as np
 import logging
 
 from dlis_writer.writer.file import DLISFile
-from dlis_writer.logical_record.eflr_types.origin import OriginObject
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -14,7 +14,7 @@ install_logger(logger)
 
 
 # set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginObject("DEFAULT ORIGIN", file_set_number=1, company="XXX")
+origin = OriginItem("DEFAULT ORIGIN", file_set_number=1, company="XXX")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
 file_header = {'sequence_number': 2}
 
@@ -47,7 +47,7 @@ main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_typ
 n_rows_time = 200
 ch5 = df.add_channel('TIME', data=np.arange(n_rows_time) / 4, units='s', axis=ax2)  # index channel for frame 2
 ch6 = df.add_channel('TEMPERATURE', data=20+5*np.random.rand(n_rows_time), units='degC')
-second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NONSTANDARD')
+second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NON-STANDARD')
 
 
 # zones
@@ -83,5 +83,87 @@ equipment3 = df.add_equipment('EQ3')
 equipment3.status.value = 0
 
 
+# tool - using equipment, channels, and parameters
+tool1 = df.add_tool('TOOL1', status=1, parts=(equipment1, equipment2), channels=(ch5, ch6), description='...')
+tool2 = df.add_tool('TOOL2', parameters=(parameter1, parameter2), channels=(ch1, ch2, ch3), parts=(equipment1,))
+
+
+# computation - using axis, zones, and tool
+computation1 = df.add_computation('CMPT1', axis=ax1, source=tool2, zones=(zone1, zone2, zone3), dimension=[3])
+computation1.values.value = [1, 2, 3]
+computation2 = df.add_computation('CMPT2', values=[2.3, 11.12312, 2231213.22])
+computation3 = df.add_computation('CMPT3', values=[3.14])
+
+
+# process - using channels, computations, and parameters
+process1 = df.add_process("PROC", input_channels=(ch1, ch2), output_channels=(ch4,), input_computations=(computation1,),
+                          output_computations=(computation2, computation3), properties=['a', 'b', 'c'])
+
+
+# calibration coefficient
+coef1 = df.add_calibration_coefficient('CC1', label='Gain', coefficients=[100.1, 100.2], references=[122, 123],
+                                       plus_tolerances=[2, 2.5], minus_tolerances=[3, 2.4])
+coef2 = df.add_calibration_coefficient('CC2', coefficients=[1.2, 2.2, 3.4])
+coef3 = df.add_calibration_coefficient('CC3', coefficients=[2])
+
+
+# calibration measurement - use Axis and Channel
+cmeas1 = df.add_calibration_measurement('CM1', phase='BEFORE', measurement_type='Plus', axis=ax1,
+                                        measurement_source=ch1, measurement=[2.1, 2.5, 2.4], sample_count=3,
+                                        begin_time=15, standard=[20, 25])
+cmeas2 = df.add_calibration_measurement('CM2', measurement_source=ch5, measurement=[30, 40, 55, 61],
+                                        begin_time=datetime.now()-timedelta(hours=20))
+
+
+# calibration - using calibration coefficient & measurement, channels, and parameters
+calibration1 = df.add_calibration('CALIB-1', calibrated_channels=(ch4,), uncalibrated_channels=(ch1, ch5),
+                                  coefficients=(coef1, coef2, coef3), measurements=(cmeas1, cmeas2),
+                                  parameters=(parameter2,), method='Two-point linear')
+
+# well reference point
+wrp = df.add_well_reference_point("WELL-REF", coordinate_1_name="Latitude", coordinate_1_value=40.34,
+                                  coordinate_2_name='Longitude', coordinate_2_value=23.4232)
+
+
+# path - using frame, well reference point, and channels
+# Note: DeepView doesn't open files with Path defined - to be fixed
+# example for future use:
+# path1 = df.add_path('PATH-1', frame_type=main_frame, well_reference_point=wrp, value=(ch1, ch3, ch4),
+#                     borehole_depth=122.12, vertical_depth=211.1, radial_drift=12, angular_drift=1.11, time=13)
+# path2 = df.add_path('PATH-2', frame_type=second_frame, value=(ch5, ch6), tool_zero_offset=1231.1, time=11.1)
+
+
+# message
+message1 = df.add_message('MSG1', text=["Some message", "part 2 of the message"], time=datetime.now())
+message2 = df.add_message("MSG2", text=["You have a message"], message_type="Command")
+message3 = df.add_message("MSG3", vertical_depth=213.1, text=["More", "text"], time=121.22)
+
+
+# comment
+comment1 = df.add_comment("CMT1", text=["Part 1 of the comment", "Part 2 of the comment"])
+comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
+
+
+# long name
+long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
+
+
+# no-format & no-format frame data
+no_format1 = df.add_no_format("NF1", consumer_name="Some consumer", description="Some description")
+no_format2 = df.add_no_format("NF2", description="XYZ")
+ndf1_1 = df.add_no_format_frame_data(no_format1, data="XYZ")
+nfd1_2 = df.add_no_format_frame_data(no_format1, data="ABC")
+nfd2_1 = df.add_no_format_frame_data(no_format2, data="Lorem ipsum")
+
+
+# groups
+group1 = df.add_group("DEPTH ZONES", description='Zones describing depth', object_type='ZONE',
+                      object_list=(zone1, zone3))
+group2 = df.add_group("MESSAGES", object_type="MESSAGE", object_list=(message1, message2, message3))
+group3 = df.add_group("INDEX CHANNELS", object_type="CHANNEL", object_list=(ch1, ch5))
+df.add_group("ALL CHANNELS", object_type="CHANNEL", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
+group5 = df.add_group("GROUPS", group_list=(group1, group2, group3))
+
+
 # write the file
-df.write('./tmp.DLIS', input_chunk_size=20)
+df.write('./tmp.DLIS', input_chunk_size=20, output_chunk_size=2**13)

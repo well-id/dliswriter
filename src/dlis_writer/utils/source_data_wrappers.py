@@ -16,12 +16,12 @@ logger = logging.getLogger(__name__)
 data_source_type = Union[np.ndarray, dict[str, np.ndarray], h5py.File]
 
 
-class SourceDataObject:
+class SourceDataWrapper:
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
                  known_dtypes: Optional[dict[str, type[object]]] = None, **kwargs):
-        """Initialise a SourceDataObject.
+        """Initialise a SourceDataWrapper.
 
         Args:
             data_source     :   Original data object.
@@ -42,7 +42,7 @@ class SourceDataObject:
         """
 
         if kwargs:
-            raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataObject: {kwargs}")
+            raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataWrapper: {kwargs}")
 
         self._data_source = data_source
         self._mapping = mapping
@@ -236,7 +236,7 @@ class SourceDataObject:
                     repr_code = RepresentationCode[repr_code]
 
                 if repr_code is not None:
-                    dtype_mapping[cs['name']] = SourceDataObject.get_dtype(repr_code)
+                    dtype_mapping[cs['name']] = SourceDataWrapper.get_dtype(repr_code)
 
         return name_mapping, dtype_mapping
 
@@ -254,7 +254,7 @@ class SourceDataObject:
 
         if repr_code is None:
             if allow_none:
-                return SourceDataObject.get_dtype(RepresentationCode.FDOUBL)
+                return SourceDataWrapper.get_dtype(RepresentationCode.FDOUBL)
             else:
                 raise ValueError("Expected a RepresentationCode; got None")
 
@@ -262,23 +262,23 @@ class SourceDataObject:
 
     @classmethod
     def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:
-        """Create a SourceDataObject from the source data object and config info."""
+        """Create a SourceDataWrapper from the source data object and config info."""
 
         name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
         return cls(data_source, name_mapping, known_dtypes=dtype_mapping, **kwargs)
 
 
-class HDF5Interface(SourceDataObject):
+class HDF5DataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a HDF5 file."""
 
     def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
-        """Initialise HDF5Interface.
+        """Initialise HDF5DataWrapper.
 
         Args:
             data_file_name  :   Name of/path to the HDF5 file containing the source data.
             mapping         :   Mapping of the names of data sets (data types) to be included on the corresponding
                                 data set paths in the file.
-            **kwargs        :   Additional keyword arguments passed to __init__ of SourceDataObject.
+            **kwargs        :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
         """
 
         # open the file
@@ -306,20 +306,20 @@ class HDF5Interface(SourceDataObject):
         self.close()
 
 
-class NumpyInterface(SourceDataObject):
+class NumpyDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a structured numpy array."""
 
     _data_source: np.ndarray
 
     def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs):
-        """Initialise NumpyInterface.
+        """Initialise NumpyDataWrapper.
 
         Args:
             arr         :   Source data - structured numpy array.
             mapping     :   Mapping of target data type names on the data type names found in the source array.
                             Optional; if not provided, it is assumed that the target data types (data sets)
                             are the same as the source ones.
-            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataObject.
+            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
         """
 
         self._check_source_arr(arr)
@@ -364,18 +364,18 @@ class NumpyInterface(SourceDataObject):
             raise ValueError("Input must be a structured numpy array")
 
 
-class DictInterface(SourceDataObject):
+class DictDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
     def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs):
-        """Initialise DictInterface.
+        """Initialise DictDataWrapper.
 
         Args:
             data_dict   :   Source data - dict of numpy arrays.
             mapping     :   Mapping of target data type names on the keys found in the data dictionary.
                             Optional; if not provided, it is assumed that all items of the data dict should be included
                             in the target structured arrays.
-            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataObject.
+            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
         """
 
         self._check_source_dict(data_dict)

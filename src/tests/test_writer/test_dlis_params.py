@@ -6,7 +6,7 @@ from configparser import ConfigParser
 from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
 
-from dlis_writer.logical_record.core.eflr.eflr_object import EFLRObject
+from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
 from tests.common import base_data_path, config_params
 from tests.test_writer.common import reference_data_path, short_reference_data_path
@@ -40,7 +40,7 @@ def short_dlis(short_reference_data_path: Path, base_data_path: Path, config_par
         os.remove(dlis_path)
 
 
-def _check_list(objects: Union[list[EFLRObject], tuple[EFLRObject, ...]], names: Union[list[str], tuple[str, ...]]):
+def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Union[list[str], tuple[str, ...]]):
     """Check that names of the provided objects match the expected names (in the same order)."""
     
     assert len(objects) == len(names)

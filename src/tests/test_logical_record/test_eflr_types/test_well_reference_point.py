@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePoint, WellReferencePointObject
+from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointTable, WellReferencePointItem
 
 from tests.common import base_data_path, config_params
 
@@ -15,7 +15,7 @@ def test_from_config(config_params: ConfigParser, key: str, name: str, v_zero: s
     """Test creating WellReferencePoint from config."""
 
     key = f"WellReferencePoint-{key}"
-    w: WellReferencePointObject = WellReferencePoint.make_object_from_config(config_params, key=key)
+    w: WellReferencePointItem = WellReferencePointItem.from_config(config_params, key=key)
 
     assert w.name == name
     assert w.vertical_zero.value == v_zero
