@@ -139,5 +139,10 @@ message2 = df.add_message("MSG2", text=["You have a message"], message_type="Com
 message3 = df.add_message("MSG3", vertical_depth=213.1, text=["More", "text"], time=121.22)
 
 
+# comment
+comment1 = df.add_comment("CMT1", text=["Part 1 of the comment", "Part 2 of the comment"])
+comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
+
+
 # write the file
 df.write('./tmp.DLIS', input_chunk_size=20)

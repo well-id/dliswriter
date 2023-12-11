@@ -342,6 +342,24 @@ class DLISFile:
 
         return ch
 
+    def add_comment(self, name: str, text: Optional[list[str]] = None, set_name: Optional[str] = None) -> CommentItem:
+        """Create a comment item and add it to the DLIS.
+
+        Args:
+            name        :   Name of the comment.
+            text        :   Content of the comment.
+            set_name    :   Name of the CommentTable this comment should be added to.
+        """
+
+        c = CommentItem(
+            name=name,
+            text=text,
+            set_name=set_name
+        )
+
+        self._other.append(c)
+        return c
+
     def add_computation(
             self,
             name: str,
