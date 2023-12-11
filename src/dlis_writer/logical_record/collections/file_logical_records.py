@@ -305,7 +305,7 @@ class FileLogicalRecords:
                 obj.add_frames(fr.parent)
             obj.add_frame_data_objects(multi_frame_data)
 
-        other_classes = [c for c in eflr_types if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
+        other_classes = [c for c in eflr_tables if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
 
         for c in other_classes:
             objects = c.item_type.all_from_config(config, get_if_exists=True)

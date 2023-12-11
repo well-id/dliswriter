@@ -9,26 +9,7 @@ import logging
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.axis import AxisItem
-from dlis_writer.logical_record.eflr_types.calibration import (CalibrationCoefficientItem, CalibrationMeasurementItem,
-                                                               CalibrationItem)
-from dlis_writer.logical_record.eflr_types.channel import ChannelItem
-from dlis_writer.logical_record.eflr_types.computation import ComputationItem
-from dlis_writer.logical_record.eflr_types.equipment import EquipmentItem
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
-from dlis_writer.logical_record.eflr_types.frame import FrameItem
-from dlis_writer.logical_record.eflr_types.group import GroupItem
-from dlis_writer.logical_record.eflr_types.long_name import LongNameItem
-from dlis_writer.logical_record.eflr_types.message import MessageItem, CommentItem
-from dlis_writer.logical_record.eflr_types.no_format import NoFormatItem
-from dlis_writer.logical_record.eflr_types.origin import OriginItem
-from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
-from dlis_writer.logical_record.eflr_types.path import PathItem
-from dlis_writer.logical_record.eflr_types.process import ProcessItem
-from dlis_writer.logical_record.eflr_types.splice import SpliceItem
-from dlis_writer.logical_record.eflr_types.tool import ToolItem
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointItem
-from dlis_writer.logical_record.eflr_types.zone import ZoneItem
+from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
@@ -57,8 +38,8 @@ class DLISFile:
     def __init__(
             self,
             storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
-            file_header: Optional[Union[FileHeaderItem, kwargs_type]] = None,
-            origin: Optional[Union[OriginItem, kwargs_type]] = None
+            file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None,
+            origin: Optional[Union[eflr_types.OriginItem, kwargs_type]] = None
     ):
         """Initialise DLISFile.
 
@@ -73,15 +54,15 @@ class DLISFile:
         else:
             self._sul = StorageUnitLabel(**({"set_identifier": "MAIN STORAGE UNIT"} | (storage_unit_label or {})))
 
-        if isinstance(file_header, FileHeaderItem):
+        if isinstance(file_header, eflr_types.FileHeaderItem):
             self._file_header = file_header
         else:
-            self._file_header = FileHeaderItem(**({"identifier": "FILE HEADER"} | (file_header or {})))
+            self._file_header = eflr_types.FileHeaderItem(**({"identifier": "FILE HEADER"} | (file_header or {})))
 
-        if isinstance(origin, OriginItem):
+        if isinstance(origin, eflr_types.OriginItem):
             self._origin = origin
         else:
-            self._origin = OriginItem(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
+            self._origin = eflr_types.OriginItem(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
 
         self._channels = []
         self._frames = []
@@ -97,25 +78,25 @@ class DLISFile:
         return self._sul
 
     @property
-    def file_header(self) -> FileHeaderItem:
+    def file_header(self) -> eflr_types.FileHeaderItem:
         """File header of the DLIS."""
 
         return self._file_header
 
     @property
-    def origin(self) -> OriginItem:
+    def origin(self) -> eflr_types.OriginItem:
         """Origin of the DLIS. Note: currently only adding a single origin is supported."""
 
         return self._origin
 
     @property
-    def channels(self) -> list[ChannelItem]:
+    def channels(self) -> list[eflr_types.ChannelItem]:
         """Channels defined for the DLIS."""
 
         return self._channels
 
     @property
-    def frames(self) -> list[FrameItem]:
+    def frames(self) -> list[eflr_types.FrameItem]:
         """Frames defined for the DLIS."""
 
         return self._frames
@@ -127,7 +108,7 @@ class DLISFile:
             coordinates: values_type = None,
             spacing: number_type = None,
             set_name: Optional[str] = None
-    ) -> AxisItem:
+    ) -> eflr_types.AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
 
         Args:
@@ -138,7 +119,7 @@ class DLISFile:
             set_name    :   Name of the AxisTable this axis should be added to.
         """
 
-        ax = AxisItem(
+        ax = eflr_types.AxisItem(
             name=name,
             axis_id=axis_id,
             coordinates=coordinates,
@@ -152,14 +133,14 @@ class DLISFile:
     def add_calibration(
             self,
             name: str,
-            calibrated_channels: list_or_tuple_type(ChannelItem) = None,
-            uncalibrated_channels: list_or_tuple_type(ChannelItem) = None,
-            coefficients: list_or_tuple_type(CalibrationCoefficientItem) = None,
-            measurements: list_or_tuple_type(CalibrationMeasurementItem) = None,
-            parameters: list_or_tuple_type(ParameterItem) = None,
+            calibrated_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            uncalibrated_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            coefficients: list_or_tuple_type(eflr_types.CalibrationCoefficientItem) = None,
+            measurements: list_or_tuple_type(eflr_types.CalibrationMeasurementItem) = None,
+            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
             method: Optional[str] = None,
             set_name: Optional[str] = None
-    ) -> CalibrationItem:
+    ) -> eflr_types.CalibrationItem:
         """Define a calibration item and add it to the DLIS.
 
         Args:
@@ -176,7 +157,7 @@ class DLISFile:
             A configured calibration object.
         """
 
-        c = CalibrationItem(
+        c = eflr_types.CalibrationItem(
             name=name,
             calibrated_channels=calibrated_channels,
             uncalibrated_channels=uncalibrated_channels,
@@ -199,7 +180,7 @@ class DLISFile:
             plus_tolerances: Optional[list[number_type]] = None,
             minus_tolerances: Optional[list[number_type]] = None,
             set_name: Optional[str] = None,
-    ) -> CalibrationCoefficientItem:
+    ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
 
         Args:
@@ -215,7 +196,7 @@ class DLISFile:
             A configured calibration coefficient item.
         """
 
-        c = CalibrationCoefficientItem(
+        c = eflr_types.CalibrationCoefficientItem(
             name=name,
             label=label,
             coefficients=coefficients,
@@ -232,10 +213,10 @@ class DLISFile:
             self,
             name: str,
             phase: Optional[str] = None,
-            measurement_source: Optional[ChannelItem] = None,
+            measurement_source: Optional[eflr_types.ChannelItem] = None,
             measurement_type: Optional[str] = None,
             dimension: Optional[list[int]] = None,
-            axis: Optional[AxisItem] = None,
+            axis: Optional[eflr_types.AxisItem] = None,
             measurement: Optional[list[number_type]] = None,
             sample_count: Optional[int] = None,
             maximum_deviation: Optional[list[number_type]] = None,
@@ -247,7 +228,7 @@ class DLISFile:
             plus_tolerance: Optional[list[number_type]] = None,
             minus_tolerance: Optional[list[number_type]] = None,
             set_name: Optional[str] = None
-    ) -> CalibrationMeasurementItem:
+    ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
 
         Args:
@@ -274,7 +255,7 @@ class DLISFile:
             A configured CalibrationMeasurementItem instance.
         """
 
-        m = CalibrationMeasurementItem(
+        m = eflr_types.CalibrationMeasurementItem(
             name=name,
             phase=phase,
             measurement_source=measurement_source,
@@ -304,11 +285,11 @@ class DLISFile:
             long_name: Optional[str] = None,
             properties: Optional[list[str]] = None,
             units: Optional[str] = None,
-            axis: Optional[AxisItem] = None,
+            axis: Optional[eflr_types.AxisItem] = None,
             minimum_value: Optional[float] = None,
             maximum_value: Optional[float] = None,
             set_name: Optional[str] = None
-    ) -> ChannelItem:
+    ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
 
         Args:
@@ -329,7 +310,7 @@ class DLISFile:
         if not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
 
-        ch = ChannelItem(
+        ch = eflr_types.ChannelItem(
             name,
             long_name=long_name,
             properties=properties,
@@ -347,7 +328,11 @@ class DLISFile:
 
         return ch
 
-    def add_comment(self, name: str, text: Optional[list[str]] = None, set_name: Optional[str] = None) -> CommentItem:
+    def add_comment(
+            self, name: str,
+            text: Optional[list[str]] = None,
+            set_name: Optional[str] = None
+    ) -> eflr_types.CommentItem:
         """Create a comment item and add it to the DLIS.
 
         Args:
@@ -359,7 +344,7 @@ class DLISFile:
             A configured comment item.
         """
 
-        c = CommentItem(
+        c = eflr_types.CommentItem(
             name=name,
             text=text,
             set_name=set_name
@@ -374,12 +359,12 @@ class DLISFile:
             long_name: Optional[str] = None,
             properties: Optional[list[str]] = None,
             dimension: Optional[list[int]] = None,
-            axis: Optional[AxisItem] = None,
-            zones: list_or_tuple_type(ZoneItem) = None,
+            axis: Optional[eflr_types.AxisItem] = None,
+            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
             values: Optional[list[number_type]] = None,
             source: Optional[EFLRItem] = None,
             set_name: Optional[str] = None
-    ) -> ComputationItem:
+    ) -> eflr_types.ComputationItem:
         """Create a computation item and add it to the DLIS.
 
         Args:
@@ -397,7 +382,7 @@ class DLISFile:
             A configured computation item.
         """
 
-        c = ComputationItem(
+        c = eflr_types.ComputationItem(
             name=name,
             long_name=long_name,
             properties=properties,
@@ -433,7 +418,7 @@ class DLISFile:
             radial_drift: number_type = None,
             angular_drift: number_type = None,
             set_name: Optional[str] = None
-    ) -> EquipmentItem:
+    ) -> eflr_types.EquipmentItem:
         """Define an equipment object.
 
         Args:
@@ -461,7 +446,7 @@ class DLISFile:
             A configured EquipmentObject instance.
         """
 
-        eq = EquipmentItem(
+        eq = eflr_types.EquipmentItem(
             name=name,
             trademark_name=trademark_name,
             status=status,
@@ -489,7 +474,7 @@ class DLISFile:
     def add_frame(
             self,
             name: str,
-            channels: list_or_tuple_type(ChannelItem),
+            channels: list_or_tuple_type(eflr_types.ChannelItem),
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
@@ -498,7 +483,7 @@ class DLISFile:
             index_min: Optional[number_type] = None,
             index_max: Optional[number_type] = None,
             set_name: Optional[str] = None
-    ) -> FrameItem:
+    ) -> eflr_types.FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
 
         Args:
@@ -528,11 +513,11 @@ class DLISFile:
         if not channels:
             raise ValueError("At least one channel must be specified for a frame")
 
-        if not all(isinstance(c, ChannelItem) for c in channels):
+        if not all(isinstance(c, eflr_types.ChannelItem) for c in channels):
             raise TypeError(f"Expected a list of ChannelObject instances; "
                             f"got types: {', '.join(str(type(c)) for c in channels)}")
 
-        fr = FrameItem(
+        fr = eflr_types.FrameItem(
             name,
             channels=channels,
             description=description,
@@ -554,9 +539,9 @@ class DLISFile:
             description: Optional[str] = None,
             object_type: Optional[str] = None,
             object_list: list_or_tuple_type(EFLRItem) = None,
-            group_list: list_or_tuple_type(GroupItem) = None,
+            group_list: list_or_tuple_type(eflr_types.GroupItem) = None,
             set_name: Optional[str] = None
-    ) -> GroupItem:
+    ) -> eflr_types.GroupItem:
         """Create a group of EFLR items and add it to the DLIS.
 
         Args:
@@ -571,7 +556,7 @@ class DLISFile:
             A configured group item.
         """
 
-        g = GroupItem(
+        g = eflr_types.GroupItem(
             name=name,
             description=description,
             object_type=object_type,
@@ -602,7 +587,7 @@ class DLISFile:
             standard_symbol: Optional[str] = None,
             private_symbol: Optional[str] = None,
             set_name: Optional[str] = None
-    ) -> LongNameItem:
+    ) -> eflr_types.LongNameItem:
         """Create a long name item and add it to the DLIS.
 
         Args:
@@ -628,7 +613,7 @@ class DLISFile:
             A configured long name item.
         """
 
-        ln = LongNameItem(
+        ln = eflr_types.LongNameItem(
             name=name,
             general_modifier=general_modifier,
             quantity=quantity,
@@ -662,7 +647,7 @@ class DLISFile:
             angular_drift: Optional[number_type] = None,
             text: Optional[list[str]] = None,
             set_name: Optional[str] = None,
-    ) -> MessageItem:
+    ) -> eflr_types.MessageItem:
         """Create a message and add it to DLIS.
 
         Args:
@@ -680,7 +665,7 @@ class DLISFile:
             A configured message.
         """
 
-        m = MessageItem(
+        m = eflr_types.MessageItem(
             name=name,
             _type=message_type,
             time=time,
@@ -701,7 +686,7 @@ class DLISFile:
             consumer_name: Optional[str] = None,
             description: Optional[str] = None,
             set_name: Optional[str] = None
-    ) -> NoFormatItem:
+    ) -> eflr_types.NoFormatItem:
         """Create a no-format item and add it to the DLIS.
 
         Args:
@@ -714,7 +699,7 @@ class DLISFile:
             A configured no-format item.
         """
 
-        nf = NoFormatItem(
+        nf = eflr_types.NoFormatItem(
             name=name,
             consumer_name=consumer_name,
             description=description,
@@ -726,7 +711,7 @@ class DLISFile:
 
     def add_no_format_frame_data(
             self,
-            no_format_object: NoFormatItem,
+            no_format_object: eflr_types.NoFormatItem,
             data: str
     ) -> NoFormatFrameData:
         """Create a no-format frame data object.
@@ -751,11 +736,11 @@ class DLISFile:
             name: str,
             long_name: Optional[str] = None,
             dimension: Optional[list[int]] = None,
-            axis: Optional[AxisItem] = None,
-            zones: list_or_tuple_type(ZoneItem) = None,
+            axis: Optional[eflr_types.AxisItem] = None,
+            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
             values: values_type = None,
             set_name: Optional[str] = None
-    ) -> ParameterItem:
+    ) -> eflr_types.ParameterItem:
         """Create a parameter.
 
         Args:
@@ -771,7 +756,7 @@ class DLISFile:
             A configured ParameterObject instance.
         """
 
-        p = ParameterItem(
+        p = eflr_types.ParameterItem(
             name=name,
             long_name=long_name,
             dimension=dimension,
@@ -787,9 +772,9 @@ class DLISFile:
     def add_path(
             self,
             name: str,
-            frame_type: Optional[FrameItem] = None,
-            well_reference_point: Optional[WellReferencePointItem] = None,
-            value: list_or_tuple_type(ChannelItem) = None,
+            frame_type: Optional[eflr_types.FrameItem] = None,
+            well_reference_point: Optional[eflr_types.WellReferencePointItem] = None,
+            value: list_or_tuple_type(eflr_types.ChannelItem) = None,
             borehole_depth: Optional[number_type] = None,
             vertical_depth: Optional[number_type] = None,
             radial_drift: Optional[number_type] = None,
@@ -799,7 +784,7 @@ class DLISFile:
             measure_point_offset: Optional[number_type] = None,
             tool_zero_offset: Optional[number_type] = None,
             set_name: Optional[str] = None
-    ) -> PathItem:
+    ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
 
         Args:
@@ -821,7 +806,7 @@ class DLISFile:
             A configured Path instance.
         """
 
-        p = PathItem(
+        p = eflr_types.PathItem(
             name=name,
             frame_type=frame_type,
             well_reference_point=well_reference_point,
@@ -848,14 +833,14 @@ class DLISFile:
             version: Optional[str] = None,
             properties: Optional[list[str]] = None,
             status: Optional[str] = None,
-            input_channels: list_or_tuple_type(ChannelItem) = None,
-            output_channels: list_or_tuple_type(ChannelItem) = None,
-            input_computations: list_or_tuple_type(ComputationItem) = None,
-            output_computations: list_or_tuple_type(ComputationItem) = None,
-            parameters: list_or_tuple_type(ParameterItem) = None,
+            input_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            output_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            input_computations: list_or_tuple_type(eflr_types.ComputationItem) = None,
+            output_computations: list_or_tuple_type(eflr_types.ComputationItem) = None,
+            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
             comments: Optional[list[str]] = None,
             set_name: Optional[str] = None
-    ) -> ProcessItem:
+    ) -> eflr_types.ProcessItem:
         """Define a process item and add it to DLIS.
 
         Args:
@@ -877,7 +862,7 @@ class DLISFile:
             A configured ProcessItem instance.
         """
 
-        p = ProcessItem(
+        p = eflr_types.ProcessItem(
             name=name,
             description=description,
             trademark_name=trademark_name,
@@ -899,11 +884,11 @@ class DLISFile:
     def add_splice(
             self,
             name: str,
-            output_channel: ChannelItem = None,
-            input_channels: list_or_tuple_type(ChannelItem) = None,
-            zones: list_or_tuple_type(ZoneItem) = None,
+            output_channel: eflr_types.ChannelItem = None,
+            input_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
             set_name: Optional[str] = None
-    ) -> SpliceItem:
+    ) -> eflr_types.SpliceItem:
         """Create a splice object.
 
         Args:
@@ -917,7 +902,7 @@ class DLISFile:
             A configured splice.
         """
 
-        sp = SpliceItem(
+        sp = eflr_types.SpliceItem(
             name=name,
             output_channel=output_channel,
             input_channels=input_channels,
@@ -933,12 +918,12 @@ class DLISFile:
             description: Optional[str] = None,
             trademark_name: Optional[str] = None,
             generic_name: Optional[str] = None,
-            parts: list_or_tuple_type(EquipmentItem) = None,
+            parts: list_or_tuple_type(eflr_types.EquipmentItem) = None,
             status: Optional[int] = None,
-            channels: list_or_tuple_type(ChannelItem) = None,
-            parameters: list_or_tuple_type(ParameterItem) = None,
+            channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
             set_name: Optional[str] = None
-    ) -> ToolItem:
+    ) -> eflr_types.ToolItem:
         """Create a tool object.
 
         Args:
@@ -956,7 +941,7 @@ class DLISFile:
             A configured tool.
         """
 
-        t = ToolItem(
+        t = eflr_types.ToolItem(
             name=name,
             description=description,
             trademark_name=trademark_name,
@@ -986,7 +971,7 @@ class DLISFile:
             coordinate_3_name: Optional[str] = None,
             coordinate_3_value: Optional[number_type] = None,
             set_name: Optional[str] = None
-    ) -> WellReferencePointItem:
+    ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
 
         Args:
@@ -1008,7 +993,7 @@ class DLISFile:
             A configured WellReferencePointItem instance.
         """
 
-        w = WellReferencePointItem(
+        w = eflr_types.WellReferencePointItem(
             name=name,
             permanent_datum=permanent_datum,
             vertical_zero=vertical_zero,
@@ -1035,7 +1020,7 @@ class DLISFile:
             maximum: dtime_or_number_type = None,
             minimum: dtime_or_number_type = None,
             set_name: Optional[str] = None
-    ) -> ZoneItem:
+    ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
 
         Args:
@@ -1054,7 +1039,7 @@ class DLISFile:
             A configured zone, added to the DLIS.
         """
 
-        z = ZoneItem(
+        z = eflr_types.ZoneItem(
             name=name,
             description=description,
             domain=domain,
@@ -1066,7 +1051,7 @@ class DLISFile:
         self._other_eflr.append(z)
         return z
 
-    def _make_multi_frame_data(self, fr: FrameItem, **kwargs) -> MultiFrameData:
+    def _make_multi_frame_data(self, fr: eflr_types.FrameItem, **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
         name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}

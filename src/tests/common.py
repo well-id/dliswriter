@@ -3,13 +3,13 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from dlis_writer.writer.dlis_config import load_config
-from dlis_writer.logical_record.eflr_types import eflr_types
+from dlis_writer.logical_record.eflr_types import eflr_tables
 
 
 def clear_eflr_instance_registers():
     """Remove all defined instances of EFLR from the internal dicts. Clear the EFLRObject dicts of the instances."""
 
-    for eflr_type in eflr_types:
+    for eflr_type in eflr_tables:
         for eflr in eflr_type.get_all_tables():
             eflr.clear_eflr_item_dict()
         eflr_type.clear_table_instance_dict()
