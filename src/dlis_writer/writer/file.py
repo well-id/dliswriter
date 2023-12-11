@@ -28,6 +28,7 @@ from dlis_writer.logical_record.eflr_types.splice import SpliceItem
 from dlis_writer.logical_record.eflr_types.tool import ToolItem
 from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointItem
 from dlis_writer.logical_record.eflr_types.zone import ZoneItem
+from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
 from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
 from dlis_writer.writer.writer import DLISWriter
@@ -83,7 +84,8 @@ class DLISFile:
 
         self._channels = []
         self._frames = []
-        self._other = []
+        self._other_eflr = []
+        self._no_format_frame_data = []
 
         self._data_dict = {}
 
@@ -143,7 +145,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(ax)
+        self._other_eflr.append(ax)
         return ax
 
     def add_calibration(
@@ -184,7 +186,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(c)
+        self._other_eflr.append(c)
         return c
 
     def add_calibration_coefficient(
@@ -222,7 +224,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(c)
+        self._other_eflr.append(c)
         return c
 
     def add_calibration_measurement(
@@ -291,7 +293,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(m)
+        self._other_eflr.append(m)
         return m
 
     def add_channel(
@@ -362,7 +364,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(c)
+        self._other_eflr.append(c)
         return c
 
     def add_computation(
@@ -406,7 +408,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(c)
+        self._other_eflr.append(c)
         return c
 
     def add_equipment(
@@ -480,7 +482,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(eq)
+        self._other_eflr.append(eq)
         return eq
 
     def add_frame(
@@ -610,7 +612,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(ln)
+        self._other_eflr.append(ln)
         return ln
 
     def add_message(
@@ -654,7 +656,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(m)
+        self._other_eflr.append(m)
         return m
 
     def add_no_format(
@@ -683,8 +685,30 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(nf)
+        self._other_eflr.append(nf)
         return nf
+
+    def add_no_format_frame_data(
+            self,
+            no_format_object: NoFormatItem,
+            data: str
+    ) -> NoFormatFrameData:
+        """Create a no-format frame data object.
+
+        Args:
+            no_format_object    :   No-format item this data belongs to.
+            data                :   Data associated with the object. Will be encoded as ASCII.
+
+        Returns:
+            A configured NoFormatFrameData instance.
+        """
+
+        d = NoFormatFrameData()
+        d.no_format_object = no_format_object
+        d.data = data
+
+        self._no_format_frame_data.append(d)
+        return d
 
     def add_parameter(
             self,
@@ -721,7 +745,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(p)
+        self._other_eflr.append(p)
         return p
 
     def add_path(
@@ -777,7 +801,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(p)
+        self._other_eflr.append(p)
         return p
 
     def add_process(
@@ -833,7 +857,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(p)
+        self._other_eflr.append(p)
         return p
 
     def add_splice(
@@ -864,7 +888,7 @@ class DLISFile:
             zones=zones,
             set_name=set_name
         )
-        self._other.append(sp)
+        self._other_eflr.append(sp)
         return sp
 
     def add_tool(
@@ -908,7 +932,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(t)
+        self._other_eflr.append(t)
         return t
 
     def add_well_reference_point(
@@ -964,7 +988,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(w)
+        self._other_eflr.append(w)
         return w
 
     def add_zone(
@@ -1003,7 +1027,7 @@ class DLISFile:
             set_name=set_name
         )
 
-        self._other.append(z)
+        self._other_eflr.append(z)
         return z
 
     def _make_multi_frame_data(self, fr: FrameItem, **kwargs) -> MultiFrameData:
@@ -1029,7 +1053,8 @@ class DLISFile:
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
         flr.add_frame_data_objects(*(self._make_multi_frame_data(fr, chunk_size=chunk_size) for fr in self._frames))
-        flr.add_logical_records(*get_parents(self._other))
+        flr.add_logical_records(*get_parents(self._other_eflr))
+        flr.add_logical_records(*self._no_format_frame_data)
 
         return flr
 

@@ -1,4 +1,5 @@
 from dlis_writer.logical_record.core.iflr import IFLR
+from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import IFLRType
 
 
@@ -18,4 +19,16 @@ class NoFormatFrameData(IFLR):
     def _make_body_bytes(self) -> bytes:
         """Create bytes representing the body of the object."""
 
-        return self.no_format_object.obname + self.data.encode('ascii')
+        bts = self.no_format_object.obname + self.data.encode('ascii')
+
+        # add padding if the length of the bts is less than minimum (12)
+        padding_len = 12 - len(bts)
+        if padding_len:
+            bts += padding_len * LogicalRecordBytes.padding
+
+        return bts
+
+    @property
+    def n_items(self) -> int:
+        """Number of data items in this object."""
+        return 1

@@ -10,6 +10,7 @@ from dlis_writer.logical_record.eflr_types.frame import FrameItem
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
+from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
 from dlis_writer.logical_record.core.eflr import EFLRTable
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
@@ -40,7 +41,7 @@ class FileLogicalRecords:
         self._channels: list[ChannelTable] = []
         self._frames: list[FrameTable] = []
         self._frame_data_objects: list[MultiFrameData] = []
-        self._other_logical_records: list[EFLRTable] = []
+        self._other_logical_records: list[typing.Union[EFLRTable, NoFormatFrameData]] = []
 
     def set_origin_reference(self, value: int):
         """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
@@ -88,7 +89,7 @@ class FileLogicalRecords:
             raise TypeError(f"Expected an instance of {expected_type.__name__}; got {type(value)}")
 
     @staticmethod
-    def _check_types(values: typing.Iterable, expected_type: type):
+    def _check_types(values: typing.Iterable, expected_type: typing.Union[type, tuple[type, ...]]):
         """Check that the provided values are all instances of the expected type.
 
         Args:
@@ -100,7 +101,9 @@ class FileLogicalRecords:
         """
 
         if not all(isinstance(v, expected_type) for v in values):
-            raise TypeError(f"Expected only {expected_type.__name__} objects; "
+            if not isinstance(expected_type, tuple):
+                expected_type = expected_type,
+            raise TypeError(f"Expected only {' / '.join(t.__name__ for t in expected_type)} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
     def add_channels(self, *channels: ChannelTable):
@@ -165,10 +168,10 @@ class FileLogicalRecords:
 
         yield from self._other_logical_records
 
-    def add_logical_records(self, *lrs: EFLRTable):
+    def add_logical_records(self, *lrs: typing.Union[EFLRTable, NoFormatFrameData]):
         """Add other EFLR objects (other than Channel, Frame, Origin, FileHeader) to the collection."""
 
-        self._check_types(lrs, EFLRTable)
+        self._check_types(lrs, (EFLRTable, NoFormatFrameData))
         self._other_logical_records.extend(lrs)
 
     def check_objects(self):

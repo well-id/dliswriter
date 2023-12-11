@@ -148,9 +148,12 @@ comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
 long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
 
 
-# no-format
+# no-format & no-format frame data
 no_format1 = df.add_no_format("NF1", consumer_name="Some consumer", description="Some description")
 no_format2 = df.add_no_format("NF2", description="XYZ")
+ndf1_1 = df.add_no_format_frame_data(no_format1, data="XYZ")
+nfd1_2 = df.add_no_format_frame_data(no_format1, data="ABC")
+nfd2_1 = df.add_no_format_frame_data(no_format2, data="Lorem ipsum")
 
 
 # write the file
