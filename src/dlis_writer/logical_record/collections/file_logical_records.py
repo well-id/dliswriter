@@ -56,7 +56,8 @@ class FileLogicalRecords:
             fr.origin_reference = value
 
         for lr in self._other_logical_records:
-            lr.origin_reference = value
+            if not isinstance(lr, NoFormatFrameData):
+                lr.origin_reference = value
 
         for fdo in self._frame_data_objects:
             fdo.set_origin_reference(value)

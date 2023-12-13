@@ -20,7 +20,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
     set_type: str = NotImplemented                  #: set type of each particular EFLR (e.g. Channel); see the standard
     logical_record_type: EFLRType = NotImplemented  #: int-enum denoting type of the EFLR
     is_eflr: bool = True                            #: indication that this is an explicitly formatted LR
-    item_type: type = EFLRItem                      #: EFLRItem subclass which can be held within this EFLRTable type
+    item_type: type[EFLRItem] = EFLRItem            #: EFLRItem subclass which can be held within this EFLRTable type
 
     _eflr_set_instance_dict: dict[Union[str, None], "EFLRSet"]
 

@@ -6,6 +6,7 @@ from dlis_writer.logical_record.core.logical_record import LRMeta
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
+    from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
 
 logger = logging.getLogger(__name__)
@@ -22,7 +23,7 @@ class EFLRSetMeta(LRMeta):
     """
 
     _eflr_set_instance_dict: dict[Union[str, None], "EFLRSet"]
-    item_type: type
+    item_type: type["EFLRItem"]
     eflr_name: str
     eflr_name_pattern = re.compile(r'(?P<name>\w+)Set')
 
