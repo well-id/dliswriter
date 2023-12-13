@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, TypeVar
 import numpy as np
 import os
 from timeit import timeit
@@ -25,11 +25,8 @@ dtime_or_number_type = Union[datetime.datetime, int, float]
 values_type = Optional[Union[list[str], list[int], list[float]]]
 
 
-def list_or_tuple_type(obj: type, optional=True):
-    tt = Union[list[obj], tuple[obj, ...]]
-    if optional:
-        tt = Optional[tt]
-    return tt
+T = TypeVar('T')
+ListOrTuple = Union[list[T], tuple[T, ...]]
 
 
 class DLISFile:
@@ -104,7 +101,7 @@ class DLISFile:
     def add_axis(
             self,
             name: str,
-            axis_id: str = None,
+            axis_id: Optional[str] = None,
             coordinates: values_type = None,
             spacing: Optional[number_type] = None,
             set_name: Optional[str] = None
@@ -133,11 +130,11 @@ class DLISFile:
     def add_calibration(
             self,
             name: str,
-            calibrated_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            uncalibrated_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            coefficients: list_or_tuple_type(eflr_types.CalibrationCoefficientItem) = None,
-            measurements: list_or_tuple_type(eflr_types.CalibrationMeasurementItem) = None,
-            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
+            calibrated_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            uncalibrated_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            coefficients: Optional[ListOrTuple[eflr_types.CalibrationCoefficientItem]] = None,
+            measurements: Optional[ListOrTuple[eflr_types.CalibrationMeasurementItem]] = None,
+            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
             method: Optional[str] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.CalibrationItem:
@@ -360,7 +357,7 @@ class DLISFile:
             properties: Optional[list[str]] = None,
             dimension: Optional[list[int]] = None,
             axis: Optional[eflr_types.AxisItem] = None,
-            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
+            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
             values: Optional[list[number_type]] = None,
             source: Optional[EFLRItem] = None,
             set_name: Optional[str] = None
@@ -474,7 +471,7 @@ class DLISFile:
     def add_frame(
             self,
             name: str,
-            channels: list_or_tuple_type(eflr_types.ChannelItem),
+            channels: Optional[ListOrTuple[eflr_types.ChannelItem]],
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
@@ -538,8 +535,8 @@ class DLISFile:
             name: str,
             description: Optional[str] = None,
             object_type: Optional[str] = None,
-            object_list: list_or_tuple_type(EFLRItem) = None,
-            group_list: list_or_tuple_type(eflr_types.GroupItem) = None,
+            object_list: Optional[ListOrTuple[EFLRItem]] = None,
+            group_list: Optional[ListOrTuple[eflr_types.GroupItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.GroupItem:
         """Create a group of EFLR items and add it to the DLIS.
@@ -737,7 +734,7 @@ class DLISFile:
             long_name: Optional[str] = None,
             dimension: Optional[list[int]] = None,
             axis: Optional[eflr_types.AxisItem] = None,
-            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
+            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
             values: values_type = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ParameterItem:
@@ -774,7 +771,7 @@ class DLISFile:
             name: str,
             frame_type: Optional[eflr_types.FrameItem] = None,
             well_reference_point: Optional[eflr_types.WellReferencePointItem] = None,
-            value: list_or_tuple_type(eflr_types.ChannelItem) = None,
+            value: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
             borehole_depth: Optional[number_type] = None,
             vertical_depth: Optional[number_type] = None,
             radial_drift: Optional[number_type] = None,
@@ -833,11 +830,11 @@ class DLISFile:
             version: Optional[str] = None,
             properties: Optional[list[str]] = None,
             status: Optional[str] = None,
-            input_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            output_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            input_computations: list_or_tuple_type(eflr_types.ComputationItem) = None,
-            output_computations: list_or_tuple_type(eflr_types.ComputationItem) = None,
-            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
+            input_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            output_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            input_computations: Optional[ListOrTuple[eflr_types.ComputationItem]] = None,
+            output_computations: Optional[ListOrTuple[eflr_types.ComputationItem]] = None,
+            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
             comments: Optional[list[str]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ProcessItem:
@@ -885,8 +882,8 @@ class DLISFile:
             self,
             name: str,
             output_channel: Optional[eflr_types.ChannelItem] = None,
-            input_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
+            input_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.SpliceItem:
         """Create a splice object.
@@ -918,10 +915,10 @@ class DLISFile:
             description: Optional[str] = None,
             trademark_name: Optional[str] = None,
             generic_name: Optional[str] = None,
-            parts: list_or_tuple_type(eflr_types.EquipmentItem) = None,
+            parts: Optional[ListOrTuple[eflr_types.EquipmentItem]] = None,
             status: Optional[int] = None,
-            channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
-            parameters: list_or_tuple_type(eflr_types.ParameterItem) = None,
+            channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
+            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ToolItem:
         """Create a tool object.
