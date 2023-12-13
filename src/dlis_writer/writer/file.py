@@ -49,17 +49,24 @@ class DLISFile:
         if isinstance(storage_unit_label, StorageUnitLabel):
             self._sul = storage_unit_label
         else:
-            self._sul = StorageUnitLabel(**({"set_identifier": "MAIN STORAGE UNIT"} | (storage_unit_label or {})))
+            storage_unit_label = storage_unit_label or {}
+            sid = storage_unit_label.get('set_identifier', 'MAIN STORAGE UNIT')
+            self._sul = StorageUnitLabel(sid, **storage_unit_label)
 
         if isinstance(file_header, eflr_types.FileHeaderItem):
             self._file_header = file_header
         else:
-            self._file_header = eflr_types.FileHeaderItem(**({"identifier": "FILE HEADER"} | (file_header or {})))
+            file_header = file_header or {}
+            fid = file_header.get('identifier', 'FILE HEADER')
+            self._file_header = eflr_types.FileHeaderItem(fid, **file_header)
 
         if isinstance(origin, eflr_types.OriginItem):
             self._origin = origin
         else:
-            self._origin = eflr_types.OriginItem(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
+            origin = origin or {}
+            on = origin.get('name', 'ORIGIN')
+            fsn = origin.get('file_set_number', 1)
+            self._origin = eflr_types.OriginItem(on, file_set_number=fsn, **origin)
 
         self._channels: list[eflr_types.ChannelItem] = []
         self._frames: list[eflr_types.FrameItem] = []
