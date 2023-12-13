@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.equipment import EquipmentTable, EquipmentItem
+from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, EquipmentItem
 
 from tests.common import base_data_path, config_params
 

@@ -2,9 +2,9 @@ import logging
 import numpy as np
 from typing import Union
 
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class FrameItem(EFLRItem):
     """Model an object being part of Frame EFLR."""
 
-    parent: "FrameTable"
+    parent: "FrameSet"
     
     #: values for frame index type allowed by the standard
     frame_index_types = (
@@ -35,7 +35,7 @@ class FrameItem(EFLRItem):
         """
 
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
+        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
         self.index_type = Attribute(
             'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)
         self.direction = Attribute('direction', representation_code=RepC.IDENT, parent_eflr=self)
@@ -129,7 +129,7 @@ class FrameItem(EFLRItem):
                 at.representation_code = repr_code
 
 
-class FrameTable(EFLRTable):
+class FrameSet(EFLRSet):
     """Model Frame EFLR."""
 
     set_type = 'FRAME'
@@ -137,4 +137,4 @@ class FrameTable(EFLRTable):
     item_type = FrameItem
 
 
-FrameItem.parent_eflr_class = FrameTable
+FrameItem.parent_eflr_class = FrameSet

@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.axis import AxisTable, AxisItem
+from dlis_writer.logical_record.eflr_types.axis import AxisSet, AxisItem
 
 from tests.common import base_data_path, config_params
 

@@ -116,7 +116,7 @@ class DLISFile:
             axis_id     :   ID of the axis.
             coordinates :   List of coordinates of the axis.
             spacing     :   Spacing of the axis.
-            set_name    :   Name of the AxisTable this axis should be added to.
+            set_name    :   Name of the AxisSet this axis should be added to.
         """
 
         ax = eflr_types.AxisItem(
@@ -151,7 +151,7 @@ class DLISFile:
             measurements            :   Measurements made for the calibration.
             parameters              :   Parameters of the calibration.
             method                  :   Calibration method.
-            set_name                :   Name of the CalibrationTable this calibration should be added to.
+            set_name                :   Name of the CalibrationSet this calibration should be added to.
 
         Returns:
             A configured calibration object.
@@ -190,7 +190,7 @@ class DLISFile:
             references          :   References of the item.
             plus_tolerances     :   Plus tolerances of the item.
             minus_tolerances    :   Minus tolerances of the item.
-            set_name            :   Name of the CorrelationCoefficientTable this item should be added to.
+            set_name            :   Name of the CorrelationCoefficientSet this item should be added to.
 
         Returns:
             A configured calibration coefficient item.
@@ -249,7 +249,7 @@ class DLISFile:
             standard            :   Standard of the measurement.
             plus_tolerance      :   Plus tolerance of the measurement.
             minus_tolerance     :   Minus tolerance of the measurement.
-            set_name            :   Name of the CorrelationMeasurementTable this measurement should be added to.
+            set_name            :   Name of the CorrelationMeasurementSet this measurement should be added to.
 
         Returns:
             A configured CalibrationMeasurementItem instance.
@@ -301,7 +301,7 @@ class DLISFile:
             axis            :   Axis associated with the channel.
             minimum_value   :   Minimum value of the channel data.
             maximum_value   :   Maximum value of the channel data.
-            set_name        :   Name of the ChannelTable this channel should be added to.
+            set_name        :   Name of the ChannelSet this channel should be added to.
 
         Returns:
             A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
@@ -338,7 +338,7 @@ class DLISFile:
         Args:
             name        :   Name of the comment.
             text        :   Content of the comment.
-            set_name    :   Name of the CommentTable this comment should be added to.
+            set_name    :   Name of the CommentSet this comment should be added to.
 
         Returns:
             A configured comment item.
@@ -376,7 +376,7 @@ class DLISFile:
             zones       :   Zones associated with the computation.
             values      :   Values of the computation.
             source      :   Source of the computation.
-            set_name    :   Name of the ComputationTable this computation should be added to.
+            set_name    :   Name of the ComputationSet this computation should be added to.
 
         Returns:
             A configured computation item.
@@ -440,7 +440,7 @@ class DLISFile:
             vertical_depth      :   Vertical depth.
             radial_drift        :   Radial drift.
             angular_drift       :   Angular drift.
-            set_name            :   Name of the EquipmentTable this equipment should be added to.
+            set_name            :   Name of the EquipmentSet this equipment should be added to.
 
         Returns:
             A configured EquipmentObject instance.
@@ -497,7 +497,7 @@ class DLISFile:
             encrypted   :   Indication whether the frame is encrypted (0 if not, 1 if yes).
             index_min   :   Minimum value of the frame index.
             index_max   :   Maximum value of the frame index.
-            set_name    :   Name of the FrameTable this frame should be added to.
+            set_name    :   Name of the FrameSet this frame should be added to.
 
         Note:
             Values: direction, spacing, index_min, and index_max are automatically determined if not provided.
@@ -550,7 +550,7 @@ class DLISFile:
             object_type :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
             object_list :   List of the EFLR items to be added to this group.
             group_list  :   List of group items to be added to this group.
-            set_name    :   Name of the FrameTable this frame should be added to.
+            set_name    :   Name of the FrameSet this frame should be added to.
 
         Returns:
             A configured group item.
@@ -607,7 +607,7 @@ class DLISFile:
             conditions          :   Conditions.
             standard_symbol     :   Standard symbol.
             private_symbol      :   Private symbol.
-            set_name            :   Name of the LongNameTable this long name item should be added to.
+            set_name            :   Name of the LongNameSet this long name item should be added to.
 
         Returns:
             A configured long name item.
@@ -659,7 +659,7 @@ class DLISFile:
             radial_drift    :   Radial drift.
             angular_drift   :   Angular drift.
             text            :   Text of the message.
-            set_name        :   Name of the MessageTable this message should be added to.
+            set_name        :   Name of the MessageSet this message should be added to.
 
         Returns:
             A configured message.
@@ -693,7 +693,7 @@ class DLISFile:
             name            :   Name of the no-format item.
             consumer_name   :   Consumer name.
             description     :   Description.
-            set_name        :   Name of the NoFormatTable this item should be added to.
+            set_name        :   Name of the NoFormatSet this item should be added to.
 
         Returns:
             A configured no-format item.
@@ -750,7 +750,7 @@ class DLISFile:
             axis        :   Axis associated with the parameter.
             zones       :   Zones the parameter is defined for.
             values      :   Values of the parameter - numerical or textual.
-            set_name    :   Name of the ParameterTable this parameter should be added to.
+            set_name    :   Name of the ParameterSet this parameter should be added to.
 
         Returns:
             A configured ParameterObject instance.
@@ -800,7 +800,7 @@ class DLISFile:
             depth_offset            :   Depth offset.
             measure_point_offset    :   Measure point offset.
             tool_zero_offset        :   Tool zero offset.
-            set_name                :   Name of the PathTable this path should be added to.
+            set_name                :   Name of the PathSet this path should be added to.
 
         Returns:
             A configured Path instance.
@@ -856,7 +856,7 @@ class DLISFile:
             output_computations :   Output computations of the process.
             parameters          :   Parameters of the process.
             comments            :   Comments.
-            set_name            :   Name of the ProcessTable this process should be added to.
+            set_name            :   Name of the ProcessSet this process should be added to.
 
         Returns:
             A configured ProcessItem instance.
@@ -896,7 +896,7 @@ class DLISFile:
             output_channel  :   Output of the splice.
             input_channels  :   Input of the splice.
             zones           :   Zones the splice is defined for.
-            set_name        :   Name of the SpliceTable this splice should be added to.
+            set_name        :   Name of the SpliceSet this splice should be added to.
 
         Returns:
             A configured splice.
@@ -935,7 +935,7 @@ class DLISFile:
             status          :   Status of the tool: 1 or 0.
             channels        :   Channels associated with this tool.
             parameters      :   Parameters associated with this tool.
-            set_name        :   Name of the ToolTable this tool should be added to.
+            set_name        :   Name of the ToolSet this tool should be added to.
 
         Returns:
             A configured tool.
@@ -987,7 +987,7 @@ class DLISFile:
             coordinate_2_value          :   Value of coordinate 2.
             coordinate_3_name           :   Name of coordinate 3.
             coordinate_3_value          :   Value of coordinate 3.
-            set_name                    :   Name of the WellReferencePointTable this item should be added to.
+            set_name                    :   Name of the WellReferencePointSet this item should be added to.
 
         Returns:
             A configured WellReferencePointItem instance.
@@ -1029,7 +1029,7 @@ class DLISFile:
             domain      :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
             maximum     :   Maximum of the zone.
             minimum     :   Minimum of the zone.
-            set_name    :   Name of the ZoneTable this zone should be added to.
+            set_name    :   Name of the ZoneSet this zone should be added to.
 
         Note:
             Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,

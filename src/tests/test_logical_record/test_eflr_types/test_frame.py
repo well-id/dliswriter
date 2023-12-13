@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.frame import FrameTable, FrameItem
+from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
 from dlis_writer.utils.enums import RepresentationCode
 
 from tests.common import base_data_path, config_params

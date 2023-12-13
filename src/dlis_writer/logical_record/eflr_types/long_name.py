@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute
 class LongNameItem(EFLRItem):
     """Model an object being part of LongName EFLR."""
 
-    parent: "LongNameTable"
+    parent: "LongNameSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise LongNameItem.
@@ -39,7 +39,7 @@ class LongNameItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class LongNameTable(EFLRTable):
+class LongNameSet(EFLRSet):
     """Model LongName EFLR."""
 
     set_type = 'LONG-NAME'
@@ -47,4 +47,4 @@ class LongNameTable(EFLRTable):
     item_type = LongNameItem
 
 
-LongNameItem.parent_eflr_class = LongNameTable
+LongNameItem.parent_eflr_class = LongNameSet

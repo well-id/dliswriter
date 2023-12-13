@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.process import ProcessTable, ProcessItem
+from dlis_writer.logical_record.eflr_types.process import ProcessSet, ProcessItem
 
 from tests.common import base_data_path, config_params
 

@@ -1,9 +1,9 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
-from dlis_writer.logical_record.eflr_types.equipment import EquipmentTable
-from dlis_writer.logical_record.eflr_types.channel import ChannelTable
-from dlis_writer.logical_record.eflr_types.parameter import ParameterTable
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet
+from dlis_writer.logical_record.eflr_types.channel import ChannelSet
+from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ToolItem(EFLRItem):
     """Model an object being part of Tool EFLR."""
 
-    parent: "ToolTable"
+    parent: "ToolSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise ToolItem.
@@ -27,15 +27,15 @@ class ToolItem(EFLRItem):
         self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
         self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.generic_name = Attribute('generic_name', representation_code=RepC.ASCII, parent_eflr=self)
-        self.parts = EFLRAttribute('parts', object_class=EquipmentTable, multivalued=True, parent_eflr=self)
+        self.parts = EFLRAttribute('parts', object_class=EquipmentSet, multivalued=True, parent_eflr=self)
         self.status = Attribute('status', converter=int, representation_code=RepC.STATUS, parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterTable, multivalued=True, parent_eflr=self)
+        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 
 
-class ToolTable(EFLRTable):
+class ToolSet(EFLRSet):
     """Model Tool EFLR."""
 
     set_type = 'TOOL'
@@ -43,4 +43,4 @@ class ToolTable(EFLRTable):
     item_type = ToolItem
 
 
-ToolItem.parent_eflr_class = ToolTable
+ToolItem.parent_eflr_class = ToolSet

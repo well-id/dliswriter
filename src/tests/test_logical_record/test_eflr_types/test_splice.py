@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.splice import SpliceTable, SpliceItem
+from dlis_writer.logical_record.eflr_types.splice import SpliceSet, SpliceItem
 
 from tests.common import base_data_path, config_params
 

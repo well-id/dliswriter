@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class EquipmentItem(EFLRItem):
     """Model an object being part of Equipment EFLR."""
 
-    parent: "EquipmentTable"
+    parent: "EquipmentSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise EquipmentItem.
@@ -37,7 +37,7 @@ class EquipmentItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class EquipmentTable(EFLRTable):
+class EquipmentSet(EFLRSet):
     """Model Equipment EFLR."""
 
     set_type = 'EQUIPMENT'
@@ -45,4 +45,4 @@ class EquipmentTable(EFLRTable):
     item_type = EquipmentItem
 
 
-EquipmentItem.parent_eflr_class = EquipmentTable
+EquipmentItem.parent_eflr_class = EquipmentSet

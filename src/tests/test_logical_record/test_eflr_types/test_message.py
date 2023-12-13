@@ -2,7 +2,7 @@ from datetime import datetime
 from configparser import ConfigParser
 import pytest
 
-from dlis_writer.logical_record.eflr_types.message import MessageTable, CommentTable, MessageItem, CommentItem
+from dlis_writer.logical_record.eflr_types.message import MessageSet, CommentSet, MessageItem, CommentItem
 
 from tests.common import base_data_path, config_params
 

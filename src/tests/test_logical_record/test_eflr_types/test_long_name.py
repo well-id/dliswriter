@@ -1,6 +1,6 @@
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.long_name import LongNameTable, LongNameItem
+from dlis_writer.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
 
 from tests.common import base_data_path, config_params
 

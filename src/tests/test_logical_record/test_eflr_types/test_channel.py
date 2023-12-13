@@ -4,7 +4,7 @@ import numpy as np
 from configparser import ConfigParser
 from typing import Union, Any
 
-from dlis_writer.logical_record.eflr_types.channel import ChannelTable, ChannelItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
@@ -52,7 +52,7 @@ def test_from_config(config_params: ConfigParser):
     assert isinstance(channel.minimum_value.value[0], float)
     assert channel.maximum_value.value == [127.6]
 
-    assert isinstance(channel.parent, ChannelTable)
+    assert isinstance(channel.parent, ChannelSet)
 
 
 def test_from_config_alternative_name(config_params: ConfigParser):

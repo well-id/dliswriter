@@ -3,16 +3,16 @@ from pathlib import Path
 from configparser import ConfigParser
 
 from dlis_writer.writer.dlis_config import load_config
-from dlis_writer.logical_record.eflr_types import eflr_tables
+from dlis_writer.logical_record.eflr_types import eflr_sets
 
 
 def clear_eflr_instance_registers():
     """Remove all defined instances of EFLR from the internal dicts. Clear the EFLRObject dicts of the instances."""
 
-    for eflr_type in eflr_tables:
-        for eflr in eflr_type.get_all_tables():
+    for eflr_type in eflr_sets:
+        for eflr in eflr_type.get_all_sets():
             eflr.clear_eflr_item_dict()
-        eflr_type.clear_table_instance_dict()
+        eflr_type.clear_set_instance_dict()
 
 
 @pytest.fixture(scope='session')

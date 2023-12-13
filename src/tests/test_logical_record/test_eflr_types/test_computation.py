@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.computation import ComputationTable, ComputationItem
+from dlis_writer.logical_record.eflr_types.computation import ComputationSet, ComputationItem
 
 from tests.common import base_data_path, config_params
 

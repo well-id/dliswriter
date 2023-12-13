@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderTable, FileHeaderItem
+from dlis_writer.logical_record.eflr_types.file_header import FileHeaderSet, FileHeaderItem
 
 from tests.common import base_data_path, config_params, make_config
 

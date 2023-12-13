@@ -1,9 +1,9 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
-from dlis_writer.logical_record.eflr_types.channel import ChannelTable
-from dlis_writer.logical_record.eflr_types.computation import ComputationTable
-from dlis_writer.logical_record.eflr_types.parameter import ParameterTable
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.eflr_types.channel import ChannelSet
+from dlis_writer.logical_record.eflr_types.computation import ComputationSet
+from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ProcessItem(EFLRItem):
     """Model an object being part of Process EFLR."""
 
-    parent: "ProcessTable"
+    parent: "ProcessSet"
 
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
@@ -32,14 +32,14 @@ class ProcessItem(EFLRItem):
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
         self.status = Attribute('status', converter=self.check_status, representation_code=RepC.IDENT, parent_eflr=self)
         self.input_channels = EFLRAttribute(
-            'input_channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
+            'input_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
         self.output_channels = EFLRAttribute(
-            'output_channels', object_class=ChannelTable, multivalued=True, parent_eflr=self)
+            'output_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
         self.input_computations = EFLRAttribute(
-            'input_computations', object_class=ComputationTable, multivalued=True, parent_eflr=self)
+            'input_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
         self.output_computations = EFLRAttribute(
-            'output_computations', object_class=ComputationTable, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterTable, multivalued=True, parent_eflr=self)
+            'output_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
         self.comments = Attribute('comments', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
@@ -51,7 +51,7 @@ class ProcessItem(EFLRItem):
         return status
 
 
-class ProcessTable(EFLRTable):
+class ProcessSet(EFLRSet):
     """Model Process EFLR."""
 
     set_type = 'PROCESS'
@@ -59,4 +59,4 @@ class ProcessTable(EFLRTable):
     item_type = ProcessItem
 
 
-ProcessItem.parent_eflr_class = ProcessTable
+ProcessItem.parent_eflr_class = ProcessSet

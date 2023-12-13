@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
 class ZoneItem(EFLRItem):
     """Model an object being part of Zone EFLR."""
 
-    parent: "ZoneTable"
+    parent: "ZoneSet"
 
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
@@ -34,7 +34,7 @@ class ZoneItem(EFLRItem):
         return domain
 
 
-class ZoneTable(EFLRTable):
+class ZoneSet(EFLRSet):
     """Model Zone EFLR."""
 
     set_type = 'ZONE'
@@ -42,4 +42,4 @@ class ZoneTable(EFLRTable):
     item_type = ZoneItem
 
 
-ZoneItem.parent_eflr_class = ZoneTable
+ZoneItem.parent_eflr_class = ZoneSet

@@ -1,9 +1,9 @@
 import logging
 
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.eflr_types.zone import ZoneTable
-from dlis_writer.logical_record.eflr_types.axis import AxisTable
+from dlis_writer.logical_record.eflr_types.zone import ZoneSet
+from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute
 
 
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class ParameterItem(EFLRItem):
     """Model an object being part of Parameter EFLR."""
 
-    parent: "ParameterTable"
+    parent: "ParameterSet"
     
     def __init__(self, name: str, **kwargs):
         """Initialise ParameterItem.
@@ -25,8 +25,8 @@ class ParameterItem(EFLRItem):
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=ZoneTable, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
+        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)
         self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
@@ -41,7 +41,7 @@ class ParameterItem(EFLRItem):
             self.dimension.value = [1]
 
 
-class ParameterTable(EFLRTable):
+class ParameterSet(EFLRSet):
     """Model Parameter EFLR."""
 
     set_type = 'PARAMETER'
@@ -49,4 +49,4 @@ class ParameterTable(EFLRTable):
     item_type = ParameterItem
 
 
-ParameterItem.parent_eflr_class = ParameterTable
+ParameterItem.parent_eflr_class = ParameterSet

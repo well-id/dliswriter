@@ -3,8 +3,8 @@ from typing import Union, Optional
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
-from dlis_writer.logical_record.eflr_types.axis import AxisTable
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class ChannelItem(EFLRItem):
     """Model an object being part of Channel EFLR."""
 
-    parent: "ChannelTable"
+    parent: "ChannelSet"
 
     def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
         """Initialise ChannelItem.
@@ -36,7 +36,7 @@ class ChannelItem(EFLRItem):
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisTable, multivalued=True, parent_eflr=self)
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
         self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
         self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
         self.minimum_value = NumericAttribute(
@@ -150,7 +150,7 @@ class ChannelItem(EFLRItem):
         return RepC.get_member(rc, allow_none=True)
 
 
-class ChannelTable(EFLRTable):
+class ChannelSet(EFLRSet):
     """Model Channel EFLR."""
 
     set_type = 'CHANNEL'
@@ -158,4 +158,4 @@ class ChannelTable(EFLRTable):
     item_type = ChannelItem
 
 
-ChannelItem.parent_eflr_class = ChannelTable
+ChannelItem.parent_eflr_class = ChannelSet

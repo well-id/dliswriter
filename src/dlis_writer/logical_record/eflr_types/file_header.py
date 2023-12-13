@@ -1,7 +1,7 @@
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType
 
 
@@ -12,7 +12,7 @@ def pack_ushort(v):
 class FileHeaderItem(EFLRItem):
     """Model an object being part of FileHeader EFLR."""
 
-    parent: "FileHeaderTable"
+    parent: "FileHeaderSet"
 
     identifier_length_limit = 65    #: max length of the file header name
 
@@ -50,7 +50,7 @@ class FileHeaderItem(EFLRItem):
         return bts
 
 
-class FileHeaderTable(EFLRTable):
+class FileHeaderSet(EFLRSet):
     """Model FileHeader EFLR."""
 
     set_type = 'FILE-HEADER'
@@ -73,4 +73,4 @@ class FileHeaderTable(EFLRTable):
         return bts
 
 
-FileHeaderItem.parent_eflr_class = FileHeaderTable
+FileHeaderItem.parent_eflr_class = FileHeaderSet

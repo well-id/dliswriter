@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointTable, WellReferencePointItem
+from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointSet, WellReferencePointItem
 
 from tests.common import base_data_path, config_params
 

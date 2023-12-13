@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.zone import ZoneTable, ZoneItem
+from dlis_writer.logical_record.eflr_types.zone import ZoneSet, ZoneItem
 from dlis_writer.utils.enums import RepresentationCode
 
 from tests.common import base_data_path, config_params

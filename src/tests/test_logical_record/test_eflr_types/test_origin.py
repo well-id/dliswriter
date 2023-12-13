@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginTable
+from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 
 from tests.common import base_data_path, config_params, make_config
 

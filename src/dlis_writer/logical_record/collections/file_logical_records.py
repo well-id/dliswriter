@@ -11,7 +11,7 @@ from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderItem
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
-from dlis_writer.logical_record.core.eflr import EFLRTable
+from dlis_writer.logical_record.core.eflr import EFLRSet
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 class FileLogicalRecords:
     """Collection of logical records to constitute a DLIS file."""
 
-    def __init__(self, sul: StorageUnitLabel, fh: FileHeaderTable, orig: OriginTable):
+    def __init__(self, sul: StorageUnitLabel, fh: FileHeaderSet, orig: OriginSet):
         """Initialise FileLogicalRecords object.
 
         Args:
@@ -31,17 +31,17 @@ class FileLogicalRecords:
         """
 
         self._check_type(sul, StorageUnitLabel)
-        self._check_type(fh, FileHeaderTable)
-        self._check_type(orig, OriginTable)
+        self._check_type(fh, FileHeaderSet)
+        self._check_type(orig, OriginSet)
 
         self._storage_unit_label = sul
         self._file_header = fh
         self._origin = orig
 
-        self._channels: list[ChannelTable] = []
-        self._frames: list[FrameTable] = []
+        self._channels: list[ChannelSet] = []
+        self._frames: list[FrameSet] = []
         self._frame_data_objects: list[MultiFrameData] = []
-        self._other_logical_records: list[typing.Union[EFLRTable, NoFormatFrameData]] = []
+        self._other_logical_records: list[typing.Union[EFLRSet, NoFormatFrameData]] = []
 
     def set_origin_reference(self, value: int):
         """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
@@ -62,13 +62,13 @@ class FileLogicalRecords:
             fdo.set_origin_reference(value)
 
     @property
-    def origin(self) -> OriginTable:
+    def origin(self) -> OriginSet:
         """Origin EFLR of the collection."""
 
         return self._origin
 
     @property
-    def header_records(self) -> tuple[StorageUnitLabel, FileHeaderTable, OriginTable]:
+    def header_records(self) -> tuple[StorageUnitLabel, FileHeaderSet, OriginSet]:
         """Header records of the collection: StorageUnitLabel, FileHeader, and Origin."""
 
         return self._storage_unit_label, self._file_header, self._origin
@@ -106,22 +106,22 @@ class FileLogicalRecords:
             raise TypeError(f"Expected only {' / '.join(t.__name__ for t in expected_type)} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
-    def add_channels(self, *channels: ChannelTable):
+    def add_channels(self, *channels: ChannelSet):
         """Add Channel logical records to the collection."""
 
-        self._check_types(channels, ChannelTable)
+        self._check_types(channels, ChannelSet)
         self._channels.extend(channels)
 
     @property
-    def frames(self) -> list[FrameTable]:
+    def frames(self) -> list[FrameSet]:
         """Frame logical records added to the collection."""
 
         return self._frames
 
-    def add_frames(self, *frames: FrameTable):
+    def add_frames(self, *frames: FrameSet):
         """Add Frame logical records to the collection."""
 
-        self._check_types(frames, FrameTable)
+        self._check_types(frames, FrameSet)
         self._frames.extend(frames)
 
     @property
@@ -168,10 +168,10 @@ class FileLogicalRecords:
 
         yield from self._other_logical_records
 
-    def add_logical_records(self, *lrs: typing.Union[EFLRTable, NoFormatFrameData]):
+    def add_logical_records(self, *lrs: typing.Union[EFLRSet, NoFormatFrameData]):
         """Add other EFLR objects (other than Channel, Frame, Origin, FileHeader) to the collection."""
 
-        self._check_types(lrs, (EFLRTable, NoFormatFrameData))
+        self._check_types(lrs, (EFLRSet, NoFormatFrameData))
         self._other_logical_records.extend(lrs)
 
     def check_objects(self):
@@ -198,13 +198,13 @@ class FileLogicalRecords:
                 raise RuntimeError(f"Expected exactly one {class_name}Object, got {n} with names: "
                                    f"{', '.join(repr(n) for n in names)}")
 
-        def check(eflr: EFLRTable, exactly_one: bool = False):
+        def check(eflr: EFLRSet, exactly_one: bool = False):
             """Check that at least/exactly one EFLRObject is defined for the provided EFLR."""
 
             names = [o.name for o in eflr.get_all_eflr_items()]
             verify_n(names, eflr.__class__.__name__, exactly_one=exactly_one)
 
-        def check_list(eflr_list: list[EFLRTable], class_name: str):
+        def check_list(eflr_list: list[EFLRSet], class_name: str):
             """Check that at least one EFLRObject is defined across the list of EFLRs of the given type."""
 
             names: list[str] = []
@@ -305,7 +305,7 @@ class FileLogicalRecords:
                 obj.add_frames(fr.parent)
             obj.add_frame_data_objects(multi_frame_data)
 
-        other_classes = [c for c in eflr_tables if c not in (ChannelTable, FrameTable, OriginTable, FileHeaderTable)]
+        other_classes = [c for c in eflr_sets if c not in (ChannelSet, FrameSet, OriginSet, FileHeaderSet)]
 
         for c in other_classes:
             objects = c.item_type.all_from_config(config, get_if_exists=True)

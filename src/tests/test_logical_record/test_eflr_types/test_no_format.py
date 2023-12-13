@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.no_format import NoFormatTable, NoFormatItem
+from dlis_writer.logical_record.eflr_types.no_format import NoFormatSet, NoFormatItem
 
 from tests.common import base_data_path, config_params
 

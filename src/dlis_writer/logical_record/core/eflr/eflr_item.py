@@ -9,7 +9,7 @@ from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr.eflr_table import EFLRTable
+    from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
 
 
 logger = logging.getLogger(__name__)
@@ -18,9 +18,9 @@ logger = logging.getLogger(__name__)
 class EFLRItem:
     """Model an item belonging to an Explicitly Formatted Logical Record - e.g. a particular channel."""
 
-    parent_eflr_class: type["EFLRTable"] = NotImplemented
+    parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None, **kwargs):
         """Initialise an EFLRItem.
 
         Args:
@@ -46,7 +46,7 @@ class EFLRItem:
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
 
     @classmethod
-    def _get_parent(cls, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None) -> "EFLRTable":
+    def _get_parent(cls, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None) -> "EFLRSet":
         """Validate, retrieve, or create a parent EFLRTable instance.
 
         Args:
@@ -68,7 +68,7 @@ class EFLRItem:
 
             return parent
 
-        return cls.parent_eflr_class.get_or_make_table(set_name=set_name)
+        return cls.parent_eflr_class.get_or_make_set(set_name=set_name)
 
     @property
     def attributes(self) -> dict[str, Attribute]:
@@ -207,7 +207,7 @@ class EFLRItem:
         other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
 
         item_name = config[key][name_key]
-        eflr_table = cls.parent_eflr_class.get_or_make_table(set_name=set_name)
+        eflr_table = cls.parent_eflr_class.get_or_make_set(set_name=set_name)
         eflr_item = None
         if get_if_exists:
             eflr_item = eflr_table.get_eflr_item(item_name, None)

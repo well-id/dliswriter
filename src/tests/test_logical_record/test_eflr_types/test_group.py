@@ -1,7 +1,7 @@
 import pytest
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.group import GroupTable, GroupItem
+from dlis_writer.logical_record.eflr_types.group import GroupSet, GroupItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.process import ProcessItem
 

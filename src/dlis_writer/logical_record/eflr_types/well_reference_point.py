@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class WellReferencePointItem(EFLRItem):
     """Model an object being part of WellReferencePoint EFLR."""
 
-    parent: "WellReferencePointTable"
+    parent: "WellReferencePointSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise WellReferencePointItem.
@@ -42,7 +42,7 @@ class WellReferencePointItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class WellReferencePointTable(EFLRTable):
+class WellReferencePointSet(EFLRSet):
     """Model WellReferencePoint EFLR."""
 
     set_type = 'WELL-REFERENCE'
@@ -50,4 +50,4 @@ class WellReferencePointTable(EFLRTable):
     item_type = WellReferencePointItem
 
 
-WellReferencePointItem.parent_eflr_class = WellReferencePointTable
+WellReferencePointItem.parent_eflr_class = WellReferencePointSet

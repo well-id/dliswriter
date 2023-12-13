@@ -1,7 +1,7 @@
 from datetime import datetime
 from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types import CalibrationMeasurementTable, CalibrationCoefficientTable, CalibrationTable
+from dlis_writer.logical_record.eflr_types import CalibrationMeasurementSet, CalibrationCoefficientSet, CalibrationSet
 from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementItem,
                                                                CalibrationCoefficientItem, CalibrationItem)
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
