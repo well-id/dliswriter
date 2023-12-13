@@ -64,12 +64,12 @@ class DLISFile:
         else:
             self._origin = eflr_types.OriginItem(**({"name": "ORIGIN", "file_set_number": 1} | (origin or {})))
 
-        self._channels = []
-        self._frames = []
-        self._other_eflr = []
-        self._no_format_frame_data = []
+        self._channels: list[eflr_types.ChannelItem] = []
+        self._frames: list[eflr_types.FrameItem] = []
+        self._other_eflr: list[EFLRItem] = []
+        self._no_format_frame_data: list[NoFormatFrameData] = []
 
-        self._data_dict = {}
+        self._data_dict: dict[str, np.ndarray] = {}
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
@@ -106,7 +106,7 @@ class DLISFile:
             name: str,
             axis_id: str = None,
             coordinates: values_type = None,
-            spacing: number_type = None,
+            spacing: Optional[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
@@ -400,23 +400,23 @@ class DLISFile:
     def add_equipment(
             self,
             name: str,
-            trademark_name: str = None,
-            status: int = None,
-            eq_type: str = None,
-            serial_number: str = None,
-            location: str = None,
-            height: number_type = None,
-            length: number_type = None,
-            minimum_diameter: number_type = None,
-            maximum_diameter: number_type = None,
-            volume: number_type = None,
-            weight: number_type = None,
-            hole_size: number_type = None,
-            pressure: number_type = None,
-            temperature: number_type = None,
-            vertical_depth: number_type = None,
-            radial_drift: number_type = None,
-            angular_drift: number_type = None,
+            trademark_name: Optional[str] = None,
+            status: Optional[int] = None,
+            eq_type: Optional[str] = None,
+            serial_number: Optional[str] = None,
+            location: Optional[str] = None,
+            height: Optional[number_type] = None,
+            length: Optional[number_type] = None,
+            minimum_diameter: Optional[number_type] = None,
+            maximum_diameter: Optional[number_type] = None,
+            volume: Optional[number_type] = None,
+            weight: Optional[number_type] = None,
+            hole_size: Optional[number_type] = None,
+            pressure: Optional[number_type] = None,
+            temperature: Optional[number_type] = None,
+            vertical_depth: Optional[number_type] = None,
+            radial_drift: Optional[number_type] = None,
+            angular_drift: Optional[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.EquipmentItem:
         """Define an equipment object.
@@ -884,7 +884,7 @@ class DLISFile:
     def add_splice(
             self,
             name: str,
-            output_channel: eflr_types.ChannelItem = None,
+            output_channel: Optional[eflr_types.ChannelItem] = None,
             input_channels: list_or_tuple_type(eflr_types.ChannelItem) = None,
             zones: list_or_tuple_type(eflr_types.ZoneItem) = None,
             set_name: Optional[str] = None
@@ -1015,10 +1015,10 @@ class DLISFile:
     def add_zone(
             self,
             name: str,
-            description: str = None,
-            domain: str = None,
-            maximum: dtime_or_number_type = None,
-            minimum: dtime_or_number_type = None,
+            description: Optional[str] = None,
+            domain: Optional[str] = None,
+            maximum: Optional[dtime_or_number_type] = None,
+            minimum: Optional[dtime_or_number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
@@ -1080,7 +1080,7 @@ class DLISFile:
         return flr
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
-              input_chunk_size: Optional[int] = None, output_chunk_size: number_type = 2**32):
+              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32):
         """Create a DLIS file form the current specifications.
 
         Args:
