@@ -28,12 +28,16 @@ class EFLRSetMeta(LRMeta):
     eflr_name_pattern = re.compile(r'(?P<name>\w+)Set')
 
     def __new__(cls, *args, **kwargs) -> "EFLRSetMeta":
-        """Create a new EFLRSet class (instance of EFLRMeta).
+        """Create a new EFLRSet class (instance of EFLRSetMeta).
 
         All positional and keyword arguments are passed to the super-metaclass: LRMeta.
         """
 
         obj = super().__new__(cls, *args, **kwargs)
         obj._eflr_set_instance_dict = {}
-        obj.eflr_name = cls.eflr_name_pattern.fullmatch(obj.__name__).group('name')
+
+        match = cls.eflr_name_pattern.fullmatch(obj.__name__)
+        if not match:
+            raise RuntimeError(f"Could not match EFLR class name: {obj.__name__}")
+        obj.eflr_name = match.group('name')
         return obj

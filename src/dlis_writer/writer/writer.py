@@ -150,10 +150,11 @@ class DLISWriter:
     def _assign_origin_reference(logical_records: FileLogicalRecords):
         """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
 
-        if logical_records.origin.first_item is None:
+        origins = logical_records.origin.get_all_eflr_items()
+        if not origins:
             raise RuntimeError("No origin defined")
 
-        val = logical_records.origin.first_item.file_set_number.value
+        val = origins[0].file_set_number.value
 
         if not val:
             raise Exception('Origin object MUST have a file_set_number')

@@ -66,15 +66,6 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         for obj in self._eflr_item_dict.values():
             obj.origin_reference = val
 
-    @property
-    def first_item(self) -> Union["Self.item_type", None]:
-        """Return the first EFLRItem instance registered with this EFLRSet or None if no instances are registered."""
-
-        if not self._eflr_item_dict:
-            return None
-
-        return self._eflr_item_dict[next(iter(self._eflr_item_dict.keys()))]
-
     def _make_set_component_bytes(self) -> bytes:
         """Create bytes describing the set of this EFLR, using set type (class attr) and name (specified at init)."""
 
