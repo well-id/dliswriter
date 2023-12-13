@@ -1,20 +1,25 @@
 import pytest
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.axis import AxisSet, AxisItem
-
-from tests.common import base_data_path, config_params
+from dlis_writer.logical_record.eflr_types.axis import AxisItem
 
 
-@pytest.mark.parametrize(("idx", "name", "axis_id", "coordinates"), (
-        (0, "Axis-1", "First axis", [40.395241, 27.792471]),
-        (1, "Axis-X", "Axis not added to computation", [8])
+@pytest.mark.parametrize(('name', 'axis_id', 'units'), (
+    ('Axis-1', 'First axis', 'm'),
+    ('Axis-X', 'Another axis', 's')
 ))
-def test_from_config(config_params: ConfigParser, idx: int, name: str, axis_id: str, coordinates: list):
-    """Check that an AxisObject is correctly set up from config info."""
-
-    axis: AxisItem = AxisItem.from_config(config_params, key=name)
+def test_str_attributes(name, axis_id, units):
+    axis = AxisItem(name, **{'axis_id': axis_id, 'spacing.units': units})
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id
-    assert axis.coordinates.value == coordinates
+    assert axis.spacing.units == units
+
+
+@pytest.mark.parametrize(('given', 'expected'), (
+        ([40.395241, 27.792471], [40.395241, 27.792471]),
+        (12.121, [12.121]),
+        ([8], [8])
+))
+def test_coordinates(given, expected):
+    axis = AxisItem('some_name', coordinates=given)
+    assert axis.coordinates.value == expected
