@@ -1,17 +1,22 @@
 from datetime import datetime
-from configparser import ConfigParser
 import pytest
 
 from dlis_writer.logical_record.eflr_types.message import MessageSet, CommentSet, MessageItem, CommentItem
 
-from tests.common import base_data_path, config_params
 
+def test_creating_message():
+    """Test creating MessageObject."""
 
-def test_message_from_config(config_params: ConfigParser):
-    """Test creating MessageObject from config."""
-
-    key = "Message-1"
-    m: MessageItem = MessageItem.from_config(config_params, key=key)
+    m = MessageItem(
+        name="MESSAGE-1",
+        _type='Command',
+        time="2050/03/04 11:23:11",
+        borehole_drift=123.34,
+        vertical_depth=234.45,
+        radial_drift=345.56,
+        angular_drift=456.67,
+        text=["Test message 11111"],
+    )
 
     assert m.name == "MESSAGE-1"
     assert m._type.value == 'Command'
@@ -22,16 +27,24 @@ def test_message_from_config(config_params: ConfigParser):
     assert m.angular_drift.value == 456.67
     assert m.text.value == ["Test message 11111"]
 
+    assert isinstance(m.parent, MessageSet)
+    assert m.parent.set_name is None
 
-@pytest.mark.parametrize(("key", "name", "text"), (
-        ("1", "COMMENT-1", ["SOME COMMENT HERE"]),
-        ("other", "cmt2", ["some other comment here", "and another comment"])
+
+@pytest.mark.parametrize(("name", "text"), (
+        ("COMMENT-1", ["SOME COMMENT HERE"]),
+        ("cmt2", ["some other comment here", "and another comment"])
 ))
-def test_comment_from_config(config_params: ConfigParser, key: str, name: str, text: list[str]):
-    """Test creating CommentObject from config."""
+def test_creating_comment(name: str, text: list[str]):
+    """Test creating CommentObject."""
 
-    key = f"Comment-{key}"
-    c: CommentItem = CommentItem.from_config(config_params, key=key)
+    c = CommentItem(
+        name=name,
+        text=text
+    )
 
     assert c.name == name
     assert c.text.value == text
+
+    assert isinstance(c.parent, CommentSet)
+    assert c.parent.set_name is None
