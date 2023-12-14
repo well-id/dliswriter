@@ -28,6 +28,16 @@ def chan():
 
 
 @pytest.fixture
+def channels(channel1, channel2, channel3, chan):
+    return {
+        'Channel 1': channel1,
+        'Channel 2': channel2,
+        'Channel 3': channel3,
+        'some_channel': chan
+    }
+
+
+@pytest.fixture
 def mock_data() -> NumpyDataWrapper:
     """Mock data (structured numpy array) for tests."""
 

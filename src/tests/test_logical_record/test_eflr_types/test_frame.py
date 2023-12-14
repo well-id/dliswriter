@@ -1,41 +1,49 @@
 import pytest
-from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
 from dlis_writer.utils.enums import RepresentationCode
 
-from tests.common import base_data_path, config_params
 
+def test_frame_creation():
+    """Test creating d FrameObject."""
 
-def test_from_config(config_params: ConfigParser):
-    """Test creating d FrameObject from config."""
+    frame = FrameItem(
+        "MAIN-FRAME",
+        **{
+            'index_type': 'BOREHOLE-DEPTH',
+            'encrypted': 1,
+            'description': "The main frame",
+            'spacing': 0.2,
+            'spacing.units': 'm',
+            'spacing.representation_code': 7
 
-    frame: FrameItem = FrameItem.from_config(config_params)
+        }
+    )
 
-    conf = config_params['Frame']
-    assert frame.name == conf['name']
-
-    assert frame.index_type.value == conf["index_type"]
+    assert frame.name == 'MAIN-FRAME'
+    assert frame.index_type.value == 'BOREHOLE-DEPTH'
     assert frame.encrypted.value == 1
-    assert frame.description.value == conf["description.value"]
+    assert frame.description.value == 'The main frame'
 
-    assert frame.spacing.value == float(conf["spacing.value"])
-    assert frame.spacing.units == 's'
+    assert frame.spacing.value == 0.2
+    assert frame.spacing.units == 'm'
     assert frame.spacing.representation_code is RepresentationCode.FDOUBL
 
+    assert isinstance(frame.parent, FrameSet)
+    assert frame.parent.set_name is None
 
-@pytest.mark.parametrize(("channels_key", "channel_entry", "channel_names"), (
-        ("channels", "Channel-rpm, Channel-amplitude", ("surface rpm", "amplitude")),
-        ("channels.value", "Channel, Channel-1, Channel-thirteen", ("Some Channel", "Channel 1", "Channel 13"))
+
+@pytest.mark.parametrize("channel_names", (
+        ("Channel 1", "Channel 3", "Channel 2"),
+        ("some_channel",)
 ))
-def test_from_config_with_channels(channels_key: str, channel_entry: str, channel_names: list[str],
-                                   config_params: ConfigParser):
-    """Test creating a FrameObject with specified channels from the config."""
+def test_creation_with_channels(channel_names: tuple[str], channels):
+    """Test creating a FrameObject with specified channels."""
 
-    config_params["Frame"]["name"] = "Some frame"
-    config_params["Frame"][channels_key] = channel_entry
-
-    frame: FrameItem = FrameItem.from_config(config_params)
+    frame = FrameItem(
+        'Some frame',
+        channels=[channels[k] for k in channel_names]
+    )
 
     assert frame.channels.value is not None
     assert len(frame.channels.value) == len(channel_names)
