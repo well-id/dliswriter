@@ -1,15 +1,29 @@
-from configparser import ConfigParser
-
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
 
-from tests.common import base_data_path, config_params
 
+def test_from_config():
+    """Test creating LongNameObject."""
 
-def test_from_config(config_params: ConfigParser):
-    """Test creating LongNameObject from config."""
-
-    w: LongNameItem = LongNameItem.from_config(config_params, 'LongName-1')
     t = 'SOME ASCII TEXT'
+
+    w = LongNameItem(
+        "some long name",
+        general_modifier=[t],
+        quantity=t,
+        quantity_modifier=[t],
+        altered_form=t,
+        entity=t,
+        entity_modifier=[t],
+        entity_number=t,
+        entity_part=t,
+        entity_part_number=t,
+        generic_source=t,
+        source_part=[t],
+        source_part_number=[t],
+        conditions=[t],
+        standard_symbol=t,
+        private_symbol=t
+    )
 
     assert w.general_modifier.value == [t]
     assert w.quantity.value == t
@@ -26,3 +40,6 @@ def test_from_config(config_params: ConfigParser):
     assert w.conditions.value == [t]
     assert w.standard_symbol.value == t
     assert w.private_symbol.value == t
+
+    assert isinstance(w.parent, LongNameSet)
+    assert w.parent.set_name is None
