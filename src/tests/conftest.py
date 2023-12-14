@@ -114,3 +114,16 @@ def channel_group(channel1, channel2, channel3):
 @pytest.fixture
 def process_group(process2, process1):
     return eflr_types.GroupItem("Group of processes", object_type="PROCESS", object_list=[process1, process2])
+
+
+@pytest.fixture
+def computation1():
+    return eflr_types.ComputationItem("Compt1")
+
+
+@pytest.fixture
+def computation2():
+    return eflr_types.ComputationItem("CMPT-2")
+
+
+
