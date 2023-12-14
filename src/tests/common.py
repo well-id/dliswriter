@@ -28,12 +28,3 @@ def config_params(base_data_path: Path) -> ConfigParser:
 
     return load_config(base_data_path/'resources/mock_config_params.ini')
 
-
-def make_config(*sections: str) -> ConfigParser:
-    """Create a config object containing all sections whose names are specified as positional args."""
-
-    config = ConfigParser()
-    for section in sections:
-        config.add_section(section)
-    return config
-
