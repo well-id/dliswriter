@@ -1,22 +1,25 @@
 import pytest
-from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.no_format import NoFormatSet, NoFormatItem
 
-from tests.common import base_data_path, config_params
 
-
-@pytest.mark.parametrize(("key", "name", "consumer_name", "description"), (
-        ("1", "no_format_1", "SOME TEXT NOT FORMATTED", "TESTING-NO-FORMAT"),
-        ("2", "no_fmt2", "xyz", "TESTING NO FORMAT 2")
+@pytest.mark.parametrize(("name", "consumer_name", "description"), (
+        ("no_format_1", "SOME TEXT NOT FORMATTED", "TESTING-NO-FORMAT"),
+        ("no_fmt2", "xyz", "TESTING NO FORMAT 2")
 ))
-def test_from_config(config_params: ConfigParser, key: str, name: str, consumer_name: str, description: str):
-    """Test creating NoFormatObject from config."""
+def test_creation(name: str, consumer_name: str, description: str):
+    """Test creating NoFormatObject."""
 
-    key = f"NoFormat-{key}"
-    w: NoFormatItem = NoFormatItem.from_config(config_params, key=key)
+    w = NoFormatItem(
+        name=name,
+        consumer_name=consumer_name,
+        description=description
+    )
 
     assert w.name == name
     assert w.consumer_name.value == consumer_name
     assert w.description.value == description
+
+    assert isinstance(w.parent, NoFormatSet)
+    assert w.parent.set_name is None
 
