@@ -1,50 +1,35 @@
 import pytest
 from datetime import datetime
-from configparser import ConfigParser
 
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet, ZoneItem
 from dlis_writer.utils.enums import RepresentationCode
 
-from tests.common import base_data_path, config_params
 
-
-@pytest.mark.parametrize("zone_nr", (1, 2, 3, 4))
-def test_from_config(config_params: ConfigParser, zone_nr: int):
+@pytest.mark.parametrize(("name", "description", "domain", "maximum", "minimum", "m_type", "rc"), (
+        ("Zone-1", "Zone 1", "VERTICAL-DEPTH", 100, 10, float, RepresentationCode.FDOUBL),
+        ("Z2", "some zone", "BOREHOLE-DEPTH", -300.5, -500.0, float, RepresentationCode.FDOUBL),
+        ("ZoneX", "time zone", "TIME", "2050/03/02 15:20:00", "2050/03/02 10:10:00", datetime, RepresentationCode.DTIME)
+))
+def test_zone_creation(name, description, domain, maximum, minimum, m_type, rc):
     """Test creating ZoneObject from config."""
 
-    key = f"Zone-{zone_nr}"
-    zone: ZoneItem = ZoneItem.from_config(config_params, key=key)
-    
-    conf = config_params[key]
-    
-    assert zone.name == conf['name']
-    assert zone.description.value == conf['description']
-    assert zone.domain.value == conf['domain']
-    
-    assert isinstance(zone.maximum.representation_code, RepresentationCode)
-    assert isinstance(zone.minimum.representation_code, RepresentationCode)
+    zone = ZoneItem(
+        name,
+        description=description,
+        domain=domain,
+        maximum=maximum,
+        minimum=minimum
+    )
 
-    if zone_nr != 3:
-        assert isinstance(zone.maximum.units, str)
-        assert zone.maximum.units == conf['maximum.units']
-        assert isinstance(zone.minimum.units, str)
-        assert zone.minimum.units == conf['minimum.units']
+    assert zone.name == name
+    assert zone.description.value == description
+    assert zone.domain.value == domain
 
+    assert zone.maximum.representation_code is rc
+    assert zone.minimum.representation_code is rc
 
-@pytest.mark.parametrize(("zone_nr", "value_type", "repr_code"), (
-        (1, float, RepresentationCode.FDOUBL),
-        (2, float, RepresentationCode.FDOUBL),
-        (3, datetime, RepresentationCode.DTIME)
-))
-def test_from_config_units(config_params: ConfigParser, zone_nr: int, value_type: type, repr_code: RepresentationCode):
-    """Test creating ZoneObject from config for different types of values. Check that the repr code is correct."""
+    assert isinstance(zone.maximum.value, m_type)
+    assert isinstance(zone.minimum.value, m_type)
 
-    key = f"Zone-{zone_nr}"
-    zone: ZoneItem = ZoneItem.from_config(config_params, key=key)
-
-    assert isinstance(zone.maximum.value, value_type)
-    assert isinstance(zone.minimum.value, value_type)
-
-    assert zone.maximum.representation_code is repr_code
-    assert zone.minimum.representation_code is repr_code
-
+    assert isinstance(zone.parent, ZoneSet)
+    assert zone.parent.set_name is None
