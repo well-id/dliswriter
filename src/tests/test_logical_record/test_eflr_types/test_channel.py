@@ -20,6 +20,11 @@ def chan():
 
 
 @pytest.fixture
+def axis1():
+    return AxisItem("Axis-1")
+
+
+@pytest.fixture
 def mock_data() -> NumpyDataWrapper:
     """Mock data (structured numpy array) for tests."""
 
@@ -27,18 +32,27 @@ def mock_data() -> NumpyDataWrapper:
     return NumpyDataWrapper(np.zeros(30, dtype=dt))
 
 
-def test_from_config(config_params: ConfigParser):
-    """Check that a ChannelObject is correctly set up from config info."""
+def test_channel_creation(axis1):
+    """Check that a ChannelObject is correctly set up."""
 
-    channel: ChannelItem = ChannelItem.from_config(config_params)
+    channel = ChannelItem(
+        'Channel',
+        dataset_name='amplitude',
+        long_name='Amplitude channel',
+        properties=["property1", "property 2 with multiple words"],
+        representation_code=RepresentationCode.FSINGL,
+        units='acre',
+        dimension=12,
+        element_limit=12,
+        source='some source',
+        minimum_value=[0.],
+        maximum_value=[127.6],
+        axis=[axis1]
+    )
 
-    conf = config_params['Channel']
-
-    assert channel.name == conf['name']
-    assert channel.name == conf['name']
-    assert channel.dataset_name == conf["dataset_name"]
-
-    assert channel.long_name.value == conf["long_name"]
+    assert channel.name == 'Channel'
+    assert channel.dataset_name == 'amplitude'
+    assert channel.long_name.value == 'Amplitude channel'
     assert channel.properties.value == ["property1", "property 2 with multiple words"]
     assert channel.representation_code.value is RepresentationCode.FSINGL
     assert channel.units.value == 'acre'
