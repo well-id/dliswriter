@@ -1,6 +1,5 @@
 import pytest
 from _pytest.logging import LogCaptureFixture
-import numpy as np
 from configparser import ConfigParser
 from typing import Union, Any
 
@@ -10,26 +9,6 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 from tests.common import base_data_path, config_params, make_config
-
-
-@pytest.fixture
-def chan():
-    """Mock ChannelObject instance for tests."""
-
-    yield ChannelItem("some_channel")
-
-
-@pytest.fixture
-def axis1():
-    return AxisItem("Axis-1")
-
-
-@pytest.fixture
-def mock_data() -> NumpyDataWrapper:
-    """Mock data (structured numpy array) for tests."""
-
-    dt = np.dtype([('time', float), ('amplitude', float, (10,)), ('radius', float, (12,))])
-    return NumpyDataWrapper(np.zeros(30, dtype=dt))
 
 
 def test_channel_creation(axis1):

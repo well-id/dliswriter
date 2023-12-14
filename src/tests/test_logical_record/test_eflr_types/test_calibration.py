@@ -1,4 +1,3 @@
-import pytest
 from datetime import datetime
 
 from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementItem,
@@ -7,52 +6,6 @@ from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
-
-
-@pytest.fixture
-def channel1():
-    return ChannelItem("Channel 1")
-
-
-@pytest.fixture
-def channel2():
-    return ChannelItem("Channel 2")
-
-
-@pytest.fixture
-def channel3():
-    return ChannelItem("Channel 3")
-
-
-@pytest.fixture
-def ccoef1():
-    return CalibrationCoefficientItem("COEF-1")
-
-
-@pytest.fixture
-def cmeasure1():
-    return CalibrationMeasurementItem("CMEASURE-1")
-
-
-@pytest.fixture
-def axis1():
-    return AxisItem("Axis-1")
-
-
-@pytest.fixture
-def param1():
-    return ParameterItem("Param-1")
-
-
-@pytest.fixture
-def param2():
-    return ParameterItem("Param-2")
-
-
-@pytest.fixture
-def param3():
-    return ParameterItem("Param-3")
-
 
 
 def test_calibration_measurement_creation(channel1, axis1):
