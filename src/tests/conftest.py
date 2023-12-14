@@ -93,3 +93,24 @@ def zone3():
 @pytest.fixture
 def zones(zone1, zone2, zone3):
     return {"Zone-1": zone1, "Zone-2": zone2, "Zone-3": zone3}
+
+
+@pytest.fixture
+def process1():
+    return eflr_types.ProcessItem("Process 1")
+
+
+@pytest.fixture
+def process2():
+    return eflr_types.ProcessItem("Prc2")
+
+
+@pytest.fixture
+def channel_group(channel1, channel2, channel3):
+    return eflr_types.GroupItem("Group of channels", object_type="CHANNEL",
+                                object_list=[channel1, channel2, channel3])
+
+
+@pytest.fixture
+def process_group(process2, process1):
+    return eflr_types.GroupItem("Group of processes", object_type="PROCESS", object_list=[process1, process2])
