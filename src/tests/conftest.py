@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from pathlib import Path
 from configparser import ConfigParser
+import h5py
 
 from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.logical_record import eflr_types
@@ -20,6 +21,39 @@ def config_params(base_data_path: Path) -> ConfigParser:
     """Config object with information on different DLIS objects to be included."""
 
     return load_config(base_data_path/'resources/mock_config_params.ini')
+
+
+@pytest.fixture(scope='session')
+def reference_data_path(base_data_path: Path) -> Path:
+    """Path to the reference HDF5 data file."""
+
+    return base_data_path / 'resources/mock_data.hdf5'
+
+
+@pytest.fixture(scope='session')
+def reference_data(reference_data_path: Path):
+    """The reference HDF5 data file, open in read mode."""
+
+    f = h5py.File(reference_data_path, 'r')
+    yield f
+    f.close()
+
+
+@pytest.fixture(scope='session')
+def short_reference_data_path(base_data_path: Path) -> Path:
+    """Path to the HDF5 file with short version of the reference data."""
+
+    return base_data_path / 'resources/mock_data_short.hdf5'
+
+
+@pytest.fixture(scope='session')
+def short_reference_data(short_reference_data_path: Path):
+    """The reference short HDF5 data file, open in read mode."""
+
+    f = h5py.File(short_reference_data_path, 'r')
+    yield f
+    f.close()
+
 
 
 
