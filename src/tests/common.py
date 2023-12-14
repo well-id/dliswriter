@@ -1,8 +1,3 @@
-import pytest
-from pathlib import Path
-from configparser import ConfigParser
-
-from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.logical_record.eflr_types import eflr_sets
 
 
@@ -13,18 +8,3 @@ def clear_eflr_instance_registers():
         for eflr in eflr_type.get_all_sets():
             eflr.clear_eflr_item_dict()
         eflr_type.clear_set_instance_dict()
-
-
-@pytest.fixture(scope='session')
-def base_data_path() -> Path:
-    """Path to the resources files."""
-
-    return Path(__file__).resolve().parent
-
-
-@pytest.fixture(scope='session')
-def config_params(base_data_path: Path) -> ConfigParser:
-    """Config object with information on different DLIS objects to be included."""
-
-    return load_config(base_data_path/'resources/mock_config_params.ini')
-

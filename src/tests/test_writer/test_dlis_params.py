@@ -8,7 +8,6 @@ from typing import Any, Union
 
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
-from tests.common import base_data_path, config_params
 from tests.test_writer.common import reference_data_path, short_reference_data_path
 from tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
 from tests.common import clear_eflr_instance_registers

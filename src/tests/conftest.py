@@ -1,8 +1,27 @@
 import pytest
 import numpy as np
+from pathlib import Path
+from configparser import ConfigParser
 
+from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
+
+
+@pytest.fixture(scope='session')
+def base_data_path() -> Path:
+    """Path to the resources files."""
+
+    return Path(__file__).resolve().parent
+
+
+@pytest.fixture(scope='session')
+def config_params(base_data_path: Path) -> ConfigParser:
+    """Config object with information on different DLIS objects to be included."""
+
+    return load_config(base_data_path/'resources/mock_config_params.ini')
+
+
 
 
 @pytest.fixture
@@ -124,6 +143,3 @@ def computation1():
 @pytest.fixture
 def computation2():
     return eflr_types.ComputationItem("CMPT-2")
-
-
-

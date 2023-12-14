@@ -11,7 +11,7 @@ from configparser import ConfigParser
 from dlis_writer.writer.write_dlis_file import write_dlis_file
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper, HDF5DataWrapper, SourceDataWrapper
 
-from tests.common import base_data_path, clear_eflr_instance_registers
+from tests.common import clear_eflr_instance_registers
 
 
 N_COLS = 128

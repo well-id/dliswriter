@@ -10,7 +10,7 @@ from dlis_writer.writer.dlis_file_comparator import compare
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
-from tests.test_writer.common import (base_data_path, reference_data_path, reference_data,
+from tests.test_writer.common import (reference_data_path, reference_data,
                                       short_reference_data, short_reference_data_path)  # fixtures
 from tests.test_writer.common import N_COLS, load_dlis, select_channel, write_file
 from tests.common import clear_eflr_instance_registers
