@@ -63,3 +63,23 @@ def param2():
 @pytest.fixture
 def param3():
     return eflr_types.ParameterItem("Param-3")
+
+
+@pytest.fixture
+def zone1():
+    return eflr_types.ZoneItem("Zone-1")
+
+
+@pytest.fixture
+def zone2():
+    return eflr_types.ZoneItem("Zone-2")
+
+
+@pytest.fixture
+def zone3():
+    return eflr_types.ZoneItem("Zone-3")
+
+
+@pytest.fixture
+def zones(zone1, zone2, zone3):
+    return {"Zone-1": zone1, "Zone-2": zone2, "Zone-3": zone3}
