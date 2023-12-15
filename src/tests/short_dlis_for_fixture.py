@@ -474,6 +474,32 @@ def _add_long_name(df: DLISFile):
     )
 
 
+def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
+                processes: tuple[eflr_types.ProcessItem, ...]):
+    g1 = df.add_group(
+        name="ChannelGroup",
+        description="Group of channels",
+        object_type="CHANNEL",
+        object_list=[channels[1], channels[2]]
+    )
+
+    g2 = df.add_group(
+        name="ProcessGroup",
+        description="Group of processes",
+        object_type="PROCESS",
+        object_list=[processes[0], processes[1]]
+    )
+
+    g3 = df.add_group(
+        name="MultiGroup",
+        description="Group of groups",
+        object_type="GROUP",
+        group_list=[g1, g2]
+    )
+
+    return g1, g2, g3
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -483,20 +509,21 @@ def create_dlis_file_object():
 
     axes = _add_axes(df)
     channels = _add_channels(df, axes[0])
-    frame = _add_frame(df, *channels[4:9])
+    _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
     params = _add_parameters(df, zones)
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
     computations = _add_computation(df, axes, zones, tools)
     processes = _add_processes(df, params, channels, computations)
-    splices = _add_splices(df, channels, zones)
-    c_measurement, c_coefficient, calibration = _add_calibrations(df, axes, channels, params)
-    well_reference_points = _add_well_reference_points(df)
-    messages = _add_messages(df)
-    comments = _add_comments(df)
+    _add_splices(df, channels, zones)
+    _add_calibrations(df, axes, channels, params)
+    _add_well_reference_points(df)
+    _add_messages(df)
+    _add_comments(df)
     _add_no_formats(df)
     _add_long_name(df)
+    _add_groups(df, channels, processes)
 
     return df
 
