@@ -439,18 +439,39 @@ def _add_comments(df: DLISFile):
 
 def _add_no_formats(df: DLISFile):
     nf1 = df.add_no_format(
-        name = "no_format_1",
-        consumer_name = "SOME TEXT NOT FORMATTED",
-        description = "TESTING-NO-FORMAT"
+        name="no_format_1",
+        consumer_name="SOME TEXT NOT FORMATTED",
+        description="TESTING-NO-FORMAT"
     )
 
     nf2 = df.add_no_format(
-        name = "no_fmt2",
-        consumer_name = "xyz",
-        description = "TESTING NO FORMAT 2"
+        name="no_fmt2",
+        consumer_name="xyz",
+        description="TESTING NO FORMAT 2"
     )
 
     return nf1, nf2
+
+
+def _add_long_name(df: DLISFile):
+    ln = df.add_long_name(
+        name="LNAME-1",
+        general_modifier=["SOME ASCII TEXT"],
+        quantity="SOME ASCII TEXT",
+        quantity_modifier=["SOME ASCII TEXT"],
+        altered_form="SOME ASCII TEXT",
+        entity="SOME ASCII TEXT",
+        entity_modifier=["SOME ASCII TEXT"],
+        entity_number="SOME ASCII TEXT",
+        entity_part="SOME ASCII TEXT",
+        entity_part_number="SOME ASCII TEXT",
+        generic_source="SOME ASCII TEXT",
+        source_part=["SOME ASCII TEXT"],
+        source_part_number=["SOME ASCII TEXT"],
+        conditions=["SOME ASCII TEXT"],
+        standard_symbol="SOME ASCII TEXT",
+        private_symbol="SOME ASCII TEXT"
+    )
 
 
 def create_dlis_file_object():
@@ -475,6 +496,7 @@ def create_dlis_file_object():
     messages = _add_messages(df)
     comments = _add_comments(df)
     _add_no_formats(df)
+    _add_long_name(df)
 
     return df
 
