@@ -5,33 +5,8 @@ from datetime import datetime
 
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
-from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 
-
-def _make_origin():
-    origin = eflr_types.OriginItem(
-        "DEFAULT ORIGIN",
-        creation_time="2050/03/02 15:30:00",
-        file_id="WELL ID",
-        file_set_name="Test file set name",
-        file_set_number=1,
-        file_number=8,
-        run_number=13,
-        well_id=5,
-        well_name="Test well name",
-        field_name="Test field name",
-        company="Test company",
-    )
-
-    return origin
-
-
-def _make_file_header():
-    return eflr_types.FileHeaderItem("DEFAULT FHLR", sequence_number=1)
-
-
-def _make_sul():
-    return StorageUnitLabel("DEFAULT STORAGE SET", sequence_number=1)
+from tests.fixtures.common import make_dlis_file_base
 
 
 def _add_frame(df, *channels: eflr_types.ChannelItem):
@@ -501,11 +476,7 @@ def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
 
 
 def create_dlis_file_object():
-    df = DLISFile(
-        origin=_make_origin(),
-        file_header=_make_file_header(),
-        storage_unit_label=_make_sul()
-    )
+    df = make_dlis_file_base()
 
     axes = _add_axes(df)
     channels = _add_channels(df, axes[0])
