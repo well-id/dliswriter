@@ -252,6 +252,41 @@ def _add_tools(df: DLISFile, equipment: tuple[eflr_types.EquipmentItem, ...],
     return t1, t2
 
 
+def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones: tuple[eflr_types.ZoneItem, ...],
+                     tools: tuple[eflr_types.ToolItem, ...]):
+    c1 = df.add_computation(
+        name="COMPT-1",
+        long_name="COMPT1",
+        properties=["PROP 1", "AVERAGED"],
+        dimension=[1],
+        axis=axes[0],
+        zones=zones[:3],
+        values=[100, 200, 300],
+        source=tools[0]
+    )
+    c1.values.representation_code = "UNORM"
+
+    c2 = df.add_computation(
+        name="COMPT2",
+        long_name="COMPT 2",
+        properties=["PROP 2", "AVERAGED"],
+        axis=axes[0],
+        zones=[zones[0], zones[2]],
+        values=[1.5, 2.5]
+    )
+
+    cx = df.add_computation(
+        name="COMPT-X",
+        long_name="Computation not added to process",
+        properties=["XYZ"],
+        axis=axes[0],
+        zones=[zones[2]],
+        values=[12],
+    )
+
+    return c1, c2, cx
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -266,6 +301,7 @@ def create_dlis_file_object():
     params = _add_parameters(df, zones)
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
+    computations = _add_computation(df, axes, zones, tools)
 
     return df
 
