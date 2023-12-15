@@ -1,6 +1,7 @@
 import os
 from typing import Union
 import numpy as np
+from datetime import datetime
 
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
@@ -332,6 +333,49 @@ def _add_splices(df: DLISFile, channels, zones):
     return s,
 
 
+def _add_calibrations(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...],
+                      channels: tuple[eflr_types.ChannelItem, ...], parameters: tuple[eflr_types.ParameterItem, ...]):
+    cm = df.add_calibration_measurement(
+        name="CMEASURE-1",
+        phase="BEFORE",
+        axis=axes[0],
+        measurement_source=channels[1],
+        measurement_type="Plus",
+        measurement=[12.2323],
+        sample_count=12,
+        maximum_deviation=2.2324,
+        standard_deviation=1.123,
+        begin_time=datetime(year=2050, month=3, day=12, hour=12, minute=30),
+        duration=15,
+        reference=[11],
+        standard=[11.2],
+        plus_tolerance=[2],
+        minus_tolerance=[1],
+    )
+    cm.duration.units = "s"
+
+    cc = df.add_calibration_coefficient(
+        name="COEF-1",
+        label="Gain",
+        coefficients=[100.2, 201.3],
+        references=[89, 298],
+        plus_tolerances=[100.2, 222.124],
+        minus_tolerances=[87.23, 214],
+    )
+
+    c = df.add_calibration(
+        name="CALIB-MAIN",
+        calibrated_channels=[channels[1], channels[2]],
+        uncalibrated_channels=[channels[6], channels[7], channels[8]],
+        coefficients=[cc],
+        measurements=[cm],
+        parameters=parameters,
+        method="Two Point Linear"
+    )
+
+    return cm, cc, c
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -349,6 +393,7 @@ def create_dlis_file_object():
     computations = _add_computation(df, axes, zones, tools)
     processes = _add_processes(df, params, channels, computations)
     splices = _add_splices(df, channels, zones)
+    c_measurement, c_coefficient, calibration = _add_calibrations(df, axes, channels, params)
 
     return df
 
