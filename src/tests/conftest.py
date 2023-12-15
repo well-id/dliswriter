@@ -1,12 +1,22 @@
 import pytest
 import numpy as np
 from pathlib import Path
-from configparser import ConfigParser
 import h5py
+import os
 
-from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
+
+from tests.common import clear_eflr_instance_registers, load_dlis
+from tests.short_dlis_for_fixture import write_dlis
+
+
+@pytest.fixture(autouse=True)
+def cleanup():
+    """Remove all defined EFLR instances from the internal dicts before each test."""
+
+    clear_eflr_instance_registers()
+    yield
 
 
 @pytest.fixture(scope='session')
@@ -48,7 +58,18 @@ def short_reference_data(short_reference_data_path: Path):
     f.close()
 
 
+@pytest.fixture(scope='session')
+def short_dlis(short_reference_data_path: Path, base_data_path: Path):
+    """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
 
+    dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
+    write_dlis(dlis_path, data=short_reference_data_path)
+
+    with load_dlis(dlis_path) as f:
+        yield f
+
+    if dlis_path.exists():  # does not exist if file creation failed
+        os.remove(dlis_path)
 
 
 @pytest.fixture

@@ -1,36 +1,11 @@
-import os
 import pytest
 from datetime import datetime
-from pathlib import Path
 from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
 
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
-from tests.common import clear_eflr_instance_registers, N_COLS, load_dlis, select_channel
-from tests.short_dlis_for_fixture import write_dlis
-
-
-@pytest.fixture(autouse=True)
-def cleanup():
-    """Remove all defined EFLR instances from the internal dicts before each test."""
-
-    clear_eflr_instance_registers()
-    yield
-
-
-@pytest.fixture(scope='session')
-def short_dlis(short_reference_data_path: Path, base_data_path: Path):
-    """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
-
-    dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
-    write_dlis(dlis_path, data=short_reference_data_path)
-
-    with load_dlis(dlis_path) as f:
-        yield f
-
-    if dlis_path.exists():  # does not exist if file creation failed
-        os.remove(dlis_path)
+from tests.common import N_COLS, select_channel
 
 
 def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Union[list[str], tuple[str, ...]]):

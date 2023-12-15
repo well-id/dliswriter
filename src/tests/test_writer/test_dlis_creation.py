@@ -11,15 +11,6 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
 from tests.common import N_COLS, load_dlis, select_channel, write_file
-from tests.common import clear_eflr_instance_registers
-
-
-@pytest.fixture(autouse=True)
-def cleanup():
-    """Remove the defined EFLR instances from the internal instance registers before each test."""
-
-    clear_eflr_instance_registers()
-    yield
 
 
 @pytest.fixture(scope='session')
