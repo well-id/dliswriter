@@ -437,6 +437,22 @@ def _add_comments(df: DLISFile):
     return c1, c2
 
 
+def _add_no_formats(df: DLISFile):
+    nf1 = df.add_no_format(
+        name = "no_format_1",
+        consumer_name = "SOME TEXT NOT FORMATTED",
+        description = "TESTING-NO-FORMAT"
+    )
+
+    nf2 = df.add_no_format(
+        name = "no_fmt2",
+        consumer_name = "xyz",
+        description = "TESTING NO FORMAT 2"
+    )
+
+    return nf1, nf2
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -458,6 +474,7 @@ def create_dlis_file_object():
     well_reference_points = _add_well_reference_points(df)
     messages = _add_messages(df)
     comments = _add_comments(df)
+    _add_no_formats(df)
 
     return df
 
