@@ -405,7 +405,36 @@ def _add_well_reference_points(df: DLISFile):
         coordinate_3_value=1
     )
 
-    return w1, w2
+    return w1,
+
+
+def _add_messages(df: DLISFile):
+    m = df.add_message(
+        name="MESSAGE-1",
+        message_type="Command",
+        time=datetime(year=2050, month=3, day=4, hour=11, minute=23, second=11),
+        borehole_drift=123.34,
+        vertical_depth=234.45,
+        radial_drift=345.56,
+        angular_drift=456.67,
+        text=["Test message 11111"]
+    )
+
+    return m,
+
+
+def _add_comments(df: DLISFile):
+    c1 = df.add_comment(
+        name="COMMENT-1",
+        text=["SOME COMMENT HERE"]
+    )
+
+    c2 = df.add_comment(
+        name="cmt2",
+        text=["some other comment here", "and another comment"]
+    )
+
+    return c1, c2
 
 
 def create_dlis_file_object():
@@ -427,6 +456,8 @@ def create_dlis_file_object():
     splices = _add_splices(df, channels, zones)
     c_measurement, c_coefficient, calibration = _add_calibrations(df, axes, channels, params)
     well_reference_points = _add_well_reference_points(df)
+    messages = _add_messages(df)
+    comments = _add_comments(df)
 
     return df
 
