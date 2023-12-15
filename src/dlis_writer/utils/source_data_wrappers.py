@@ -267,6 +267,26 @@ class SourceDataWrapper:
         name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
         return cls(data_source, name_mapping, known_dtypes=dtype_mapping, **kwargs)
 
+    @classmethod
+    def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
+                     mapping: Optional[dict] = None, **kwargs) -> Self:
+
+        if isinstance(source, dict):
+            return DictDataWrapper(source, mapping, **kwargs)
+
+        if isinstance(source, np.ndarray):
+            return NumpyDataWrapper(source, mapping, **kwargs)
+
+        try:
+            source = str(source)
+        except (TypeError, ValueError):
+            raise TypeError(f"Expected a path-like; got {type(source)}: {source}")
+        if source.split('.')[-1].lower() not in ('h5', 'hdf5'):
+            raise ValueError(f"Expected a path to an HDF5 file; got {source}")
+        if mapping is None:
+            raise ValueError("Mapping must be provided to create a HDF5DataWrapper")
+        return HDF5DataWrapper(source, mapping, **kwargs)
+
 
 class HDF5DataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a HDF5 file."""
