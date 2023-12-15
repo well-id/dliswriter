@@ -252,6 +252,40 @@ def _add_tools(df: DLISFile, equipment: tuple[eflr_types.EquipmentItem, ...],
     return t1, t2
 
 
+def _add_processes(df: DLISFile, parameters: tuple[eflr_types.ParameterItem, ...],
+                   channels: tuple[eflr_types.ChannelItem, ...], computations: tuple[eflr_types.ComputationItem, ...]):
+    p1 = df.add_process(
+        name="Process 1",
+        description="MERGED",
+        trademark_name="PROCESS 1",
+        version="0.0.1",
+        properties=["AVERAGED"],
+        status="COMPLETE",
+        input_channels=[channels[7]],
+        output_channels=[channels[6], channels[2]],
+        input_computations=[computations[0]],
+        output_computations=[computations[1]],
+        parameters=parameters,
+        comments=["SOME COMMENT HERE"]
+    )
+
+    p2 = df.add_process(
+        name="Prc2",
+        description="MERGED2",
+        trademark_name="PROCESS 2",
+        version="0.0.2",
+        properties=["AVERAGED"],
+        status="COMPLETE",
+        input_channels=[channels[1]],
+        output_channels=[channels[2]],
+        input_computations=[computations[1], computations[0]],
+        parameters=[parameters[0]],
+        comments=["Other comment"]
+    )
+
+    return p1, p2
+
+
 def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones: tuple[eflr_types.ZoneItem, ...],
                      tools: tuple[eflr_types.ToolItem, ...]):
     c1 = df.add_computation(
@@ -302,6 +336,7 @@ def create_dlis_file_object():
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
     computations = _add_computation(df, axes, zones, tools)
+    processes = _add_processes(df, params, channels, computations)
 
     return df
 
