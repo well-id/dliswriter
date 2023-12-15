@@ -21,14 +21,14 @@ def _make_origin():
         field_name="Test field name",
         company="Test company",
     )
-    
+
     return origin
 
 
 def _make_file_header():
     return eflr_types.FileHeaderItem("DEFAULT FHLR", sequence_number=1)
-    
-    
+
+
 def _make_sul():
     return StorageUnitLabel("DEFAULT STORAGE SET", sequence_number=1)
 
@@ -76,7 +76,6 @@ def _add_channels(df, ax1):
 
 
 def _add_axes(df):
-
     ax1 = df.add_axis(
         name="Axis-1",
         axis_id="First axis",
@@ -86,14 +85,14 @@ def _add_axes(df):
     ax1.spacing.units = "m"
 
     ax2 = df.add_axis(
-        "Axis - X",
+        "Axis-X",
         axis_id="Axis not added to computation",
         coordinates=8,
         spacing=2
     )
     ax2.spacing.units = "m"
-    
-    return ax1, ax2 
+
+    return ax1, ax2
 
 
 def _add_zones(df):
@@ -106,8 +105,8 @@ def _add_zones(df):
     )
     z1.maximum.units = "m"
     z1.minimum.units = "m"
-    
-    z2 = df.add_zone(   
+
+    z2 = df.add_zone(
         "Zone-2",
         description="VERTICAL-DEPTH-ZONE",
         domain="VERTICAL-DEPTH",
@@ -117,15 +116,15 @@ def _add_zones(df):
     z2.maximum.units = "m"
     z2.minimum.units = "m"
 
-    z3 = df.add_zone(   
+    z3 = df.add_zone(
         "Zone-3",
         description="ZONE-TIME",
         domain="TIME",
         maximum="2050/07/13 11:30:00",
         minimum="2050/07/12 9:00:00"
     )
-    
-    z4 = df.add_zone(   
+
+    z4 = df.add_zone(
         "Zone-4",
         description="ZONE-TIME-2",
         domain="TIME",
@@ -135,7 +134,7 @@ def _add_zones(df):
     z4.maximum.units = "min"
     z4.minimum.units = "min"
 
-    zx = eflr_types.ZoneItem(    
+    zx = eflr_types.ZoneItem(
         name="Zone-X",
         description="Zone not added to any parameter",
         domain="TIME",
@@ -148,10 +147,34 @@ def _add_zones(df):
     return z1, z2, z3, z4, zx
 
 
-def create_dlis_file_object():
+def _add_parameters(df: DLISFile, zones):
+    p1 = df.add_parameter(
+        name="Param-1",
+        long_name="LATLONG-GPS",
+        zones=[zones[0], zones[2]],
+        values=["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"]
+    )
 
+    p2 = df.add_parameter(
+        name="Param-2",
+        long_name="LATLONG",
+        zones=[zones[1], zones[3]],
+        values=[40.395241, 27.792471],
+    )
+
+    p3 = df.add_parameter(
+        name="Param-3",
+        long_name="SOME-FLOAT-PARAM",
+        values=[12.5]
+    )
+    p3.values.units = "m"
+
+    return p1, p2, p3
+
+
+def create_dlis_file_object():
     df = DLISFile(
-        origin=_make_origin(), 
+        origin=_make_origin(),
         file_header=_make_file_header(),
         storage_unit_label=_make_sul()
     )
@@ -160,7 +183,8 @@ def create_dlis_file_object():
     channels = _add_channels(df, axes[0])
     frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
-    
+    params = _add_parameters(df, zones)
+
     return df
 
 
