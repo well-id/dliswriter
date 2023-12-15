@@ -1,10 +1,10 @@
-from datetime import datetime, timedelta
+import os
+from typing import Union
 import numpy as np
 
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
-from dlis_writer.utils.enums import RepresentationCode
 
 
 def _make_origin():
@@ -58,17 +58,11 @@ def _add_channels(df, ax1):
         dimension=12,
         axis=ax1,
         element_limit=12,
-        source="some source",
         minimum_value=0,
         maximum_value=127.6,
     )
 
-    ch1 = df.add_channel(
-        name="Channel 1",
-        dimension=[10, 10],
-        units="in"
-    )
-
+    ch1 = df.add_channel(name="Channel 1", dimension=[10, 10], units="in")
     ch2 = df.add_channel("Channel 2")
     ch3 = df.add_channel("Channel 13", dataset_name='amplitude', element_limit=128)
     ch_time = df.add_channel("posix time", dataset_name="contents/time", units="s")
@@ -170,6 +164,6 @@ def create_dlis_file_object():
     return df
 
 
-def write_dlis(fname):
+def write_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray]):
     df = create_dlis_file_object()
-    df.write(fname)
+    df.write(fname, data=data)

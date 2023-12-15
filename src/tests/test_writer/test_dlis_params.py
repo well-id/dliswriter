@@ -8,13 +8,14 @@ from typing import Any, Union
 
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
-from tests.common import clear_eflr_instance_registers, N_COLS, load_dlis, select_channel, write_file
+from tests.common import clear_eflr_instance_registers, N_COLS, load_dlis, select_channel
+from tests.short_dlis_for_fixture import write_dlis
 
 
 @pytest.fixture(autouse=True)
 def cleanup():
     """Remove all defined EFLR instances from the internal dicts before each test."""
-    
+
     clear_eflr_instance_registers()
     yield
 
@@ -22,13 +23,9 @@ def cleanup():
 @pytest.fixture(scope='session')
 def short_dlis(short_reference_data_path: Path, base_data_path: Path, config_params: ConfigParser):
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
-    
+
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
-
-    channel_names = [f"Channel-{s}" for s in ("time", "rpm", "amplitude", "radius", "radius_pooh")]
-    config_params['Frame']['channels'] = ', '.join(channel_names)
-
-    write_file(data=short_reference_data_path, dlis_file_name=dlis_path, config=config_params)
+    write_dlis(dlis_path, data=short_reference_data_path)
 
     with load_dlis(dlis_path) as f:
         yield f
@@ -65,12 +62,12 @@ def test_channel_properties(short_dlis: dlis.file.LogicalFile, config_params: Co
     assert short_dlis.object("CHANNEL", 'radius_pooh').units == "m"
 
 
-def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile):
     """Check that channel which was not added to frame is still in the file."""
     
     name = 'channel_x'
-    chan = select_channel(short_dlis, name)  # if no error - channel is found in the file
-    assert name not in config_params['Frame']['channels']
+    select_channel(short_dlis, name)  # if no error - channel is found in the file
+    assert not any(c.name == name for c in short_dlis.frames[0].channels)
 
 
 def test_file_header(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):

@@ -128,6 +128,10 @@ class FrameItem(EFLRItem):
             if at.assigned_representation_code is None:
                 at.representation_code = repr_code
 
+    @property
+    def channel_name_mapping(self):
+        return {ch.name: ch.dataset_name for ch in self.channels.value}
+
 
 class FrameSet(EFLRSet):
     """Model Frame EFLR."""

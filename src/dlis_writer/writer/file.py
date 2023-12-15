@@ -6,7 +6,8 @@ from timeit import timeit
 from datetime import timedelta
 import logging
 
-from dlis_writer.utils.source_data_wrappers import DictDataWrapper
+from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
+from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
@@ -285,8 +286,12 @@ class DLISFile:
     def add_channel(
             self,
             name: str,
-            data: np.ndarray,
+            data: Optional[np.ndarray] = None,
+            dataset_name: Optional[str] = None,
             long_name: Optional[str] = None,
+            representation_code: Optional[Union[str, int, RepresentationCode]] = None,
+            dimension: Optional[Union[int, list[int]]] = None,
+            element_limit: Optional[Union[int, list[int]]] = None,
             properties: Optional[list[str]] = None,
             units: Optional[str] = None,
             axis: Optional[eflr_types.AxisItem] = None,
@@ -297,38 +302,49 @@ class DLISFile:
         """Define a channel (ChannelItem) and add it to the DLIS.
 
         Args:
-            name            :   Name of the channel.
-            data            :   Data associated with the channel.
-            long_name       :   Description of the channel.
-            properties      :   List of properties of the channel.
-            units           :   Unit of the channel data.
-            axis            :   Axis associated with the channel.
-            minimum_value   :   Minimum value of the channel data.
-            maximum_value   :   Maximum value of the channel data.
-            set_name        :   Name of the ChannelSet this channel should be added to.
+            name                :   Name of the channel.
+            data                :   Data associated with the channel.
+            dataset_name        :   Name of the data array associated with the channel in the data source provided
+                                    at init of DLISFile.
+            long_name           :   Description of the channel.
+            properties          :   List of properties of the channel.
+            representation_code :   Representation code for the channel data. Determined automatically if not provided.
+            dimension           :   Dimension of the channel data. Determined automatically if not provided.
+            element_limit       :   Element limit of the channel data. Determined automatically if not provided.
+                                    Should be the same as dimension (in the current implementation of dlis_writer).
+            units               :   Unit of the channel data.
+            axis                :   Axis associated with the channel.
+            minimum_value       :   Minimum value of the channel data.
+            maximum_value       :   Maximum value of the channel data.
+            set_name            :   Name of the ChannelSet this channel should be added to.
 
         Returns:
             A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
         """
 
-        if not isinstance(data, np.ndarray):
-            raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}")
+        if data is not None and not isinstance(data, np.ndarray):
+            raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}: {data}")
 
         ch = eflr_types.ChannelItem(
             name,
             long_name=long_name,
+            dataset_name=dataset_name,
             properties=properties,
+            representation_code=representation_code,
+            dimension=dimension,
+            element_limit=element_limit,
             units=units,
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
             set_name=set_name
         )
-        # skipping repr code, dimension, and element limit because they will be determined from the data
-        # skipping dataset_name - using channel name instead
+        # skipping dimension and element limit because they will be determined from the data
 
         self._channels.append(ch)
-        self._data_dict[ch.dataset_name] = data  # channel's dataset_name is the provided dataset_name or channel's name
+
+        if data is not None:
+            self._data_dict[ch.dataset_name] = data
 
         return ch
 
@@ -1055,15 +1071,28 @@ class DLISFile:
         self._other_eflr.append(z)
         return z
 
-    def _make_multi_frame_data(self, fr: eflr_types.FrameItem, **kwargs) -> MultiFrameData:
+    def _make_multi_frame_data(self, fr: eflr_types.FrameItem, data: Union[dict, os.PathLike[str], np.ndarray] = None,
+                               **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
-        name_mapping = {ch.name: ch.dataset_name for ch in fr.channels.value}
-        data_object = DictDataWrapper(self._data_dict, mapping=name_mapping)
+        if isinstance(data, dict):
+            self._data_dict = self._data_dict | data
+            data_object = DictDataWrapper(self._data_dict, mapping=fr.channel_name_mapping)
+        else:
+            if self._data_dict:
+                raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
+                                f"(Note: a dictionary is the only allowed type because some channels have been added"
+                                f"with associated data arrays")
+            data_object = SourceDataWrapper.make_wrapper(data, mapping=fr.channel_name_mapping)
+
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 
-    def make_file_logical_records(self, chunk_size: Optional[int] = None) -> FileLogicalRecords:
+    def make_file_logical_records(
+            self,
+            chunk_size: Optional[int] = None,
+            data: Union[dict, os.PathLike[str], np.ndarray] = None
+    ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
         flr = FileLogicalRecords(
@@ -1077,14 +1106,16 @@ class DLISFile:
 
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
-        flr.add_frame_data_objects(*(self._make_multi_frame_data(fr, chunk_size=chunk_size) for fr in self._frames))
+        flr.add_frame_data_objects(
+            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data) for fr in self._frames))
         flr.add_logical_records(*get_parents(self._other_eflr))
         flr.add_logical_records(*self._no_format_frame_data)
 
         return flr
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
-              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32):
+              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
+              data: Union[dict, os.PathLike[str], np.ndarray] = None):
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -1092,6 +1123,7 @@ class DLISFile:
             visible_record_length   :   Maximal length of visible records to be created in the file.
             input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
             output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
+            data                    :   Data for channels - if not specified when channels were added.
         """
 
         def timed_func():
@@ -1101,7 +1133,7 @@ class DLISFile:
             """
 
             dlis_file = DLISWriter(visible_record_length=visible_record_length)
-            logical_records = self.make_file_logical_records(chunk_size=input_chunk_size)
+            logical_records = self.make_file_logical_records(chunk_size=input_chunk_size, data=data)
             dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
 
         exec_time = timeit(timed_func, number=1)
