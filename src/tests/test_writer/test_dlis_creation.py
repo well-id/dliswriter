@@ -11,6 +11,7 @@ from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
 from tests.common import N_COLS, load_dlis, select_channel, write_file
+from tests.fixtures.time_based_dlis import write_time_based_dlis
 
 
 @pytest.fixture(scope='session')
@@ -97,7 +98,7 @@ def test_dlis_time_based(short_reference_data: h5py.File, short_reference_data_p
                          config_time_based: ConfigParser):
     """Create a time-based DLIS file and check its basic parameters."""
 
-    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_time_based_dlis(new_dlis_path, data=short_reference_data_path)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
