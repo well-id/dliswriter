@@ -8,7 +8,7 @@ from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 from tests.common import clear_eflr_instance_registers, load_dlis
-from tests.short_dlis_for_fixture import write_dlis
+from tests.fixtures.short_dlis import write_short_dlis
 
 
 @pytest.fixture(autouse=True)
@@ -65,7 +65,7 @@ def short_dlis(short_reference_data_path: Path, base_data_path: Path):
     clear_eflr_instance_registers()
 
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
-    write_dlis(dlis_path, data=short_reference_data_path)
+    write_short_dlis(dlis_path, data=short_reference_data_path)
 
     with load_dlis(dlis_path) as f:
         yield f

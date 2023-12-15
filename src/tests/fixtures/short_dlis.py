@@ -528,6 +528,6 @@ def create_dlis_file_object():
     return df
 
 
-def write_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray]):
+def write_short_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray]):
     df = create_dlis_file_object()
     df.write(fname, data=data)
