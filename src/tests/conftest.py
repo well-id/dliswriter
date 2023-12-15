@@ -62,6 +62,8 @@ def short_reference_data(short_reference_data_path: Path):
 def short_dlis(short_reference_data_path: Path, base_data_path: Path):
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
 
+    clear_eflr_instance_registers()
+
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
     write_dlis(dlis_path, data=short_reference_data_path)
 
