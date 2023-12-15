@@ -172,6 +172,59 @@ def _add_parameters(df: DLISFile, zones):
     return p1, p2, p3
 
 
+def _add_equipment(df: DLISFile):
+    eq1 = df.add_equipment(
+        name="EQ1",
+        trademark_name="EQ-TRADEMARKNAME",
+        status=1,
+        eq_type="Tool",
+        serial_number="9101-21391",
+        location="Well",
+        height=140,
+        length=230.78,
+        minimum_diameter=2.3,
+        maximum_diameter=3.2,
+        volume=100,
+        weight=1.2,
+        hole_size=323.2,
+        pressure=18000,
+        temperature=24,
+        vertical_depth=587,
+        radial_drift=23.22,
+        angular_drift=32.5,
+    )
+
+    eq1.height.units = "in"
+    eq1.length.units = "cm"
+    eq1.minimum_diameter.units = "m"
+    eq1.maximum_diameter.units = "m"
+    eq1.weight.units = "t"
+    eq1.hole_size.units = "m"
+    eq1.pressure.units = "psi"
+    eq1.temperature.units = "degC"
+    eq1.vertical_depth.units = "m"
+    eq1.radial_drift.units = "m"
+    eq1.angular_drift.units = "m"
+
+    eq2 = df.add_equipment(
+        name="EQ2",
+        trademark_name="EQ-TRADEMARKNAME",
+        status=0,
+        eq_type="Tool",
+        serial_number="5559101-21391"
+    )
+
+    eq3 = df.add_equipment(
+        name="EqX",
+        trademark_name="EQ-TRADEMARKNAME",
+        status=1,
+        eq_type="Tool",
+        serial_number="12311"
+    )
+
+    return eq1, eq2, eq3
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -184,6 +237,7 @@ def create_dlis_file_object():
     frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
     params = _add_parameters(df, zones)
+    equipment = _add_equipment(df)
 
     return df
 
