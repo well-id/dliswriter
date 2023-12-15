@@ -321,6 +321,17 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     return c1, c2, cx
 
 
+def _add_splices(df: DLISFile, channels, zones):
+    s = df.add_splice(
+        name="splc1",
+        output_channel=channels[6],
+        input_channels=[channels[1], channels[2]],
+        zones=[zones[0], zones[1]]
+    )
+
+    return s,
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -337,6 +348,7 @@ def create_dlis_file_object():
     tools = _add_tools(df, equipment, params, channels)
     computations = _add_computation(df, axes, zones, tools)
     processes = _add_processes(df, params, channels, computations)
+    splices = _add_splices(df, channels, zones)
 
     return df
 
