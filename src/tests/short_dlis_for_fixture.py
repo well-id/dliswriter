@@ -376,6 +376,38 @@ def _add_calibrations(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...],
     return cm, cc, c
 
 
+def _add_well_reference_points(df: DLISFile):
+    w1 = df.add_well_reference_point(
+        name="AQLN WELL-REF",
+        permanent_datum="AQLN permanent_datum",
+        vertical_zero="AQLN vertical_zero",
+        permanent_datum_elevation=1234.51,
+        above_permanent_datum=888.51,
+        magnetic_declination=999.51,
+        coordinate_1_name="Latitude",
+        coordinate_1_value=40.395240,
+        coordinate_2_name="Longitude",
+        coordinate_2_value=27.792470
+    )
+
+    w2 = df.add_well_reference_point(
+        name="WRP-X",
+        permanent_datum="pd1",
+        vertical_zero="vz20",
+        permanent_datum_elevation=32.5,
+        above_permanent_datum=100,
+        magnetic_declination=112.3,
+        coordinate_1_name="X",
+        coordinate_1_value=20,
+        coordinate_2_name="Y",
+        coordinate_2_value=-0.3,
+        coordinate_3_name="Z",
+        coordinate_3_value=1
+    )
+
+    return w1, w2
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -394,6 +426,7 @@ def create_dlis_file_object():
     processes = _add_processes(df, params, channels, computations)
     splices = _add_splices(df, channels, zones)
     c_measurement, c_coefficient, calibration = _add_calibrations(df, axes, channels, params)
+    well_reference_points = _add_well_reference_points(df)
 
     return df
 
