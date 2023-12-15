@@ -2,7 +2,6 @@ import os
 import pytest
 from datetime import datetime
 from pathlib import Path
-from configparser import ConfigParser
 from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
 
@@ -21,7 +20,7 @@ def cleanup():
 
 
 @pytest.fixture(scope='session')
-def short_dlis(short_reference_data_path: Path, base_data_path: Path, config_params: ConfigParser):
+def short_dlis(short_reference_data_path: Path, base_data_path: Path):
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
 
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
@@ -42,7 +41,7 @@ def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Uni
         assert objects[i].name == n
 
 
-def test_channel_properties(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_channel_properties(short_dlis: dlis.file.LogicalFile):
     """Check attributes of channels in the new DLIS file."""
     
     for name in ('posix time', 'surface rpm'):
@@ -70,33 +69,32 @@ def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile):
     assert not any(c.name == name for c in short_dlis.frames[0].channels)
 
 
-def test_file_header(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_file_header(short_dlis: dlis.file.LogicalFile):
     """Check attributes of DLIS file header."""
     
     header = short_dlis.fileheader
-    assert header.id == config_params['FileHeader']['name']
-    assert header.sequencenr == config_params['FileHeader']['sequence_number']
+    assert header.id == "DEFAULT FHLR"
+    assert header.sequencenr == "1"
 
 
-def test_origin(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_origin(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Origin in the new DLIS file."""
     
     assert len(short_dlis.origins) == 1
 
     origin = short_dlis.origins[0]
-    conf = config_params['Origin']
 
-    assert origin.name == conf['name']
-    assert origin.creation_time == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
-    assert origin.file_id == conf['file_id']
-    assert origin.file_set_name == conf['file_set_name']
-    assert origin.file_set_nr == int(conf['file_set_number'])
-    assert origin.file_nr == int(conf['file_number'])
-    assert origin.run_nr == [int(conf['run_number'])]
-    assert origin.well_id == int(conf['well_id'])
-    assert origin.well_name == conf['well_name']
-    assert origin.field_name == conf['field_name']
-    assert origin.company == conf['company']
+    assert origin.name == "DEFAULT ORIGIN"
+    assert origin.creation_time == datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S")
+    assert origin.file_id == "WELL ID"
+    assert origin.file_set_name == "Test file set name"
+    assert origin.file_set_nr == 1
+    assert origin.file_nr == 8
+    assert origin.run_nr == [13]
+    assert origin.well_id == 5
+    assert origin.well_name == "Test well name"
+    assert origin.field_name == "Test field name"
+    assert origin.company == "Test company"
 
     # not set - absent from config
     assert origin.producer_name is None
@@ -106,23 +104,23 @@ def test_origin(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
     assert origin.programs == []
 
 
-def test_frame(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_frame(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Frame in the new DLIS file."""
     
     assert len(short_dlis.frames) == 1
 
     frame = short_dlis.frames[0]
 
-    assert frame.name == config_params['Frame']['name']
-    assert frame.index_type == config_params['Frame']['index_type']
+    assert frame.name == "MAIN FRAME"
+    assert frame.index_type == "TIME"
 
 
-def test_storage_unit_label(short_dlis: dlis.file.LogicalFile, config_params: ConfigParser):
+def test_storage_unit_label(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Storage Unit Label in the new DLIS file."""
     
     sul = short_dlis.storage_label()
-    assert sul['id'].rstrip(' ') == config_params['StorageUnitLabel']['name']
-    assert sul['sequence'] == int(config_params['StorageUnitLabel']['sequence_number'])
+    assert sul['id'].rstrip(' ') == "DEFAULT STORAGE SET"
+    assert sul['sequence'] == 1
     assert sul['maxlen'] == 8192
 
 

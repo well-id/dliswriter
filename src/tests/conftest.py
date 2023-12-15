@@ -17,13 +17,6 @@ def base_data_path() -> Path:
 
 
 @pytest.fixture(scope='session')
-def config_params(base_data_path: Path) -> ConfigParser:
-    """Config object with information on different DLIS objects to be included."""
-
-    return load_config(base_data_path/'resources/mock_config_params.ini')
-
-
-@pytest.fixture(scope='session')
 def reference_data_path(base_data_path: Path) -> Path:
     """Path to the reference HDF5 data file."""
 
