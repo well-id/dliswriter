@@ -225,6 +225,33 @@ def _add_equipment(df: DLISFile):
     return eq1, eq2, eq3
 
 
+def _add_tools(df: DLISFile, equipment: tuple[eflr_types.EquipmentItem, ...],
+               parameters: tuple[eflr_types.ParameterItem, ...], channels: tuple[eflr_types.ChannelItem, ...]):
+    t1 = df.add_tool(
+        name="TOOL-1",
+        description="SOME TOOL",
+        trademark_name="SMTL",
+        generic_name="TOOL GEN NAME",
+        parts=[equipment[0], equipment[1]],
+        status=1,
+        channels=[channels[4], channels[6]],
+        parameters=[parameters[0], parameters[2]]
+    )
+
+    t2 = df.add_tool(
+        name="Tool-X",
+        description="desc",
+        trademark_name="SMTL",
+        generic_name="TOOL GEN NAME",
+        parts=[equipment[1]],
+        status=0,
+        channels=[channels[8]],
+        parameters=[parameters[1]]
+    )
+
+    return t1, t2
+
+
 def create_dlis_file_object():
     df = DLISFile(
         origin=_make_origin(),
@@ -238,6 +265,7 @@ def create_dlis_file_object():
     zones = _add_zones(df)
     params = _add_parameters(df, zones)
     equipment = _add_equipment(df)
+    tools = _add_tools(df, equipment, params, channels)
 
     return df
 
