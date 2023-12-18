@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from typing import Union
-import h5py
+import h5py  # type: ignore  # untyped library
 import logging
 
 from dlis_writer.misc.dlis_file_comparator import compare
