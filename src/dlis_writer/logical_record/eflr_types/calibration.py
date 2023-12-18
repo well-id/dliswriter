@@ -5,7 +5,8 @@ from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import *
+from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute,
+                                                       DTimeAttribute, DimensionAttribute)
 
 
 logger = logging.getLogger(__name__)

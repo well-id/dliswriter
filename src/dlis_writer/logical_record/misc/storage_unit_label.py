@@ -1,7 +1,3 @@
-from configparser import ConfigParser
-from typing_extensions import Self
-from typing import Optional
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
 
@@ -10,7 +6,7 @@ class StorageUnitLabel:
     """Model a Storage Unit Label - the first part of a DLIS file.
 
     Storage Unit Label is always 80 bytes long.
-    
+
     Format:
         First 4 bytes:  Storage Unit Sequence Number
         Next 5 bytes:   DLIS version

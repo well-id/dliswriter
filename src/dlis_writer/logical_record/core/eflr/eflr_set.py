@@ -158,5 +158,3 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         """Return a list of all EFLRSet (subclass) instances which are stored in the internal dictionary."""
 
         return list(cls._eflr_set_instance_dict.values())
-
-

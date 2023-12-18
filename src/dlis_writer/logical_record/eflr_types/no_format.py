@@ -24,7 +24,7 @@ class NoFormatItem(EFLRItem):
 
 class NoFormatSet(EFLRSet):
     """Model NoFormat EFLR."""
-    
+
     set_type = 'NO-FORMAT'
     logical_record_type = EFLRType.UDI
     item_type = NoFormatItem

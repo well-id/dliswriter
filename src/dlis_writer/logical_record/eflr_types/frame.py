@@ -17,7 +17,7 @@ class FrameItem(EFLRItem):
     """Model an object being part of Frame EFLR."""
 
     parent: "FrameSet"
-    
+
     #: values for frame index type allowed by the standard
     frame_index_types = (
         'ANGULAR-DRIFT',

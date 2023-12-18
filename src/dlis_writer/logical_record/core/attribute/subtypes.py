@@ -20,8 +20,8 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None, representation_code: Optional[RepC] = None,
-                 **kwargs):
+    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None,
+                 representation_code: Optional[RepC] = None, **kwargs):
         """Initialise EFLRAttribute.
 
         Args:
@@ -284,4 +284,3 @@ class DimensionAttribute(NumericAttribute):
             units=self._units,
             value=self._value,
         )
-

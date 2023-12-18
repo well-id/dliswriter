@@ -14,7 +14,7 @@ class ParameterItem(EFLRItem):
     """Model an object being part of Parameter EFLR."""
 
     parent: "ParameterSet"
-    
+
     def __init__(self, name: str, **kwargs):
         """Initialise ParameterItem.
 

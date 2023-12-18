@@ -4,7 +4,7 @@ from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import *
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttribute, DimensionAttribute, Attribute
 
 
 logger = logging.getLogger(__name__)
