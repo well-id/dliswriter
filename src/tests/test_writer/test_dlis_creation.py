@@ -1,37 +1,13 @@
 import os
 import h5py    # type: ignore  # untyped library
 import pytest
-from copy import deepcopy
 from pathlib import Path
-from configparser import ConfigParser
 
-from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.writer.dlis_file_comparator import compare
-from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
-from tests.common import N_COLS, load_dlis, select_channel, write_file
+from tests.common import N_COLS, load_dlis, select_channel
 from tests.fixtures.time_based_dlis import write_time_based_dlis
 from tests.fixtures.depth_based_dlis import write_depth_based_dlis
-
-
-@pytest.fixture(scope='session')
-def config_time_based(base_data_path: Path) -> ConfigParser:
-    """Config object for a time-based DLIS file."""
-
-    return load_config(base_data_path/'resources/mock_config_time_based.ini')
-
-
-@pytest.fixture(scope='session')
-def config_array_time_based(config_time_based: ConfigParser) -> ConfigParser:
-    """Config object for a time-based file with Channel dataset names added."""
-
-    c = deepcopy(config_time_based)
-    for s in c.sections():
-        if s.startswith('Channel'):
-            if 'dataset_name' in c[s].keys():
-                c[s]['dataset_name'] = c[s]['name']
-
-    return c
 
 
 @pytest.fixture
@@ -56,10 +32,10 @@ def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_d
 
 
 def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, base_data_path: Path,
-                                                    new_dlis_path: Path, config_time_based: ConfigParser):
+                                                    new_dlis_path: Path):
     """Create a time-based DLIS file with RPM & images and compare it at binary level to the relevant reference DLIS."""
 
-    write_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_time_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_full_time_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
@@ -134,8 +110,7 @@ def test_channel_dimensions(short_reference_data_path: Path, new_dlis_path: Path
 
 
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
-def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, new_dlis_path: Path, n_points: int,
-                        config_array_time_based: ConfigParser, config_time_based: ConfigParser):
+def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, new_dlis_path: Path, n_points: int):
     """Create a DLIS file with varying number of points. Check that the data for each channel are correct."""
 
     write_time_based_dlis(new_dlis_path, data=reference_data_path, to_idx=n_points)
