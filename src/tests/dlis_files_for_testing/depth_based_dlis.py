@@ -5,7 +5,7 @@ import numpy as np
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
-from tests.fixtures.common import make_file_header, make_sul, make_origin
+from tests.dlis_files_for_testing.common import make_file_header, make_sul, make_origin
 
 
 def _add_channels(df: DLISFile):

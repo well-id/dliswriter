@@ -8,7 +8,7 @@ from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 from tests.common import clear_eflr_instance_registers, load_dlis
-from tests.fixtures.short_dlis import write_short_dlis
+from tests.dlis_files_for_testing import write_short_dlis
 
 
 @pytest.fixture(autouse=True)
