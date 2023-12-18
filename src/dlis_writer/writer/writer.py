@@ -2,13 +2,11 @@ import os
 import logging
 from progressbar import progressbar    # type: ignore  # untyped library
 from typing import Union, Optional
-from configparser import ConfigParser
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
-from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
-
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
 
 logger = logging.getLogger(__name__)
 
@@ -150,7 +148,8 @@ class DLISWriter:
     def _assign_origin_reference(logical_records: FileLogicalRecords):
         """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
 
-        origins = logical_records.origin.get_all_eflr_items()
+        origins: list[OriginItem] = logical_records.origin.get_all_eflr_items()  # type: ignore
+        # ^ it is going to be a list of OriginItem, but as it's specified in the superclass - no way of setting this
         if not origins:
             raise RuntimeError("No origin defined")
 
