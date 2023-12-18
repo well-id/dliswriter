@@ -56,9 +56,9 @@ def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]):
     )
 
     fr.spacing.units = "s"
-    fr.spacing.representation_code = "FDOUBL"
-    fr.index_max.representation_code = "FDOUBL"
-    fr.index_min.representation_code = "FDOUBL"
+    fr.spacing.representation_code = "FDOUBL"       # type: ignore  # using converter associated with the property
+    fr.index_max.representation_code = "FDOUBL"     # type: ignore  # using converter associated with the property
+    fr.index_min.representation_code = "FDOUBL"     # type: ignore  # using converter associated with the property
 
     return fr
 
@@ -76,6 +76,7 @@ def create_dlis_file_object():
     return df
 
 
-def write_time_based_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray], **kwargs):
+def write_time_based_dlis(fname: Union[str, os.PathLike[str]],
+                          data: Union[dict, os.PathLike[str], np.ndarray], **kwargs):
     df = create_dlis_file_object()
     df.write(fname, data=data, **kwargs)

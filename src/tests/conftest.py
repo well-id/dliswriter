@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from pathlib import Path
-import h5py
+import h5py    # type: ignore  # untyped library
 import os
 
 from dlis_writer.logical_record import eflr_types
