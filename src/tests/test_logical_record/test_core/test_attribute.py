@@ -32,7 +32,7 @@ def test_clearing_unit(attr: Attribute):
         (2, RepresentationCode.FSINGL),
         ("FSINGL", RepresentationCode.FSINGL),
         ("STATUS", RepresentationCode.STATUS),
-        ('26', RepresentationCode.STATUS)
+        (26, RepresentationCode.STATUS)
 ))
 def test_setting_repr_code(attr: Attribute, val: Union[int, str], repr_code: RepresentationCode):
     """Test that setting representation code works correctly, both from code name and value (as int or str)."""

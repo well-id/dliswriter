@@ -123,7 +123,7 @@ def test_clearing_unit(chan: ChannelItem):
         (7, RepresentationCode.FDOUBL),
         ("FDOUBL", RepresentationCode.FDOUBL),
         ("USHORT", RepresentationCode.USHORT),
-        ('15', RepresentationCode.USHORT),
+        (15, RepresentationCode.USHORT),
         (RepresentationCode.UVARI, RepresentationCode.UVARI)
 ))
 def test_setting_repr_code(chan: ChannelItem, val: Union[str, int, RepresentationCode], repc: RepresentationCode):

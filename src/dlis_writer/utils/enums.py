@@ -76,9 +76,8 @@ class RepresentationCode(int, Enum):
             The member of the enumeration corresponding to the provided value/name/member (or None).
         """
 
-        if allow_none:
-            if v is None:
-                return None
+        if allow_none and v is None:
+            return None
 
         if isinstance(v, cls):
             return v
@@ -90,12 +89,6 @@ class RepresentationCode(int, Enum):
                 pass
 
         if isinstance(v, str):
-            if v.isdigit():
-                try:
-                    return cls(int(v))
-                except ValueError:
-                    pass
-
             try:
                 return cls[v]
             except KeyError:
