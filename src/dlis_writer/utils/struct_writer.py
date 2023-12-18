@@ -40,7 +40,7 @@ def write_struct_dtime(date_time: datetime) -> bytes:
             00010100 00001111 00000010 01101100
 
     """
-    
+
     value = b''
 
     time_zone = '{0:04b}'.format(0)  # Local Standard Time is set as default
@@ -53,7 +53,7 @@ def write_struct_dtime(date_time: datetime) -> bytes:
     value += RepresentationCode.USHORT.convert(date_time.minute)
     value += RepresentationCode.USHORT.convert(date_time.second)
     value += RepresentationCode.UNORM.convert(date_time.microsecond // 1000)
-    
+
     return value
 
 

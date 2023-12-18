@@ -2,7 +2,6 @@ import numpy as np
 import h5py    # type: ignore  # untyped library
 from typing import Union, Optional, Any
 import os
-from typing_extensions import Self
 import logging
 
 logger = logging.getLogger(__name__)

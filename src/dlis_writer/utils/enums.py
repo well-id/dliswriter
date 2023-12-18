@@ -233,4 +233,3 @@ class IFLRType(IntEnum):
 
     FDATA = 0
     NOFMT = 1
-

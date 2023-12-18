@@ -182,4 +182,3 @@ class ReprCodeConverter:
                 raise ValueError("Expected a RepresentationCode; got None")
 
         return ReprCodeConverter.repr_codes_to_numpy_dtypes[repr_code]
-
