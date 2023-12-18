@@ -15,13 +15,6 @@ from tests.fixtures.depth_based_dlis import write_depth_based_dlis
 
 
 @pytest.fixture(scope='session')
-def config_depth_based(base_data_path: Path) -> ConfigParser:
-    """Config object for a depth-based DLIS file."""
-
-    return load_config(base_data_path/'resources/mock_config_depth_based.ini')
-
-
-@pytest.fixture(scope='session')
 def config_time_based(base_data_path: Path) -> ConfigParser:
     """Config object for a time-based DLIS file."""
 
@@ -53,11 +46,10 @@ def new_dlis_path(base_data_path: Path):
         os.remove(new_path)
 
 
-def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_data_path: Path, new_dlis_path: Path,
-                                               config_depth_based: ConfigParser):
+def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_data_path: Path, new_dlis_path: Path):
     """Create a depth-based DLIS file with RPM data and compare it at binary level to the relevant reference DLIS."""
 
-    write_file(data=reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
+    write_depth_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_rpm_depth_based.DLIS'
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
@@ -73,9 +65,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, b
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
 
 
-@pytest.mark.parametrize('include_images', (True, False))
-def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path,
-                          include_images: bool, config_depth_based: ConfigParser):
+def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path):
     """Create a depth-based DLIS file and check its basic parameters."""
 
     write_depth_based_dlis(new_dlis_path, data=short_reference_data_path)
