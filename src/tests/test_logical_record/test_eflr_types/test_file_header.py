@@ -14,4 +14,3 @@ def test_creation(identifier: str, sequence_number: int):
 
     assert isinstance(fh.parent, FileHeaderSet)
     assert fh.parent.set_name is None
-

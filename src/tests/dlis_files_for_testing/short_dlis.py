@@ -26,6 +26,7 @@ def make_origin():
 
     return origin
 
+
 def _add_frame(df, *channels: eflr_types.ChannelItem):
     fr = df.add_frame(
         "MAIN FRAME",
@@ -397,7 +398,7 @@ def _add_well_reference_points(df: DLISFile):
         coordinate_3_value=1
     )
 
-    return w1,
+    return w1, w2
 
 
 def _add_messages(df: DLISFile):
@@ -464,6 +465,8 @@ def _add_long_name(df: DLISFile):
         standard_symbol="SOME ASCII TEXT",
         private_symbol="SOME ASCII TEXT"
     )
+
+    return ln
 
 
 def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],

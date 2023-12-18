@@ -22,4 +22,3 @@ def test_creation(name: str, consumer_name: str, description: str):
 
     assert isinstance(w.parent, NoFormatSet)
     assert w.parent.set_name is None
-

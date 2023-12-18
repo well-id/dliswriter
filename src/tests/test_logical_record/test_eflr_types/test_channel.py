@@ -221,5 +221,3 @@ def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem,
     chan.set_dimension_and_repr_code_from_data(mock_data)
     assert chan.element_limit.value == dim
     assert "Previously defined element limit" in caplog.text
-
-

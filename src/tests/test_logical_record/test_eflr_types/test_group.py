@@ -39,4 +39,3 @@ def test_group_params(name: str, description: str, object_type: str,
 
     assert isinstance(g.parent, GroupSet)
     assert g.parent.set_name is None
-

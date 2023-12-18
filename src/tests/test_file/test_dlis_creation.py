@@ -133,4 +133,3 @@ def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, ne
         check_contents('amplitude', '/contents/image0')
         check_contents('radius', '/contents/image1')
         check_contents('radius_pooh', '/contents/image2')
-

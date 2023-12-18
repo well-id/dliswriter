@@ -1,6 +1,5 @@
 from contextlib import contextmanager
 from dlisio import dlis    # type: ignore  # untyped library
-import h5py    # type: ignore  # untyped library
 from typing import Union
 import os
 

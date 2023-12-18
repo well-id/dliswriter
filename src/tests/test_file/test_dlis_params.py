@@ -10,7 +10,7 @@ from tests.common import N_COLS, select_channel
 
 def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Union[list[str], tuple[str, ...]]):
     """Check that names of the provided objects match the expected names (in the same order)."""
-    
+
     assert len(objects) == len(names)
     for i, n in enumerate(names):
         assert objects[i].name == n
@@ -18,7 +18,7 @@ def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Uni
 
 def test_channel_properties(short_dlis: dlis.file.LogicalFile):
     """Check attributes of channels in the new DLIS file."""
-    
+
     for name in ('posix time', 'surface rpm'):
         chan = select_channel(short_dlis, name)
         assert chan.name == name
@@ -38,7 +38,7 @@ def test_channel_properties(short_dlis: dlis.file.LogicalFile):
 
 def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile):
     """Check that channel which was not added to frame is still in the file."""
-    
+
     name = 'channel_x'
     select_channel(short_dlis, name)  # if no error - channel is found in the file
     assert not any(c.name == name for c in short_dlis.frames[0].channels)
@@ -46,7 +46,7 @@ def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile):
 
 def test_file_header(short_dlis: dlis.file.LogicalFile):
     """Check attributes of DLIS file header."""
-    
+
     header = short_dlis.fileheader
     assert header.id == "DEFAULT FHLR"
     assert header.sequencenr == "1"
@@ -54,7 +54,7 @@ def test_file_header(short_dlis: dlis.file.LogicalFile):
 
 def test_origin(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Origin in the new DLIS file."""
-    
+
     assert len(short_dlis.origins) == 1
 
     origin = short_dlis.origins[0]
@@ -81,7 +81,7 @@ def test_origin(short_dlis: dlis.file.LogicalFile):
 
 def test_frame(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Frame in the new DLIS file."""
-    
+
     assert len(short_dlis.frames) == 1
 
     frame = short_dlis.frames[0]
@@ -92,7 +92,7 @@ def test_frame(short_dlis: dlis.file.LogicalFile):
 
 def test_storage_unit_label(short_dlis: dlis.file.LogicalFile):
     """Check attributes of Storage Unit Label in the new DLIS file."""
-    
+
     sul = short_dlis.storage_label()
     assert sul['id'].rstrip(' ') == "DEFAULT STORAGE SET"
     assert sul['sequence'] == 1
@@ -101,7 +101,7 @@ def test_storage_unit_label(short_dlis: dlis.file.LogicalFile):
 
 def test_zones(short_dlis: dlis.file.LogicalFile):
     """Check that the number of zones in the file matches the expected one."""
-    
+
     zones = short_dlis.zones
     assert len(zones) == 5
 
@@ -113,10 +113,10 @@ def test_zones(short_dlis: dlis.file.LogicalFile):
         ("Zone-4", "ZONE-TIME-2", 90, 10, float),
         ("Zone-X", "Zone not added to any parameter", 10, 1, float)
 ))
-def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: str, maximum: Any, 
+def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: str, maximum: Any,
                      minimum: Any, value_type: type):
     """Check attributes of zones in the new DLIS file."""
-    
+
     zones = [zone for zone in short_dlis.zones if zone.name == name]
     assert len(zones) == 1
     z = zones[0]
@@ -130,7 +130,7 @@ def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: 
 
 def test_zone_not_in_param(short_dlis: dlis.file.LogicalFile):
     """Check that a zone which has not been added to any parameter or other object is still in the file."""
-    
+
     name = 'Zone-X'
     z = [z for z in short_dlis.zones if z.name == name]
     assert len(z) == 1
@@ -141,7 +141,7 @@ def test_zone_not_in_param(short_dlis: dlis.file.LogicalFile):
 
 def test_parameters(short_dlis: dlis.file.LogicalFile):
     """Check that the number of parameters in the DLIS file matches the expected one."""
-    
+
     params = short_dlis.parameters
     assert len(params) == 3
 
@@ -151,10 +151,10 @@ def test_parameters(short_dlis: dlis.file.LogicalFile):
         (1, "Param-2", "LATLONG", [40.395241, 27.792471], ["Zone-2", "Zone-4"]),
         (2, "Param-3", "SOME-FLOAT-PARAM", [12.5], [])
 ))
-def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: str, values: list, 
+def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: str, values: list,
                            zones: list[str]):
     """Check attributes of DLIS Parameter objects."""
-    
+
     param = short_dlis.parameters[idx]
     assert param.name == name
     assert param.long_name == long_name
@@ -165,7 +165,7 @@ def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: st
 
 def test_axes(short_dlis: dlis.file.LogicalFile):
     """Check that the number of axes in the DLIS file matches the expected one."""
-    
+
     axes = short_dlis.axes
     assert len(axes) == 2
 
@@ -176,7 +176,7 @@ def test_axes(short_dlis: dlis.file.LogicalFile):
 ))
 def test_axes_parameters(short_dlis: dlis.file.LogicalFile, idx: int, name: str, axis_id: str, coordinates: list):
     """Check attributes of axes in the DLIS file."""
-    
+
     axis = short_dlis.axes[idx]
     assert axis.name == name
     assert axis.axis_id == axis_id
@@ -185,7 +185,7 @@ def test_axes_parameters(short_dlis: dlis.file.LogicalFile, idx: int, name: str,
 
 def test_equipment(short_dlis: dlis.file.LogicalFile):
     """Check that the number of Equipment objects in the DLIS file matches the expected one."""
-    
+
     eq = short_dlis.equipments
     assert len(eq) == 3
 
@@ -195,7 +195,7 @@ def test_equipment(short_dlis: dlis.file.LogicalFile):
         (1, "EQ2", 0, "5559101-21391"),
         (2, "EqX", 1, "12311")
 ))
-def test_equipment_params(short_dlis: dlis.file.LogicalFile, idx: int,name, status, serial_number):
+def test_equipment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, status: int, serial_number: str):
     eq = short_dlis.equipments[idx]
 
     assert eq.name == name
@@ -212,7 +212,8 @@ def test_tool(short_dlis: dlis.file.LogicalFile):
         (0, "TOOL-1", "SOME TOOL", 1, ["Param-1", "Param-3"], ["posix time", "amplitude"]),
         (1, "Tool-X", "desc", 0, ["Param-2"], ["radius_pooh"])
 ))
-def test_tool_params(short_dlis: dlis.file.LogicalFile, idx: int,name, description, status, param_names, channel_names):
+def test_tool_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, description: str, status: int,
+                     param_names: list[str], channel_names: list[str]):
     tool = short_dlis.tools[idx]
     assert tool.name == name
     assert tool.description == description

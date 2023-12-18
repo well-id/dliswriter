@@ -74,6 +74,3 @@ def test_params_and_units():
     check('vertical_depth', 587, 'm')
     check('radial_drift', 23.22, 'm')
     check('angular_drift', 32.5, 'm')
-
-
-
