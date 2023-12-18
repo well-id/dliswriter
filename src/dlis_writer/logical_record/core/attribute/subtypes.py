@@ -59,12 +59,12 @@ class EFLRAttribute(Attribute):
             object_class=self._object_class
         )
 
-    def _convert_value(self, v: Union[str, type]):
-        """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
+    def _convert_value(self, v: type[EFLRItem]):
+        """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
 
         object_class = self._object_class.item_type if self._object_class else EFLRItem
-        if not isinstance(v, (object_class, str)):
-            raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
+        if not isinstance(v, object_class):
+            raise TypeError(f"Expected an instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
 
 
@@ -214,32 +214,27 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Union[str, int, float]) -> int:
+    def _int_parser(value: Union[int, float]) -> int:
         """Parse a provided value as an integer."""
 
-        if isinstance(value, str):
-            value = int(value)  # ValueError possible, caught later if needed or allowed to propagate
-        elif isinstance(value, Number):
-            if not float(value).is_integer():
-                raise ValueError(f"{value} cannot be represented as integer")
-            value = int(value)
-        else:
+        if not isinstance(value, Number):
             raise TypeError(f"Cannot convert a {type(value)} object ({value}) to integer")
-        return value
+
+        if not float(value).is_integer():
+            raise ValueError(f"{value} cannot be represented as integer")
+
+        return int(value)
 
     @staticmethod
-    def _float_parser(value: Union[str, int, float]) -> float:
+    def _float_parser(value: Union[int, float]) -> float:
         """Parse a provided value as a float."""
 
-        if isinstance(value, str):
-            value = float(value)  # ValueError possible
-        elif isinstance(value, Number):
-            value = float(value)
-        else:
+        if not isinstance(value, Number):
             raise TypeError(f"Cannot convert a {type(value)} object ({value}) to float")
-        return value
 
-    def _convert_number(self, value: Union[str, int, float]) -> Union[int, float]:
+        return float(value)
+
+    def _convert_number(self, value: Union[int, float]) -> Union[int, float]:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         rc = self._representation_code

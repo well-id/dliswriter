@@ -1,7 +1,6 @@
 from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 from typing_extensions import Self
 import logging
-import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
 from dlis_writer.utils.enums import RepresentationCode, UNITS
@@ -182,38 +181,14 @@ class Attribute:
 
         return self._parent_eflr
 
-    @staticmethod
-    def parse_values(val: Any) -> list[Any]:
-        """Parse value to a list.
-
-        If the value is a list already, leave it as is.
-        If the value is a tuple or a numpy array, convert it to list.
-        If the value is a string, strip it of square brackets and split by the commas.
-        Otherwise, wrap the value in a single-element list.
-        """
-
-        if isinstance(val, list):
-            values = val
-        elif isinstance(val, tuple):
-            values = list(val)
-        elif isinstance(val, np.ndarray):
-            values = val.tolist()
-        elif isinstance(val, str):
-            val = val.rstrip(' ').strip('[').rstrip(']').rstrip(',')
-            values = val.split(', ')
-            values = [v.strip(' ').rstrip(' ') for v in values]
-        else:
-            values = [val]
-
-        return values
-
     def convert_value(self, value: Any) -> Any:
         """Transform/validate the provided value according to the provided converter.
 
         If the attribute is set up as multivalued, before converting the value, parse it to a list."""
 
         if self._multivalued:
-            value = self.parse_values(value)
+            if not isinstance(value, (list, tuple)):
+                value = [value]
             return [self.converter(v) for v in value]
         return self.converter(value)
 

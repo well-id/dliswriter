@@ -54,25 +54,8 @@ def test_dataset_name_not_specified(name):
     assert c.dataset_name == name
 
 
-@pytest.mark.parametrize(("prop_str", "prop_val"), (
-        ("1, 2, 3", ["1", "2", "3"]),
-        ("1word, 2 words, 3 w ords", ["1word", "2 words", "3 w ords"]),
-        ("single_thing", ["single_thing"])
-))
-def test_properties(prop_str: str, prop_val: list[str]):
-    """Check that channel properties are parsed correctly."""
-
-    channel = ChannelItem(
-        "ChanChan",
-        properties=prop_str
-    )
-
-    assert channel.name == "ChanChan"
-    assert channel.properties.value == prop_val
-
-
-@pytest.mark.parametrize(('dimension', 'element_limit'), (("10", None), ("10, 10", None), (None, "1, 2, 3")))
-def test_dimension_and_element_limit(dimension: Union[str, None], element_limit: Union[str, None]):
+@pytest.mark.parametrize(('dimension', 'element_limit'), (([10], None), ([10, 10], None), (None, [1, 2, 3])))
+def test_dimension_and_element_limit(dimension: Union[list[int], None], element_limit: Union[list[int], None]):
     """Test that it is enough to specify dimension OR element limit in the config for both to be set to that value."""
 
     config = {'name': 'some channel'}
@@ -150,41 +133,12 @@ def test_attribute_set_directly_error(chan: ChannelItem):
         chan.long_name = 'Lorem ipsum'    # type: ignore  # mypy property setter bug
 
 
-@pytest.mark.parametrize(("value", "expected_value"), (
-        (1, [1]),
-        (10, [10]),
-        ("10", [10]),
-        ("10, ", [10]),
-        ("10,    ", [10]),
-        ("10, 11", [10, 11]),
-        ("10, 11,  ", [10, 11]),
-))
-def test_setting_dimension(chan: ChannelItem, value: Union[int, str], expected_value: list[int]):
-    """Test that channel dimension is correctly parsed from str or int."""
-
-    chan.dimension.value = value
-    assert chan.dimension.value == expected_value
-
-
-@pytest.mark.parametrize('value', ("", "10,, 10", 10.6, [10, 11.2]))
+@pytest.mark.parametrize('value', (10.6, [10, 11.2]))
 def test_setting_dimension_error(chan: ChannelItem, value: Any):
     """Test that a ValueError is raised if an un-parsable value is attempted to be set as dimension."""
 
     with pytest.raises(ValueError):
         chan.dimension.value = value
-
-
-@pytest.mark.parametrize(("value", "expected_value"), (
-        ("p1, p2, p3", ["p1", "p2", "p3"]),
-        ("p1, p2 with more words", ["p1", "p2 with more words"]),
-        ("other. punctuation; signs", ["other. punctuation; signs"]),
-        (["list, of, things"], ["list, of, things"])
-))
-def test_setting_properties(chan: ChannelItem, value: Union[str, list[str]], expected_value: list[str]):
-    """Test that 'properties' attribute of channel parses the input correctly (splitting str at commas)."""
-
-    chan.properties.value = value
-    assert chan.properties.value == expected_value
 
 
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12])))
