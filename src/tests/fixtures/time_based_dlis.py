@@ -5,17 +5,7 @@ import numpy as np
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
-from tests.fixtures.common import make_file_header, make_sul
-
-
-def make_origin():
-    origin = eflr_types.OriginItem(
-        "DEFINING ORIGIN",
-        creation_time="2050/03/02 15:30:00",
-        file_set_number=1
-    )
-
-    return origin
+from tests.fixtures.common import make_file_header, make_sul, make_origin
 
 
 def _add_channels(df: DLISFile):
