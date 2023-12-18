@@ -279,3 +279,48 @@ class DimensionAttribute(NumericAttribute):
             units=self._units,
             value=self._value,
         )
+
+
+class StatusAttribute(Attribute):
+    """Model an attribute which can only have value 1 or 0."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialise a StatusAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        for name in ('converter', 'representation_code'):
+            if name in kwargs:
+                raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
+
+        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)
+        self._converter = self.convert_status
+
+    @staticmethod
+    def convert_status(val: Union[bool, int, float]):
+        """Convert a provided value to 1 or 0."""
+
+        if isinstance(val, bool):
+            return int(val)
+
+        if isinstance(val, float) and val % 1:
+            raise ValueError(f"Status cannot be a fraction; got {val}")
+
+        val = int(val)
+        if val not in (0, 1):
+            raise ValueError(f"Status must be a 1 or a 0; got {val}")
+
+        return val
+
+    def copy(self):
+        """Create a copy of the attribute instance."""
+
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            units=self._units,
+            value=self._value
+        )
