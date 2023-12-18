@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import logging
 
-from dlis_writer.writer.file import DLISFile
+from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.utils.enums import RepresentationCode

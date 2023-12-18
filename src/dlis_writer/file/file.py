@@ -12,9 +12,9 @@ from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
-from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
-from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
-from dlis_writer.writer.writer import DLISWriter
+from dlis_writer.file.file_logical_records import FileLogicalRecords
+from dlis_writer.file.multi_frame_data import MultiFrameData
+from dlis_writer.file.writer import DLISWriter
 
 
 logger = logging.getLogger(__name__)

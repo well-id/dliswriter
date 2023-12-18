@@ -1,7 +1,7 @@
 import typing
 import logging
 
-from dlis_writer.logical_record.collections.multi_frame_data import MultiFrameData
+from dlis_writer.file import MultiFrameData
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData

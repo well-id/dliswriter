@@ -5,7 +5,7 @@ import h5py  # type: ignore  # untyped library
 import logging
 
 from dlis_writer.misc.dlis_file_comparator import compare
-from dlis_writer.writer.file import DLISFile
+from dlis_writer.file import DLISFile
 from dlis_writer.utils.converters import ReprCodeConverter
 
 

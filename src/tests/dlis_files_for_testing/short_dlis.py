@@ -3,7 +3,7 @@ from typing import Union
 import numpy as np
 from datetime import datetime
 
-from dlis_writer.writer.file import DLISFile
+from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
 from tests.dlis_files_for_testing.common import make_file_header, make_sul

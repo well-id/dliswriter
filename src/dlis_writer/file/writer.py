@@ -5,7 +5,7 @@ from typing import Union, Optional
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.logical_record.collections.file_logical_records import FileLogicalRecords
+from dlis_writer.file import FileLogicalRecords
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 
 logger = logging.getLogger(__name__)

@@ -1,4 +1,3 @@
-from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
 
