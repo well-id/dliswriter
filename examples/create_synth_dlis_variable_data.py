@@ -1,11 +1,14 @@
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
+import h5py
 
 from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.writer.synthetic_data_generator import create_data_file
+from dlis_writer.writer.file import DLISFile
 
-from utils import path_type, prepare_directory
+from utils import path_type, prepare_directory, yield_h5_datasets
 
 
 logger = logging.getLogger(__name__)
@@ -57,6 +60,33 @@ def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
     )
 
 
+def _add_channels_from_h5_data(df: DLISFile, data: h5py.File):
+    """Add channels specifications to the file object, taking all datasets found in the provided HDF5 file."""
+
+    channels = []
+
+    for dataset in yield_h5_datasets(data):
+        dataset_name = dataset.name
+        channel_name = dataset_name.split('/')[-1]
+        ch = df.add_channel(
+            channel_name,
+            dataset_name=dataset_name,
+            representation_code=ReprCodeConverter.determine_repr_code_from_numpy_dtype(dataset.dtype).value
+        )
+        channels.append(ch)
+
+    return channels
+
+
+def make_dlis_file_spec(data_file_path: Path) -> DLISFile:
+    df = DLISFile()
+    with h5py.File(data_file_path, 'r') as h5f:
+        channels = _add_channels_from_h5_data(df, h5f)
+    df.add_frame('MAIN', channels=channels)
+
+    return df
+
+
 def main():
     install_logger(logger)
 
@@ -67,6 +97,14 @@ def main():
     tmp_file_name = Path(pargs.output_file_name).resolve().parent/'_tmp.h5'
     pargs.input_file_name = tmp_file_name
     create_tmp_data_file_from_pargs(tmp_file_name, pargs)
+
+    dlis_file = make_dlis_file_spec(tmp_file_name)
+    dlis_file.write(
+        pargs.output_file_name,
+        data=tmp_file_name,
+        input_chunk_size=int(pargs.input_chunk_size) if pargs.input_chunk_size else None,
+        output_chunk_size=int(pargs.output_chunk_size) if pargs.output_chunk_size else None,
+    )
 
 
 if __name__ == '__main__':

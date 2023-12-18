@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from typing import Union
+import h5py
 import logging
 
 from dlis_writer.writer.dlis_file_comparator import compare
@@ -62,4 +63,20 @@ def prepare_directory(output_file_name: path_type, overwrite: bool = False):
         else:
             raise RuntimeError(f"Cannot overwrite existing file at {output_file_name}")
 
+
+def yield_h5_datasets(h5_object: Union[h5py.File, h5py.Group]):
+    """Traverse a HDF5 (h5py) object in a recursive manner and yield all datasets it contains.
+
+    Args:
+        h5_object   : HDF5 File or Group to traverse.
+
+    Yields:
+        h5py Dataset objects contained in the provided File or Group.
+    """
+
+    for key, value in h5_object.items():
+        if isinstance(value, h5py.Dataset):
+            yield value
+        if isinstance(value, h5py.Group):
+            yield from yield_h5_datasets(value)
 
