@@ -4,6 +4,7 @@ from typing import Union
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
@@ -131,6 +132,13 @@ class FrameItem(EFLRItem):
     @property
     def channel_name_mapping(self):
         return {ch.name: ch.dataset_name for ch in self.channels.value}
+
+    @property
+    def channel_dtype_mapping(self):
+        def get_dtype(rc):
+            return ReprCodeConverter.get_dtype(rc, RepC.FDOUBL)
+
+        return {ch.name: get_dtype(ch.representation_code.value) for ch in self.channels.value}
 
 
 class FrameSet(EFLRSet):

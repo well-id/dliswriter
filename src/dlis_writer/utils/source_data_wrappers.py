@@ -236,29 +236,9 @@ class SourceDataWrapper:
                     repr_code = RepresentationCode[repr_code]
 
                 if repr_code is not None:
-                    dtype_mapping[cs['name']] = SourceDataWrapper.get_dtype(repr_code)
+                    dtype_mapping[cs['name']] = ReprCodeConverter.get_dtype(repr_code, RepresentationCode.FDOUBL)
 
         return name_mapping, dtype_mapping
-
-    @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> type[object]:
-        """Determine a numpy dtype for a given representation code.
-
-        Args:
-            repr_code   :   Representation code to convert to a numpy dtype.
-            allow_none  :   If True and 'repr_code' is None, return the default repr code - FDOUBL.
-
-        Returns:
-            A numpy.dtype object corresponding to the given representation code.
-        """
-
-        if repr_code is None:
-            if allow_none:
-                return SourceDataWrapper.get_dtype(RepresentationCode.FDOUBL)
-            else:
-                raise ValueError("Expected a RepresentationCode; got None")
-
-        return ReprCodeConverter.repr_codes_to_numpy_dtypes[repr_code]
 
     @classmethod
     def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:
