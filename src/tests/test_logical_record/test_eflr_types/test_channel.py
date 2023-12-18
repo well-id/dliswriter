@@ -58,7 +58,7 @@ def test_dataset_name_not_specified(name):
 def test_dimension_and_element_limit(dimension: Union[list[int], None], element_limit: Union[list[int], None]):
     """Test that it is enough to specify dimension OR element limit in the config for both to be set to that value."""
 
-    config = {'name': 'some channel'}
+    config: dict[str, Any] = {'name': 'some channel'}
 
     if dimension is not None:
         config["dimension"] = dimension
