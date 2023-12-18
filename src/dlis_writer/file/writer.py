@@ -259,6 +259,3 @@ class DLISWriter:
         )
 
         logger.info(f'DLIS file created at {Path(filename).resolve()}')
-
-
-    

@@ -3,7 +3,7 @@ import logging
 
 from dlis_writer.file import MultiFrameData
 from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types import *
+from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
 from dlis_writer.logical_record.core.eflr import EFLRSet
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class FileLogicalRecords:
     """Collection of logical records to constitute a DLIS file."""
 
-    def __init__(self, sul: StorageUnitLabel, fh: FileHeaderSet, orig: OriginSet):
+    def __init__(self, sul: StorageUnitLabel, fh: eflr_types.FileHeaderSet, orig: eflr_types.OriginSet):
         """Initialise FileLogicalRecords object.
 
         Args:
@@ -24,15 +24,15 @@ class FileLogicalRecords:
         """
 
         self._check_type(sul, StorageUnitLabel)
-        self._check_type(fh, FileHeaderSet)
-        self._check_type(orig, OriginSet)
+        self._check_type(fh, eflr_types.FileHeaderSet)
+        self._check_type(orig, eflr_types.OriginSet)
 
         self._storage_unit_label = sul
         self._file_header = fh
         self._origin = orig
 
-        self._channels: list[ChannelSet] = []
-        self._frames: list[FrameSet] = []
+        self._channels: list[eflr_types.ChannelSet] = []
+        self._frames: list[eflr_types.FrameSet] = []
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[typing.Union[EFLRSet, NoFormatFrameData]] = []
 
@@ -56,13 +56,13 @@ class FileLogicalRecords:
             fdo.set_origin_reference(value)
 
     @property
-    def origin(self) -> OriginSet:
+    def origin(self) -> eflr_types.OriginSet:
         """Origin EFLR of the collection."""
 
         return self._origin
 
     @property
-    def header_records(self) -> tuple[StorageUnitLabel, FileHeaderSet, OriginSet]:
+    def header_records(self) -> tuple[StorageUnitLabel, eflr_types.FileHeaderSet, eflr_types.OriginSet]:
         """Header records of the collection: StorageUnitLabel, FileHeader, and Origin."""
 
         return self._storage_unit_label, self._file_header, self._origin
@@ -100,22 +100,22 @@ class FileLogicalRecords:
             raise TypeError(f"Expected only {' / '.join(t.__name__ for t in expected_type)} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
-    def add_channels(self, *channels: ChannelSet):
+    def add_channels(self, *channels: eflr_types.ChannelSet):
         """Add Channel logical records to the collection."""
 
-        self._check_types(channels, ChannelSet)
+        self._check_types(channels, eflr_types.ChannelSet)
         self._channels.extend(channels)
 
     @property
-    def frames(self) -> list[FrameSet]:
+    def frames(self) -> list[eflr_types.FrameSet]:
         """Frame logical records added to the collection."""
 
         return self._frames
 
-    def add_frames(self, *frames: FrameSet):
+    def add_frames(self, *frames: eflr_types.FrameSet):
         """Add Frame logical records to the collection."""
 
-        self._check_types(frames, FrameSet)
+        self._check_types(frames, eflr_types.FrameSet)
         self._frames.extend(frames)
 
     @property
