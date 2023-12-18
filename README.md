@@ -1,5 +1,85 @@
 # DLIS Writer
 
+Welcome to `dlis-writer`, possibly the only public Python library for creating DLIS files.
+
+## Table of contents
+- [Release log](#release-log)
+- [About the DLIS format](#about-the-dlis-format)
+- [User guide](#user-guide)
+  - [Minimal example](#minimal-example)
+  - [Extending basic metadata](#extending-basic-metadata)
+  - [Adding more objects](#adding-more-objects)
+  - [Example scripts](#example-scripts)
+- [Developer guide](#developer-guide)
+  - [More details about the format](#more-details-about-the-format)
+  - [Storage Unit Label](#storage-unit-label)
+  - [IFLR objects](#iflr-objects)
+  - [EFLR objects](#eflr-objects)
+    - [`EFLRSet` and `EFLRItem`](#eflrset-and-eflritem)
+    - [Implemented DLIS objects](#implemented-dlis-objects)
+  - [DLIS Attributes](#dlis-attributes)
+    - [The `Attribute` class](#the-attribute-class)
+    - [Attribute subtypes](#attribute-subtypes)
+  
+
+---
+## Release log
+TODO
+
+---
+## About the DLIS format
+TODO
+
+---
+## User guide
+TODO
+
+### Minimal example
+TODO
+
+### Extending basic metadata
+TODO
+
+### Adding more objects
+TODO
+
+### Example scripts
+TODO (link to example scripts)
+
+---
+## Developer guide
+TODO
+
+### More details about the format
+TODO; division: SUL, IFLR, EFLR
+
+### Storage Unit Label
+TODO
+
+### IFLR objects
+TODO
+
+### EFLR objects
+TODO
+
+#### `EFLRSet` and `EFLRItem`
+TODO
+
+#### Implemented DLIS objects
+TODO
+
+### DLIS Attributes
+TODO
+
+#### The `Attribute` class
+TODO
+
+#### Attribute subtypes
+TODO
+
+
+------------------------------------------------
+
 ## FIRST STEPS
 
 Every DLIS file must start with a Storage Unit Label and FileHeader.
