@@ -138,8 +138,7 @@ def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, ne
                         config_array_time_based: ConfigParser, config_time_based: ConfigParser):
     """Create a DLIS file with varying number of points. Check that the data for each channel are correct."""
 
-    data = HDF5DataWrapper.from_config(reference_data_path, config_time_based)
-    write_file(data=data.load_chunk(0, n_points), dlis_file_name=new_dlis_path, config=config_array_time_based)
+    write_time_based_dlis(new_dlis_path, data=reference_data_path, to_idx=n_points)
 
     with load_dlis(new_dlis_path) as f:
         for name in ('posix time', 'surface rpm'):

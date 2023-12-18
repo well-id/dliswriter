@@ -76,6 +76,6 @@ def create_dlis_file_object():
     return df
 
 
-def write_time_based_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray]):
+def write_time_based_dlis(fname: Union[str, os.PathLike], data: [dict, os.PathLike[str], np.ndarray], **kwargs):
     df = create_dlis_file_object()
-    df.write(fname, data=data)
+    df.write(fname, data=data, **kwargs)

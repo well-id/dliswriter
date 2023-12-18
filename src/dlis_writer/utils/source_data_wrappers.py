@@ -20,7 +20,8 @@ class SourceDataWrapper:
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
-                 known_dtypes: Optional[dict[str, type[object]]] = None, **kwargs):
+                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None, **kwargs):
         """Initialise a SourceDataWrapper.
 
         Args:
@@ -51,7 +52,17 @@ class SourceDataWrapper:
         self._dtype = self.determine_dtypes(self._data_source, self._mapping, known_dtypes=known_dtypes)
 
         # total number of rows - guessed from the first dataset
-        self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
+        total_n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
+
+        self._from_idx = from_idx
+        self._to_idx = to_idx if to_idx is not None else total_n_rows
+        self._n_rows = self._to_idx - self._from_idx  # number of rows to be loaded
+
+        if self._from_idx >= total_n_rows:
+            raise ValueError(f"Starting index {self._from_idx} too large for total n. rows {total_n_rows}")
+        if self._n_rows < 1:
+            raise ValueError(f"Starting index {self._from_idx} and end index {self._to_idx} do not yield a positive "
+                             f"number of rows to be loaded")
 
     @property
     def n_rows(self) -> int:
@@ -142,6 +153,8 @@ class SourceDataWrapper:
         Returns:
             A structured numpy array, containing the required chunks of all the relevant data sets from the source data.
         """
+
+        start = self._from_idx + start
 
         idx = slice(start, stop)
         n_rows = (stop or self._n_rows) - start

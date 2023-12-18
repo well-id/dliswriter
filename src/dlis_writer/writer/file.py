@@ -1072,20 +1072,20 @@ class DLISFile:
         return z
 
     def _make_multi_frame_data(self, fr: eflr_types.FrameItem, data: Union[dict, os.PathLike[str], np.ndarray] = None,
-                               **kwargs) -> MultiFrameData:
+                               from_idx: int = 0, to_idx: Optional[int] = None, **kwargs) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
         if isinstance(data, dict):
             self._data_dict = self._data_dict | data
             data_object = DictDataWrapper(
-                self._data_dict, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping)
+                self._data_dict, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
         else:
             if self._data_dict:
                 raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
                                 f"(Note: a dictionary is the only allowed type because some channels have been added"
                                 f"with associated data arrays")
             data_object = SourceDataWrapper.make_wrapper(
-                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping)
+                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
 
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
@@ -1093,7 +1093,8 @@ class DLISFile:
     def make_file_logical_records(
             self,
             chunk_size: Optional[int] = None,
-            data: Union[dict, os.PathLike[str], np.ndarray] = None
+            data: Union[dict, os.PathLike[str], np.ndarray] = None,
+            **kwargs
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
@@ -1109,7 +1110,7 @@ class DLISFile:
         flr.add_channels(*get_parents(self._channels))
         flr.add_frames(*get_parents(self._frames))
         flr.add_frame_data_objects(
-            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data) for fr in self._frames))
+            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in self._frames))
         flr.add_logical_records(*get_parents(self._other_eflr))
         flr.add_logical_records(*self._no_format_frame_data)
 
@@ -1117,7 +1118,7 @@ class DLISFile:
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
-              data: Union[dict, os.PathLike[str], np.ndarray] = None):
+              data: Union[dict, os.PathLike[str], np.ndarray] = None, from_idx: int = 0, to_idx: Optional[int] = None):
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -1135,7 +1136,8 @@ class DLISFile:
             """
 
             dlis_file = DLISWriter(visible_record_length=visible_record_length)
-            logical_records = self.make_file_logical_records(chunk_size=input_chunk_size, data=data)
+            logical_records = self.make_file_logical_records(
+                chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
             dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
 
         exec_time = timeit(timed_func, number=1)
