@@ -1,12 +1,9 @@
 import logging
-from argparse import ArgumentParser, Namespace
-from pathlib import Path
+from argparse import ArgumentParser
 
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.synthetic_data_generator import create_data_file
 
-
-from utils import path_type, prepare_directory, make_dlis_file_spec
+from utils import prepare_directory, make_dlis_file_spec
 
 
 logger = logging.getLogger(__name__)
@@ -16,6 +13,7 @@ def make_parser() -> ArgumentParser:
     """Define an argument parser for defining the DLIS file to be created."""
 
     parser = ArgumentParser("DLIS file creation")
+    parser.add_argument('-ifn', '--input-file-name', help='Input file name', required=True)
     parser.add_argument('-ofn', '--output-file-name', help='Output file name', required=True)
     parser.add_argument('--time-based', action='store_true', default=False,
                         help="Make a time-based DLIS file (default is depth-based)")
@@ -28,34 +26,7 @@ def make_parser() -> ArgumentParser:
     parser.add_argument('-vrl', '--visible-record-length', type=int, default=8192,
                         help="Maximum allowed visible record length")
 
-    parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
-    parser.add_argument('-ni', '--n-images', type=int, default=0,
-                        help='Number of 2D data sets to add (ignored if input file is specified)')
-    parser.add_argument('-nc', '--n-cols', type=int, default=128,
-                        help='No. columns for each of the added 2D data sets (ignored if input file specified)')
-
     return parser
-
-
-def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
-    """Generate synthetic data and store it in a HDF5 file.
-
-    Args:
-        file_name   :   Name for the data file to be created.
-        pargs       :   Parsed command line arguments with specification of the data to be generated.
-
-    Returns:
-
-    """
-
-    create_data_file(
-        fpath=file_name,
-        n_points=int(pargs.n_points),
-        n_images=pargs.n_images,
-        n_cols=pargs.n_cols,
-        time_based=pargs.time_based,
-        overwrite=True
-    )
 
 
 def main():
@@ -65,14 +36,10 @@ def main():
 
     prepare_directory(pargs.output_file_name, overwrite=pargs.overwrite)
 
-    tmp_file_name = Path(pargs.output_file_name).resolve().parent/'_tmp.h5'
-    pargs.input_file_name = tmp_file_name
-    create_tmp_data_file_from_pargs(tmp_file_name, pargs)
-
-    dlis_file = make_dlis_file_spec(tmp_file_name)
+    dlis_file = make_dlis_file_spec(pargs.input_file_name)
     dlis_file.write(
         pargs.output_file_name,
-        data=tmp_file_name,
+        data=pargs.input_file_name,
         input_chunk_size=int(pargs.input_chunk_size) if pargs.input_chunk_size else None,
         output_chunk_size=int(pargs.output_chunk_size) if pargs.output_chunk_size else None,
     )

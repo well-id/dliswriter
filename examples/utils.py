@@ -5,6 +5,8 @@ import h5py
 import logging
 
 from dlis_writer.writer.dlis_file_comparator import compare
+from dlis_writer.writer.file import DLISFile
+from dlis_writer.utils.converters import ReprCodeConverter
 
 
 logger = logging.getLogger(__name__)
@@ -80,3 +82,29 @@ def yield_h5_datasets(h5_object: Union[h5py.File, h5py.Group]):
         if isinstance(value, h5py.Group):
             yield from yield_h5_datasets(value)
 
+
+def add_channels_from_h5_data(df: DLISFile, data: h5py.File):
+    """Add channels specifications to the file object, taking all datasets found in the provided HDF5 file."""
+
+    channels = []
+
+    for dataset in yield_h5_datasets(data):
+        dataset_name = dataset.name
+        channel_name = dataset_name.split('/')[-1]
+        ch = df.add_channel(
+            channel_name,
+            dataset_name=dataset_name,
+            representation_code=ReprCodeConverter.determine_repr_code_from_numpy_dtype(dataset.dtype).value
+        )
+        channels.append(ch)
+
+    return channels
+
+
+def make_dlis_file_spec(data_file_path: Path) -> DLISFile:
+    df = DLISFile()
+    with h5py.File(data_file_path, 'r') as h5f:
+        channels = add_channels_from_h5_data(df, h5f)
+    df.add_frame('MAIN', channels=channels)
+
+    return df
