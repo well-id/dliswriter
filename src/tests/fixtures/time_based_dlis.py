@@ -5,7 +5,17 @@ import numpy as np
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
-from tests.fixtures.common import make_dlis_file_base
+from tests.fixtures.common import make_file_header, make_sul
+
+
+def make_origin():
+    origin = eflr_types.OriginItem(
+        "DEFINING ORIGIN",
+        creation_time="2050/03/02 15:30:00",
+        file_set_number=1
+    )
+
+    return origin
 
 
 def _add_channels(df: DLISFile):
@@ -64,7 +74,11 @@ def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]):
 
 
 def create_dlis_file_object():
-    df = make_dlis_file_base()
+    df = DLISFile(
+        origin=make_origin(),
+        file_header=make_file_header(),
+        storage_unit_label=make_sul()
+    )
 
     channels = _add_channels(df)
     _add_frame(df, channels)
