@@ -3,7 +3,7 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.synthetic_data_generator import create_data_file
+from dlis_writer.misc.synthetic_data_generator import create_data_file
 
 
 from utils import path_type, prepare_directory, make_dlis_file_spec

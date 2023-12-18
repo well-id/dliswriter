@@ -3,7 +3,7 @@ import h5py    # type: ignore  # untyped library
 import pytest
 from pathlib import Path
 
-from dlis_writer.writer.dlis_file_comparator import compare
+from dlis_writer.misc.dlis_file_comparator import compare
 
 from tests.common import N_COLS, load_dlis, select_channel
 from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis

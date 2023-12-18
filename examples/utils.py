@@ -4,7 +4,7 @@ from typing import Union
 import h5py
 import logging
 
-from dlis_writer.writer.dlis_file_comparator import compare
+from dlis_writer.misc.dlis_file_comparator import compare
 from dlis_writer.writer.file import DLISFile
 from dlis_writer.utils.converters import ReprCodeConverter
 
