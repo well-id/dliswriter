@@ -7,11 +7,11 @@ from configparser import ConfigParser
 
 from dlis_writer.writer.dlis_config import load_config
 from dlis_writer.writer.dlis_file_comparator import compare
-from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
 
 from tests.common import N_COLS, load_dlis, select_channel, write_file
 from tests.fixtures.time_based_dlis import write_time_based_dlis
+from tests.fixtures.depth_based_dlis import write_depth_based_dlis
 
 
 @pytest.fixture(scope='session')
@@ -78,7 +78,7 @@ def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_
                           include_images: bool, config_depth_based: ConfigParser):
     """Create a depth-based DLIS file and check its basic parameters."""
 
-    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_depth_based)
+    write_depth_based_dlis(new_dlis_path, data=short_reference_data_path)
 
     with load_dlis(new_dlis_path) as f:
         chan = f.channels[0]
