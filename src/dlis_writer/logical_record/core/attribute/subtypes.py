@@ -3,7 +3,6 @@ from numbers import Number
 from datetime import datetime
 from typing import Union, Optional
 from typing_extensions import Self
-from configparser import ConfigParser
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, EFLRSetMeta
@@ -60,25 +59,6 @@ class EFLRAttribute(Attribute):
             object_class=self._object_class
         )
 
-    def finalise_from_config(self, config: ConfigParser):
-        """Create EFLRObject instances from the earlier specified names.
-
-        When an instance of the Attribute is created, the value might not be known yet.
-        When setting up the attribute from config, initially only the name(s) of the ELFRObject(s) is/are known.
-        These names are initially assigned to the self._value attribute.
-        This method, using the config object from which the attribute itself was set up, sets up references to the
-        correct EFLRObject instances based on the previously specified names.
-        """
-
-        if not self._value:
-            logger.debug(f"No object names defined for {self}")
-            return
-
-        if self._multivalued:
-            self._value = [self._make_eflr_object_from_config(config, v) for v in self._value]
-        else:
-            self._value = self._make_eflr_object_from_config(config, self._value)
-
     def _convert_value(self, v: Union[str, type]):
         """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
 
@@ -86,21 +66,6 @@ class EFLRAttribute(Attribute):
         if not isinstance(v, (object_class, str)):
             raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
-
-    def _make_eflr_object_from_config(self, config: ConfigParser, object_name: Union[str, EFLRItem]) -> EFLRItem:
-        """Create or retrieve an EFLRObject based on its name and the provided config object.
-
-        If the value (object_name) is already an EFLRObject, return it as-is.
-        """
-
-        if isinstance(object_name, EFLRItem):
-            return object_name
-
-        if not isinstance(object_name, str):
-            raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
-
-        object_class = self._object_class or EFLRSet.get_set_subclass(object_name)
-        return object_class.item_type.from_config(config=config, key=object_name, get_if_exists=True)
 
 
 class DTimeAttribute(Attribute):

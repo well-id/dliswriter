@@ -4,11 +4,6 @@ from typing import Union, Optional, Any
 import os
 from typing_extensions import Self
 import logging
-from configparser import ConfigParser
-
-from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.converters import ReprCodeConverter
-
 
 logger = logging.getLogger(__name__)
 
@@ -199,66 +194,6 @@ class SourceDataWrapper:
         if remainder_rows:
             logger.debug(f"Loading chunk {total_chunks}/{total_chunks} ({remainder_rows} rows)")
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
-
-    @staticmethod
-    def make_mappings_from_config(config: ConfigParser) -> tuple[dict[str, str], dict[str, type[object]]]:
-        """Create data set name mapping and dtype mapping (where possible) from a config object.
-
-        Args:
-            config  :   Config object containing the information on the data sets under 'Channel-...' headings
-                        (only those which are added to Frame section in the config as 'channels' or 'channels.value').
-
-        Returns:
-            name mapping    :   a dictionary mapping data type names (names of the channels) on the names/locations
-                                of the corresponding datasets (e.g. HFD5 data set paths).
-            dtype mapping   :   a dictionary mapping data type names on known data types, inferred from representation
-                                codes specified for the corresponding channels (if available).
-
-        Note:
-            The name mapping dict will contain all data sets which will later be included in the loaded chunks.
-            The dtype mapping dict will contain only the known data types (where a representation code was specified).
-        """
-
-        name_mapping = {}
-        dtype_mapping = {}
-
-        frame_config = config['Frame']
-        if 'channels' in frame_config:
-            frame_channels = frame_config['channels']
-        elif 'channels.value' in frame_config:
-            frame_channels = frame_config['channels.value']
-        else:
-            raise RuntimeError("No channels defined for the frame")
-        frame_channels_list = frame_channels.split(', ')
-
-        for section in config.sections():
-            if section.startswith('Channel') and section in frame_channels_list:
-                cs = config[section]
-
-                # add channel info to the name mapping
-                if 'dataset_name' in cs.keys():
-                    name_mapping[cs['name']] = cs['dataset_name']
-                else:
-                    name_mapping[cs['name']] = cs['name']
-
-                # add channel info to the dtype mapping
-                repr_code = cs.get('representation_code', cs.get('representation_code.value', None))
-                if isinstance(repr_code, str) and repr_code.isdigit():
-                    repr_code = RepresentationCode(int(repr_code))
-                elif repr_code is not None:
-                    repr_code = RepresentationCode[repr_code]
-
-                if repr_code is not None:
-                    dtype_mapping[cs['name']] = ReprCodeConverter.get_dtype(repr_code, RepresentationCode.FDOUBL)
-
-        return name_mapping, dtype_mapping
-
-    @classmethod
-    def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:
-        """Create a SourceDataWrapper from the source data object and config info."""
-
-        name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
-        return cls(data_source, name_mapping, known_dtypes=dtype_mapping, **kwargs)
 
     @classmethod
     def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],

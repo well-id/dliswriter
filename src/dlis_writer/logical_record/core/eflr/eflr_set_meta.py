@@ -19,7 +19,7 @@ class EFLRSetMeta(LRMeta):
     in __new__), which is separate for each subclass of EFLRSet.
 
     In addition, this metaclass implements several class methods of EFLRSet, mostly related to creating EFLRSet
-    and EFLRItem instances, e.g. from a config object.
+    and EFLRItem instances.
     """
 
     _eflr_set_instance_dict: dict[Union[str, None], "EFLRSet"]

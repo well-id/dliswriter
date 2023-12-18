@@ -1,7 +1,5 @@
 import logging
-import importlib
 from typing import Union, Optional, Any
-from typing_extensions import Self
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
@@ -137,23 +135,6 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         """Number of EFLRItem instances registered with this EFLRSet instance."""
 
         return len(self._eflr_item_dict)
-
-    @classmethod
-    def get_set_subclass(cls, object_name: str) -> EFLRSetMeta:
-        """Retrieve an EFLRSet subclass based on the provided object name.
-
-        This method is meant to be used with names of sections of a config object. The names are expected to take
-        the form: '<class-name>-<individual-name>', e.g. 'Channel-amplitude', 'Zone-4', etc.
-        """
-
-        module = importlib.import_module('dlis_writer.logical_record.eflr_types')
-
-        class_name = object_name.split('-')[0] + 'Set'
-        the_class = getattr(module, class_name, None)
-        if the_class is None:
-            raise ValueError(f"No EFLRSet class of name '{class_name}' found")
-
-        return the_class
 
     @classmethod
     def clear_set_instance_dict(cls):

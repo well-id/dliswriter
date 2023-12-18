@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class Attribute:
     """Represent an RP66 V1 Attribute."""
 
-    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set e.g. from config
+    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
@@ -33,8 +33,7 @@ class Attribute:
             units               :   Unit the value(s) is/are expressed in.
             value               :   Value(s) of the attribute.
             converter           :   Function used to convert/validate the provided value later, through the 'value'
-                                    property setter; should account for the value being provided as string
-                                    (from the config).
+                                    property setter.
             parent_eflr         :   EFLR or EFLRObject instance this attribute belongs to.
 
         """
@@ -52,7 +51,7 @@ class Attribute:
         self._representation_code = representation_code
         self._units = units
         self._value = value
-        self._converter = converter  # to convert value e.g. from string retrieved from config file
+        self._converter = converter  # to convert value
         self._parent_eflr = parent_eflr
 
     @staticmethod
