@@ -1071,21 +1071,34 @@ class DLISFile:
         self._other_eflr.append(z)
         return z
 
-    def _make_multi_frame_data(self, fr: eflr_types.FrameItem, data: Union[dict, os.PathLike[str], np.ndarray] = None,
-                               from_idx: int = 0, to_idx: Optional[int] = None, **kwargs) -> MultiFrameData:
+    def _make_multi_frame_data(
+            self,
+            fr: eflr_types.FrameItem,
+            data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
+            from_idx: int = 0,
+            to_idx: Optional[int] = None,
+            **kwargs
+    ) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
+
+        data_object: SourceDataWrapper
+
+        if data is None:
+            data = {}
 
         if isinstance(data, dict):
             self._data_dict = self._data_dict | data
-            data_object = DictDataWrapper(
-                self._data_dict, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
+            data_object = DictDataWrapper(self._data_dict, mapping=fr.channel_name_mapping,
+                                          known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
         else:
             if self._data_dict:
                 raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
                                 f"(Note: a dictionary is the only allowed type because some channels have been added"
                                 f"with associated data arrays")
             data_object = SourceDataWrapper.make_wrapper(
-                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
+                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping,
+                from_idx=from_idx, to_idx=to_idx
+            )
 
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
@@ -1093,7 +1106,7 @@ class DLISFile:
     def make_file_logical_records(
             self,
             chunk_size: Optional[int] = None,
-            data: Union[dict, os.PathLike[str], np.ndarray] = None,
+            data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
             **kwargs
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
@@ -1118,7 +1131,8 @@ class DLISFile:
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
-              data: Union[dict, os.PathLike[str], np.ndarray] = None, from_idx: int = 0, to_idx: Optional[int] = None):
+              data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
+              from_idx: int = 0, to_idx: Optional[int] = None):
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -1127,6 +1141,9 @@ class DLISFile:
             input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
             output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
             data                    :   Data for channels - if not specified when channels were added.
+            from_idx                :   Index from which the data should be loaded (or number of initial rows
+                                        to ignore).
+            to_idx                  :   Index up to which data should be loaded.
         """
 
         def timed_func():

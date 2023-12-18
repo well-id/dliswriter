@@ -26,6 +26,8 @@ class SourceDataWrapper:
             known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
                                 all dtypes. Can also be completely omitted. Missing data types are determined from
                                 the data.
+            from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
+            to_idx          :   Index up to which data should be loaded.
             **kwargs        :   The slot for additional keyword arguments has been added for signature consistency
                                 with all subclasses. No other keyword arguments should actually be passed.
 
@@ -197,7 +199,8 @@ class SourceDataWrapper:
 
     @classmethod
     def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
-                     mapping: Optional[dict] = None, **kwargs) -> Self:
+                     mapping: Optional[dict] = None, **kwargs) \
+            -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
         if isinstance(source, dict):
             return DictDataWrapper(source, mapping, **kwargs)
@@ -206,11 +209,11 @@ class SourceDataWrapper:
             return NumpyDataWrapper(source, mapping, **kwargs)
 
         try:
-            source = str(source)
+            source_str = str(source)
         except (TypeError, ValueError):
             raise TypeError(f"Expected a path-like; got {type(source)}: {source}")
-        if source.split('.')[-1].lower() not in ('h5', 'hdf5'):
-            raise ValueError(f"Expected a path to an HDF5 file; got {source}")
+        if source_str.split('.')[-1].lower() not in ('h5', 'hdf5'):
+            raise ValueError(f"Expected a path to an HDF5 file; got {source_str}")
         if mapping is None:
             raise ValueError("Mapping must be provided to create a HDF5DataWrapper")
         return HDF5DataWrapper(source, mapping, **kwargs)

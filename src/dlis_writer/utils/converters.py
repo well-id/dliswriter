@@ -1,6 +1,6 @@
 from datetime import datetime
 import numpy as np
-from typing import Callable, Any, Iterable, Union
+from typing import Callable, Any, Iterable, Union, Optional
 
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -163,7 +163,8 @@ class ReprCodeConverter:
         return cls._determine_repr_code_single(v)
 
     @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], default: RepresentationCode = None) -> type[object]:
+    def get_dtype(repr_code: Union[RepresentationCode, None], default: Optional[RepresentationCode] = None)\
+            -> type[object]:
         """Determine a numpy dtype for a given representation code.
 
         Args:
