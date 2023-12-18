@@ -94,8 +94,7 @@ def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_
         assert frame.index_max == index.max()
 
 
-def test_dlis_time_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path,
-                         config_time_based: ConfigParser):
+def test_dlis_time_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path):
     """Create a time-based DLIS file and check its basic parameters."""
 
     write_time_based_dlis(new_dlis_path, data=short_reference_data_path)
@@ -113,21 +112,17 @@ def test_dlis_time_based(short_reference_data: h5py.File, short_reference_data_p
         assert frame.index_max == index.max()
 
 
-@pytest.mark.parametrize(("code", "value"), ((RepresentationCode.FSINGL, 2), (RepresentationCode.FDOUBL, 7)))
-def test_repr_code(short_reference_data_path: Path, new_dlis_path: Path, code: RepresentationCode, value: int,
-                   config_time_based: ConfigParser):
+def test_repr_code(short_reference_data_path: Path, new_dlis_path: Path):
     """Test that representation codes for the channels in DLIS are stored correctly."""
 
-    for name in config_time_based.sections():
-        if name.startswith('Channel'):
-            config_time_based[name]['representation_code'] = str(code.value)
-
-    write_file(data=short_reference_data_path, dlis_file_name=new_dlis_path, config=config_time_based)
+    write_time_based_dlis(new_dlis_path, data=short_reference_data_path)
 
     with load_dlis(new_dlis_path) as f:
-        for name in ('amplitude', 'radius', 'radius_pooh'):
-            chan = select_channel(f, name)
-            assert chan.reprc == value
+        assert select_channel(f, 'posix time').reprc == 7
+        assert select_channel(f, 'surface rpm').reprc == 7
+        assert select_channel(f, 'amplitude').reprc == 2
+        assert select_channel(f, 'radius').reprc == 2
+        assert select_channel(f, 'radius_pooh').reprc == 2
 
 
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
