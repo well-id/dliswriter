@@ -115,6 +115,24 @@ def test_repr_code(short_reference_data_path: Path, new_dlis_path: Path):
         assert select_channel(f, 'radius_pooh').reprc == 2
 
 
+def test_channel_dimensions(short_reference_data_path: Path, new_dlis_path: Path):
+    """Test that dimensions for the channels in DLIS are stored correctly."""
+
+    write_time_based_dlis(new_dlis_path, data=short_reference_data_path)
+
+    with load_dlis(new_dlis_path) as f:
+        def check(name, shape):
+            ch = select_channel(f, name)
+            assert ch.dimension == shape
+            assert ch.element_limit == shape
+
+        check('posix time', [1])
+        check('surface rpm', [1])
+        check('amplitude', [128])
+        check('radius', [128])
+        check('radius_pooh', [128])
+
+
 @pytest.mark.parametrize('n_points', (10, 100, 128, 987))
 def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, new_dlis_path: Path, n_points: int,
                         config_array_time_based: ConfigParser, config_time_based: ConfigParser):
