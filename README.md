@@ -28,7 +28,28 @@ TODO
 
 ---
 ## About the DLIS format
-TODO
+DLIS (Digital Log Information Standard) is a binary data format dedicated to storing well log data. 
+It was developed in the 1980's, when data were stored on magnetic tapes.
+Despite numerous advances in the field of information technology, DLIS is still prevalent in the oil and gas industry.
+
+A DLIS file is composed of _logical records_ - topical units containing pieces of data and/or metadata. 
+There are multiple subtypes of logical records which are predefined for specific types of (meta)data.
+The most important ones are mentioned below, with links to more extensive descriptions 
+in the [Developer guide](#developer-guide).
+
+Every DLIS file starts with a logical record called [_Storage Unit Label (SUL)_](#storage-unit-label),
+followed by a [_File Header_](#file-header). Both of these mainly contain format-specific metadata.
+
+A file must also have at least one [_Origin_](#origin), which holds the key information 
+about the scanned well, scan procedure, producer, etc.
+
+Numerical data are kept in a [_Frame_](#frame), composed of several [_Channels_](#channel).
+A channel can be interpreted as a single curve ('column' of data) or a single image (2D data).
+
+Additional metadata can be specified using dedicated logical records subtypes, 
+such as [Parameter](#parameter), [Zone](#zone), [Calibration](#calibration), [Equipment](#equipment), etc.
+See [the list](#implemented-eflr-objects) for more details.
+
 
 ---
 ## User guide
@@ -51,7 +72,7 @@ TODO (link to example scripts)
 TODO
 
 ### More details about the format
-TODO; division: SUL, IFLR, EFLR
+TODO; division: SUL, IFLR, EFLR; visible records vs logical records
 
 ### Storage Unit Label
 TODO
@@ -65,8 +86,75 @@ TODO
 #### `EFLRSet` and `EFLRItem`
 TODO
 
-#### Implemented DLIS objects
+#### Implemented EFLR objects
 TODO
+
+  ##### File Header
+  TODO
+
+  ##### Origin
+  TODO
+
+  ##### Channel
+  TODO
+  
+  ##### Frame
+  TODO
+
+  ##### Axis
+  TODO
+
+  ##### Calibration Coefficient
+  TODO
+
+  ##### Calibration Measurement
+  TODO
+
+  ##### Calibration
+  TODO
+
+  ##### Computation
+  TODO
+  
+  ##### Equipment
+  TODO
+
+  ##### Group
+  TODO
+  
+  ##### Long Name
+  TODO
+  
+  ##### Message
+  TODO
+  
+  ##### Comment
+  TODO
+
+  ##### No-Format
+  TODO
+  
+  ##### Parameter
+  TODO
+  
+  ##### Path
+  TODO
+
+  ##### Process
+  TODO
+
+  ##### Splice
+  TODO
+
+  ##### Tool
+  TODO
+
+  ##### Well Reference Point
+  TODO
+  
+  ##### Zone
+  TODO
+
 
 ### DLIS Attributes
 TODO
