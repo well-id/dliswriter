@@ -167,52 +167,52 @@ a Tool has Equipments as parts. The relations are summarised in the diagram belo
 title: EFLR objects relationships
 ---
 classDiagram
-    Path o-- "0..1" WellReferencePoint
-    Path o-- "0..*" Channel
-    Path o-- "0..1" Frame
-    Frame o-- "0..*" Channel
-    Calibration o-- "0..*" CalibrationCoefficient
-    Calibration o-- "0..*" CalibrationMeasurement
-    Calibration o-- "0..*" Channel
-    Calibration o-- "0..*" Parameter
-    CalibrationMeasurement o-- "0..1" Channel
-    CalibrationMeasurement o-- "0..1" Axis
-    Computation o-- "0..*" Zone
-    Computation o-- "0..1" Tool
-    Computation o-- "0..1" Axis
-    Parameter o-- "0..*" Axis
-    Parameter o-- "0..*" Zone
-    Splice o-- "0..*" Channel
-    Splice o-- "0..*" Zone
-    Process o-- "0..*" Channel
-    Process o-- "0..*" Computation
-    Process o-- "0..*" Parameter
-    Tool o-- "0..*" Channel
-    Tool o-- "0..*" Parameter
-    Tool o-- "0..*" Equipment
-    Channel o-- "0..*" Axis
+    PathItem o-- "0..1" WellReferencePointItem
+    PathItem o-- "0..*" ChannelItem
+    PathItem o-- "0..1" FrameItem
+    FrameItem o-- "0..*" ChannelItem
+    CalibrationItem o-- "0..*" CalibrationCoefficientItem
+    CalibrationItem o-- "0..*" CalibrationMeasurementItem
+    CalibrationItem o-- "0..*" ChannelItem
+    CalibrationItem o-- "0..*" ParameterItem
+    CalibrationMeasurementItem o-- "0..1" ChannelItem
+    CalibrationMeasurementItem o-- "0..1" AxisItem
+    ComputationItem o-- "0..*" ZoneItem
+    ComputationItem o-- "0..1" ToolItem
+    ComputationItem o-- "0..1" AxisItem
+    ParameterItem o-- "0..*" AxisItem
+    ParameterItem o-- "0..*" ZoneItem
+    SpliceItem o-- "0..*" ChannelItem
+    SpliceItem o-- "0..*" ZoneItem
+    ProcessItem o-- "0..*" ChannelItem
+    ProcessItem o-- "0..*" ComputationItem
+    ProcessItem o-- "0..*" ParameterItem
+    ToolItem o-- "0..*" ChannelItem
+    ToolItem o-- "0..*" ParameterItem
+    ToolItem o-- "0..*" EquipmentItem
+    ChannelItem o-- "0..*" AxisItem
     
-    class Axis{
+    class AxisItem{
         +str axis_id
         +list coordinates
         +float spacing
     }
     
-    class Calibration{
-        +list~Channel~ calibrated_channels
-        +list~Channel~ uncalibrated_channels
-        +list~CalibrationCoefficient~ coefficients
-        +list~CalibrationMeasurement~ measurements
-        +list~Parameter~ parameters
+    class CalibrationItem{
+        +list~ChannelItem~ calibrated_channels
+        +list~ChannelItem~ uncalibrated_channels
+        +list~CalibrationCoefficientItem~ coefficients
+        +list~CalibrationMeasurementItem~ measurements
+        +list~ParameterItem~ parameters
         +str method
     }
     
-    class CalibrationMeasurement{
+    class CalibrationMeasurementItem{
         +str phase
-        +Channel measurement_source
+        +ChannelItem measurement_source
         +str _type
         +list~int~ dimension
-        +Axis axis
+        +AxisItem axis
         +list~float~ measurement
         +list~int~ sample_count
         +list~float~ maximum_deviation
@@ -225,7 +225,7 @@ classDiagram
         +list~float~ minus_tolerance
     }
     
-    class CalibrationCoefficient{
+    class CalibrationCoefficientItem{
         +str label
         +list~float~ coefficients
         +list~float~ references
@@ -233,13 +233,13 @@ classDiagram
         +list~float~ minus_tolerances
     }
     
-    class Channel{
+    class ChannelItem{
         +str long_name
         +list~str~ properties
         +RepresentationCode representation_code
         +Units units
         +list~int~ dimension
-        +list~Axis~ axis
+        +list~AxisItem~ axis
         +list~int~ element_limit
         +str source
         +float minimum_value
@@ -247,17 +247,17 @@ classDiagram
         +str dataset_name
     }
     
-    class Computation{
+    class ComputationItem{
         +str long_name
         +list~str~ properties
         +list~int~ dimension
-        +Axis axis
-        +list~Zone~ zones
+        +AxisItem axis
+        +list~ZoneItem~ zones
         +list~float~ values
-        +Tool source
+        +ToolItem source
     }
     
-    class Equipment{
+    class EquipmentItem{
         +str trademark_name
         +int status
         +str _type
@@ -277,9 +277,9 @@ classDiagram
         +float angular_drift
     }
     
-    class Frame{
+    class FrameItem{
         +str description
-        +list~Channel~ channels
+        +list~ChannelItem~ channels
         +str index_type
         +str direction
         +float spacing
@@ -289,18 +289,18 @@ classDiagram
     }
     
     
-    class Parameter{
+    class ParameterItem{
         +str long_name
         +list~int~ dimension
-        +list~Axis~ axis
-        +list~Axis~ zones
+        +list~AxisItem~ axis
+        +list~AxisItem~ zones
         +list values
     }
     
-    class Path{
-        +Frame frame_type
-        +WellReferencePoint well_reference_point
-        +list~Channel~ value
+    class PathItem{
+        +FrameItem frame_type
+        +WellReferencePointItem well_reference_point
+        +list~ChannelItem~ value
         +float borehole_depth
         +float vertical_depth
         +float radial_drift
@@ -311,37 +311,37 @@ classDiagram
         +float tool_zero_offset
     }
     
-    class Process{
+    class ProcessItem{
         +str description
         +str trademark_name
         +str version
         +list~str~ properties
         +str status
-        +list~Channel~ input_channels
-        +list~Channel~ output_channels
-        +list~Computation~ input_computations
-        +list~Computation~ output_computations
-        +list~Parameter~ parameters
+        +list~ChannelItem~ input_channels
+        +list~ChannelItem~ output_channels
+        +list~ComputationItem~ input_computations
+        +list~ComputationItem~ output_computations
+        +list~ParameterItem~ parameters
         +str comments
     }
     
-    class Splice{
-        +list~Channel~ output_channels
-        +list~Channel~ input_channels
-        +list~Zone~ zones
+    class SpliceItem{
+        +list~ChannelItem~ output_channels
+        +list~ChannelItem~ input_channels
+        +list~ZoneItem~ zones
     }
     
-    class Tool{
+    class ToolItem{
         +str description
         +str trademark_name
         +str generic_name
-        +list~Equipment~ parts
+        +list~EquipmentItem~ parts
         +int status
-        +list~Channel~ channels
-        +list~Parameter~ parameters
+        +list~ChannelItem~ channels
+        +list~ParameterItem~ parameters
     }
     
-    class WellReferencePoint{
+    class WellReferencePointItem{
         +str permanent_datum
         +str vertical_zero
         +float permanent_datum_elevation
@@ -355,7 +355,7 @@ classDiagram
         +float coordinate_3_value
     }
     
-    class Zone{
+    class ZoneItem{
         +str description
         +str domain
         +float maximum
@@ -363,8 +363,8 @@ classDiagram
     }
 ```
 
-Other EFLR objects can be thought of as _standalone_ - they do not refer to other objects 
-and are not explicitly referred to by any. 
+Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects 
+and are not explicitly referred to by any (althoug - as in case of NoFormat - a relation to IFLR objects can exist).
 
 ```mermaid
 ---
@@ -372,7 +372,7 @@ title: Standalone EFLR objects
 ---
 classDiagram
 
-    class Message{
+    class MessageItem{
         +str _type
         +datetime time
         +float borehole_drift
@@ -382,11 +382,11 @@ classDiagram
         +float text
     }
     
-    class Comment{
+    class CommentItem{
         +str: text
     }
     
-    class LongName{
+    class LongNameItem{
         +str general_modifier
         +str quantity
         +str quantity_modifier
@@ -404,12 +404,12 @@ classDiagram
         +str private_symbol
     }
     
-    class NoFormat{
+    class NoFormatItem{
         +str consumer_name
         +str description
     }
     
-    class Origin{
+    class OriginItem{
         +str file_id
         +str file_set_name
         +int file_set_number
@@ -449,14 +449,14 @@ It can also keep references to other groups, creating a hierarchical structure.
 title: EFLR Group object
 ---
 classDiagram
-    Group o-- "0..*" EFLR
-    Group o-- "0..*" Group
+    GroupItem o-- "0..*" EFLRItem
+    GroupItem o-- "0..*" GroupItem
 
-    class Group{
+    class GroupItem{
         +str description
         +str object_type
-        +list~EFLR~ object_list
-        +list~Group~ group_list
+        +list~EFLRItem~ object_list
+        +list~GroupItem~ group_list
     }
     
 ```
@@ -1740,18 +1740,18 @@ classDiagram
 title: IFLR objects and their relation to EFLR objects
 ---
 classDiagram
-    FrameData o-- "1" Frame
+    FrameData o-- "1" FrameItem
     NoFormatFrameData o-- "1" NoFormat
     
     class FrameData{
-        +Frame frame
+        +FrameItem frame
         +int frame_number
         +int origin_reference
         -slots numpy.ndarray
     }
     
     class NoFormatFrameData{
-        +NoFormat no_format_object
+        +NoFormatItem no_format_object
         +Any data
     }
     
