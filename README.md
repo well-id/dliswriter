@@ -52,22 +52,102 @@ See [the list](#implemented-eflr-objects) for more details.
 Additionally, for possible relations between the different objects, 
 see the relevant [class diagrams](#relations-between-eflr-objects).
 
-
 ---
 ## User guide
-TODO
+In the sections below you can learn how to define and write a DLIS file using the `dlis-writer`.
 
 ### Minimal example
-TODO
+Below you can see a very minimal DLIS file example with two 1D channels (one of which serves as the index)
+and a single 2D channel.
+
+```python
+import numpy as np  # for creating mock datasets
+from dlis_writer.file import DLISFile  # the main dlis-writer object you will interact with
+
+# create a DLISFile object
+# this also initialises StorageUnitLabel, FileHeader, and Origin with minimal default information
+df = DLISFile()
+
+# number of rows for creating the datasets
+# all datasets (channels) belonging to the same frame must have the same number of rows
+n_rows = 100
+
+# define channels with numerical data and additional information
+#  1) the first channel is also the index channel of the frame;
+#     must be 1D, ideally should be monotonic and equally spaced
+ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
+
+#  2) second channel; in this case 1D and unitless
+ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
+
+#  3) third channel - an image channel (2D data)
+ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
+
+# define frame, referencing the above defined channels
+main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+
+# when all the required objects have been added, write the data and metadata to a physical DLIS file
+df.write('./new_dlis_file.DLIS')
+
+```
 
 ### Extending basic metadata
-TODO
+As mentioned above, initialising `DLISFile` object automatically constructs Storage Unit Label,
+File Header, and Origin objects. However, the definition of each of these can be further tuned.
+
+The relevant information can be passed either as a relevant pre-defined object or a dictionary
+of key-word arguments to create one.
+
+```python
+from dlis_writer.file import DLISFile
+from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
+
+# pre-defining Storage Unit Label as object
+sul = StorageUnitLabel(set_identifier='MY-SET', sequence_number=5, max_record_length=4096)
+
+# pre-defining File Header as dictionary
+file_header = {'identifier': 'MY-FILE-HEADER', 'sequence_number': 5}
+
+# pre-defining Origin as object
+origin = OriginItem(
+    'MY-ORIGIN',
+    file_id='MY-FILE-ID',
+    file_set_name='MY-FILE-SET-NAME',
+    file_set_number=11,  # you should always define a file set number when defining OriginItem separately
+    file_number=22,
+    well_id=55,
+    well_name='MY-WELL'
+)
+
+# defining DLISFile using the pre-defined objects/dictionaries
+df = DLISFile(storage_unit_label=sul, file_header=file_header, origin=origin)
+```
+
+The attributes can also be changed later by accessing the relevant objects.
+Note: because most attributes are instances of [`Attribute` class](#the-attribute-class),
+you will need to use `.value` of the attribute you may want to change.
+
+```python
+origin.company.value = "COMPANY X"  # directly through the pre-defined Origin object
+df.origin.producer_name.value = "PRODUCER Y"  # by accessing the Origin object through the DLISFile
+```
 
 ### Adding more objects
 TODO
 
 ### Example scripts
-TODO (link to example scripts)
+Scripts in the [examples](./examples) folder illustrate the basic usage of the library.
+
+- [create_synth_dlis.py](./examples/create_synth_dlis.py) shows how to add every kind 
+of DLIS object to the file - including Parameters, Equipment, Comments, No-Formats, etc.
+It is also shown how multiple frames (in this case, a depth-based and a time-based frame) can be defined.
+
+- [create_dlis_from_data.py](./examples/create_dlis_from_data.py) can be used to make a DLIS file
+from any HDF5 data source.
+
+- [create_synth_dlis_variable_data.py](./examples/create_synth_dlis_variable_data.py) allows creating DLIS files
+with any number of 2D datasets with a user-defined shape, filled with randomised data. 
 
 ---
 ## Developer guide
