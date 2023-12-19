@@ -176,6 +176,12 @@ class Attribute:
         return 1
 
     @property
+    def multivalued(self) -> bool:
+        """True if multiple values (list of values) can be added; False otherwise."""
+
+        return self._multivalued
+
+    @property
     def parent_eflr(self) -> "Union[EFLRSet, EFLRItem, None]":
         """EFLR or ELFRObject instance the attribute belongs to."""
 

@@ -569,13 +569,83 @@ classDiagram
 
 
 ### DLIS Attributes
-TODO
+The characteristics of EFLR objects of the DLIS are defined using instances of `Attribute` class.
+An `Attribute` holds the value of a given parameter together with the associated unit (if any)
+and a representation code which guides how the contained information is transformed to bytes.
+Allowed units (not a strict set) and representation codes are defined [in the code](./src/dlis_writer/utils/enums.py).
+
+As a rule, `Attribute`s are defined for `EFLRItem`s, instances of which populate the `Attribute`s
+with relevant values. When an `EFLRItem` is converted to bytes, it includes information from all its
+`Attributes`. However, the defined `Attribute` information is also needed in `EFLRSet`s in order to define
+a header for all `EFLRItem`s it contains. For this reason, when the first `EFLRItem` instance for a given
+`EFLRSet` is created, the `Attribute`s from this `EFLRItem` are copied and passed to `ELFRSet`.
 
 #### The `Attribute` class
 TODO
 
 #### Attribute subtypes
-TODO
+Several `Attribute` subclasses have been defined to answer the reusable characteristics of the 
+attributes needed for various EFLR objects. The overview can be seen in the diagram below.
+
+```mermaid
+---
+title: Attribute and its subtypes
+---
+classDiagram
+    Attribute <|-- EFLRAttribute
+    Attribute <|-- DTimeAttribute
+    Attribute <|-- NumericAttribute
+    NumericAttribute <|-- DimensionAttribute
+    Attribute <|-- StatusAttribute
+    
+    class Attribute{
+        +str label
+        +Any value
+        +str units
+        +int count
+        +RepresentationCode representation_code
+        +RepresentationCode assigned_representation_code
+        +RepresentationCode inferred_representation_code
+        +[EFLRItem, EFLRSet] parent_eflr
+        +Callable converter
+        +bool multivalued
+        
+        +convert_value()
+        +get_as_bytes()
+        +copy()
+    }
+    
+    class EFLRAttribute{
+        -type _object_class
+        
+        -_convert_value()
+    }
+    
+    class DTimeAttribute{
+        +list~str~ dtime_formats
+        -bool _allow_float
+        
+        +parse_dtime()
+    }
+    
+    class NumericAttribute{
+        -bool _int_only
+        -bool _float_only
+        
+        -_int_parser()
+        -_float_parser()
+        -_convert_number()
+    }
+    
+    class StatusAttribute{
+        +convert_status()
+    }
+
+```
+
+
+TODO: description of all subtypes
+
 
 
 ------------------------------------------------
