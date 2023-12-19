@@ -16,7 +16,8 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [IFLR objects](#iflr-objects)
   - [EFLR objects](#eflr-objects)
     - [`EFLRSet` and `EFLRItem`](#eflrset-and-eflritem)
-    - [Implemented DLIS objects](#implemented-dlis-objects)
+    - [Implemented EFLR objects](#implemented-eflr-objects)
+    - [Relations between EFLR objects](#relations-between-eflr-objects)
   - [DLIS Attributes](#dlis-attributes)
     - [The `Attribute` class](#the-attribute-class)
     - [Attribute subtypes](#attribute-subtypes)
@@ -134,7 +135,32 @@ df.origin.producer_name.value = "PRODUCER Y"  # by accessing the Origin object t
 ```
 
 ### Adding more objects
-TODO
+Adding other logical records to the file is done in the same way as adding channels and frames.
+For example, to add a zone (in depth or in time):
+
+```python
+zone1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
+zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=10, maximum=30)
+```
+
+To specify units for numerical values, use `.units` of the relevant attribute, e.g.
+```python
+zone1.minimum.units = 'in'  # inches  
+zone2.maximum.units = 's'   # seconds
+```
+
+As per the [logical records relations graph](#relations-between-eflr-objects),
+Zone objects can be used to define e.g. Splice objects (which also refer to Channels):
+
+```python
+splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch3, zones=(zone1, zone2))
+```
+
+For more objects, see [the example with all kinds of objects](./examples/create_synth_dlis.py)
+and [the description of all implemented objects](#implemented-eflr-objects).
+
+Definition of all additional objects should precede the call to `.write()` of `DLISFile`, 
+otherwise no strict order is observed.
 
 ### Example scripts
 Scripts in the [examples](./examples) folder illustrate the basic usage of the library.
