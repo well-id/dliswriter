@@ -48,7 +48,9 @@ A channel can be interpreted as a single curve ('column' of data) or a single im
 
 Additional metadata can be specified using dedicated logical records subtypes, 
 such as [Parameter](#parameter), [Zone](#zone), [Calibration](#calibration), [Equipment](#equipment), etc.
-See [the list](#implemented-eflr-objects) for more details.
+See [the list](#implemented-eflr-objects) for more details. 
+Additionally, for possible relations between the different objects, 
+see the relevant [class diagrams](#relations-between-eflr-objects).
 
 
 ---
@@ -154,6 +156,310 @@ TODO
   
   ##### Zone
   TODO
+
+#### Relations between EFLR objects
+Many of the EFLR objects are interrelated - e.g. a Frame refers to multiple Channels,
+each of which can have an Axis; a Calibration uses Calibration Coefficients and Calibration Measurements;
+a Tool has Equipments as parts. The relations are summarised in the diagram below.
+
+```mermaid
+---
+title: EFLR objects relationships
+---
+classDiagram
+    Path o-- "0..1" WellReferencePoint
+    Path o-- "0..*" Channel
+    Path o-- "0..1" Frame
+    Frame o-- "0..*" Channel
+    Calibration o-- "0..*" CalibrationCoefficient
+    Calibration o-- "0..*" CalibrationMeasurement
+    Calibration o-- "0..*" Channel
+    Calibration o-- "0..*" Parameter
+    CalibrationMeasurement o-- "0..1" Channel
+    CalibrationMeasurement o-- "0..1" Axis
+    Computation o-- "0..*" Zone
+    Computation o-- "0..1" Tool
+    Computation o-- "0..1" Axis
+    Parameter o-- "0..*" Axis
+    Parameter o-- "0..*" Zone
+    Splice o-- "0..*" Channel
+    Splice o-- "0..*" Zone
+    Process o-- "0..*" Channel
+    Process o-- "0..*" Computation
+    Process o-- "0..*" Parameter
+    Tool o-- "0..*" Channel
+    Tool o-- "0..*" Parameter
+    Tool o-- "0..*" Equipment
+    Channel o-- "0..*" Axis
+    
+    class Axis{
+        +str axis_id
+        +list coordinates
+        +float spacing
+    }
+    
+    class Calibration{
+        +list~Channel~ calibrated_channels
+        +list~Channel~ uncalibrated_channels
+        +list~CalibrationCoefficient~ coefficients
+        +list~CalibrationMeasurement~ measurements
+        +list~Parameter~ parameters
+        +str method
+    }
+    
+    class CalibrationMeasurement{
+        +str phase
+        +Channel measurement_source
+        +str _type
+        +list~int~ dimension
+        +Axis axis
+        +list~float~ measurement
+        +list~int~ sample_count
+        +list~float~ maximum_deviation
+        +list~float~ standard_deviation
+        +datetime begin_time
+        +float duration
+        +list~int~ reference
+        +list~float~ standard
+        +list~float~ plus_tolerance
+        +list~float~ minus_tolerance
+    }
+    
+    class CalibrationCoefficient{
+        +str label
+        +list~float~ coefficients
+        +list~float~ references
+        +list~float~ plus_tolerances
+        +list~float~ minus_tolerances
+    }
+    
+    class Channel{
+        +str long_name
+        +list~str~ properties
+        +RepresentationCode representation_code
+        +Units units
+        +list~int~ dimension
+        +list~Axis~ axis
+        +list~int~ element_limit
+        +str source
+        +float minimum_value
+        +float maximum_value
+        +str dataset_name
+    }
+    
+    class Computation{
+        +str long_name
+        +list~str~ properties
+        +list~int~ dimension
+        +Axis axis
+        +list~Zone~ zones
+        +list~float~ values
+        +Tool source
+    }
+    
+    class Equipment{
+        +str trademark_name
+        +int status
+        +str _type
+        +str serial_number
+        +str location
+        +float height
+        +float length
+        +float minimum_diameter
+        +float maximum_diameter
+        +float volume
+        +float weight
+        +float hole_size
+        +float pressure
+        +float temperature
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+    }
+    
+    class Frame{
+        +str description
+        +list~Channel~ channels
+        +str index_type
+        +str direction
+        +float spacing
+        +bool encrypted
+        +int index_min
+        +int index_max
+    }
+    
+    
+    class Parameter{
+        +str long_name
+        +list~int~ dimension
+        +list~Axis~ axis
+        +list~Axis~ zones
+        +list values
+    }
+    
+    class Path{
+        +Frame frame_type
+        +WellReferencePoint well_reference_point
+        +list~Channel~ value
+        +float borehole_depth
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+        +float time
+        +float depth_offset
+        +float measure_point_offset
+        +float tool_zero_offset
+    }
+    
+    class Process{
+        +str description
+        +str trademark_name
+        +str version
+        +list~str~ properties
+        +str status
+        +list~Channel~ input_channels
+        +list~Channel~ output_channels
+        +list~Computation~ input_computations
+        +list~Computation~ output_computations
+        +list~Parameter~ parameters
+        +str comments
+    }
+    
+    class Splice{
+        +list~Channel~ output_channels
+        +list~Channel~ input_channels
+        +list~Zone~ zones
+    }
+    
+    class Tool{
+        +str description
+        +str trademark_name
+        +str generic_name
+        +list~Equipment~ parts
+        +int status
+        +list~Channel~ channels
+        +list~Parameter~ parameters
+    }
+    
+    class WellReferencePoint{
+        +str permanent_datum
+        +str vertical_zero
+        +float permanent_datum_elevation
+        +float above_permanent_datum
+        +float magnetic_declination
+        +str coordinate_1_name
+        +float coordinate_1_value
+        +str coordinate_2_name
+        +float coordinate_2_value
+        +str coordinate_3_name
+        +float coordinate_3_value
+    }
+    
+    class Zone{
+        +str description
+        +str domain
+        +float maximum
+        +float minimum
+    }
+```
+
+Other EFLR objects can be thought of as _standalone_ - they do not refer to other objects 
+and are not explicitly referred to by any. 
+
+```mermaid
+---
+title: Standalone EFLR objects
+---
+classDiagram
+
+    class Message{
+        +str _type
+        +datetime time
+        +float borehole_drift
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+        +float text
+    }
+    
+    class Comment{
+        +str: text
+    }
+    
+    class LongName{
+        +str general_modifier
+        +str quantity
+        +str quantity_modifier
+        +str altered_form
+        +str entity
+        +str entity_modifier
+        +str entity_number
+        +str entity_part
+        +str entity_part_number
+        +str generic_source
+        +str source_part
+        +str source_part_number
+        +str conditions
+        +str standard_symbol
+        +str private_symbol
+    }
+    
+    class NoFormat{
+        +str consumer_name
+        +str description
+    }
+    
+    class Origin{
+        +str file_id
+        +str file_set_name
+        +int file_set_number
+        +int file_number
+        +str file_type
+        +str product
+        +str version
+        +str programs
+        +datetime creation_time
+        +int order_number
+        +int descent_number
+        +int run_number
+        +int well_id
+        +str well_name
+        +str field_name
+        +int producer_code
+        +str producer_name
+        +str company
+        +str name_space_name
+        +int name_space_version
+
+    }
+    
+    class FileHeader{
+        +str identifier
+        +int sequence_number
+    }
+    
+    
+```
+
+A special case is a Group object, which can refer to multiple other EFLR objects of a given type.
+It can also keep references to other groups, creating a hierarchical structure.
+
+```mermaid
+---
+title: EFLR Group object
+---
+classDiagram
+    Group o-- "0..*" EFLR
+    Group o-- "0..*" Group
+
+    class Group{
+        +str description
+        +str object_type
+        +list~EFLR~ object_list
+        +list~Group~ group_list
+    }
+    
+```
 
 
 ### DLIS Attributes
@@ -1427,292 +1733,6 @@ classDiagram
     }
 ```
 
-```mermaid
----
-title: EFLR objects relationships
----
-classDiagram
-    Path o-- "0..1" WellReferencePoint
-    Path o-- "0..*" Channel
-    Path o-- "0..1" Frame
-    Frame o-- "0..*" Channel
-    Calibration o-- "0..*" CalibrationCoefficient
-    Calibration o-- "0..*" CalibrationMeasurement
-    Calibration o-- "0..*" Channel
-    Calibration o-- "0..*" Parameter
-    CalibrationMeasurement o-- "0..1" Channel
-    CalibrationMeasurement o-- "0..1" Axis
-    Computation o-- "0..*" Zone
-    Computation o-- "0..1" Tool
-    Computation o-- "0..1" Axis
-    Parameter o-- "0..*" Axis
-    Parameter o-- "0..*" Zone
-    Splice o-- "0..*" Channel
-    Splice o-- "0..*" Zone
-    Process o-- "0..*" Channel
-    Process o-- "0..*" Computation
-    Process o-- "0..*" Parameter
-    Tool o-- "0..*" Channel
-    Tool o-- "0..*" Parameter
-    Tool o-- "0..*" Equipment
-    Channel o-- "0..*" Axis
-    
-    class Axis{
-        +str axis_id
-        +list coordinates
-        +float spacing
-    }
-    
-    class Calibration{
-        +list~Channel~ calibrated_channels
-        +list~Channel~ uncalibrated_channels
-        +list~CalibrationCoefficient~ coefficients
-        +list~CalibrationMeasurement~ measurements
-        +list~Parameter~ parameters
-        +str method
-    }
-    
-    class CalibrationMeasurement{
-        +str phase
-        +Channel measurement_source
-        +str _type
-        +list~int~ dimension
-        +Axis axis
-        +list~float~ measurement
-        +list~int~ sample_count
-        +list~float~ maximum_deviation
-        +list~float~ standard_deviation
-        +datetime begin_time
-        +float duration
-        +list~int~ reference
-        +list~float~ standard
-        +list~float~ plus_tolerance
-        +list~float~ minus_tolerance
-    }
-    
-    class CalibrationCoefficient{
-        +str label
-        +list~float~ coefficients
-        +list~float~ references
-        +list~float~ plus_tolerances
-        +list~float~ minus_tolerances
-    }
-    
-    class Channel{
-        +str long_name
-        +list~str~ properties
-        +RepresentationCode representation_code
-        +Units units
-        +list~int~ dimension
-        +list~Axis~ axis
-        +list~int~ element_limit
-        +str source
-        +float minimum_value
-        +float maximum_value
-        +str dataset_name
-    }
-    
-    class Computation{
-        +str long_name
-        +list~str~ properties
-        +list~int~ dimension
-        +Axis axis
-        +list~Zone~ zones
-        +list~float~ values
-        +Tool source
-    }
-    
-    class Equipment{
-        +str trademark_name
-        +int status
-        +str _type
-        +str serial_number
-        +str location
-        +float height
-        +float length
-        +float minimum_diameter
-        +float maximum_diameter
-        +float volume
-        +float weight
-        +float hole_size
-        +float pressure
-        +float temperature
-        +float vertical_depth
-        +float radial_drift
-        +float angular_drift
-    }
-    
-    class Frame{
-        +str description
-        +list~Channel~ channels
-        +str index_type
-        +str direction
-        +float spacing
-        +bool encrypted
-        +int index_min
-        +int index_max
-    }
-    
-    
-    class Parameter{
-        +str long_name
-        +list~int~ dimension
-        +list~Axis~ axis
-        +list~Axis~ zones
-        +list values
-    }
-    
-    class Path{
-        +Frame frame_type
-        +WellReferencePoint well_reference_point
-        +list~Channel~ value
-        +float borehole_depth
-        +float vertical_depth
-        +float radial_drift
-        +float angular_drift
-        +float time
-        +float depth_offset
-        +float measure_point_offset
-        +float tool_zero_offset
-    }
-    
-    class Process{
-        +str description
-        +str trademark_name
-        +str version
-        +list~str~ properties
-        +str status
-        +list~Channel~ input_channels
-        +list~Channel~ output_channels
-        +list~Computation~ input_computations
-        +list~Computation~ output_computations
-        +list~Parameter~ parameters
-        +str comments
-    }
-    
-    class Splice{
-        +list~Channel~ output_channels
-        +list~Channel~ input_channels
-        +list~Zone~ zones
-    }
-    
-    class Tool{
-        +str description
-        +str trademark_name
-        +str generic_name
-        +list~Equipment~ parts
-        +int status
-        +list~Channel~ channels
-        +list~Parameter~ parameters
-    }
-    
-    class WellReferencePoint{
-        +str permanent_datum
-        +str vertical_zero
-        +float permanent_datum_elevation
-        +float above_permanent_datum
-        +float magnetic_declination
-        +str coordinate_1_name
-        +float coordinate_1_value
-        +str coordinate_2_name
-        +float coordinate_2_value
-        +str coordinate_3_name
-        +float coordinate_3_value
-    }
-    
-    class Zone{
-        +str description
-        +str domain
-        +float maximum
-        +float minimum
-    }
-```
-
-```mermaid
----
-title: Standalone EFLR objects
----
-classDiagram
-    class Message{
-        +str _type
-        +datetime time
-        +float borehole_drift
-        +float vertical_depth
-        +float radial_drift
-        +float angular_drift
-        +float text
-    }
-    
-    class Comment{
-        +str: text
-    }
-    
-    class LongName{
-        +str general_modifier
-        +str quantity
-        +str quantity_modifier
-        +str altered_form
-        +str entity
-        +str entity_modifier
-        +str entity_number
-        +str entity_part
-        +str entity_part_number
-        +str generic_source
-        +str source_part
-        +str source_part_number
-        +str conditions
-        +str standard_symbol
-        +str private_symbol
-    }
-    
-    class NoFormat{
-        +str consumer_name
-        +str description
-    }
-    
-    class Origin{
-        +str file_id
-        +str file_set_name
-        +int file_set_number
-        +int file_number
-        +str file_type
-        +str product
-        +str version
-        +str programs
-        +datetime creation_time
-        +int order_number
-        +int descent_number
-        +int run_number
-        +int well_id
-        +str well_name
-        +str field_name
-        +int producer_code
-        +str producer_name
-        +str company
-        +str name_space_name
-        +int name_space_version
-
-    }
-    
-    
-```
-
-```mermaid
----
-title: EFLR Group object
----
-classDiagram
-    Group o-- "0..*" EFLR
-    Group o-- "0..*" Group
-
-    class Group{
-        +str description
-        +str object_type
-        +list~EFLR~ object_list
-        +list~Group~ group_list
-    }
-    
-```
 
 
 ```mermaid
