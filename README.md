@@ -643,6 +643,18 @@ classDiagram
 
 ```
 
+`EFLRAttribute` has been defined to deal with attributes which should keep reference to other
+`EFLRItem`s - for example, `Channel`s of `Frame`, `Zones` of `Splice`, 
+`CalibrationCoefficient`s and `CalibrationMeasurement`s of `Calibration`.
+The value of an `EFLRAttribute` is an instance of (usually specific subtype of) `EFLRItem`.
+The representation code can be either `OBNAME` or `OBJREF`. The unit should not be defined (is meaningless).
+
+`DTimeAttribute` is meant for keeping time reference, either in the form of a `datetime.datetime` object
+or a number, indicating time since a specific event. The representation code should be adapted
+to the value: `DTIME` for `datetime` objects, otherwise any numeric code (e.g. `FDOUBl`, `USHORT`, etc.)
+The unit should be defined if the value is a number and should express the unit of time
+('s' for seconds, 'min' for minutes, etc.).
+
 
 TODO: description of all subtypes
 
