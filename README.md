@@ -339,10 +339,12 @@ Note: the standard defines several more types of EFLRs.
   Long Name specifies various string attributes of an object to describe it in detail.
   
   ##### Message
-  TODO
+  A Message is a string value with associated metadata - such as time 
+  (`datetime` or float - number of minutes/seconds/etc. since a specific event),
+  borehole/radial/angular drift, and vertical depth.
   
   ##### Comment
-  TODO
+  A Comment is simpler than a [Message](#message) object; it contains only the comment text.
 
   ##### No-Format
   TODO
@@ -952,51 +954,6 @@ no_format_fdata_2.data = 'Some OTHER text that is recorded but never read by any
 no_format_fdata_3 = NoFormatFrameData()
 no_format_fdata_3.no_format_object = no_format_2
 no_format_fdata_3.data = 'This could be the BINARY data of an image rather than ascii text'
-
-```
-
-
-### MESSAGE
-
-*time* attribute can be passed as a datetime.datetime instance or as a numeric value that denotes
-x min/sec/hour/ since something.
-
-```python
-from logical_record.message import Message
-
-message_1 = Message('MESSAGE-1')
-message_1._type.value = 'Command'
-
-message_1.time.value = datetime.now()
-message_1.time.representation_code = 'DTIME'
-
-message_1.borehole_drift.value = 123.34
-message_1.borehole_drift.representation_code = 'FDOUBL'
-
-message_1.vertical_depth.value = 234.45
-message_1.vertical_depth.representation_code = 'FDOUBL'
-
-message_1.radial_drift.value = 345.56
-message_1.radial_drift.representation_code = 'FDOUBL'
-
-message_1.angular_drift.value = 456.67
-message_1.angular_drift.representation_code = 'FDOUBL'
-
-message_1.text.value = 'Test message 11111'
-
-```
-
-
-### COMMENT
-
-```python
-from logical_record.message import Comment
-
-comment_1 = Comment('COMMENT-1')
-comment_1.text.value = 'SOME COMMENT HERE'
-
-comment_2 = Comment('COMMENT-2')
-comment_2.text.value = 'SOME OTHER COMMENT HERE'
 
 ```
 
