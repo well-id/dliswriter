@@ -226,10 +226,24 @@ TODO
 TODO
 
   ##### File Header
-  TODO
+  File Header must immediately follow a [Storage Unit Label](#storage-unit-label) of the file.  
+  Its length must be exactly 124 bytes.
+  The `identifier` attribute of the File Header represents the name of the DLIS file. 
+  It should be a string of max 65 characters.
 
   ##### Origin
-  TODO
+  Every DLIS file must contain at least one Origin. Usually, it immediately follows the [File Header](#file-header).
+  The Origin keeps key information related to the scanned well, the scan procedure, producer, etc.
+  The `creation_time` attribute of Origin, if not explicitly specified, is set to the current
+  date and time (when the object is initialised).
+
+  While in general the standard permits multiple Origins, 
+  the current implementation only allows a single Origin per file.
+  This is because every object in the file must have an _origin reference_ assigned and at the moment,
+  the `file_set_number` of the single Origin of the file is used as the origin reference for all objects
+  (see `_assign_origin_reference` in [DLISWriter](./src/dlis_writer/file/writer.py)).
+  To allow multiple Origins, one must develop a transparent way os assigning varying origin references
+  to all DLIS objects.
 
   ##### Channel
   TODO
@@ -732,117 +746,6 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 ------------------------------------------------
-
-## FIRST STEPS
-
-Every DLIS file must start with a Storage Unit Label and FileHeader.
-
-
-```python
-
-from logical_record.storage_unit_label import StorageUnitLabel
-
-sul = StorageUnitLabel()
-
-```
-
-
-### File Header
-
-File Header must be exactly 124 bytes.
-
-Recommended usage is to assign a max 65 characters *str* value to *_id* attribute, which represents the name of the logical file.
-
-```python
-
-from logical_record.file_header import FileHeader
-
-file_header = FileHeader()
-file_header.identifier = 'LOGICAL FILE NAME'
-
-```
-
-
-
-
-## Explicitly Formatted Logical Records (EFLR)
-
-Majority of the [logical record types](http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2) are categorized as EFLR.
-
-This section aims to provide general information that will make things clear for the upcoming sections.
-
-The usage of EFLR objects in this library is mostly the same.
-
-Due to complicated requirements of the RP66V1 specification, the implementation might look non-intiuitive at first,
-but it allows great control over each object and its attributes.
-
-### ORIGIN
-
-Every DLIS file must contain at least one ORIGIN logical record and this is usually right after the SUL and FILE-HEADER.
-
-
-
-```python
-
-from logical_record.origin import Origin
-
-origin = Origin('DEFINING ORIGIN')
-
-origin.file_id.value = 'AQLN file_id'
-
-origin.file_set_name.value = 'AQLN file_set_name'
-
-origin.file_set_number.value = 11
-
-origin.file_number.value = 22
-
-origin.file_type.value = 'AQLN file_type'
-
-origin.product.value = 'AQLN product'
-
-origin.version.value = 'AQLN version'
-
-origin.programs.value = 'AQLN programs'
-
-origin.creation_time.value = datetime.now()
-
-origin.order_number.value = 'AQLN order_number'
-
-origin.descent_number.value = 33
-
-origin.run_number.value = 44
-
-origin.well_id.value = 55
-
-origin.well_name.value = 'AQLN well_name'
-
-origin.field_name.value = 'AQLN field_name'
-
-origin.producer_code.value = 1
-
-origin.producer_name.value = 'AQLN producer_name'
-
-origin.company.value = 'AQLN company'
-
-origin.name_space_name.value = 'AQLN name_space_name'
-
-origin.name_space_version.value = 66
-
-```
-
-
-Please note that the *creation_time* field must be a datetime.datetime instance.
-
-```python
-
-from datetime import datetime
-
-now = datetime_now()
-
-origin.creation_time.value = now
-
-```
-
 
 ### WELL REFERENCE POINT
 
