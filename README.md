@@ -302,13 +302,18 @@ Note: the standard defines several more types of EFLRs.
   [Channel](#channel), [Parameter](#parameter), and [Computation](#computation).
 
   ##### Calibration Coefficient
-  TODO
+  Calibration Coefficient describes a set of coefficients together with reference values and tolerances.
+  It can be referenced by [Calibration](#calibration).
 
   ##### Calibration Measurement
-  TODO
+  Calibration Measurement describes measurement performed for the purpose of calibration.
+  It can reference a [Channel](#channel) object and can be referenced by [Calibration](#calibration).
 
   ##### Calibration
-  TODO
+  Calibration object describes a calibration with performed [measurements](#calibration-measurement)
+  and associated [coefficients](#calibration-coefficient). It can also reference
+  [Channels](#channel) and [Parameters](#parameter).
+  The `method` of a calibration is a string description of the applied method.
 
   ##### Computation
   TODO
@@ -1141,99 +1146,6 @@ process_1.parameters.value = [parameter_1, parameter_2, parameter_3]
 
 process_1.comments.value = 'SOME COMMENT HERE'
 
-```
-
-
-### CALIBRATION MEASUREMENT
-
-```python
-from logical_record.calibration import CalibrationMeasurement
-
-calibration_measurement_1 = CalibrationMeasurement('CMEASURE-1')
-
-calibration_measurement_1.phase.value = 'BEFORE'
-
-calibration_measurement_1.measurement_source.value = depth_channel
-
-calibration_measurement_1._type.value = 'Plus'
-
-calibration_measurement_1.dimension.value = [1]
-
-calibration_measurement_1.measurement.value = [12.2323]
-calibration_measurement_1.measurement.representation_code = 'FDOUBL'
-
-calibration_measurement_1.sample_count.value = [12]
-calibration_measurement_1.sample_count.representation_code = 'USHORT'
-
-calibration_measurement_1.maximum_deviation.value = [2.2324]
-calibration_measurement_1.maximum_deviation.representation_code = 'FDOUBL'
-
-calibration_measurement_1.standard_deviation.value = [1.123]
-calibration_measurement_1.standard_deviation.representation_code = 'FDOUBL'
-
-calibration_measurement_1.begin_time.value = datetime.now()
-calibration_measurement_1.begin_time.representation_code = 'DTIME'
-
-calibration_measurement_1.duration.value = 15
-calibration_measurement_1.duration.representation_code = 'USHORT'
-calibration_measurement_1.duration.units = 's'
-
-calibration_measurement_1.reference.value = [11]
-calibration_measurement_1.reference.representation_code = 'USHORT'
-
-calibration_measurement_1.standard.value = [11.2]
-calibration_measurement_1.standard.representation_code = 'FDOUBL'
-
-calibration_measurement_1.plus_tolerance.value = [2]
-calibration_measurement_1.plus_tolerance.representation_code = 'USHORT'
-
-calibration_measurement_1.minus_tolerance.value = [1]
-calibration_measurement_1.minus_tolerance.representation_code = 'USHORT'
-```
-
-
-### CALIBRATION COEFFICIENT
-
-
-```python
-from logical_record.calibration import CalibrationCoefficient
-
-calibration_coefficient = CalibrationCoefficient('COEF-1')
-
-calibration_coefficient.label.value = 'Gain'
-
-calibration_coefficient.coefficients.value = [100.2, 201.3]
-calibration_coefficient.coefficients.representation_code = 'FDOUBL'
-
-calibration_coefficient.references.value = [89, 298]
-calibration_coefficient.references.representation_code = 'FDOUBL'
-
-calibration_coefficient.plus_tolerances.value = [100.2, 222.124]
-calibration_coefficient.plus_tolerances.representation_code = 'FDOUBL'
-
-calibration_coefficient.minus_tolerances.value = [87.23, 214]
-calibration_coefficient.minus_tolerances.representation_code = 'FDOUBL'
-```
-
-
-### CALIBRATION
-
-```python
-from logical_record.calibration import Calibration
-
-calibration = Calibration('CALB-MAIN')
-
-calibration.calibrated_channels.value = [depth_channel, curve_1_channel]
-
-calibration.uncalibrated_channels.value = [curve_2_channel, multi_dim_channel, image_channel]
-
-calibration.coefficients.value = [calibration_coefficient]
-
-calibration.measurements.value = [calibration_measurement_1]
-
-calibration.parameters.value = [parameter_1, parameter_2, parameter_3]
-
-calibration.method.value = 'Two-Point-Linear'
 ```
 
 
