@@ -341,10 +341,48 @@ and [_No-Format Frame Data_](#no-format-frame-data) for arbitrary data bytes.
   ```
 
 ### EFLR objects
-TODO
+_Explicitly Formatted Logical Records_ are meant for representing metadata according to pre-defined schemes.
+More than 20 such schemes are defined (see [the list](#implemented-eflr-objects)).
+Each one lists a specific set of attributes.
+Some of the EFLRs are required for a DLIS file: [File Header](#file-header), [Origin](#origin),
+[Frame](#frame), and [Channels](#channel). Others are optional ways of specifying more metadata.
 
 #### `EFLRSet` and `EFLRItem`
-TODO; name as the first argument for EFLRItem; set_name for EFLRSet
+The implementation of the ELFRs is split over two separate classes: `EFLRSet` and `EFLRItem`.
+For the different schemes (as mentioned above), subclasses of both `EFLRSet` and `EFLRItem` are defined
+- e.g. `ChannelSet` and `ChannelItem`, `FrameSet` and `FrameItem`, etc.
+
+`EFLRItem` is e.g. a single Channel, Frame, or Axis. 
+It has its own name (the first positional argument when initialising the object) 
+and a number of attributes ([`Attribute` instances](#dlis-attributes)), pre-defined by the standard.
+For example, for a Channel, these attributes include: units, dimension, representation code,
+minimum and maximum value, and others.
+
+`EFLRSet` can be viewed as a collection of `EFLRItem` instances.
+Because a specific subclass of `EFLRSet` (e.g. `ChannelSet`) 
+can only contain instances of a specific subclass of `EFLRItem` (e.g. `ChannelItem`),
+all `EFLRItem`s added to an `EFLRSet` will have exactly the same set of attribute types.
+Therefore, an `EFLRSet` can be viewed as a table of `EFLRItem`s, with attribute names as table header
+and individual `EFLRItem`s with their attribute values as rows in that table.
+
+As shown in [the class diagram](#logical-record-types) above, it is `EFLRSet`, not `EFLRItem`
+that inherits from `LogicalRecord` base class. While this might be non-intuitive,
+it is consistent with the standard; an Explicitly Formatted Logical Record in the standard is a table
+as described above, with additional metadata.
+
+Theoretically, multiple `EFLRSet` instances of the same type (e.g. multiple `ChannelSet` instances)
+can be defined in a DLIS file. The key requirement is that their names - `set_name`s - are different.
+There cannot be two `ChannelItem`s (or two instances other `EFLRItem` subclass) with the same `set_name`.
+However, usually only a single instance of each `EFLRSet` is defined, and the default `set_name` is `None`.
+
+In the current implementation, there is usually no need to explicitly define `EFLRSet` (subclass) instances
+or to interact with these. User is supposed to interact with the relevant `EFLRItem` subclass instead, 
+e.g. `ChannelItem`. At initialisation, an instance of `ChannelItem` is automatically assigned to a `ChannelSet`.
+The `set_name` argument passed to initialisation of `ChannelItem` is used to retrieve (if already defined) 
+or create a `ChannelSet`. The reference to that `ChannelSet` instance is kept in the `ChannelItem` instance
+in the `parent` attribute. The `ChannelItem` instance is added to a dictionary of `EFLRItem`s 
+in that `ChannelSet` instance. (The same applies to all other subtypes of EFLRs).
+
 
 #### Implemented EFLR objects
 The types of EFLRs implemented in this library are described below.
