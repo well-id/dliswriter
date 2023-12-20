@@ -215,6 +215,12 @@ expressed in bytes. This number is limited to 16384 and the default is 8192.
 
 ### IFLR objects
 TODO
+  
+  #### Frame Data
+  TODO
+
+  #### No-Format Frame Data
+  TODO
 
 ### EFLR objects
 TODO
@@ -247,7 +253,28 @@ Note: the standard defines several more types of EFLRs.
   to all DLIS objects.
 
   ##### Channel
-  TODO
+  Channel is meant for wrapping and describing data sets.
+  A single channel refers to a single column of data (a single curve, e.g. depth, time, rpm) 
+  or a 2D data set (an image, e.g. amplitude, radius).
+  
+  In the standard, Channel does not directly contain the data it refers to, but rather described
+  the data's properties, such as the unit and representation code.
+  
+  The dimension and element limit express the horizontal shape of the data, i.e. the number of columns.
+  It is always a list of integers. List of any length would be accepted, but because this implementation
+  only handles 1D and 2D data, this is always a single-element list: `[1]` for 1D datasets
+  and `[n]` for 2D datasets, where `n` is the number of columns in the image (usually 128).
+  In this implementation, dimension and element limit should have the same value. 
+  Setting one at initialisation of Channel automatically sets up the other in the same way.
+
+  A [Frame](#frame) always refers to a list of channels. The order is important; the first channel
+  is used as the index. When a row of data is stored (wrapped in a [FrameData](#frame-data) object),
+  the order of channels as passed to the Frame is preserved.
+  
+  Channels can also be referred to by [Splice](#splice), [Path](#path), [Calibration](#calibration), 
+  [Calibration Measurement](#calibration-measurement), [Process](#process), and [Tool](#tool).
+  
+  On the receiving end, Channel can reference an [Axis](#axis).
   
   ##### Frame
   TODO
@@ -751,71 +778,6 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 ------------------------------------------------
-
-
-### CHANNEL
-
-
-You can think of Channel as a column.
-
-For example let's say in your dataset, you have a column
-called DEPTH, the values are float, the unit is meter, and each cell contains a single value so the dimension
-is 1. This is how you would create the Channel for DEPTH column.
-
-```python
-
-from logical_record.channel import Channel
-
-depth_channel = Channel('DEPTH CHANNEL')
-depth_channel.long_name.value = 'DEPTH'
-depth_channel.properties.value = ['0309 AQLN PROP 1', 'PROP AQLN 2']
-depth_channel.representation_code.value = get_representation_code('FDOUBL')
-depth_channel.units.value = 'm'
-depth_channel.dimension.value = [1]
-depth_channel.element_limit.value = [1]
-
-```
-
-*data.csv* has two more columns, we create channels for those as well.
-
-```python
-
-from logical_record.channel import Channel
-
-curve_1_channel = Channel('CURVE 1 CHANNEL')
-curve_1_channel.long_name.value = 'CURVE 1'
-curve_1_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_1_channel.units.value = 't'
-curve_1_channel.dimension.value = [1]
-curve_1_channel.element_limit.value = [1]
-
-curve_2_channel = Channel('CURVE 2 CHANNEL')
-curve_2_channel.long_name.value = 'CURVE 2'
-curve_2_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_2_channel.units.value = 't'
-curve_2_channel.dimension.value = [1]
-curve_2_channel.element_limit.value = [1]
-
-```
-
-For multi-dimensional columns, you must specify the dimension field's value accordingly.
-Dimension attributes denotes the dimension of the array in a single cell.
-For example the *image.csv* file has dimensions (7657, 384). This means,
-there are 7657 rows, each containing 384 values. So the dimension will be 384 as
-it denotes the dimension of each value in a single cell.
-
-
-```python
-
-from logical_record.channel import Channel
-
-image_channel = Channel('IMG')
-image_channel.long_name.value = 'IMAGE CHANNEL'
-image_channel.representation_code.value = get_representation_code('FDOUBL')
-image_channel.dimension.value = [384]
-image_channel.element_limit.value = [384]
-
-```
 
 
 
