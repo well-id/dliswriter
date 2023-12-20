@@ -655,9 +655,14 @@ to the value: `DTIME` for `datetime` objects, otherwise any numeric code (e.g. `
 The unit should be defined if the value is a number and should express the unit of time
 ('s' for seconds, 'min' for minutes, etc.).
 
+`NumericAttribute` keeps numerical data - in the form of int(s) or float(s). It is possible
+to restrict the type of accepted values to ints only or floats only at initialisation of the attribute.
 
-TODO: description of all subtypes
+`DimensionAttribute` is a subclass of `NumericAttribute`. It limits the above to ints only and is always
+multivalued (always a list of integers). It is mainly used in [Channel](#channel) objects where it describes
+the shape of the data (only the width, i.e. the number of columns).
 
+`StatusAttribute` encodes the status of [Tool](#tool) and [Equipment](#equipment) objects. Its value can only be 0 or 1.
 
 
 ------------------------------------------------
