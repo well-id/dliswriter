@@ -340,7 +340,9 @@ Note: the standard defines several more types of EFLRs.
   TODO
   
   ##### Path
-  TODO
+  Path describes several numerical values - such as angular/radial drift and measurement offsets - 
+  of the well. It can also reference a [Frame](#frame), [Well Reference Point](#well-reference-point),
+  and [Channels](#channel).
 
   ##### Process
   TODO
@@ -357,7 +359,15 @@ Note: the standard defines several more types of EFLRs.
   Well Reference Point can be referenced by [Path](#path).
   
   ##### Zone
-  TODO
+  A zone specifies a single interval in depth or time.
+  The `domain` of a Zone can be one of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+  The expression `minimum` and `maximum` of a Zone depends on the domain.
+  For 'TIME', they could be `datetime` objects or floats (indicating the time since a specific event; 
+  in this case, specifying a time unit is also advisable).
+  For the other domains, they should be floats, ideally with depth units (e.g. 'm').
+
+  Zone can be referenced by [Splice](#splice), [Process](#process), or [Parameter](#parameter).
+
 
 #### Relations between EFLR objects
 Many of the EFLR objects are interrelated - e.g. a Frame refers to multiple Channels,
@@ -840,120 +850,6 @@ Please note that, reading & manipulating datasets might differ depending on the 
 
 User is expected to create an array for each row and pass that array to FrameData object.
 
-
-
-### PATH
-
-*frame_type* must be an instance of a Frame(EFLR) object.
-*well_reference_point* must be an instance of a WellReferencePoint(EFLR) object.
-*value* must be a list of Channel instances.
-
-```python
-
-from logical_record.path import Path
-
-path_1 = Path('PATH1')
-
-path_1.frame_type.value = frame
-path_1.well_reference_point.value = well_reference_point
-path_1.value.value = [curve_1_channel, curve_2_channel]
-
-path_1.vertical_depth.value = -187
-path_1.vertical_depth.representation_code = 'SNORM'
-
-path_1.radial_drift.value = 105
-path_1.radial_drift.representation_code = 'SSHORT'
-
-path_1.angular_drift.value = 64.23
-path_1.angular_drift.representation_code = 'FDOUBL'
-
-path_1.time.value = 180
-path_1.time.representation_code = 'SNORM'
-
-path_1.depth_offset.value = -123
-path_1.depth_offset.representation_code = 'SSHORT'
-
-path_1.measure_point_offset.value = 82
-path_1.measure_point_offset.representation_code = 'SSHORT'
-
-path_1.tool_zero_offset.value = -7
-path_1.tool_zero_offset.representation_code = 'SSHORT'
-
-```
-
-
-### ZONE
-
-> [Zone Objects](http://w3.energistics.org/rp66/v1/rp66v1_sec5.html#5_8_1) specify single intervals in depth or time.
-
-Domain attribute can be:
-
-1. BOREHOLE-DEPTH
-2. TIME
-3. VERTICAL-DEPTH
-
-Maximum and Minimum attributes' representation code will depend on the domain attribute.
-
-A comprehensive example showing 4 different usage of this object:
-
-```python
-
-from datetime import datetime
-from logical_record.zone import Zone
-
-# Domain = BOREHOLE-DEPTH
-zone_1 = Zone('ZONE-1')
-zone_1.description.value = 'BOREHOLE-DEPTH-ZONE'
-zone_1.domain.value = 'BOREHOLE-DEPTH'
-
-zone_1.maximum.value = 1300.45
-zone_1.maximum.units = 'm'
-zone_1.maximum.representation_code = 'FDOUBL'
-
-zone_1.minimum.value = 100
-zone_1.minimum.units = 'm'
-zone_1.minimum.representation_code = 'USHORT'
-
-
-# Domain = VERTICAL-DEPTH
-zone_2 = Zone('ZONE-2')
-zone_2.description.value = 'VERTICAL-DEPTH-ZONE'
-zone_2.domain.value = 'VERTICAL-DEPTH'
-
-zone_2.maximum.value = 2300.45
-zone_2.maximum.units = 'm'
-zone_2.maximum.representation_code = 'FDOUBL'
-
-zone_2.minimum.value = 200
-zone_2.minimum.units = 'm'
-zone_2.minimum.representation_code = 'USHORT'
-
-
-# Domain = TIME and values are passed as datetime.datetime instances
-zone_3 = Zone('ZONE-3')
-zone_3.description.value = 'ZONE-TIME'
-zone_3.domain.value = 'TIME'
-
-zone_3.maximum.value = datetime(2022, 7, 13, 11, 30)
-zone_3.maximum.representation_code = 'DTIME'
-
-zone_3.minimum.value = datetime(2022, 7, 12, 9, 0)
-zone_3.minimum.representation_code = 'DTIME'
-
-# Domain = TIME and values are passed as integers denoting n minutes since something.
-zone_4 = Zone('ZONE-4')
-zone_4.description.value = 'ZONE-TIME-2'
-zone_4.domain.value = 'TIME'
-
-zone_4.maximum.value = 90
-zone_4.maximum.units = 'minute'
-zone_4.maximum.representation_code = 'USHORT'
-
-zone_4.minimum.value = 10
-zone_4.minimum.units = 'minute'
-zone_4.minimum.representation_code = 'USHORT'
-
-```
 
 ### PARAMETER
 
