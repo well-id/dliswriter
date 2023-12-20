@@ -12,6 +12,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [Example scripts](#example-scripts)
 - [Developer guide](#developer-guide)
   - [More details about the format](#more-details-about-the-format)
+  - [Logical Record types](#logical-record-types)
   - [Storage Unit Label](#storage-unit-label)
   - [IFLR objects](#iflr-objects)
   - [EFLR objects](#eflr-objects)
@@ -205,6 +206,75 @@ According to the standard, the minimum length is not explicitly defined, but bec
 minimum length of a LR segment is 16 bytes (including 4 LR segment header bytes),
 the resulting minimum length of a VR is 20 bytes.
 
+### Logical Record types
+```mermaid
+---
+title: Logical Record types overview
+---
+classDiagram
+    LogicalRecord <|-- EFLRSet 
+    LogicalRecord <|-- IFLR
+
+    
+    IFLR <|-- FrameData
+    IFLR <|-- NoFormatFrameData
+    
+    EFLRSet o-- "1..*" EFLRItem
+    EFLRItem o-- "1" EFLRSet
+    
+    class LogicalRecord{
+        +Enum logical_record_type
+        +bytes lr_type_struct
+        +bool is_eflr
+        
+        +represent_as_bytes()
+    }
+    
+    class EFLRSet{
+        +type item_type
+        +str eflr_name
+        +re.Pattern eflr_name_pattern
+        +str set_type
+        +str set_name
+        +int origin_reference
+        +int n_items
+        
+        +clear_eflr_item_dict()
+        +clear_set_instance_dict()
+        +get_eflr_item()
+        +register_item()
+        +get_all_eflr_items()
+        +get_or_make_set()
+        +get_or_make_set()
+        
+    }
+    
+    class EFLRItem{ 
+        +type parent_eflr_class
+        +str name
+        +EFLRSet parent
+        +int origin_reference
+        +int copy_number
+        +dict~str, Attribute~ attributes
+        +bytes obname
+        
+        +make_item_body_bytes()
+        +set_attributes()
+    }
+    
+    class StorageUnitLabel{
+        +str storage_unit_structure
+        +str dlis_version
+        +int max_record_length_limit
+        +int max_record_length
+        +int sequence_number
+        +str set_identifier
+        
+        +represent_as_bytes()
+    }
+```
+
+
 ### Storage Unit Label
 Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.
 Its format is different from that of other logical record types.
@@ -212,6 +282,9 @@ Its format is different from that of other logical record types.
 The attribute `max_record_length` of SUL determines the maximum length allowed for visible
 records of the file (see [Logical Records and Visible Records](#logical-records-and-visible-records)),
 expressed in bytes. This number is limited to 16384 and the default is 8192.
+
+The `StorageUnitLabel` is technically not a subclass of `LogicalRecord`, but is implemented
+such that it can mock one and can be used alongside with actual `LogicalRecord` objects.
 
 ### IFLR objects
 _IFLR_, or _Indirectly Formatted Logical Record_ objects, are meant for keeping numerical or binary data.
@@ -875,74 +948,3 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 -------------------------------------
-
-## DLIS objects
-```mermaid
----
-title: Logical record types overview
----
-classDiagram
-    LogicalRecordBase <|-- IflrAndEflrBase
-    LogicalRecordBase <|-- FileHeader
-    LogicalRecordBase <|-- StorageUnitLabel
-    
-    IflrAndEflrBase <|-- IFLR
-    IflrAndEflrBase <|-- EFLR
-    
-    IFLR <|-- FrameData
-    IFLR <|-- NoFormatFrameData
-    
-    class LogicalRecordBase{
-        +set_type
-        +key
-        +size
-        +represent_as_bytes()
-        +from_config()
-    }
-    
-    class IflrAndEflrBase{
-        +is_eflr
-        +logical_record_type
-        +segment_attributes
-        +lr_type_struct
-        +make_body_bytes()
-        +make_header_bytes()
-        +split()
-        +make_lr_type_struct()
-    }
-    
-    class EFLR{
-        +dtime_formats
-        +object_name
-        +set_name
-        +origin_reference
-        +copy_number
-        +obname
-        -_rp66_rules
-        -_attributes
-        -_instance_dict
-        +get_attribute()
-        +set_attributes()
-        +add_dependent_objects_from_config()
-        +all_from_config()
-        +get_or_make_from_config()
-        +get_instance()
-        -_create_attribute()
-    }
-    
-    class FileHeader{
-        +sequence_number
-        +identifier
-        +origin_reference
-        +copy_number
-        +object_name
-    }
-    
-    class StorageUnitLabel{
-        +storage_unit_structure
-        +dlis_version
-        +max_record_length
-        +sequence_number
-        +set_identifier
-    }
-```
