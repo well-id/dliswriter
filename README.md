@@ -268,6 +268,11 @@ Many of the EFLR objects are interrelated - e.g. a Frame refers to multiple Chan
 each of which can have an Axis; a Calibration uses Calibration Coefficients and Calibration Measurements;
 a Tool has Equipments as parts. The relations are summarised in the diagram below.
 
+_*Note*: in the diagrams below, the description of [`Attribute`s](#dlis-attributes) of the objects has been simplified.
+Only the type of the `.value` part of each `Attribute` is shown - e.g. in `CalibrationItem`, 
+`calibrated_channels` is shown as a list of `ChannelItem` instances, where in fact it is 
+an [`EFLRAttribute`](#attribute-subtypes) whose `.value` takes the form of a list of `ChannelItem` objects._ 
+
 ```mermaid
 ---
 title: EFLR objects relationships
@@ -470,7 +475,7 @@ classDiagram
 ```
 
 Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects 
-and are not explicitly referred to by any (althoug - as in case of NoFormat - a relation to IFLR objects can exist).
+and are not explicitly referred to by any (although - as in case of NoFormat - a relation to IFLR objects can exist).
 
 ```mermaid
 ---
