@@ -586,7 +586,40 @@ a header for all `EFLRItem`s it contains. For this reason, when the first `EFLRI
 `EFLRSet` is created, the `Attribute`s from this `EFLRItem` are copied and passed to `ELFRSet`.
 
 #### The `Attribute` class
-TODO
+The main characteristics of `Attribute` are described below.
+
+- `label`: The name of the `Attribute`. Comes from the standard and should not be changed.
+- `value`: The value(s) specified for this `Attribute`. In general, any type is allowed, but in most cases it is
+  (a list of): str / int / float / `EFLRItem` / `datetime`.
+- `multivalued`: a Boolean indicating whether this `Attribute` instance accepts a list of values (if True) or a single 
+  value (if False). Specified at initialisation of the `Attribute` (which usually takes place at initialisation of the 
+  relevant EFLR object).
+- `count`: Number of values specified for the `Attribute` instance. If the `Attribute` is not `multivalued`, `count` is 
+  always 1. Otherwise, it is the length of the list of values added to the `Attribute` (or `None` if no value is given).
+- `units`: A string representing the units of the `value` of the `Attribute` - if relevant. The standard pre-defines
+  a list of allowed units, but many DLIS readers accept any string value. For this reason, only a log warning is issued
+  if the user specifies a unit other than those given by the standard. 
+- `representation_code`: indication of type of the value(s) of the `Attribute` and guidance on how they should be 
+  converted to bytes to be included in the file. The standard pre-defines representation codes for some 
+  of the `Attribute`s and leaves more-or-less free choice for others. For this reason, many `Attribute`s have the 
+  representation code specified at initialisation and once explicitly specified, the representation code 
+  cannot be changed. The `representation_code` is a `property` which returns either the explicitly passed code (if any)
+  or one inferred from the `Attribute`'s `value` (if possible); if none of these can be determined, 
+  the property returns `None`.
+- `assigned_representation_code`: The explicitly specified (at initialisation or later) representation code 
+  of the `Attribute`. 
+- `inferred_representation_code`: A representation code inferred from the `value` of the `Attribute`, if possible.
+- `parent_eflr`: The `EFLRItem` or `EFLRSet` instance this attribute belongs to. Mainly used for string representation
+  of the `Attribute` (e.g. `Attribute 'description' of ToolItem 'TOOL-1'`, where `TOOL-1` is the parent EFLR).
+- `converter`: A callable which is used to convert the value passed by the user (or each of the individual items 
+  if the `Attribute` is multivalued) to fit the standard-imposed requirements for the given `Attribute`. It can also 
+  include type checks etc. (for example, checking that the objects passed to `calibrated_channels` of `CalibrationItem`)
+  are all instances of `ChannelItem`.
+
+_Settable_ parts of `Attribute` instance include: `value`, `units`, `representation_code` 
+(stored as `assigned_representation_code`), and `converter`. Some subtypes of `Attribute` further restrict 
+what can be set.
+
 
 #### Attribute subtypes
 Several `Attribute` subclasses have been defined to answer the reusable characteristics of the 
@@ -725,155 +758,6 @@ The usage of EFLR objects in this library is mostly the same.
 
 Due to complicated requirements of the RP66V1 specification, the implementation might look non-intiuitive at first,
 but it allows great control over each object and its attributes.
-
-
-An EFLR class' attributes are instances of another class called Attribute. 
-
-Each "Attribute" has:
-
-1. label
-2. count
-3. representation_code
-4. units
-5. value
-
-Most of the attributes of EFLR objects have default values, and for some of them user is expected to provide one or more of the
-count, representation_code, units, value.
-
-For an EFLR object, let's say origin, the usage of these attributes is shown below:
-
-```
-# Origin object has a file_id field as specified in the RP66V1.
-
-origin.file_id # This is an instance of logical_record.utils.core.Attribute
-
-origin.file_id.label # The label is pre-determined and SHOULD NOT BE CHANGED
-
-origin.file_id.count # The number of values passed to this attribute
-
-origin.file_id.representation_code # Data type of the value(s) passed
-
-origin.file_id.units # The measurement unit of the passed value(s)
-
-origin.file_id.value # A single value, or a list/tuple of values
-
-```
-
-Allowed types and limitations of these attributes for each EFLR can be found in logical_record.utils.rp66.RP66 object and
-the explanation can be found in the next section.
-
-### RP66 object
-
-This object in logical_record.utils.rp66 serves as a dictionary for the entire library.
-
-Each attribute of this object specifies the fields that can be used for each Set Type and
-restrictions on count and representation code for each field.
-
-For example file_id field of ORIGIN set looks like this:
-
-```python
-'file_id': {
-    'count': 1,
-    'representation_code': 'ASCII'
-}
-```
-
-If count=1, then file_id.value can not contain more than 1 value (a list of values).
-If count=None, then user is allowed to pass >=1 value(s) to field_id.value. For example:
-
-```python
-'programs': {
-    'count': None,
-    'representation_code': 'ASCII'
-}
-```
-
-Here *programs* field of Origin set has a count=None. This means the user can pass more than 1 'ASCII' value using a list or tuple like this:
-
-```python
-origin.programs.value = ['PROGRAM 1', 'PROGRAM 2']
-origin.programs.count = 2
-```
-
-If count and representation_code of a field has a value other than **None** user is **not allowed to change** count and representation_code
-for that field.
-
-If representation_code for of a field is None, then user **must provide a representation code** which denotes the data type of the value(s)
-of that field.
-
-A comprehensive example could be the AXIS set type for AXIS EFLR object.
-
-This is the specification dictionary for AXIS in RP66 object.
-
-```python
-AXIS = {
-    'axis_id': {
-        'count': 1,
-        'representation_code': 'IDENT'
-    },
-    'coordinates': {
-        'count': None,
-        'representation_code': None
-    },
-    'spacing': {
-        'count': 1,
-        'representation_code': None
-    }
-}
-```
-
-It shows that an Axis set have 3 fields:
-
-1. axis_id
-2. coordinates
-3. spacing
-
-The field *axis_id* has a count=1 and representation_code='IDENT'. This means user is allowed to pass only 1 value
-and that value must be type of 'IDENT'.
-
-```python
-axis.axis_id.value = 'SOME TEXT'
-```
-
-As the count and representation_code is already specified for *axis_id* in the RP66, user should not change them.
-
-The field *coordinates* have no count and representation_code so user **must provide** these. As there are no restrictions,
-user is free to pass a list or tuple of values as long as all the values have the same data type (representation_code).
-Below code demonstrates 2 different usages with 2 different representation codes:
-
-```python
-
-
-# VALUE PASSED AS LIST OF STRING
-axis.coordinates.representation_code = 'ASCII'
-axis.coordinates.count = 2
-axis.coordinates.value = ["40 23' 42.8676'' N",
-						  "27 47' 32.8956'' E"]
-
-
-
-# VALUE PASSED AS LIST OF FLOAT
-axis.coordinates.representation_code = 'FDOUBL'
-axis.coordinates.count = 2
-axis.coordinates.value = [40.395241, 27.792471]
-
-
-
-
-```
-
-The field *spacing* has a count of 1 and representation code will be provided by the user.
-User is free to specify the units attribute of each field.
-*units* might be useful for certain type of fields and *spacing* field of Axis set is a good example to this:
-
-```python
-axis.spacing.representation_code = 'FDOUBL'
-axis.spacing.value = 0.33
-axis.spacing.units = 'm'
-```
-
-
-
 
 ### ORIGIN
 
