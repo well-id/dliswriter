@@ -332,7 +332,8 @@ Note: the standard defines several more types of EFLRs.
   Each of these values can (and should) have a unit assigned.
 
   ##### Group
-  TODO
+  A Group can refer to multiple other EFLR objects of a given type.
+  It can also keep references to other groups, creating a hierarchical structure.
   
   ##### Long Name
   Long Name specifies various string attributes of an object to describe it in detail.
@@ -675,8 +676,7 @@ classDiagram
     
 ```
 
-A special case is a Group object, which can refer to multiple other EFLR objects of a given type.
-It can also keep references to other groups, creating a hierarchical structure.
+A special case is a Group object, which can refer to any other EFLRs or other groups, as described [here](#group).
 
 ```mermaid
 ---
@@ -866,19 +866,6 @@ for i in range(len(data)):
 Please note that, reading & manipulating datasets might differ depending on the format of the data files.
 
 User is expected to create an array for each row and pass that array to FrameData object.
-
-### GROUP
-
-```python
-from logical_record.group import Group
-
-group_1 = Group('GRP-1')
-
-group_1.description.value = 'MULTI-DIMENSIONAL CHANNELS'
-group_1.item_type.value = 'CHANNEL'
-group_1.object_list.value = [multi_dim_channel, image_channel]
-
-```
 
 
 ### SPLICE
