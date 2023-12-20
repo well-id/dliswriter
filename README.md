@@ -226,7 +226,6 @@ classDiagram
     LogicalRecord <|-- EFLRSet 
     LogicalRecord <|-- IFLR
 
-    
     IFLR <|-- FrameData
     IFLR <|-- NoFormatFrameData
     
@@ -318,14 +317,32 @@ and [_No-Format Frame Data_](#no-format-frame-data) for arbitrary data bytes.
 
   #### IFLR objects and their relations to EFLR objects
   The relations of Frame Data and No-Format Frame-Data to their 'parent' EFLR objects is summarised below.
+  For explanation on the differences between `FrameSet` and `FrameItem` etc., please see [here](#eflrset-and-eflritem).
   
   ```mermaid
   ---
   title: IFLR objects and their relation to EFLR objects
   ---
   classDiagram
-      FrameData o-- "1" FrameItem
-      NoFormatFrameData o-- "1" NoFormat
+      LogicalRecord <|-- IFLR
+      LogicalRecord <|-- EFLRSet
+      
+      IFLR <|-- FrameData
+      IFLR <|-- NoFormatFrameData
+      
+      EFLRSet <|-- FrameSet
+      EFLRSet <|-- NoFormatSet
+        
+      EFLRItem <|-- FrameItem
+      FrameData --> FrameItem
+
+      EFLRItem <|-- NoFormatItem
+      NoFormatFrameData --> NoFormatItem
+
+      FrameSet o-- FrameItem
+      NoFormatSet o-- NoFormatItem
+      FrameItem --> FrameSet
+      NoFormatItem --> NoFormatSet
       
       class FrameData{
           +FrameItem frame
