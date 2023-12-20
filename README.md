@@ -253,7 +253,9 @@ Note: the standard defines several more types of EFLRs.
   TODO
 
   ##### Axis
-  TODO
+  Axis defines coordinates (expressed either as floats or strings, e.g `"40 23' 42.8676'' N"` is a valid coordinate)
+  and spacing. Axis can be referenced by [Calibration Measurement](#calibration-measurement),
+  [Channel](#channel), [Parameter](#parameter), and [Computation](#computation).
 
   ##### Calibration Coefficient
   TODO
@@ -274,7 +276,7 @@ Note: the standard defines several more types of EFLRs.
   TODO
   
   ##### Long Name
-  TODO
+  Long Name specifies various string attributes of an object to describe it in detail.
   
   ##### Message
   TODO
@@ -749,66 +751,6 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 ------------------------------------------------
-
-### AXIS
-
-```python
-
-from logical_record.axis import Axis
-
-axis = Axis('AXS-1')
-
-axis.axis_id.value = 'FIRST AXIS'
-
-axis.coordinates.representation_code = 'FDOUBL'
-axis.coordinates.count = 2
-axis.coordinates.value = [40.395241, 27.792471]
-
-axis.spacing.representation_code = 'FDOUBL'
-axis.spacing.value = 0.33
-axis.spacing.units = 'm'
-
-```
-
-### LONG NAME
-
-```python
-
-from logical_record.long_name import LongName
-
-long_name = LongName('LNAME-1')
-
-long_name.general_modifier.value = 'SOME ASCII TEXT'
-
-long_name.quantity.value = 'SOME ASCII TEXT'
-
-long_name.quantity_modifier.value = 'SOME ASCII TEXT'
-
-long_name.altered_form.value = 'SOME ASCII TEXT'
-
-long_name.entity.value = 'SOME ASCII TEXT'
-
-long_name.entity_modifier.value = 'SOME ASCII TEXT'
-
-long_name.entity_number.value = 'SOME ASCII TEXT'
-
-long_name.entity_part.value = 'SOME ASCII TEXT'
-
-long_name.entity_part_number.value = 'SOME ASCII TEXT'
-
-long_name.generic_source.value = 'SOME ASCII TEXT'
-
-long_name.source_part.value = 'SOME ASCII TEXT'
-
-long_name.source_part_number.value = 'SOME ASCII TEXT'
-
-long_name.conditions.value = 'SOME ASCII TEXT'
-
-long_name.standard_symbol.value = 'SOME ASCII TEXT'
-
-long_name.private_symbol.value = 'SOME ASCII TEXT'
-
-```
 
 
 ### CHANNEL
