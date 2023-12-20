@@ -366,8 +366,8 @@ Some of the EFLRs are required for a DLIS file: [File Header](#file-header), [Or
 
 #### `EFLRSet` and `EFLRItem`
 The implementation of the ELFRs is split over two separate classes: `EFLRSet` and `EFLRItem`.
-For the different schemes (as mentioned above), subclasses of both `EFLRSet` and `EFLRItem` are defined
-- e.g. `ChannelSet` and `ChannelItem`, `FrameSet` and `FrameItem`, etc.
+For the different schemes (as mentioned above), subclasses of both `EFLRSet` and `EFLRItem` are defined, 
+e.g. `ChannelSet` and `ChannelItem`, `FrameSet` and `FrameItem`, etc.
 
 `EFLRItem` is e.g. a single Channel, Frame, or Axis. 
 It has its own name (the first positional argument when initialising the object) 
