@@ -220,10 +220,11 @@ TODO
 TODO
 
 #### `EFLRSet` and `EFLRItem`
-TODO
+TODO; name as the first argument for EFLRItem; set_name for EFLRSet
 
 #### Implemented EFLR objects
-TODO
+The types of EFLRs implemented in this library are described below.
+Note: the standard defines several more types of EFLRs.
 
   ##### File Header
   File Header must immediately follow a [Storage Unit Label](#storage-unit-label) of the file.  
@@ -300,7 +301,9 @@ TODO
   TODO
 
   ##### Well Reference Point
-  TODO
+  Well Reference Point can be used to specify up to 3 coordinates of a point. The coordinates
+  should be expressed as floats.
+  Well Reference Point can be referenced by [Path](#path).
   
   ##### Zone
   TODO
@@ -746,36 +749,6 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 ------------------------------------------------
-
-### WELL REFERENCE POINT
-
-Here we did not use *coordinate_3_name* and *coordinate_3_value* fields.
-
-```python
-
-from logical_record.well_reference_point import WellReferencePoint
-
-well_reference_point = WellReferencePoint('AQLN WELL-REF')
-
-well_reference_point.permanent_datum.value = 'AQLN permanent_datu'
-
-well_reference_point.vertical_zero.value = 'AQLN vertical_zero'
-
-well_reference_point.permanent_datum_elevation.value = 1234.51
-
-well_reference_point.above_permanent_datum.value = 888.51
-
-well_reference_point.magnetic_declination.value = 999.51
-
-well_reference_point.coordinate_1_name.value = 'Lattitude'
-
-well_reference_point.coordinate_1_value.value = 40.395240
-
-well_reference_point.coordinate_2_name.value = 'Longitude'
-
-well_reference_point.coordinate_2_value.value = 27.792470
-
-```
 
 ### AXIS
 
