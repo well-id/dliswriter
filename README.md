@@ -207,6 +207,17 @@ minimum length of a LR segment is 16 bytes (including 4 LR segment header bytes)
 the resulting minimum length of a VR is 20 bytes.
 
 ### Logical Record types
+There are two main types of logical records: [_Explicitly Formatted Logical Records (EFLRs)_](#eflr-objects)
+and [_Indirectly Formatted Logical Records_ (IFLRs)](#iflr-objects). 
+
+The [_Storage Unit Label_](#storage-unit-label), the first record in the file,
+could also be viewed as a logical record. However, due to functional discrepancies, 
+in the library, it does not inherit from the base `LogicalRecord` class; on the other hand,
+it is implemented such that it can mock one and can be used alongside with actual `LogicalRecord` objects.
+
+An overview of the types of logical records is shown below. More details can be found
+in the three sections linked above.
+
 ```mermaid
 ---
 title: Logical Record types overview
@@ -274,7 +285,6 @@ classDiagram
     }
 ```
 
-
 ### Storage Unit Label
 Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.
 Its format is different from that of other logical record types.
@@ -282,9 +292,6 @@ Its format is different from that of other logical record types.
 The attribute `max_record_length` of SUL determines the maximum length allowed for visible
 records of the file (see [Logical Records and Visible Records](#logical-records-and-visible-records)),
 expressed in bytes. This number is limited to 16384 and the default is 8192.
-
-The `StorageUnitLabel` is technically not a subclass of `LogicalRecord`, but is implemented
-such that it can mock one and can be used alongside with actual `LogicalRecord` objects.
 
 ### IFLR objects
 _IFLR_, or _Indirectly Formatted Logical Record_ objects, are meant for keeping numerical or binary data.
