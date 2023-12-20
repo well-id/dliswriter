@@ -319,7 +319,10 @@ Note: the standard defines several more types of EFLRs.
   TODO
   
   ##### Equipment
-  TODO
+  Equipment describes a single part of a [Tool](#tool), specifying its trademark name, serial number, etc.
+  It also contains float data on parameters such as: height, length, diameter, volume, weight, 
+  hole size, pressure, temperature, radial and angular drift. 
+  Each of these values can (and should) have a unit assigned.
 
   ##### Group
   TODO
@@ -353,7 +356,9 @@ Note: the standard defines several more types of EFLRs.
   TODO
 
   ##### Tool
-  TODO
+  A Tool is a collection of [Equipment](#equipment) objects (stored in the `parts` `Attribute`).
+  It can also reference [Channels](#channel) and [Parameters](#parameter), 
+  and can be referenced by [Computation](#computation).
 
   ##### Well Reference Point
   Well Reference Point can be used to specify up to 3 coordinates of a point. The coordinates
@@ -852,97 +857,6 @@ Please note that, reading & manipulating datasets might differ depending on the 
 
 User is expected to create an array for each row and pass that array to FrameData object.
 
-
-### EQUIPMENT
-
-Please note that even though RP66 V1 does not restrict the representation code for the attributes listed below, to make it easier for the user
-their default representation codes are set to FDOUBL. This object is an exception where you can set the representation codes even though they are not None in the logical_record.utils.rp66.RP66.
-
-- height
-- length
-- minimum_diameter
-- maximum_diameter
-- volume
-- weight
-- hole_size
-- pressure
-- temperature
-- vertical_depth
-- radial_drift
-- angular_drift
-
-
-```python
-
-from logical_record.equipment import Equipment
-
-equipment = Equipment('EQ1')
-equipment.trademark_name.value = 'EQ-TRADEMARKNAME'
-equipment.status.value = 1
-equipment._type.value = 'Tool'
-equipment.serial_number.value = '9101-21391'
-equipment.location.value = 'Well'
-
-equipment.height.value = 140
-equipment.height.units = 'in' 
-
-equipment.length.value = 230.78
-equipment.length.units = 'cm'
-
-equipment.minimum_diameter.value = 2.3
-equipment.minimum_diameter.units = 'm'
-
-equipment.maximum_diameter.value = 3.2
-equipment.maximum_diameter.units = 'm'
-
-equipment.volume.value = 100
-equipment.volume.units = 'cm3'
-
-equipment.weight.value = 1.2
-equipment.weight.units = 't'
-
-equipment.hole_size.value = 323.2
-equipment.hole_size.units = 'm' 
-
-equipment.pressure.value = 18000
-equipment.pressure.units = 'psi' 
-
-equipment.temperature.value = 24
-equipment.temperature.units = 'degC' 
-
-equipment.vertical_depth.value = 587
-equipment.vertical_depth.units = 'm'
-
-equipment.radial_drift.value = 23.22
-equipment.radial_drift.units = 'm' 
-
-equipment.angular_drift.value = 32.5
-equipment.angular_drift.units = 'm'
-
-```
-
-
-### TOOL
-
-*parts* attribute is a list of Equipment object instances.
-*channels* attribute is a list of Channel objects.
-*parameters* attribute is a list of Parameter objects.
-
-
-```python
-
-from logical_record.tool import Tool
-
-tool = Tool('TOOL-1')
-tool.description.value = 'SOME TOOL'
-tool.trademark_name.value = 'SMTL'
-tool.generic_name.value = 'TOOL GEN NAME'
-tool.parts.value = [equipment_1, equipment_2]
-tool.status.value = 1
-tool.channels.value = [depth_channel, curve_1_channel]
-tool.parameters.value = [parameter_1, parameter_3]
-
-```
 
 
 ### COMPUTATION
