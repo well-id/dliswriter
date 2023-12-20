@@ -337,7 +337,9 @@ Note: the standard defines several more types of EFLRs.
   TODO
   
   ##### Parameter
-  TODO
+  A Parameter is a collection of values, which can be either numbers or strings.
+  It can reference [Zones](#zone) and [Axes](#axis). 
+  It can be referenced by [Calibration](#calibration), [Process](#process), and [Tool](#tool).
   
   ##### Path
   Path describes several numerical values - such as angular/radial drift and measurement offsets - 
@@ -849,28 +851,6 @@ for i in range(len(data)):
 Please note that, reading & manipulating datasets might differ depending on the format of the data files.
 
 User is expected to create an array for each row and pass that array to FrameData object.
-
-
-### PARAMETER
-
-Example usage
-
-```python
-
-from logical_record.parameter import Parameter
-
-parameter_1 = Parameter('PARAM-1')
-
-parameter_1.long_name.value = 'LATLONG-GPS'
-
-parameter_1.dimension.value = [1]
-
-parameter_1.zones.value = [zone_1, zone_3]
-
-parameter_1.values.value = ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"]
-parameter_1.values.representation_code = 'ASCII'
-
-```
 
 
 ### EQUIPMENT
