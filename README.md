@@ -364,7 +364,7 @@ Note: the standard defines several more types of EFLRs.
   The `status` `Attribute` of Process can be one of: 'COMPLETE', 'ABORTED', 'IN-PROGRESS'.
 
   ##### Splice
-  TODO
+  A Splice relates several input and output [Channels](#channel) and [Zones](#zone).
 
   ##### Tool
   A Tool is a collection of [Equipment](#equipment) objects (stored in the `parts` `Attribute`).
@@ -866,18 +866,6 @@ for i in range(len(data)):
 Please note that, reading & manipulating datasets might differ depending on the format of the data files.
 
 User is expected to create an array for each row and pass that array to FrameData object.
-
-
-### SPLICE
-```python
-from logical_record.splice import Splice
-
-splice_1 = Splice('SPLICE-1')
-splice_1.output_channels.value = multi_dim_channel
-splice_1.input_channels.value = [curve_1_channel, curve_2_channel]
-splice_1.zones.value = [zone_1, zone_2, zone_3, zone_4]
-
-```
 
 
 ### NO-FORMAT EFLR & FRAME DATA
