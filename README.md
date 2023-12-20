@@ -277,7 +277,24 @@ Note: the standard defines several more types of EFLRs.
   On the receiving end, Channel can reference an [Axis](#axis).
   
   ##### Frame
-  TODO
+  Frame is a collection of [Channels](#channel). It can be interpreted as a table of numerical data.
+  Channels can be viewed as variable-width, vertical slices of a Frame.
+  Information contained in the Frame (and Channels) is used to generate [FrameData](#frame-data) objects,
+  which are horizontal slices of Frame - this time, strictly one row per slice.
+
+  Frame has an `index_type` `Attribute`, which defines the kind of data used as the common index
+  for all (other) channels in the Frame. The values explicitly allowed by standard are: 
+  'ANGULAR-DRIFT', 'BOREHOLE-DEPTH', 'NON-STANDARD', 'RADIAL-DRIFT', and 'VERTICAL-DEPTH'.
+  However, because most readers accept other expressions for index type, this library also allows it,
+  only issuing a warning in the logs.
+
+  Additional metadata defining a Frame can include its direction ('INCREASING' or 'DECREASING'),
+  spacing (a float value + unit), as well as `index_max` and `index_min`. 
+  These values are needed for some DLIS readers to interpret the data correctly.
+  Therefore, if not explicitly specified by the user, these values are inferred from the data
+  (in particular, from the first channel passed to the frame).
+
+  Frame can be referenced by [Path](#path).
 
   ##### Axis
   Axis defines coordinates (expressed either as floats or strings, e.g `"40 23' 42.8676'' N"` is a valid coordinate)
@@ -781,47 +798,7 @@ the shape of the data (only the width, i.e. the number of columns).
 
 
 
-### FRAME & FRAME DATA
-
-Each frame can have a varied number of Channel instances.
-Frames can be thought as separate spreadsheets with different combinations of Channels (columns)
-
-For each Frame, user must first create a Frame(EFLR) object and afterwards for each row of each column (Channel)
-create a Frame Data.
-
-
-Creating the Frame(EFLR)
-
-```python
-
-from logical_record.frame import Frame
-
-frame = Frame('MAIN')
-frame.channels.value = [depth_channel, curve_1_channel, curve_2_channel, image_channel]
-frame.index_type.value = 'BOREHOLE-DEPTH'
-frame.spacing.value = 0.33
-frame.spacing.representation_code = 'FDOUBL'
-frame.spacing.units = 'm'
-
-```
-
-Reading data:
-
-```python
-
-import pandas as pd
-
-data = pd.read_csv('./data/data.csv')
-image = pd.read_csv('./data/image.csv', header=None, sep=' ')
-
-# Remove index col if exists 
-data = data[[col for col in data.columns[1:]]]
-
-# Convert to numpy.ndarray
-data = data.values
-image = image.values
-
-```
+### FRAME DATA
 
 Each FrameData object represents a single row. FrameData must follow the Frame object and the order of the data passed should be the same with
 the order of the Channels in Frame.channels.value field.
