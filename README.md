@@ -405,26 +405,26 @@ classDiagram
     PathItem o-- "0..*" ChannelItem
     PathItem o-- "0..1" FrameItem
     FrameItem o-- "0..*" ChannelItem
-    CalibrationItem o-- "0..*" CalibrationCoefficientItem
-    CalibrationItem o-- "0..*" CalibrationMeasurementItem
     CalibrationItem o-- "0..*" ChannelItem
-    CalibrationItem o-- "0..*" ParameterItem
     CalibrationMeasurementItem o-- "0..1" ChannelItem
+    SpliceItem o-- "0..*" ChannelItem
+    ChannelItem o-- "0..*" AxisItem
     CalibrationMeasurementItem o-- "0..1" AxisItem
-    ComputationItem o-- "0..*" ZoneItem
-    ComputationItem o-- "0..1" ToolItem
-    ComputationItem o-- "0..1" AxisItem
     ParameterItem o-- "0..*" AxisItem
     ParameterItem o-- "0..*" ZoneItem
-    SpliceItem o-- "0..*" ChannelItem
-    SpliceItem o-- "0..*" ZoneItem
-    ProcessItem o-- "0..*" ChannelItem
-    ProcessItem o-- "0..*" ComputationItem
-    ProcessItem o-- "0..*" ParameterItem
+    CalibrationItem o-- "0..*" CalibrationCoefficientItem
+    CalibrationItem o-- "0..*" CalibrationMeasurementItem
+    CalibrationItem o-- "0..*" ParameterItem
     ToolItem o-- "0..*" ChannelItem
     ToolItem o-- "0..*" ParameterItem
     ToolItem o-- "0..*" EquipmentItem
-    ChannelItem o-- "0..*" AxisItem
+    ProcessItem o-- "0..*" ChannelItem
+    ProcessItem o-- "0..*" ComputationItem
+    ProcessItem o-- "0..*" ParameterItem
+    ComputationItem o-- "0..1" AxisItem
+    ComputationItem o-- "0..*" ZoneItem
+    SpliceItem o-- "0..*" ZoneItem
+    
     
     class AxisItem{
         +str axis_id
@@ -488,7 +488,7 @@ classDiagram
         +AxisItem axis
         +list~ZoneItem~ zones
         +list~float~ values
-        +ToolItem source
+        +EFLRItem source
     }
     
     class EquipmentItem{
