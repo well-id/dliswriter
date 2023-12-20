@@ -214,10 +214,22 @@ records of the file (see [Logical Records and Visible Records](#logical-records-
 expressed in bytes. This number is limited to 16384 and the default is 8192.
 
 ### IFLR objects
-TODO
+_IFLR_, or _Indirectly Formatted Logical Record_ objects, are meant for keeping numerical or binary data.
+There are two categories of IFLR: [_Frame Data_](#frame-data) for strictly formatted numerical data 
+and [_No-Format Frame Data_](#no-format-frame-data) for arbitrary data bytes.
   
   #### Frame Data
-  TODO
+  Each Frame Data object represents a single row of formatted numerical data. 
+  The order of values in a Frame Data must follow the order of Channels in the [Frame](#frame) it references.  
+  
+  For example, assume a Frame has 2 channels: 1D depth channel (dimension=[1]) 
+  and 2D image channel with 128 columns (dimension=[128]).
+  The generated FrameData objects should contain 129 values: 
+  1 from the depth channel followed by 128 from a row of the image channel. 
+  The values are merged into a single, flat array.
+  
+  In the library, Frame Data objects are generated automatically from Frame object information and data referenced 
+  by the relevant channels; see [MultiFrameData](./src/dlis_writer/file/multi_frame_data.py) for the procedure.
 
   #### No-Format Frame Data
   No-Format Frame Data is a wrapper for unformatted data - arbitrary bytes the user wishes to save in the file.
@@ -861,43 +873,6 @@ the shape of the data (only the width, i.e. the number of columns).
 
 ------------------------------------------------
 
-
-### FRAME DATA
-
-Each FrameData object represents a single row. FrameData must follow the Frame object and the order of the data passed should be the same with
-the order of the Channels in Frame.channels.value field.
-
-For this example *frame* is an instance of Frame(EFLR) and has 2 channels: depth_channel and image_channel.
-
-Each frame data should contain depth_channel values followed by image_channel. The data passed to FrameData
-must be a 1 dimensional np.array or a list.
-
-In this example the *depth_channel*, *curve_1_channel*, and *curve_2_channel* are instances of Channel (created previously) and all have a dimension of 1.
-
-*image_channel* on the other hand, has a dimension of 384. So, data that will be passed to each FrameData object
-must be a list of 387 values, first three being the values of *depth_channel*, *curve_1_channel*, and *curve_2_channel* in the same row.
-Following 384 values are the *image_channel* values for the corresponding row.
-
-This example uses numpy's append method to manipulate the datasets to get the list of values passed to FrameData objects.
-
-```python
-
-from logical_record.frame_data import FrameData
-
-frame_data_objects = []
-
-for i in range(len(data)):
-
-    slots = np.append(data[i], image[i])
-
-    frame_data = FrameData(frame=frame, frame_number=i+1, slots=slots)
-    frame_data_objects.append(frame_data)
-
-``` 
-
-Please note that, reading & manipulating datasets might differ depending on the format of the data files.
-
-User is expected to create an array for each row and pass that array to FrameData object.
 
 -------------------------------------
 
