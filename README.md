@@ -347,7 +347,12 @@ Note: the standard defines several more types of EFLRs.
   A Comment is simpler than a [Message](#message) object; it contains only the comment text.
 
   ##### No-Format
-  TODO
+  No-Format is a metadata container for unformatted data ([No-Format Frame Data](#no-format-frame-data)).
+  It allows users to write arbitrary bytes of data.
+  Just like [Frame](#frame) can be thought of as a collection of [Frame Data](#frame-data) objects,
+  No-Format is a collection of No-Format Frame Data objects.
+  
+  No-Format specifies information such as consumer name and description of the associated data.
   
   ##### Parameter
   A Parameter is a collection of values, which can be either numbers or strings.
@@ -831,7 +836,6 @@ the shape of the data (only the width, i.e. the number of columns).
 ------------------------------------------------
 
 
-
 ### FRAME DATA
 
 Each FrameData object represents a single row. FrameData must follow the Frame object and the order of the data passed should be the same with
@@ -869,36 +873,6 @@ Please note that, reading & manipulating datasets might differ depending on the 
 
 User is expected to create an array for each row and pass that array to FrameData object.
 
-
-### NO-FORMAT EFLR & FRAME DATA
-
-NO-FORMAT Logical Records allow users to write arbitrary bytes data.
-
-There are 2 steps:
-
-1. Creating NoFormat(EFLR) objects
-2. Creatinf NOFORMAT Frame Data that points to a NoFormat(EFLR) object
-
-
-#### NoFormat (EFLR)
-
-This object can be thought of a parent class for the NoFormat FrameData(s).
-This example creates two NoFormat objects:
-
-
-```python
-from logical_record.no_format import NoFormat
-
-no_format_1 = NoFormat('no_format_1')
-no_format_1.consumer_name.value = 'SOME TEXT NOT FORMATTED'
-no_format_1.description.value = 'TESTING-NO-FORMAT'
-
-no_format_2 = NoFormat('no_format_2')
-no_format_2.consumer_name.value = 'SOME IMAGE NOT FORMATTED'
-no_format_2.description.value = 'TESTING-NO-FORMAT-2'
-
-```
-
 #### NOFORMAT FRAME DATA (IFLR)
 
 NOFORMAT FrameData only has two attributes:
@@ -928,157 +902,7 @@ no_format_fdata_3.no_format_object = no_format_2
 no_format_fdata_3.image1 = 'This could be the BINARY data of an image rather than ascii text'
 
 ```
-
-#### COMPLETE CODE
-
-```python
-from logical_record.no_format import NoFormat
-from logical_record.frame_data import NoFormatFrameData
-
-no_format_1 = NoFormat('no_format_1')
-no_format_1.consumer_name.value = 'SOME TEXT NOT FORMATTED'
-no_format_1.description.value = 'TESTING-NO-FORMAT'
-
-no_format_2 = NoFormat('no_format_2')
-no_format_2.consumer_name.value = 'SOME IMAGE NOT FORMATTED'
-no_format_2.description.value = 'TESTING-NO-FORMAT-2'
-
-no_format_fdata_1 = NoFormatFrameData()
-no_format_fdata_1.no_format_object = no_format_1
-no_format_fdata_1.data = 'Some text that is recorded but never read by anyone.'
-
-no_format_fdata_2 = NoFormatFrameData()
-no_format_fdata_2.no_format_object = no_format_1
-no_format_fdata_2.data = 'Some OTHER text that is recorded but never read by anyone.'
-
-no_format_fdata_3 = NoFormatFrameData()
-no_format_fdata_3.no_format_object = no_format_2
-no_format_fdata_3.data = 'This could be the BINARY data of an image rather than ascii text'
-
-```
-
-
-### CREATING DLIS FILE
-
-First step is to create a DLISFile object.
-
-Each DLIS File must have a Storage Unit Label, File Header and an Origin.
-All other Logical Records must have an attribute *origin_reference* that points to the
-related Origin object's *file_set_number*. So, rather than setting some_logical_record.origin_reference
-each time user creates a Logical Record, the Origin object is passed to __init__ of the DLISFile
-and *origin_reference*s of all Logical Records are set internally.
-
-*file_path*: The path of the DLIS file that will be written to.
-*storage_unit_label*: A logical_record.storage_unit_label.StorageUnitLabel instance.
-*file_header*: A logical_record.file_header.FileHeader instance.
-*origin*: A logical_record.origin.Origin instance.
-
-Below example uses the same variable names used in previous steps to create each Logical Record Segment.
-
-For example *sul* is the name that we used when creating the StorageUnitLabel object.
-
-```python
-from logical_record.file import DLISFile
-
-dlis_file = DLISFile(file_path='./output/test.DLIS',
-                     storage_unit_label=sul,
-                     file_header=file_header,
-                     origin=origin)
-```
-
-Next step is to append all the Logical Record Segments created in previous segments.
-This is done by appending the related object instances to *logical_records* attribute of the DLISFile object.
-
-
-```python
-
-dlis_file.logical_records.append(well_reference_point)
-dlis_file.logical_records.append(axis)
-dlis_file.logical_records.append(long_name)
-dlis_file.logical_records.append(depth_channel)
-dlis_file.logical_records.append(curve_1_channel)
-dlis_file.logical_records.append(curve_2_channel)
-dlis_file.logical_records.append(multi_dim_channel)
-dlis_file.logical_records.append(image_channel)
-
-dlis_file.logical_records.append(frame)
-for fdata in frame_data_objects:
-    dlis_file.logical_records.append(fdata)
-
-dlis_file.logical_records.append(path_1)
-dlis_file.logical_records.append(zone_1)
-dlis_file.logical_records.append(zone_2)
-dlis_file.logical_records.append(zone_3)
-dlis_file.logical_records.append(zone_4)
-dlis_file.logical_records.append(parameter_1)
-dlis_file.logical_records.append(parameter_2)
-dlis_file.logical_records.append(parameter_3)
-dlis_file.logical_records.append(equipment_1)
-dlis_file.logical_records.append(equipment_2)
-dlis_file.logical_records.append(tool)
-dlis_file.logical_records.append(computation_1)
-dlis_file.logical_records.append(computation_2)
-dlis_file.logical_records.append(process_1)
-dlis_file.logical_records.append(process_2)
-dlis_file.logical_records.append(calibration_measurement_1)
-dlis_file.logical_records.append(calibration_coefficient)
-dlis_file.logical_records.append(calibration)
-dlis_file.logical_records.append(group_1)
-dlis_file.logical_records.append(splice_1)
-dlis_file.logical_records.append(no_format_1)
-dlis_file.logical_records.append(no_format_2)
-dlis_file.logical_records.append(no_format_fdata_1)
-dlis_file.logical_records.append(no_format_fdata_2)
-dlis_file.logical_records.append(no_format_fdata_3)
-dlis_file.logical_records.append(message_1)
-dlis_file.logical_records.append(comment_1)
-dlis_file.logical_records.append(comment_2)
-
-```
-
-Adding all the logical records at the last step was an arbitrary decision made for demonstration purposes.
-
-A more intuitive way might be:
-
-1. Create StorageUnitLabel
-2. Create FileHeader
-3. Create Origin
-4. Create DLISFile
-5. Create other Logical Records and append them to DLISFile().logical_records on the fly
-
-A basic demonstration of this approach:
-
-```python
-... imports
-..
-.
-
-sul = StorageUnitLabel()
-file_header = FileHeader()
-origin = Origin()
-... origin attributes
-..
-.
-
-dlis_file = DLISFile(file_path='some_path.DLIS', sul, file_header, origin)
-
-
-well_reference_point = WellReferencePoint()
-... well_reference_point attributes
-..
-.
-
-dlis_file.logical_records.append(well_reference_point)
-
-
-channel = Channel()
-... channel attributes
-..
-.
-
-dlis_file.logical_records.append(channel)
-```
-
+-------------------------------------
 
 ## DLIS objects
 ```mermaid
