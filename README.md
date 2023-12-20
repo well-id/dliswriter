@@ -182,8 +182,36 @@ TODO
 ### More details about the format
 TODO; division: SUL, IFLR, EFLR; visible records vs logical records
 
+### Logical Records and Visible Records
+[As mentioned before](#about-the-dlis-format), DLIS file consists of multiple _logical records_ (LRs).
+They can be viewed as abstract units, containing a specific type of data and/or metadata.
+
+In a more physical sense, a DLIS file is divided into _visible records_ (VRs). They are byte structures
+of pre-defined format, consisting of a 4-byte header (which includes a visible record start mark and record length)
+and a body (which can be filled with any bytes carrying data and/or metadata, coming from the 
+logical records).
+
+Visible records have a limited length, which is often lower than that of logical records. 
+In this case, the contents of a logical record can be split among several visible records' bodies.
+The _logical record segments_ (parts of the split logical record) contain additional 
+header information indicating e.g. whether the given segment is the first and/or the last one 
+of the original logical record.
+(In case a logical record fits entirely into a single visible record, its body is also wrapped
+in a logical record segment structure, with indication that the given segment is both 
+the first and the last part of the original logical record.)
+
+The maximum length of a VR is defined in [StorageUnitLabel](#storage-unit-label).
+According to the standard, the minimum length is not explicitly defined, but because the
+minimum length of a LR segment is 16 bytes (including 4 LR segment header bytes),
+the resulting minimum length of a VR is 20 bytes.
+
 ### Storage Unit Label
-TODO
+Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.
+Its format is different from that of other logical record types.
+
+The attribute `max_record_length` of SUL determines the maximum length allowed for visible
+records of the file (see [Logical Records and Visible Records](#logical-records-and-visible-records)),
+expressed in bytes. This number is limited to 16384 and the default is 8192.
 
 ### IFLR objects
 TODO
@@ -708,17 +736,6 @@ the shape of the data (only the width, i.e. the number of columns).
 ## FIRST STEPS
 
 Every DLIS file must start with a Storage Unit Label and FileHeader.
-
-### Storage Unit Label
-
-Each DLIS file has to start with a Storage Unit Label (SUL) which is 80 bytes.
-SUL has a specific format different from other Logical Record types.
-
-Using the default is recommended.
-
-*max_record_length* attribute determines the maximum length of each Visible Record.
-This number is limited to **16384** and the default is **8192**.
-Please check [related section on RP66 V1](http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5) for details.
 
 
 ```python
