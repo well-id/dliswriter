@@ -316,8 +316,15 @@ Note: the standard defines several more types of EFLRs.
   The `method` of a calibration is a string description of the applied method.
 
   ##### Computation
-  TODO
-  
+  Computation can reference an [Axis](#axis) and [Zones](#zone).
+  Additionally, through `source` `Attribute`, it can reference another object being the direct source 
+  of this computation, e.g. a [Tool](#tool). 
+  There are two representation codes that can be used for referencing an object: 'OBNAME' and 'OBJREF'. 
+  Computation can be referenced by [Process](#process).
+
+  The number of values specified for the `values` `Attribute` must match the number of Zones 
+  added to the Computation (through `zones` `Attribute`).
+
   ##### Equipment
   Equipment describes a single part of a [Tool](#tool), specifying its trademark name, serial number, etc.
   It also contains float data on parameters such as: height, length, diameter, volume, weight, 
@@ -350,7 +357,10 @@ Note: the standard defines several more types of EFLRs.
   and [Channels](#channel).
 
   ##### Process
-  TODO
+  A Process combines multiple other objects: [Channels](#channel), [Computations](#computation), 
+  and [Parameters](#parameter).
+  
+  The `status` `Attribute` of Process can be one of: 'COMPLETE', 'ABORTED', 'IN-PROGRESS'.
 
   ##### Splice
   TODO
@@ -856,88 +866,6 @@ for i in range(len(data)):
 Please note that, reading & manipulating datasets might differ depending on the format of the data files.
 
 User is expected to create an array for each row and pass that array to FrameData object.
-
-
-
-### COMPUTATION
-
-*axis* attribute must be an Axis object
-
-*zones* attribute must be a list of Zone objects
-
-*values* attribute must contain a list of values. Note that the number of values MUST BE THE SAME with number of Zone objects in the *zones* attribute.
-Representation code of *values* must be specified.
-
-*source* attribute can be a reference to another object that is the direct source of this computation.
-There are two representation codes that can be used for referencing an object: 'OBNAME' and 'OBJREF'.
-Below example assigns a Tool object created before as the *source* and sets the representation code to 'OBNAME'.
-
-
-```python
-
-from logical_record.computation import Computation
-
-computation = Computation('COMPT-1')
-
-computation.long_name.value = 'COMPT 1'
-
-computation.properties.value = ['PROP 1', 'AVERAGED']
-
-computation.dimension.value = [1]
-
-computation.axis.value = axis
-
-computation.zones.value = [zone_1, zone_2, zone_3]
-
-computation.values.value = [100, 200, 300]
-computation.values.representation_code = 'UNORM'
-
-computation.source.value = tool
-computation.source.representation_code = 'OBNAME'
-
-```
-
-
-### PROCESS
-
-*status* attribute can take 3 values:
-
-1. COMPLETE
-2. ABORTED
-3. IN-PROGRESS
-
-*input_channels*, *output_channels*, *input_computations*, *output_computations*, and *parameters* attributes are list of related object instances.
-
-```python
-
-from logical_record.process import Process
-
-process_1 = Process('MERGED')
-
-process_1.description.value = 'MERGED'
-
-process_1.trademark_name.value = 'PROCESS 1'
-
-process_1.version.value = '0.0.1'
-
-process_1.properties.value = ['AVERAGED']
-
-process_1.status.value = 'COMPLETE'
-
-process_1.input_channels.value = [curve_1_channel]
-
-process_1.output_channels.value = [multi_dim_channel]
-
-process_1.input_computations.value = [computation_1]
-
-process_1.output_computations.value = [computation_2]
-
-process_1.parameters.value = [parameter_1, parameter_2, parameter_3]
-
-process_1.comments.value = 'SOME COMMENT HERE'
-
-```
-
 
 ### GROUP
 
