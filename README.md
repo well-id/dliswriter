@@ -230,7 +230,8 @@ classDiagram
     IFLR <|-- FrameData
     IFLR <|-- NoFormatFrameData
     
-    EFLRSet o-- EFLRItem
+    EFLRSet o-- "1..*" EFLRItem
+    EFLRItem --> EFLRSet
     
     class LogicalRecord{
         +Enum logical_record_type
@@ -265,7 +266,7 @@ classDiagram
         +EFLRSet parent
         +int origin_reference
         +int copy_number
-        +dict~str, Attribute~ attributes
+        +dict attributes
         +bytes obname
         
         +make_item_body_bytes()
