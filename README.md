@@ -220,7 +220,33 @@ TODO
   TODO
 
   #### No-Format Frame Data
-  TODO
+  No-Format Frame Data is a wrapper for unformatted data - arbitrary bytes the user wishes to save in the file.
+  It must reference a [No-Format](#no-format) object. The data - as bytes or str - should be added in the 
+  `data` attribute. An arbitrary number of NOFORMAT FrameData can be created.
+
+  #### IFLR objects and their relations to EFLR objects
+  The relations of Frame Data and No-Format Frame-Data to their 'parent' EFLR objects is summarised below.
+  
+  ```mermaid
+  ---
+  title: IFLR objects and their relation to EFLR objects
+  ---
+  classDiagram
+      FrameData o-- "1" FrameItem
+      NoFormatFrameData o-- "1" NoFormat
+      
+      class FrameData{
+          +FrameItem frame
+          +int frame_number
+          +int origin_reference
+          -slots numpy.ndarray
+      }
+      
+      class NoFormatFrameData{
+          +NoFormatItem no_format_object
+          +Any data
+      }
+  ```
 
 ### EFLR objects
 TODO
@@ -873,35 +899,6 @@ Please note that, reading & manipulating datasets might differ depending on the 
 
 User is expected to create an array for each row and pass that array to FrameData object.
 
-#### NOFORMAT FRAME DATA (IFLR)
-
-NOFORMAT FrameData only has two attributes:
-
-1. no_format_object: A logical_record.no_format.NoFormat instance
-2. data: a binary data
-
-
-An arbitrary number of NOFORMAT FrameData can be created.
-
-This example creates three NOFORMAT FrameData, two of them points to no_format_1,
-and one of them to no_format_2 objects that were created in the previous step.
-
-```python
-from logical_record.frame_data import FrameData
-
-no_format_fdata_1 = NoFormatFrameData()
-no_format_fdata_1.no_format_object = no_format_1
-no_format_fdata_1.image1 = 'Some text that is recorded but never read by anyone.'
-
-no_format_fdata_2 = NoFormatFrameData()
-no_format_fdata_2.no_format_object = no_format_1
-no_format_fdata_2.image1 = 'Some OTHER text that is recorded but never read by anyone.'
-
-no_format_fdata_3 = NoFormatFrameData()
-no_format_fdata_3.no_format_object = no_format_2
-no_format_fdata_3.image1 = 'This could be the BINARY data of an image rather than ascii text'
-
-```
 -------------------------------------
 
 ## DLIS objects
@@ -973,28 +970,4 @@ classDiagram
         +sequence_number
         +set_identifier
     }
-```
-
-
-
-```mermaid
----
-title: IFLR objects and their relation to EFLR objects
----
-classDiagram
-    FrameData o-- "1" FrameItem
-    NoFormatFrameData o-- "1" NoFormat
-    
-    class FrameData{
-        +FrameItem frame
-        +int frame_number
-        +int origin_reference
-        -slots numpy.ndarray
-    }
-    
-    class NoFormatFrameData{
-        +NoFormatItem no_format_object
-        +Any data
-    }
-    
 ```
