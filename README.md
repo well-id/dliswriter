@@ -230,8 +230,7 @@ classDiagram
     IFLR <|-- FrameData
     IFLR <|-- NoFormatFrameData
     
-    EFLRSet o-- "1..*" EFLRItem
-    EFLRItem o-- "1" EFLRSet
+    EFLRSet "1" o-- "1..*" EFLRItem
     
     class LogicalRecord{
         +Enum logical_record_type
