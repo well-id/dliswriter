@@ -15,6 +15,9 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [Logical Record types](#logical-record-types)
   - [Storage Unit Label](#storage-unit-label)
   - [IFLR objects](#iflr-objects)
+    - [Frame Data](#frame-data)
+    - [No-Format Frame Data](#no-format-frame-data)
+    - [IFLR objects and their relations to EFLR objects](#iflr-objects-and-their-relations-to-eflr-objects)
   - [EFLR objects](#eflr-objects)
     - [`EFLRSet` and `EFLRItem`](#eflrset-and-eflritem)
     - [Implemented EFLR objects](#implemented-eflr-objects)
@@ -22,7 +25,12 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [DLIS Attributes](#dlis-attributes)
     - [The `Attribute` class](#the-attribute-class)
     - [Attribute subtypes](#attribute-subtypes)
-  
+  - [Writing the binary file](#writing-the-binary-file)
+  - [`DLISFile` object](#dlisfile-object)
+  - [`FileLogicalRecords` object](#filelogicalrecords-object)
+  - [`DLISWriter` and auxiliary objects](#dliswriter-and-auxiliary-objects)
+  - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
+
 
 ---
 ## Release log
@@ -1005,8 +1013,18 @@ the shape of the data (only the width, i.e. the number of columns).
 
 `StatusAttribute` encodes the status of [Tool](#tool) and [Equipment](#equipment) objects. Its value can only be 0 or 1.
 
+### Writing the binary file
+TODO
 
-------------------------------------------------
+#### `DLISFile` object
+TODO
 
+#### `FileLogicalRecords` object
+TODO
 
--------------------------------------
+#### `DLISWriter` and auxiliary objects
+TODO
+
+#### Converting objects and attributes to bytes
+TODO
+
