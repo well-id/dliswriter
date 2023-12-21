@@ -1129,7 +1129,7 @@ class DLISFile:
 
         return flr
 
-    def write(self, dlis_file_name: Union[str, os.PathLike[str]], visible_record_length: int = 8192,
+    def write(self, dlis_file_name: Union[str, os.PathLike[str]],
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
               data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
               from_idx: int = 0, to_idx: Optional[int] = None):
@@ -1137,7 +1137,6 @@ class DLISFile:
 
         Args:
             dlis_file_name          :   Name of the file to be created.
-            visible_record_length   :   Maximal length of visible records to be created in the file.
             input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
             output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
             data                    :   Data for channels - if not specified when channels were added.
@@ -1152,7 +1151,7 @@ class DLISFile:
             This function is used in a timeit call to time the file creation.
             """
 
-            dlis_file = DLISWriter(visible_record_length=visible_record_length)
+            dlis_file = DLISWriter(visible_record_length=self.storage_unit_label.max_record_length)
             logical_records = self.make_file_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
             dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
