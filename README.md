@@ -36,7 +36,19 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
-TODO
+##### 0.0.4: All DLIS objects added
+Exposed all types of DLIS objects (WellReferencePoint, Group, Message, etc.) 
+in `DLISFile` through `add_<object>` methods (e.g. `add_group`).
+
+##### 0.0.3: Instantiating ELFRObjects directly
+Each `EFLRObject` (later renamed to `EFLRInstance`) can be initialised directly by calling the constructor
+of the relevant class (before they were initialised through the corresponding `EFLR`, later renamed to `EFLRSet`).
+
+##### 0.0.2: More DLIS objects
+Added support for more objects (Zone, Splice, Axis) to the `DLISFile`.
+
+##### 0.0.1: First release
+New structure of the repository, compliant with WellID standards.
 
 ---
 ## About the DLIS format
