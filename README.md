@@ -1081,7 +1081,31 @@ numerical data information. These objects are also iterable and yield consecutiv
 of Frame Data belonging to the given Frame. One `MultiFrameData` object per frame is defined.
 
 #### `DLISWriter` and auxiliary objects
-TODO
+`DLISWriter` is the object where the bytes creation and writing to file happens.
+Given the iterable of logical records, enclosed in a `FileLogicalRecords` object,
+a `DLISWriter` iterates over the logical records and for each one:
+  1. Assigns an _origin_reference_ to all objects in the file.
+    The origin reference is the `file_set_number` of the Origin object defined in the file.
+  2. Calls for creation of bytes describing that logical record 
+       (see [here](#converting-objects-and-attributes-to-bytes))
+  3. If the bytes sequence is too long to fit into a single visible record,
+       it splits the bytes into several segments (see [the explanation](#logical-records-and-visible-records))
+  4. Wraps the segments (or full bytes sequence) in visible records and writes the resulting bytes to a file.
+
+The writing of bytes is aided by objects of two auxiliary classes: `ByteWriter` and `BufferedOutput`.
+The main motivation between both is to facilitate gradual, _chunked_ writing of bytes to a file
+rather than having to keep everything in memory and dumping it to the file at the very end.
+
+`ByteWriter` manages access to the created DLIS file. Its `write_bytes` method,
+which can be called repetitively, writes or appends the provided bytes to the file.
+The object also keeps track of the total size (in bytes) of the file as it is being created.
+
+The role of `BufferedOutput` is to gather bytes of the created visible records
+and periodically call the `write_bytes` of the `ByteWriter` to send the collected
+bytes to the file and clear its internal cache, getting ready for receiving more bytes.
+The size of the gathered bytes chunk is user-tunable and can be adjusted to tackle
+the tradeoff between the amount of data stored in memory at any given point
+and the number of I/O calls.
 
 #### Converting objects and attributes to bytes
 TODO
