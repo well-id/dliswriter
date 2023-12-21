@@ -340,6 +340,12 @@ class DictDataWrapper(SourceDataWrapper):
     def _check_source_dict(data_dict: dict[str, np.ndarray]):
         """Check that all values of the source dictionary are numpy arrays."""
 
+        if not isinstance(data_dict, dict):
+            raise TypeError(f"Expected a dictionary, got {type(data_dict)}: {data_dict}")
+
+        if not all(isinstance(k, str) for k in data_dict):
+            raise TypeError(f"Source dictionary keys must be strings; got {', '.join(str(type(k)) for k in data_dict)}")
+
         if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
-            raise ValueError(f"Dict values must be numpy arrays; "
-                             f"got {', '.join(str(type(v)) for v in data_dict.values())}")
+            raise TypeError(f"Dict values must be numpy arrays; "
+                            f"got {', '.join(str(type(v)) for v in data_dict.values())}")

@@ -1,4 +1,5 @@
 import numpy as np
+from pathlib import Path
 import pytest
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper
@@ -60,3 +61,25 @@ def test_creation_with_known_dtypes_and_mapping(data):
     assert w.dtype[0] == np.float16
     assert w.dtype[1] == np.int32
     assert w.dtype[2] == (np.float64, (128,))
+
+
+@pytest.mark.parametrize('data_dict', (np.arange(12), [10, 20, 30, 40], 'path/to/something'))
+def test_type_error_if_not_dict(data_dict):
+    with pytest.raises(TypeError, match="Expected a dictionary.*"):
+        DictDataWrapper(data_dict)
+
+
+@pytest.mark.parametrize('radius', (3, object(), 'path/to/something', (1, 2, 4.5), list(range(100))))
+def test_type_error_if_not_numpy(data, radius):
+    data2 = data | {'radius': radius}
+
+    with pytest.raises(TypeError, match='Dict values must be numpy arrays.*'):
+        DictDataWrapper(data2)
+
+
+@pytest.mark.parametrize('key', (3, Path(__file__).resolve(), (1, 2, 3)))
+def test_type_error_if_key_not_str(data, key):
+    data2 = data | {key: np.random.rand(100)}
+
+    with pytest.raises(TypeError, match="Source dictionary keys must be strings.*"):
+        DictDataWrapper(data2)
