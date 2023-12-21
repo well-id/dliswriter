@@ -11,6 +11,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [Adding more objects](#adding-more-objects)
   - [Example scripts](#example-scripts)
 - [Developer guide](#developer-guide)
+  - [Logical Records and Visible Records](#logical-records-and-visible-records) 
   - [Logical Record types](#logical-record-types)
   - [Storage Unit Label](#storage-unit-label)
   - [IFLR objects](#iflr-objects)
@@ -26,7 +27,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
     - [Attribute subtypes](#attribute-subtypes)
   - [Writing the binary file](#writing-the-binary-file)
     - [`DLISFile` object](#dlisfile-object)
-    - [`FileLogicalRecords` object](#filelogicalrecords-object)
+    - [`FileLogicalRecords` and `MultiFrameData`](#filelogicalrecords-and-multiframedata)
     - [`DLISWriter` and auxiliary objects](#dliswriter-and-auxiliary-objects)
     - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
     - [Writer configuration](#writer-configuration)
@@ -1065,8 +1066,19 @@ the `write()` method of `DLISFile` can be called to generate DLIS bytes and stor
 The `write()` method first transforms the data into a [`FileLogicalRecords`](#filelogicalrecords-object) object,
 which is then passed to [`DLISWriter`](#dliswriter-and-auxiliary-objects), responsible for writing the file.
 
-#### `FileLogicalRecords` object
-TODO
+#### `FileLogicalRecords` and `MultiFrameData`
+The role of `FileLogicalRecords` is to define an iterable of all logical records
+to be included in the final DLIS file, in a correct order.
+
+`DLISFile` is used to define the structure of the file. Numerical data, associated with
+the channels, can be provided either at channel creation or later, 
+[when `write()` is called](#passing-data-at-the-write-call).
+On the other hand, `FileLogicalRecords` object is created with the assumption that data
+are available, so that relevant [Frame Data (IFLR)](#frame-data) objects can be defined.
+
+`FileLogicalRecords` uses `MultiFrameData` objects which combine the Frame, Channels, and
+numerical data information. These objects are also iterable and yield consecutive instances 
+of Frame Data belonging to the given Frame. One `MultiFrameData` object per frame is defined.
 
 #### `DLISWriter` and auxiliary objects
 TODO
