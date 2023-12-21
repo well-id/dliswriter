@@ -11,7 +11,6 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   - [Adding more objects](#adding-more-objects)
   - [Example scripts](#example-scripts)
 - [Developer guide](#developer-guide)
-  - [More details about the format](#more-details-about-the-format)
   - [Logical Record types](#logical-record-types)
   - [Storage Unit Label](#storage-unit-label)
   - [IFLR objects](#iflr-objects)
@@ -26,10 +25,10 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
     - [The `Attribute` class](#the-attribute-class)
     - [Attribute subtypes](#attribute-subtypes)
   - [Writing the binary file](#writing-the-binary-file)
-  - [`DLISFile` object](#dlisfile-object)
-  - [`FileLogicalRecords` object](#filelogicalrecords-object)
-  - [`DLISWriter` and auxiliary objects](#dliswriter-and-auxiliary-objects)
-  - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
+    - [`DLISFile` object](#dlisfile-object)
+    - [`FileLogicalRecords` object](#filelogicalrecords-object)
+    - [`DLISWriter` and auxiliary objects](#dliswriter-and-auxiliary-objects)
+    - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
 
 
 ---
@@ -186,10 +185,9 @@ with any number of 2D datasets with a user-defined shape, filled with randomised
 
 ---
 ## Developer guide
-TODO
-
-### More details about the format
-TODO; division: SUL, IFLR, EFLR; visible records vs logical records
+This section describes the `dlis-writer` implementation in more detail.
+The different types of logical records are explained.
+Further, the principles of converting the Python objects to DLIS-compliant bytes are described.
 
 ### Logical Records and Visible Records
 [As mentioned before](#about-the-dlis-format), DLIS file consists of multiple _logical records_ (LRs).
