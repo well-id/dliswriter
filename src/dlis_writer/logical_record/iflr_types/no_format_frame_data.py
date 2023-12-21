@@ -19,7 +19,12 @@ class NoFormatFrameData(IFLR):
     def _make_body_bytes(self) -> bytes:
         """Create bytes representing the body of the object."""
 
-        bts = self.no_format_object.obname + self.data.encode('ascii')
+        if isinstance(self.data, (bytes, bytearray)):
+            data_encoded = self.data
+        else:
+            data_encoded = self.data.encode('ascii')
+
+        bts = self.no_format_object.obname + data_encoded
 
         # add padding if the length of the bts is less than minimum (12)
         padding_len = 12 - len(bts)

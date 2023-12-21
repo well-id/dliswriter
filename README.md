@@ -1108,7 +1108,31 @@ the tradeoff between the amount of data stored in memory at any given point
 and the number of I/O calls.
 
 #### Converting objects and attributes to bytes
-TODO
+The way in which different objects are converted to DLIS-compliant bytes
+depends on the category these objects fall into, according to the earlier specified
+[division](#logical-record-types).
+
+- [Storage Unit Label](#storage-unit-label) has its own predefined bytes structure of fixed length.
+  Its content varies minimally, taking into account the parameters specified at its creation,
+  such as visible record length, storage set identifier, etc.
+- The main part of [Frame Data (IFLR)](#frame-data) - the numerical data associated with the Channels - is stored
+  in the object as a row od a structured `numpy.ndarray`. Each entry of the array is converted to
+  bytes using the `numpy`'s built-in `tobytes()` method (with additional `byteswap()` call before that 
+  to account for the big-endianness of DLIS). Additional bytes referring to the [Frame](#frame) 
+  and the index of the current Frame Data in the Frame are added on top.
+- In [No-Format Frame Data](#no-format-frame-data), the _data_ part can be already expressed as bytes,
+  in which case it is used as-is. Otherwise, it is assumed to be of string type and is encoded as ASCII.
+  A reference to the parent [No-Format](#no-format) object is added on top.
+- [EFLR objects](#eflrset-and-eflritem) are treated per `EFLRSet` instance.
+  - First, bytes describing the `EFLRSet` instance are made, including its `set_type`
+    and `set_name` (if present).
+  - Next, _template_ bytes are added. These specify the order and names of [`Attribute`s](#dlis-attributes)
+    characterising the `EFLRItem` instances belonging to the given `EFLRSet`.
+  - Finally, each of the `EFLRItem`'s bytes are added. Bytes of an `EFLRItem` instance consist of
+    its name + _origin reference_ + _copy number_ description, followed by the values and other characteristics
+    (units, repr. codes, etc.) of each of its `Attribute`s in the order specified in the 
+    `EFLRSet`'s _template_.
+
 
 #### Writer configuration
 TODO
