@@ -5,16 +5,28 @@ from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 
 @pytest.fixture
-def data():
+def dtype():
     data_types = [
         ('depth', float),
         ('rpm', int),
         ('amplitude', np.float16, 128),
         ('radius', np.int64, 20)
     ]
+    return np.dtype(data_types)
 
-    n = 100
-    arr = np.empty(n, dtype=np.dtype(data_types))
+
+def test_basic_properties(data):
+    w = NumpyDataWrapper(data)
+    assert w.data_source is data
+    assert w.n_rows == 50
+    assert isinstance(w.dtype, np.dtype)
+    assert len(w.dtype) == 4
+
+
+@pytest.fixture
+def data(dtype):
+    n = 50
+    arr = np.empty(n, dtype=dtype)
     arr['depth'] = np.arange(n) * 0.01
     arr['rpm'] = np.random.randint(size=n, low=5, high=10)
     arr['amplitude'] = np.random.rand(n, 128)
@@ -87,3 +99,39 @@ def test_creation_with_known_dtypes_and_mapping(data):
     assert w.dtype[0] == (np.int64, (20,))  # radius
     assert w.dtype[1] == (np.int32, (128,))  # amplitude
     assert w.dtype[2] == np.float16  # rpm
+
+
+@pytest.mark.parametrize('dat', (
+        '/path/to/file.npz',
+        {'depth': np.arange(50), 'amplitude': np.random.rand(50, 128)},
+        [1, 2, 3, 4, 5]
+))
+def test_type_error_if_not_numpy(dat):
+    with pytest.raises(TypeError, match="Expected a numpy.ndarray.*"):
+        NumpyDataWrapper(dat)
+
+
+@pytest.mark.parametrize('dat', (
+        np.arange(12),
+        np.random.rand(50),
+        np.random.rand(150)
+))
+def test_value_error_if_not_structured_numpy(dat):
+    with pytest.raises(ValueError, match="Input must be a structured numpy array"):
+        NumpyDataWrapper(dat)
+
+
+@pytest.mark.parametrize('dat', (
+        np.random.rand(50, 150),
+        np.random.rand(150, 50)
+))
+def test_value_error_if_array_not_1d(dat):
+    with pytest.raises(ValueError, match="Source array must be 1-dimensional"):
+        NumpyDataWrapper(dat)
+
+
+@pytest.mark.parametrize('shape', ((10, 20), (1, 50), (12, 17, 19)))
+def test_value_error_if_structured_array_not_1d(dtype, shape):
+    with pytest.raises(ValueError, match="Source array must be 1-dimensional"):
+        NumpyDataWrapper(np.ones(shape, dtype=dtype))
+
