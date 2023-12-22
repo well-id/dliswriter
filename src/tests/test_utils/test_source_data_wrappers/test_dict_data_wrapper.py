@@ -43,6 +43,14 @@ def test_creation_with_mapping(data):
     assert w.dtype[2] == (np.float16, (128,))
 
 
+def test_creation_with_mapping_omitting_dsets(data):
+    w = DictDataWrapper(data, mapping={'MD': 'depth', 'AMP': 'amplitude'})  # no rpm
+
+    assert w.dtype.names == ('MD', 'AMP')
+    assert w.dtype[0] == np.float64
+    assert w.dtype[1] == (np.float16, (128,))
+
+
 def test_creation_with_known_dtypes(data):
     w = DictDataWrapper(data, known_dtypes={'depth': np.float32, 'rpm': np.float64})
 
