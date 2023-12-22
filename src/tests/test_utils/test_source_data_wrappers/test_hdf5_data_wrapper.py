@@ -42,3 +42,17 @@ def test_alternative_mappings(short_reference_data_path, new_mapping, shapes):
     for i in range(len(w.dtype)):
         assert w.dtype[i] == (np.float64 if shapes[i] is None else (np.float64, shapes[i]))
 
+
+@pytest.mark.parametrize(('known_dtypes', 'dtype_check'), (
+        ({'time': np.float32, 'rpm': np.float16}, (np.float32, np.float64, np.float64, np.float16)),
+        ({'rpm': np.int64}, (np.float64, np.float64, np.float64, np.int64)),
+        ({'rad': np.float32, 'amp': np.int64}, (np.float64, np.float32, np.int64, np.float64))
+))
+def test_creation_with_known_dtypes(short_reference_data_path, known_dtypes, dtype_check, mapping):
+    w = HDF5DataWrapper(short_reference_data_path, known_dtypes=known_dtypes, mapping=mapping)
+
+    assert w.dtype[0] == dtype_check[0]
+    assert w.dtype[1] == (dtype_check[1], (128,))
+    assert w.dtype[2] == (dtype_check[2], (128,))
+    assert w.dtype[3] == dtype_check[3]
+
