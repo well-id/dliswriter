@@ -61,3 +61,10 @@ def test_creation_from_superclass(short_reference_data_path, mapping):
     w = SourceDataWrapper.make_wrapper(short_reference_data_path, mapping=mapping)
     assert isinstance(w, HDF5DataWrapper)
 
+
+@pytest.mark.parametrize(('from_idx', 'to_idx', 'n_rows'), ((0, None, 100), (0, 63, 63), (71, 88, 17)))
+def test_creation_with_from_and_to_idx(short_reference_data_path, mapping, from_idx, to_idx, n_rows):
+    w = HDF5DataWrapper(short_reference_data_path, mapping=mapping, from_idx=from_idx, to_idx=to_idx)
+    assert w.n_rows == n_rows
+
+

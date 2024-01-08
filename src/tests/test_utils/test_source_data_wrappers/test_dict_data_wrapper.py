@@ -98,6 +98,12 @@ def test_creation_from_superclass(data):
     assert isinstance(w, DictDataWrapper)
 
 
+@pytest.mark.parametrize(('from_idx', 'to_idx', 'n_rows'), ((0, 10, 10), (60, 63, 3), (92, None, 8)))
+def test_creation_with_from_and_to_idx(data, from_idx, to_idx, n_rows):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+    assert w.n_rows == n_rows
+
+
 @pytest.mark.parametrize(('start', 'stop'), ((0, 10), (1, 2), (3, 3), (3, 17), (61, 100)))
 def test_load_chunk(data, start, stop):
     w = DictDataWrapper(data)
@@ -162,9 +168,14 @@ def test_load_chunk_stop_too_large_with_from_idx(data, stop, from_idx):
         w.load_chunk(0, stop)
 
 
-@pytest.mark.parametrize(('start', 'stop', 'from_idx'), ((0, 10, 20), (1, 2, 90), (3, 3, 28), (3, 17, 83)))
-def test_load_chunk_with_from_idx(data, start, stop, from_idx):
-    w = DictDataWrapper(data, from_idx=from_idx)
+@pytest.mark.parametrize(('start', 'stop', 'from_idx', 'to_idx'), (
+        (0, 10, 20, 40),
+        (1, 2, 90, 92),
+        (3, 3, 28, 55),
+        (3, 17, 83, None)
+))
+def test_load_chunk_with_from_and_to_idx(data, start, stop, from_idx, to_idx):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
     chunk = w.load_chunk(start, stop)
 
     assert chunk.size == stop - start
@@ -173,3 +184,19 @@ def test_load_chunk_with_from_idx(data, start, stop, from_idx):
     assert (chunk['rpm'] == data['rpm'][from_idx+start:from_idx+stop]).all()
     assert (chunk['amplitude'] == data['amplitude'][from_idx+start:from_idx+stop]).all()
 
+
+@pytest.mark.parametrize(('start', 'from_idx', 'to_idx'), (
+        (0, 20, 40),
+        (1, 90, 92),
+        (3, 28, 55),
+        (3, 83, None)
+))
+def test_load_chunk_until_end_with_from_and_to_idx(data, start, from_idx, to_idx):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+    chunk = w.load_chunk(start, stop=None)
+
+    assert chunk.size == ((to_idx or 100) - from_idx) - start
+    assert chunk.dtype == w.dtype
+    assert (chunk['depth'] == data['depth'][from_idx+start:to_idx]).all()
+    assert (chunk['rpm'] == data['rpm'][from_idx+start:to_idx]).all()
+    assert (chunk['amplitude'] == data['amplitude'][from_idx+start:to_idx]).all()

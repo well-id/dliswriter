@@ -140,3 +140,10 @@ def test_creation_from_superclass(data):
     w = SourceDataWrapper.make_wrapper(data)
     assert isinstance(w, NumpyDataWrapper)
 
+
+@pytest.mark.parametrize(('from_idx', 'to_idx', 'n_rows'), ((0, 20, 20), (32, None, 18), (12, 25, 13)))
+def test_creation_with_from_and_to_idx(data, from_idx, to_idx, n_rows):
+    w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+    assert w.n_rows == n_rows
+
+
