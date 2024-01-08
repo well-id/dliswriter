@@ -150,10 +150,22 @@ class SourceDataWrapper:
             A structured numpy array, containing the required chunks of all the relevant data sets from the source data.
         """
 
-        start = self._from_idx + start
+        if start < 0:
+            raise ValueError("Start row cannot be negative")
 
-        idx = slice(start, stop)
-        n_rows = (stop or self._n_rows) - start
+        if start > self._n_rows:
+            raise ValueError(f"Cannot load chunk from row {start} because the data source has only {self._n_rows} rows")
+
+        if stop is None:
+            stop = self._n_rows
+
+        if stop > self._n_rows:
+            raise ValueError(f"Cannot load chunk up to row {stop} because the data source has only {self._n_rows} rows")
+        if stop < start:
+            raise ValueError(f"Stop row cannot be smaller than start row; got {stop} and {start}")
+
+        idx = slice(self._from_idx + start, self._from_idx + stop)
+        n_rows = stop - start
 
         chunk = np.zeros(n_rows, dtype=self._dtype)
         for key, loc in self._mapping.items():

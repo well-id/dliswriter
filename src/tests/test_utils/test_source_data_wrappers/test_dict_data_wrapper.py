@@ -97,3 +97,79 @@ def test_creation_from_superclass(data):
     w = SourceDataWrapper.make_wrapper(data)
     assert isinstance(w, DictDataWrapper)
 
+
+@pytest.mark.parametrize(('start', 'stop'), ((0, 10), (1, 2), (3, 3), (3, 17), (61, 100)))
+def test_load_chunk(data, start, stop):
+    w = DictDataWrapper(data)
+    chunk = w.load_chunk(start, stop)
+
+    assert chunk.size == stop - start
+    assert chunk.dtype == w.dtype
+    assert (chunk['depth'] == data['depth'][start:stop]).all()
+    assert (chunk['rpm'] == data['rpm'][start:stop]).all()
+    assert (chunk['amplitude'] == data['amplitude'][start:stop]).all()
+
+
+@pytest.mark.parametrize('start', (0, 10, 99, 100))
+def test_load_chunk_until_end(data, start):
+    w = DictDataWrapper(data)
+    chunk = w.load_chunk(start, stop=None)
+
+    assert chunk.size == 100 - start
+    assert chunk.dtype == w.dtype
+    assert (chunk['depth'] == data['depth'][start:]).all()
+    assert (chunk['rpm'] == data['rpm'][start:]).all()
+    assert (chunk['amplitude'] == data['amplitude'][start:]).all()
+
+
+@pytest.mark.parametrize(('start', 'stop'), ((0, 101), (99, 1000)))
+def test_load_chunk_stop_too_large(data, start, stop):
+    w = DictDataWrapper(data)
+
+    with pytest.raises(ValueError, match=f"Cannot load chunk up to row {stop}.*"):
+        w.load_chunk(start, stop)
+
+
+@pytest.mark.parametrize('start', (101, 1210))
+def test_load_chunk_start_too_large(data, start):
+    w = DictDataWrapper(data)
+
+    with pytest.raises(ValueError, match=f"Cannot load chunk from row {start}.*"):
+        w.load_chunk(start, None)
+
+
+@pytest.mark.parametrize(('start', 'stop'), ((10, 9), (90, 10)))
+def test_load_chunk_start_larger_than_stop(data, start, stop):
+    w = DictDataWrapper(data)
+
+    with pytest.raises(ValueError, match=f"Stop row cannot be smaller than start row.*"):
+        w.load_chunk(start, stop)
+
+
+@pytest.mark.parametrize(('start', 'from_idx'), ((60, 50), (10, 92), (91, 10)))
+def test_load_chunk_start_too_large_with_from_idx(data, start, from_idx):
+    w = DictDataWrapper(data, from_idx=from_idx)
+
+    with pytest.raises(ValueError, match=f"Cannot load chunk from row {start}.*"):
+        w.load_chunk(start, None)
+
+
+@pytest.mark.parametrize(('stop', 'from_idx'), ((60, 50), (10, 92), (91, 10)))
+def test_load_chunk_stop_too_large_with_from_idx(data, stop, from_idx):
+    w = DictDataWrapper(data, from_idx=from_idx)
+
+    with pytest.raises(ValueError, match=f"Cannot load chunk up to row {stop}.*"):
+        w.load_chunk(0, stop)
+
+
+@pytest.mark.parametrize(('start', 'stop', 'from_idx'), ((0, 10, 20), (1, 2, 90), (3, 3, 28), (3, 17, 83)))
+def test_load_chunk_with_from_idx(data, start, stop, from_idx):
+    w = DictDataWrapper(data, from_idx=from_idx)
+    chunk = w.load_chunk(start, stop)
+
+    assert chunk.size == stop - start
+    assert chunk.dtype == w.dtype
+    assert (chunk['depth'] == data['depth'][from_idx+start:from_idx+stop]).all()
+    assert (chunk['rpm'] == data['rpm'][from_idx+start:from_idx+stop]).all()
+    assert (chunk['amplitude'] == data['amplitude'][from_idx+start:from_idx+stop]).all()
+
