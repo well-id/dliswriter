@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
+from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper, SourceDataWrapper
 
 
 @pytest.fixture
@@ -134,4 +134,9 @@ def test_value_error_if_array_not_1d(dat):
 def test_value_error_if_structured_array_not_1d(dtype, shape):
     with pytest.raises(ValueError, match="Source array must be 1-dimensional"):
         NumpyDataWrapper(np.ones(shape, dtype=dtype))
+
+
+def test_creation_from_superclass(data):
+    w = SourceDataWrapper.make_wrapper(data)
+    assert isinstance(w, NumpyDataWrapper)
 

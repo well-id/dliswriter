@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 import h5py
 
-from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper
+from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper, SourceDataWrapper
 
 
 @pytest.fixture(scope='session')
@@ -55,4 +55,9 @@ def test_creation_with_known_dtypes(short_reference_data_path, known_dtypes, dty
     assert w.dtype[1] == (dtype_check[1], (128,))
     assert w.dtype[2] == (dtype_check[2], (128,))
     assert w.dtype[3] == dtype_check[3]
+
+
+def test_creation_from_superclass(short_reference_data_path, mapping):
+    w = SourceDataWrapper.make_wrapper(short_reference_data_path, mapping=mapping)
+    assert isinstance(w, HDF5DataWrapper)
 

@@ -2,7 +2,7 @@ import numpy as np
 from pathlib import Path
 import pytest
 
-from dlis_writer.utils.source_data_wrappers import DictDataWrapper
+from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 
 
 @pytest.fixture
@@ -91,3 +91,9 @@ def test_type_error_if_key_not_str(data, key):
 
     with pytest.raises(TypeError, match="Source dictionary keys must be strings.*"):
         DictDataWrapper(data2)
+
+
+def test_creation_from_superclass(data):
+    w = SourceDataWrapper.make_wrapper(data)
+    assert isinstance(w, DictDataWrapper)
+
