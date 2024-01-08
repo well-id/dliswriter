@@ -147,3 +147,26 @@ def test_creation_with_from_and_to_idx(data, from_idx, to_idx, n_rows):
     assert w.n_rows == n_rows
 
 
+@pytest.mark.parametrize(('start', 'stop'), ((0, 10), (1, 2), (3, 3), (3, 17)))
+def test_load_chunk(data, start, stop):
+    w = NumpyDataWrapper(data)
+    chunk = w.load_chunk(start, stop)
+
+    assert chunk.size == stop - start
+    assert chunk.dtype == w.dtype
+    assert (chunk['depth'] == data['depth'][start:stop]).all()
+    assert (chunk['rpm'] == data['rpm'][start:stop]).all()
+    assert (chunk['amplitude'] == data['amplitude'][start:stop]).all()
+
+
+@pytest.mark.parametrize(('start', 'stop'), ((30, 45), (11, 12)))
+def test_load_chunk_alternative_mapping(data, start, stop):
+    w = NumpyDataWrapper(data, mapping={'RPM': 'rpm', 'MD': 'depth'})  # no amplitude, switched order
+    chunk = w.load_chunk(start, stop)
+
+    assert chunk.size == stop - start
+    assert chunk.dtype.names == ('RPM', 'MD')
+    assert chunk.dtype == w.dtype
+
+    assert (chunk['RPM'] == data['rpm'][start:stop]).all()
+    assert (chunk['MD'] == data['depth'][start:stop]).all()

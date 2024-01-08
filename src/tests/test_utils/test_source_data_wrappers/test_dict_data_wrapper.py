@@ -200,3 +200,15 @@ def test_load_chunk_until_end_with_from_and_to_idx(data, start, from_idx, to_idx
     assert (chunk['depth'] == data['depth'][from_idx+start:to_idx]).all()
     assert (chunk['rpm'] == data['rpm'][from_idx+start:to_idx]).all()
     assert (chunk['amplitude'] == data['amplitude'][from_idx+start:to_idx]).all()
+
+
+def test_load_chunk_alternative_mapping(data):
+    w = DictDataWrapper(data, mapping={'AMP': 'amplitude', 'MD': 'depth'})  # no rpm, switched order
+    chunk = w.load_chunk(10, 20)
+
+    assert chunk.size == 10
+    assert chunk.dtype.names == ('AMP', 'MD')
+    assert chunk.dtype == w.dtype
+
+    assert (chunk['AMP'] == data['amplitude'][10:20]).all()
+    assert (chunk['MD'] == data['depth'][10:20]).all()

@@ -68,3 +68,20 @@ def test_creation_with_from_and_to_idx(short_reference_data_path, mapping, from_
     assert w.n_rows == n_rows
 
 
+@pytest.mark.parametrize(('start', 'stop'), ((0, 20), (25, 30), (11, 12)))
+def test_load_chunk_alternative_mapping(short_reference_data_path, start, stop):
+    w = HDF5DataWrapper(
+        short_reference_data_path,
+        mapping={'time': '/contents/time', 'rpm': '/contents/rpm', 'rad': '/contents/image0'}
+    )
+
+    chunk = w.load_chunk(start, stop)
+
+    assert chunk.size == stop - start
+    assert chunk.dtype.names == ('time', 'rpm', 'rad')
+    assert chunk.dtype == w.dtype
+
+    with h5py.File(short_reference_data_path, 'r') as data:
+        assert (chunk['time'] == data['/contents/time'][start:stop]).all()
+        assert (chunk['rpm'] == data['/contents/rpm'][start:stop]).all()
+        assert (chunk['rad'] == data['/contents/image0'][start:stop]).all()
