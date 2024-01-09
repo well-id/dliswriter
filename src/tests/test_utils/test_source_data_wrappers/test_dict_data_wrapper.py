@@ -273,3 +273,30 @@ def test_chunked_generator_remainder_chunk(data, caplog, chunk_rows, n_full_chun
     assert rows[80]['depth'] == data['depth'][80]
     assert (rows[2]['amplitude'] == data['amplitude'][2]).all()
     assert rows[24]['rpm'] == data['rpm'][24]
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx"), ((0, None), (10, 30)))
+def test_getitem_default_mapping(data, from_idx, to_idx):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+
+    for key in ('depth', 'amplitude', 'rpm'):
+        assert isinstance(w[key], np.ndarray)
+
+    assert (w['depth'] == data['depth'][from_idx:to_idx]).all()
+    assert (w['amplitude'] == data['amplitude'][from_idx:to_idx]).all()
+    assert (w['rpm'] == data['rpm'][from_idx:to_idx]).all()
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx"), ((0, None), (20, 21)))
+def test_getitem_alternative_mapping(data, from_idx, to_idx):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx, mapping={'MD': 'depth', 'RPM': 'rpm'})
+
+    for key in ('MD', 'RPM'):
+        assert isinstance(w[key], np.ndarray)
+
+    assert (w['MD'] == data['depth'][from_idx:to_idx]).all()
+    assert (w['RPM'] == data['rpm'][from_idx:to_idx]).all()
+
+    for key in ('depth', 'rpm', 'amplitude'):
+        with pytest.raises(ValueError, match=f"No dataset '{key}' found in the source data"):
+            w[key]

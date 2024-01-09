@@ -170,3 +170,31 @@ def test_load_chunk_alternative_mapping(data, start, stop):
 
     assert (chunk['RPM'] == data['rpm'][start:stop]).all()
     assert (chunk['MD'] == data['depth'][start:stop]).all()
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx"), ((0, 30), (40, None)))
+def test_getitem_default_mapping(data, from_idx, to_idx):
+    w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+
+    for key in ('depth', 'amplitude', 'rpm', 'radius'):
+        assert isinstance(w[key], np.ndarray)
+
+    assert (w['depth'] == data['depth'][from_idx:to_idx]).all()
+    assert (w['amplitude'] == data['amplitude'][from_idx:to_idx]).all()
+    assert (w['rpm'] == data['rpm'][from_idx:to_idx]).all()
+    assert (w['radius'] == data['radius'][from_idx:to_idx]).all()
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx"), ((1, None), (11, 12)))
+def test_getitem_alternative_mapping(data, from_idx, to_idx):
+    w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx, mapping={'AMP': 'amplitude', 'RAD': 'radius'})
+
+    for key in ('AMP', 'RAD'):
+        assert isinstance(w[key], np.ndarray)
+
+    assert (w['AMP'] == data['amplitude'][from_idx:to_idx]).all()
+    assert (w['RAD'] == data['radius'][from_idx:to_idx]).all()
+
+    for key in ('depth', 'rpm', 'amplitude', 'radius'):
+        with pytest.raises(ValueError, match=f"No dataset '{key}' found in the source data"):
+            w[key]

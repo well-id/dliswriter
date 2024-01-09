@@ -119,21 +119,21 @@ class SourceDataWrapper:
 
         return np.dtype(dtypes)
 
-    def __getitem__(self, item: str) -> Union[np.ndarray, h5py.Dataset]:
+    def __getitem__(self, item: str) -> np.ndarray:
         """Retrieve a dataset of the given name from the dataset.
 
         The name should be the one used for the dtype name, not the data set name/location
         (i.e. taken from the keys, not values, of the 'mapping' dictionary specified at init).
 
         Returns:
-            h5py.Dataset if the source data object was a h5py.File; np.ndarray otherwise.
+            A np.ndarray with the data.
         """
 
         try:
             data = self._data_source[self._mapping[item]]
         except (ValueError, KeyError):
             raise ValueError(f"No dataset '{item}' found in the source data")
-        return data
+        return data[self._from_idx:self._to_idx]
 
     def load_chunk(self, start: int, stop: Union[int, None]) -> np.ndarray:
         """Copy a chunk of the source data into a structured numpy array of the pre-determined dtype.

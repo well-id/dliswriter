@@ -85,3 +85,13 @@ def test_load_chunk_alternative_mapping(short_reference_data_path, start, stop):
         assert (chunk['time'] == data['/contents/time'][start:stop]).all()
         assert (chunk['rpm'] == data['/contents/rpm'][start:stop]).all()
         assert (chunk['rad'] == data['/contents/image0'][start:stop]).all()
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx"), ((0, 12), (90, None)))
+def test_getitem(short_reference_data_path, mapping, from_idx, to_idx):
+    w = HDF5DataWrapper(short_reference_data_path, mapping=mapping, from_idx=from_idx, to_idx=to_idx)
+
+    with h5py.File(short_reference_data_path, 'r') as data:
+        for key in ('time', 'rpm', 'rad', 'amp'):
+            assert isinstance(w[key], np.ndarray)
+            assert (w[key] == data[mapping[key]][from_idx:to_idx]).all()
