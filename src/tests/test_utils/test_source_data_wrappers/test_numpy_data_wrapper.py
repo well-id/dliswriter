@@ -1,11 +1,12 @@
 import numpy as np
 import pytest
+from typing import Union, Any
 
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper, SourceDataWrapper
 
 
 @pytest.fixture
-def dtype():
+def dtype() -> np.dtype:
     data_types = [
         ('depth', float),
         ('rpm', int),
@@ -15,16 +16,17 @@ def dtype():
     return np.dtype(data_types)
 
 
-def test_basic_properties(data):
+def test_basic_properties(data: np.ndarray) -> None:
     w = NumpyDataWrapper(data)
     assert w.data_source is data
     assert w.n_rows == 50
     assert isinstance(w.dtype, np.dtype)
-    assert len(w.dtype) == 4
+    assert isinstance(w.dtype.names, tuple)
+    assert len(w.dtype.names) == 4
 
 
 @pytest.fixture
-def data(dtype):
+def data(dtype: np.dtype) -> np.ndarray:
     n = 50
     arr = np.empty(n, dtype=dtype)
     arr['depth'] = np.arange(n) * 0.01
@@ -35,7 +37,7 @@ def data(dtype):
     return arr
 
 
-def test_creation(data):
+def test_creation(data: np.ndarray) -> None:
     w = NumpyDataWrapper(data)
 
     assert w.dtype == data.dtype
@@ -46,7 +48,7 @@ def test_creation(data):
     assert w.dtype[3] == (np.int64, (20,))
 
 
-def test_creation_with_mapping(data):
+def test_creation_with_mapping(data: np.ndarray) -> None:
     w = NumpyDataWrapper(data, mapping={'DPTH': 'depth', 'RPM': 'rpm', 'AMP': 'amplitude', 'RAD': 'radius'})
 
     assert w.dtype.names == ('DPTH', 'RPM', 'AMP', 'RAD')
@@ -56,7 +58,7 @@ def test_creation_with_mapping(data):
     assert w.dtype[3] == (np.int64, (20,))
 
 
-def test_creation_with_mapping_different_order(data):
+def test_creation_with_mapping_different_order(data: np.ndarray) -> None:
     w = NumpyDataWrapper(data, mapping={'RAD': 'radius', 'AMP': 'amplitude', 'RPM': 'rpm', 'DPTH': 'depth'})
 
     assert w.dtype.names == ('RAD', 'AMP', 'RPM', 'DPTH')
@@ -66,7 +68,7 @@ def test_creation_with_mapping_different_order(data):
     assert w.dtype[0] == (np.int64, (20,))
 
 
-def test_creation_with_mapping_omitting_dsets(data):
+def test_creation_with_mapping_omitting_dsets(data: np.ndarray) -> None:
     w = NumpyDataWrapper(data, mapping={'AMP': 'amplitude', 'DPTH': 'depth'})
 
     assert w.dtype.names == ('AMP', 'DPTH')
@@ -79,7 +81,7 @@ def test_creation_with_mapping_omitting_dsets(data):
         ({'rpm': np.int64}, (np.float64, np.int64, np.float16, np.int64)),
         ({'radius': np.float32, 'amplitude': np.float64}, (np.float64, np.int32, np.float64, np.float32))
 ))
-def test_creation_with_known_dtypes(data, known_dtypes, dtype_check):
+def test_creation_with_known_dtypes(data: np.ndarray, known_dtypes: dict, dtype_check: tuple) -> None:
     w = NumpyDataWrapper(data, known_dtypes=known_dtypes)
 
     assert w.dtype[0] == dtype_check[0]
@@ -88,7 +90,7 @@ def test_creation_with_known_dtypes(data, known_dtypes, dtype_check):
     assert w.dtype[3] == (dtype_check[3], (20,))
 
 
-def test_creation_with_known_dtypes_and_mapping(data):
+def test_creation_with_known_dtypes_and_mapping(data: np.ndarray) -> None:
     w = NumpyDataWrapper(
         data,
         mapping={'RAD': 'radius', 'AMP': 'amplitude', 'RPM': 'rpm'},
@@ -106,7 +108,7 @@ def test_creation_with_known_dtypes_and_mapping(data):
         {'depth': np.arange(50), 'amplitude': np.random.rand(50, 128)},
         [1, 2, 3, 4, 5]
 ))
-def test_type_error_if_not_numpy(dat):
+def test_type_error_if_not_numpy(dat: Any) -> None:
     with pytest.raises(TypeError, match="Expected a numpy.ndarray.*"):
         NumpyDataWrapper(dat)
 
@@ -116,7 +118,7 @@ def test_type_error_if_not_numpy(dat):
         np.random.rand(50),
         np.random.rand(150)
 ))
-def test_value_error_if_not_structured_numpy(dat):
+def test_value_error_if_not_structured_numpy(dat: np.ndarray) -> None:
     with pytest.raises(ValueError, match="Input must be a structured numpy array"):
         NumpyDataWrapper(dat)
 
@@ -125,30 +127,30 @@ def test_value_error_if_not_structured_numpy(dat):
         np.random.rand(50, 150),
         np.random.rand(150, 50)
 ))
-def test_value_error_if_array_not_1d(dat):
+def test_value_error_if_array_not_1d(dat: np.ndarray) -> None:
     with pytest.raises(ValueError, match="Source array must be 1-dimensional"):
         NumpyDataWrapper(dat)
 
 
 @pytest.mark.parametrize('shape', ((10, 20), (1, 50), (12, 17, 19)))
-def test_value_error_if_structured_array_not_1d(dtype, shape):
+def test_value_error_if_structured_array_not_1d(dtype: np.dtype, shape: tuple) -> None:
     with pytest.raises(ValueError, match="Source array must be 1-dimensional"):
         NumpyDataWrapper(np.ones(shape, dtype=dtype))
 
 
-def test_creation_from_superclass(data):
+def test_creation_from_superclass(data: np.ndarray) -> None:
     w = SourceDataWrapper.make_wrapper(data)
     assert isinstance(w, NumpyDataWrapper)
 
 
 @pytest.mark.parametrize(('from_idx', 'to_idx', 'n_rows'), ((0, 20, 20), (32, None, 18), (12, 25, 13)))
-def test_creation_with_from_and_to_idx(data, from_idx, to_idx, n_rows):
+def test_creation_with_from_and_to_idx(data: np.ndarray, from_idx: int, to_idx: Union[int, None], n_rows: int) -> None:
     w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
     assert w.n_rows == n_rows
 
 
 @pytest.mark.parametrize(('start', 'stop'), ((0, 10), (1, 2), (3, 3), (3, 17)))
-def test_load_chunk(data, start, stop):
+def test_load_chunk(data: np.ndarray, start: int, stop: int) -> None:
     w = NumpyDataWrapper(data)
     chunk = w.load_chunk(start, stop)
 
@@ -160,7 +162,7 @@ def test_load_chunk(data, start, stop):
 
 
 @pytest.mark.parametrize(('start', 'stop'), ((30, 45), (11, 12)))
-def test_load_chunk_alternative_mapping(data, start, stop):
+def test_load_chunk_alternative_mapping(data: np.ndarray, start: int, stop: int) -> None:
     w = NumpyDataWrapper(data, mapping={'RPM': 'rpm', 'MD': 'depth'})  # no amplitude, switched order
     chunk = w.load_chunk(start, stop)
 
@@ -173,7 +175,7 @@ def test_load_chunk_alternative_mapping(data, start, stop):
 
 
 @pytest.mark.parametrize(("from_idx", "to_idx"), ((0, 30), (40, None)))
-def test_getitem_default_mapping(data, from_idx, to_idx):
+def test_getitem_default_mapping(data: np.ndarray, from_idx: int, to_idx: Union[int, None]) -> None:
     w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
 
     for key in ('depth', 'amplitude', 'rpm', 'radius'):
@@ -186,7 +188,7 @@ def test_getitem_default_mapping(data, from_idx, to_idx):
 
 
 @pytest.mark.parametrize(("from_idx", "to_idx"), ((1, None), (11, 12)))
-def test_getitem_alternative_mapping(data, from_idx, to_idx):
+def test_getitem_alternative_mapping(data: np.ndarray, from_idx: int, to_idx: Union[int, None]) -> None:
     w = NumpyDataWrapper(data, from_idx=from_idx, to_idx=to_idx, mapping={'AMP': 'amplitude', 'RAD': 'radius'})
 
     for key in ('AMP', 'RAD'):
