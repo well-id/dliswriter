@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.tool import ToolSet, ToolItem
         ("Tool-X", "desc", 0, ["param1"], ["chan"])
 ))
 def test_creating_tool(name: str, description: str, status: int, param_names: list[str], channel_names: list[str],
-                       request):
+                       request: pytest.FixtureRequest) -> None:
     """Test creating ToolItem."""
 
     tool = ToolItem(

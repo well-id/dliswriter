@@ -4,7 +4,7 @@ from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
 from dlis_writer.utils.enums import RepresentationCode
 
 
-def test_frame_creation():
+def test_frame_creation() -> None:
     """Test creating d FrameObject."""
 
     frame = FrameItem(
@@ -37,7 +37,7 @@ def test_frame_creation():
         ("Channel 1", "Channel 3", "Channel 2"),
         ("some_channel",)
 ))
-def test_creation_with_channels(channel_names: tuple[str], channels):
+def test_creation_with_channels(channel_names: tuple[str], channels: dict) -> None:
     """Test creating a FrameObject with specified channels."""
 
     frame = FrameItem(

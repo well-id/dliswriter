@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisItem
     ('Axis-1', 'First axis', 'm'),
     ('Axis-X', 'Another axis', 's')
 ))
-def test_str_attributes(name, axis_id, units):
+def test_str_attributes(name: str, axis_id: str, units: str) -> None:
     axis = AxisItem(name, **{'axis_id': axis_id, 'spacing.units': units})
 
     assert axis.name == name
@@ -20,6 +20,6 @@ def test_str_attributes(name, axis_id, units):
         (12.121, [12.121]),
         ([8], [8])
 ))
-def test_coordinates(given, expected):
+def test_coordinates(given: list, expected: list) -> None:
     axis = AxisItem('some_name', coordinates=given)
     assert axis.coordinates.value == expected

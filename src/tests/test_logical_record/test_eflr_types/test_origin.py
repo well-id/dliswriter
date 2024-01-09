@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 
 
-def test_origin_creation():
+def test_origin_creation() -> None:
     """Test creating OriginItem."""
 
     origin = OriginItem(
@@ -45,7 +45,7 @@ def test_origin_creation():
     assert origin.parent.set_name is None
 
 
-def test_origin_creation_no_dtime_in_attributes():
+def test_origin_creation_no_dtime_in_attributes() -> None:
     """Test that if creation_time is missing, the origin gets the current date and time as creation time."""
 
     origin = OriginItem("Some origin name", well_name="Some well name")
@@ -56,7 +56,7 @@ def test_origin_creation_no_dtime_in_attributes():
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
 
 
-def test_from_config_no_attributes():
+def test_from_config_no_attributes() -> None:
     """Test creating OriginItem with minimum number of parameters."""
 
     origin = OriginItem("Some origin name")

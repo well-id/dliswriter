@@ -4,7 +4,7 @@ import pytest
 from dlis_writer.logical_record.eflr_types.message import MessageSet, CommentSet, MessageItem, CommentItem
 
 
-def test_creating_message():
+def test_creating_message() -> None:
     """Test creating MessageObject."""
 
     m = MessageItem(
@@ -35,7 +35,7 @@ def test_creating_message():
         ("COMMENT-1", ["SOME COMMENT HERE"]),
         ("cmt2", ["some other comment here", "and another comment"])
 ))
-def test_creating_comment(name: str, text: list[str]):
+def test_creating_comment(name: str, text: list[str]) -> None:
     """Test creating CommentObject."""
 
     c = CommentItem(

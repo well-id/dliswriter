@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
 
 
-def test_calibration_measurement_creation(channel1, axis1):
+def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem) -> None:
     m = CalibrationMeasurementItem(
         "CMEASURE-1",
         **{
@@ -49,7 +49,7 @@ def test_calibration_measurement_creation(channel1, axis1):
     assert m.minus_tolerance.value == [1]
 
 
-def test_calibration_coefficient_creation():
+def test_calibration_coefficient_creation() -> None:
     """Check that a CalibrationCoefficientObject is correctly set up from config info."""
 
     c = CalibrationCoefficientItem(
@@ -69,19 +69,21 @@ def test_calibration_coefficient_creation():
     assert c.minus_tolerances.value == [87.23, 214]
 
 
-def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type):
+def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type) -> None:
     """Check that the objects defined for a given EFLR attribute match the expected names and type."""
 
-    objects = objects.value
+    objects_list = objects.value
 
-    assert isinstance(objects, list)
-    assert len(objects) == len(names)
+    assert isinstance(objects_list, list)
+    assert len(objects_list) == len(names)
     for i, name in enumerate(names):
-        assert isinstance(objects[i], object_class)
-        assert objects[i].name == name
+        assert isinstance(objects_list[i], object_class)
+        assert objects_list[i].name == name
 
 
-def test_calibration_creation(channel1, channel2, channel3, ccoef1, cmeasure1, param1, param2, param3):
+def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, channel3: ChannelItem,
+                              ccoef1: CalibrationCoefficientItem, cmeasure1: CalibrationMeasurementItem,
+                              param1: ParameterItem, param2: ParameterItem, param3: ParameterItem) -> None:
     """Check that a CalibrationObject is correctly set up from config info."""
 
     c = CalibrationItem(

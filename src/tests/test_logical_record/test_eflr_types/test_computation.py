@@ -11,7 +11,7 @@ from dlis_writer.logical_record.eflr_types.zone import ZoneItem
         ("COMPT-X", ["XYZ"], ["Zone-3"], [12]),
 ))
 def test_computation_creation(name: str, properties: list[str], zone_names: list[str], values: list, axis1: AxisItem,
-                              zones: dict[str, ZoneItem]):
+                              zones: dict[str, ZoneItem]) -> None:
     """Check that ComputationObject instances are correctly created."""
 
     comp = ComputationItem(

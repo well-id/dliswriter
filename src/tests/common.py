@@ -1,12 +1,12 @@
 from contextlib import contextmanager
 from dlisio import dlis    # type: ignore  # untyped library
-from typing import Union
+from typing import Union, Generator
 import os
 
 from dlis_writer.logical_record.eflr_types import eflr_sets
 
 
-def clear_eflr_instance_registers():
+def clear_eflr_instance_registers() -> None:
     """Remove all defined instances of EFLR from the internal dicts. Clear the EFLRObject dicts of the instances."""
 
     for eflr_type in eflr_sets:
@@ -19,7 +19,7 @@ N_COLS = 128
 
 
 @contextmanager
-def load_dlis(fname: Union[str, bytes, os.PathLike]):
+def load_dlis(fname: Union[str, bytes, os.PathLike]) -> Generator:
     """Load a DLIS file using dlisio. Yield the open file. Close the file on return to the context."""
 
     with dlis.load(fname) as (f, *tail):

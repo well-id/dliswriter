@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.well_reference_point import WellRefer
         ("WRP-X", "vz20", 112.3, "X", 20, "Y", -0.3)
 ))
 def test_from_config(name: str, v_zero: str, m_decl: float, c1_name: str, c1_value: float, c2_name: str,
-                     c2_value: float):
+                     c2_value: float) -> None:
     """Test creating WellReferencePointItem."""
 
     w = WellReferencePointItem(
