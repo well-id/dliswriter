@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Any
 import numpy as np
 
 from dlis_writer.file import DLISFile
@@ -8,7 +8,7 @@ from dlis_writer.logical_record import eflr_types
 from tests.dlis_files_for_testing.common import make_file_header, make_sul, make_origin
 
 
-def _add_channels(df: DLISFile):
+def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
     ch_time = df.add_channel(
         name="posix time",
         dataset_name="/contents/time",
@@ -48,7 +48,7 @@ def _add_channels(df: DLISFile):
     return ch_time, ch_rpm, ch_amp, ch_radius, ch_radius_pooh
 
 
-def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]):
+def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]) -> eflr_types.FrameItem:
     fr = df.add_frame(
         name="MAIN",
         index_type="TIME",
@@ -63,7 +63,7 @@ def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]):
     return fr
 
 
-def create_dlis_file_object():
+def create_dlis_file_object() -> DLISFile:
     df = DLISFile(
         origin=make_origin(),
         file_header=make_file_header(),
@@ -76,7 +76,7 @@ def create_dlis_file_object():
     return df
 
 
-def write_time_based_dlis(fname: Union[str, os.PathLike[str]],
-                          data: Union[dict, os.PathLike[str], np.ndarray], **kwargs):
+def write_time_based_dlis(fname: Union[str, os.PathLike[str]], data: Union[dict, os.PathLike[str], np.ndarray],
+                          **kwargs: Any) -> None:
     df = create_dlis_file_object()
     df.write(fname, data=data, **kwargs)

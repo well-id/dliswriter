@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
-dtime_or_number_type = Union[datetime.datetime, int, float]
+dtime_or_number_type = Union[str, datetime.datetime, int, float]
 values_type = Optional[Union[list[str], list[int], list[float]]]
 
 
