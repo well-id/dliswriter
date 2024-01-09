@@ -1,27 +1,33 @@
 import pytest
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.tool import ToolTable, ToolItem
-
-from tests.common import base_data_path, config_params
+from dlis_writer.logical_record.eflr_types.tool import ToolSet, ToolItem
 
 
-@pytest.mark.parametrize(("section", "name", "description", "status", "param_names", "channel_names"), (
-        ("Tool-1", "TOOL-1", "SOME TOOL", 1, ["Param-1", "Param-3"], ["posix time", "amplitude"]),
-        ("Tool-X", "Tool-X", "desc", 0, ["Param-2"], ["radius_pooh"])
+@pytest.mark.parametrize(("name", "description", "status", "param_names", "channel_names"), (
+        ("TOOL-1", "SOME TOOL", 1, ["param3", "param2"], ["channel1", "channel2"]),
+        ("Tool-X", "desc", 0, ["param1"], ["chan"])
 ))
-def test_from_config(config_params: ConfigParser, section: str, name: str, description: str, status: int,
-                     param_names: list[str], channel_names: list[str]):
-    """Test creating ToolObject from config."""
+def test_creating_tool(name: str, description: str, status: int, param_names: list[str], channel_names: list[str],
+                       request):
+    """Test creating ToolItem."""
 
-    tool: ToolItem = ToolItem.from_config(config_params, key=section)
+    tool = ToolItem(
+        name,
+        description=description,
+        status=status,
+        parameters=[request.getfixturevalue(v) for v in param_names],
+        channels=[request.getfixturevalue(v) for v in channel_names]
+    )
 
     assert tool.name == name
     assert tool.description.value == description
     assert tool.status.value == status
 
     for i, pn in enumerate(param_names):
-        assert tool.parameters.value[i].name == pn
+        assert tool.parameters.value[i] is request.getfixturevalue(pn)
 
     for i, cn in enumerate(channel_names):
-        assert tool.channels.value[i].name == cn
+        assert tool.channels.value[i] is request.getfixturevalue(cn)
+
+    assert isinstance(tool.parent, ToolSet)
+    assert tool.parent.set_name is None

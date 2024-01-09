@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import numpy as np
 import logging
 
-from dlis_writer.writer.file import DLISFile
+from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.eflr_types.origin import OriginItem
 from dlis_writer.utils.logging import install_logger
 from dlis_writer.utils.enums import RepresentationCode
@@ -64,7 +64,7 @@ splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zo
 
 # parameters - using zones and axes
 parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1, zones=(zone1,), values=[1, 2, 3.3])
-parameter1.values.unit = 'in'
+parameter1.values.units = 'in'
 parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3), values=["val1", "val2", "val3"], dimension=[3])
 
 
@@ -77,7 +77,8 @@ equipment1.length.representation_code = RepresentationCode.UNORM
 equipment2 = df.add_equipment("EQ2", location='Well', trademark_name='Some trademark TM')
 equipment2.hole_size.value = 23.5
 equipment2.hole_size.units = 'in'
-equipment2.hole_size.representation_code = 'FSINGL'  # can use the enum member, name (str), or value (int)
+equipment2.hole_size.representation_code = 'FSINGL'  # type: ignore  # using converter associated with the property
+# ^ can use the enum member, name (str), or value (int)
 
 equipment3 = df.add_equipment('EQ3')
 equipment3.status.value = 0

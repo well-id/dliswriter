@@ -1,30 +1,37 @@
 from datetime import datetime, timedelta
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginTable
-
-from tests.common import base_data_path, config_params, make_config
+from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 
 
-def test_from_config(config_params: ConfigParser):
-    """Test creating OriginObject from config."""
+def test_origin_creation():
+    """Test creating OriginItem."""
 
-    origin: OriginItem = OriginItem.from_config(config_params)
+    origin = OriginItem(
+        'DEFAULT ORIGIN',
+        creation_time="2050/03/02 15:30:00",
+        file_id="WELL ID",
+        file_set_name="Test file set name",
+        file_set_number=1,
+        file_number=8,
+        run_number=13,
+        well_id=5,
+        well_name="Test well name",
+        field_name="Test field name",
+        company="Test company"
+    )
 
-    conf = config_params['Origin']
+    assert origin.name == 'DEFAULT ORIGIN'
 
-    assert origin.name == conf['name']
-
-    assert origin.creation_time.value == datetime.strptime(conf['creation_time'], "%Y/%m/%d %H:%M:%S")
-    assert origin.file_id.value == conf['file_id']
-    assert origin.file_set_name.value == conf['file_set_name']
-    assert origin.file_set_number.value == int(conf['file_set_number'])
-    assert origin.file_number.value == int(conf['file_number'])
-    assert origin.run_number.value == int(conf['run_number'])
-    assert origin.well_id.value == int(conf['well_id'])
-    assert origin.well_name.value == conf['well_name']
-    assert origin.field_name.value == conf['field_name']
-    assert origin.company.value == conf['company']
+    assert origin.creation_time.value == datetime(year=2050, month=3, day=2, hour=15, minute=30)
+    assert origin.file_id.value == "WELL ID"
+    assert origin.file_set_name.value == "Test file set name"
+    assert origin.file_set_number.value == 1
+    assert origin.file_number.value == 8
+    assert origin.run_number.value == 13
+    assert origin.well_id.value == 5
+    assert origin.well_name.value == "Test well name"
+    assert origin.field_name.value == "Test field name"
+    assert origin.company.value == "Test company"
 
     # not set - absent from config
     assert origin.producer_name.value is None
@@ -33,15 +40,16 @@ def test_from_config(config_params: ConfigParser):
     assert origin.version.value is None
     assert origin.programs.value is None
 
+    # OriginSet
+    assert isinstance(origin.parent, OriginSet)
+    assert origin.parent.set_name is None
 
-def test_from_config_no_dtime_in_attributes():
-    """Test that if creation_time is missing from config, the origin gets the current date and time as creation time."""
 
-    config = make_config("Origin")
-    config['Origin']['name'] = "Some origin name"
-    config['Origin']['well_name'] = "Some well name"
+def test_origin_creation_no_dtime_in_attributes():
+    """Test that if creation_time is missing, the origin gets the current date and time as creation time."""
 
-    origin: OriginItem = OriginItem.from_config(config)
+    origin = OriginItem("Some origin name", well_name="Some well name")
+
     assert origin.name == "Some origin name"
     assert origin.well_name.value == "Some well name"
 
@@ -49,12 +57,10 @@ def test_from_config_no_dtime_in_attributes():
 
 
 def test_from_config_no_attributes():
-    """Test creating OriginObject from config with minimum number of parameters."""
+    """Test creating OriginItem with minimum number of parameters."""
 
-    config = make_config("Origin")
-    config['Origin']['name'] = "Some origin name"
+    origin = OriginItem("Some origin name")
 
-    origin: OriginItem = OriginItem.from_config(config)
     assert origin.name == "Some origin name"
     assert origin.well_name.value is None
 

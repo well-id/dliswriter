@@ -1,12 +1,12 @@
-from pathlib import Path
 import logging
-import os
 from argparse import ArgumentParser, Namespace
+from pathlib import Path
 
 from dlis_writer.utils.logging import install_logger
-from dlis_writer.writer.synthetic_data_generator import create_data_file
-from dlis_writer.writer.write_dlis_file import (write_dlis_file, make_parser as make_parent_parser,
-                                                data_and_config_from_parser_args, prepare_directory, path_type)
+from dlis_writer.misc.synthetic_data_generator import create_data_file
+
+
+from utils import path_type, prepare_directory, make_dlis_file_spec
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,18 @@ logger = logging.getLogger(__name__)
 def make_parser() -> ArgumentParser:
     """Define an argument parser for defining the DLIS file to be created."""
 
-    parser = make_parent_parser(require_input_fname=False)
+    parser = ArgumentParser("DLIS file creation")
+    parser.add_argument('-ofn', '--output-file-name', help='Output file name', required=True)
+    parser.add_argument('--time-based', action='store_true', default=False,
+                        help="Make a time-based DLIS file (default is depth-based)")
+    parser.add_argument('--input-chunk-size', default=1e5, type=float,
+                        help="Chunk size (number of rows) for the input data to be processed in")
+    parser.add_argument('--output-chunk-size', default=2 ** 32, type=float,
+                        help="Size (in bytes) of the chunks in which the output file will be created")
+    parser.add_argument('--overwrite', action='store_true', default=False,
+                        help="Allow overwriting existing output file")
+    parser.add_argument('-vrl', '--visible-record-length', type=int, default=8192,
+                        help="Maximum allowed visible record length")
 
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=10e3)
     parser.add_argument('-ni', '--n-images', type=int, default=0,
@@ -48,8 +59,6 @@ def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
 
 
 def main():
-    """Generate a synthetic data file. Use it as the source data for writing a DLIS file."""
-
     install_logger(logger)
 
     pargs = make_parser().parse_args()
@@ -60,26 +69,13 @@ def main():
     pargs.input_file_name = tmp_file_name
     create_tmp_data_file_from_pargs(tmp_file_name, pargs)
 
-    exception = None
-    try:
-        data, config = data_and_config_from_parser_args(pargs)
-        write_dlis_file(
-            data=data,
-            config=config,
-            dlis_file_name=pargs.output_file_name,
-            input_chunk_size=int(pargs.input_chunk_size),
-            output_chunk_size=int(pargs.output_chunk_size),
-            visible_record_length=pargs.visible_record_length
-        )
-    except Exception as exc:
-        exception = exc
-    finally:
-        try:
-            os.remove(pargs.input_file_name)
-        except Exception as exc2:
-            logger.error(f"Error trying to remove temporary hdf5 data file: '{exc2}'")
-    if exception:
-        raise exception
+    dlis_file = make_dlis_file_spec(tmp_file_name)
+    dlis_file.write(
+        pargs.output_file_name,
+        data=tmp_file_name,
+        input_chunk_size=int(pargs.input_chunk_size) if pargs.input_chunk_size else None,
+        output_chunk_size=int(pargs.output_chunk_size) if pargs.output_chunk_size else None,
+    )
 
 
 if __name__ == '__main__':

@@ -3,10 +3,9 @@ from numbers import Number
 from datetime import datetime
 from typing import Union, Optional
 from typing_extensions import Self
-from configparser import ConfigParser
 
 from .attribute import Attribute
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem, EFLRTableMeta
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, EFLRSetMeta
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -21,8 +20,8 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, label: str, object_class: Optional[EFLRTableMeta] = None, representation_code: Optional[RepC] = None,
-                 **kwargs):
+    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None,
+                 representation_code: Optional[RepC] = None, **kwargs):
         """Initialise EFLRAttribute.
 
         Args:
@@ -41,7 +40,7 @@ class EFLRAttribute(Attribute):
         if representation_code not in (RepC.OBNAME, RepC.OBJREF):
             raise ValueError(f"Representation code '{representation_code.name}' is not allowed for an EFLRAttribute")
 
-        if object_class is not None and not issubclass(object_class, EFLRTable):
+        if object_class is not None and not issubclass(object_class, EFLRSet):
             raise TypeError(f"Expected an EFLR subclass; got {object_class}")
 
         super().__init__(label=label, representation_code=representation_code, **kwargs)
@@ -60,47 +59,13 @@ class EFLRAttribute(Attribute):
             object_class=self._object_class
         )
 
-    def finalise_from_config(self, config: ConfigParser):
-        """Create EFLRObject instances from the earlier specified names.
-
-        When an instance of the Attribute is created, the value might not be known yet.
-        When setting up the attribute from config, initially only the name(s) of the ELFRObject(s) is/are known.
-        These names are initially assigned to the self._value attribute.
-        This method, using the config object from which the attribute itself was set up, sets up references to the
-        correct EFLRObject instances based on the previously specified names.
-        """
-
-        if not self._value:
-            logger.debug(f"No object names defined for {self}")
-            return
-
-        if self._multivalued:
-            self._value = [self._make_eflr_object_from_config(config, v) for v in self._value]
-        else:
-            self._value = self._make_eflr_object_from_config(config, self._value)
-
-    def _convert_value(self, v: Union[str, type]):
-        """Implements default converter/checker for the value(s). Check that the value is a str or an EFLRObject."""
+    def _convert_value(self, v: type[EFLRItem]):
+        """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
 
         object_class = self._object_class.item_type if self._object_class else EFLRItem
-        if not isinstance(v, (object_class, str)):
-            raise TypeError(f"Expected a str or instance of {object_class.__name__}; got {type(v)}: {v}")
+        if not isinstance(v, object_class):
+            raise TypeError(f"Expected an instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
-
-    def _make_eflr_object_from_config(self, config: ConfigParser, object_name: Union[str, EFLRItem]) -> EFLRItem:
-        """Create or retrieve an EFLRObject based on its name and the provided config object.
-
-        If the value (object_name) is already an EFLRObject, return it as-is.
-        """
-
-        if isinstance(object_name, EFLRItem):
-            return object_name
-
-        if not isinstance(object_name, str):
-            raise TypeError(f"Expected a str, got {type(object_name)}: {object_name}")
-
-        object_class = self._object_class or EFLRTable.get_table_subclass(object_name)
-        return object_class.item_type.from_config(config=config, key=object_name, get_if_exists=True)
 
 
 class DTimeAttribute(Attribute):
@@ -249,32 +214,27 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Union[str, int, float]) -> int:
+    def _int_parser(value: Union[int, float]) -> int:
         """Parse a provided value as an integer."""
 
-        if isinstance(value, str):
-            value = int(value)  # ValueError possible, caught later if needed or allowed to propagate
-        elif isinstance(value, Number):
-            if not float(value).is_integer():
-                raise ValueError(f"{value} cannot be represented as integer")
-            value = int(value)
-        else:
+        if not isinstance(value, Number):
             raise TypeError(f"Cannot convert a {type(value)} object ({value}) to integer")
-        return value
+
+        if not float(value).is_integer():
+            raise ValueError(f"{value} cannot be represented as integer")
+
+        return int(value)
 
     @staticmethod
-    def _float_parser(value: Union[str, int, float]) -> float:
+    def _float_parser(value: Union[int, float]) -> float:
         """Parse a provided value as a float."""
 
-        if isinstance(value, str):
-            value = float(value)  # ValueError possible
-        elif isinstance(value, Number):
-            value = float(value)
-        else:
+        if not isinstance(value, Number):
             raise TypeError(f"Cannot convert a {type(value)} object ({value}) to float")
-        return value
 
-    def _convert_number(self, value: Union[str, int, float]) -> Union[int, float]:
+        return float(value)
+
+    def _convert_number(self, value: Union[int, float]) -> Union[int, float]:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         rc = self._representation_code
@@ -320,3 +280,47 @@ class DimensionAttribute(NumericAttribute):
             value=self._value,
         )
 
+
+class StatusAttribute(Attribute):
+    """Model an attribute which can only have value 1 or 0."""
+
+    def __init__(self, *args, **kwargs):
+        """Initialise a StatusAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        for name in ('converter', 'representation_code'):
+            if name in kwargs:
+                raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
+
+        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)
+        self._converter = self.convert_status
+
+    @staticmethod
+    def convert_status(val: Union[bool, int, float]):
+        """Convert a provided value to 1 or 0."""
+
+        if isinstance(val, bool):
+            return int(val)
+
+        if isinstance(val, float) and val % 1:
+            raise ValueError(f"Status cannot be a fraction; got {val}")
+
+        val = int(val)
+        if val not in (0, 1):
+            raise ValueError(f"Status must be a 1 or a 0; got {val}")
+
+        return val
+
+    def copy(self):
+        """Create a copy of the attribute instance."""
+
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            units=self._units,
+            value=self._value
+        )

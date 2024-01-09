@@ -1,21 +1,25 @@
-from configparser import ConfigParser
-
-from dlis_writer.logical_record.eflr_types.splice import SpliceTable, SpliceItem
-
-from tests.common import base_data_path, config_params
+from dlis_writer.logical_record.eflr_types.splice import SpliceSet, SpliceItem
 
 
-def test_from_config(config_params: ConfigParser):
-    """Test creating SpliceObject from config."""
+def test_splice_creation(zone1, zone3, chan, channel2, channel1, channel3):
+    """Test creating SpliceItem."""
 
-    splice: SpliceItem = SpliceItem.from_config(config_params, key="Splice-1")
+    splice = SpliceItem(
+        "splc1",
+        zones=(zone1, zone3),
+        input_channels=(channel2, channel1, chan),
+        output_channel=channel3
+    )
 
     assert splice.name == "splc1"
 
-    for i, n in enumerate(("Zone-1", "Zone-2")):
+    for i, n in enumerate(("Zone-1", "Zone-3")):
         assert splice.zones.value[i].name == n
 
-    for i, n in enumerate(("Channel 1", "Channel 2")):
+    for i, n in enumerate(("Channel 2", "Channel 1", "some_channel")):
         assert splice.input_channels.value[i].name == n
 
-    assert splice.output_channel.value.name == 'amplitude'
+    assert splice.output_channel.value.name == 'Channel 3'
+
+    assert isinstance(splice.parent, SpliceSet)
+    assert splice.parent.set_name is None

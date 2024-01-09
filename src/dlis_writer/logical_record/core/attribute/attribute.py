@@ -1,14 +1,13 @@
 from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 from typing_extensions import Self
 import logging
-import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
 from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+    from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 
 
 logger = logging.getLogger(__name__)
@@ -17,11 +16,11 @@ logger = logging.getLogger(__name__)
 class Attribute:
     """Represent an RP66 V1 Attribute."""
 
-    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set e.g. from config
+    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
-                 parent_eflr: "Optional[Union[EFLRTable, EFLRItem]]" = None):
+                 parent_eflr: "Optional[Union[EFLRSet, EFLRItem]]" = None):
         """Initialise an Attribute object.
 
         Args:
@@ -33,8 +32,7 @@ class Attribute:
             units               :   Unit the value(s) is/are expressed in.
             value               :   Value(s) of the attribute.
             converter           :   Function used to convert/validate the provided value later, through the 'value'
-                                    property setter; should account for the value being provided as string
-                                    (from the config).
+                                    property setter.
             parent_eflr         :   EFLR or EFLRObject instance this attribute belongs to.
 
         """
@@ -52,7 +50,7 @@ class Attribute:
         self._representation_code = representation_code
         self._units = units
         self._value = value
-        self._converter = converter  # to convert value e.g. from string retrieved from config file
+        self._converter = converter  # to convert value
         self._parent_eflr = parent_eflr
 
     @staticmethod
@@ -178,35 +176,16 @@ class Attribute:
         return 1
 
     @property
-    def parent_eflr(self) -> "Union[EFLRTable, EFLRItem, None]":
+    def multivalued(self) -> bool:
+        """True if multiple values (list of values) can be added; False otherwise."""
+
+        return self._multivalued
+
+    @property
+    def parent_eflr(self) -> "Union[EFLRSet, EFLRItem, None]":
         """EFLR or ELFRObject instance the attribute belongs to."""
 
         return self._parent_eflr
-
-    @staticmethod
-    def parse_values(val: Any) -> list[Any]:
-        """Parse value to a list.
-
-        If the value is a list already, leave it as is.
-        If the value is a tuple or a numpy array, convert it to list.
-        If the value is a string, strip it of square brackets and split by the commas.
-        Otherwise, wrap the value in a single-element list.
-        """
-
-        if isinstance(val, list):
-            values = val
-        elif isinstance(val, tuple):
-            values = list(val)
-        elif isinstance(val, np.ndarray):
-            values = val.tolist()
-        elif isinstance(val, str):
-            val = val.rstrip(' ').strip('[').rstrip(']').rstrip(',')
-            values = val.split(', ')
-            values = [v.strip(' ').rstrip(' ') for v in values]
-        else:
-            values = [val]
-
-        return values
 
     def convert_value(self, value: Any) -> Any:
         """Transform/validate the provided value according to the provided converter.
@@ -214,7 +193,8 @@ class Attribute:
         If the attribute is set up as multivalued, before converting the value, parse it to a list."""
 
         if self._multivalued:
-            value = self.parse_values(value)
+            if not isinstance(value, (list, tuple)):
+                value = [value]
             return [self.converter(v) for v in value]
         return self.converter(value)
 

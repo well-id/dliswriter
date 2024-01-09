@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribut
 class AxisItem(EFLRItem):
     """Model an object being part of Axis EFLR."""
 
-    parent: "AxisTable"
+    parent: "AxisSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise AxisItem.
@@ -24,7 +24,7 @@ class AxisItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class AxisTable(EFLRTable):
+class AxisSet(EFLRSet):
     """Model Axis EFLR."""
 
     set_type = 'AXIS'
@@ -32,4 +32,4 @@ class AxisTable(EFLRTable):
     item_type = AxisItem
 
 
-AxisItem.parent_eflr_class = AxisTable
+AxisItem.parent_eflr_class = AxisSet

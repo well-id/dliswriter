@@ -1,7 +1,3 @@
-from configparser import ConfigParser
-from typing_extensions import Self
-from typing import Optional
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
 
@@ -10,7 +6,7 @@ class StorageUnitLabel:
     """Model a Storage Unit Label - the first part of a DLIS file.
 
     Storage Unit Label is always 80 bytes long.
-    
+
     Format:
         First 4 bytes:  Storage Unit Sequence Number
         Next 5 bytes:   DLIS version
@@ -72,33 +68,3 @@ class StorageUnitLabel:
         bts = _susn_as_bytes + _dlisv_as_bytes + _sus_as_bytes + _mrl_as_bytes + _ssi_as_bytes
 
         return LogicalRecordBytes(bts, lr_type_struct=b'')
-
-    @classmethod
-    def make_from_config(cls, config: ConfigParser, key: Optional[str] = None) -> Self:
-        """Create a StorageUnitLabel object using information from a config object.
-
-        Args:
-            config  :   Config object containing the information on the storage unit label.
-            key     :   Name of the section in the config containing the SUL information. If not provided, it is assumed
-                        to be 'StorageUnitLabel'.
-
-        Returns:
-            A configured instance of StorageUnitLabel.
-        """
-
-        key = key or cls.__name__
-
-        if key not in config.sections():
-            raise RuntimeError(f"Section '{key}' not present in the config")
-
-        name_key = "name"
-
-        if name_key not in config[key].keys():
-            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
-
-        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
-
-        obj = cls(config[key][name_key], **{k: int(v) for k, v in other_kwargs.items()})
-
-        return obj
-

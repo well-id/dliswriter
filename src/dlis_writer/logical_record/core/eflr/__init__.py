@@ -1,3 +1,3 @@
-from .eflr_table import EFLRTable
-from .eflr_table_meta import EFLRTableMeta
+from .eflr_set import EFLRSet
+from .eflr_set_meta import EFLRSetMeta
 from .eflr_item import EFLRItem

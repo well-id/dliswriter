@@ -1,33 +1,41 @@
 import pytest
-from configparser import ConfigParser
 
-from dlis_writer.logical_record.eflr_types.group import GroupTable, GroupItem
+from dlis_writer.logical_record.eflr_types.group import GroupSet, GroupItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.process import ProcessItem
+from dlis_writer.logical_record.core.eflr import EFLRItem
 
-from tests.common import base_data_path, config_params
 
-
-@pytest.mark.parametrize(("key", "name", "description", "object_type", "object_class", "object_names", "group_names"), (
-        ("1", "ChannelGroup", "Group of channels", "CHANNEL", ChannelItem, ["Channel 1", "Channel 2"], []),
-        ("2", "ProcessGroup", "Group of processes", "PROCESS", ProcessItem, ["Process 1", "Prc2"], []),
-        ("3", "MultiGroup", "Group of groups", "GROUP", None, [], ["ChannelGroup", "ProcessGroup"])
+@pytest.mark.parametrize(("name", "description", "object_type", "object_class", "object_names", "group_names"), (
+        ("ChannelGroup", "Group of channels", "CHANNEL", ChannelItem, ['channel1', 'channel2'], []),
+        ("ProcessGroup", "Group of processes", "PROCESS", ProcessItem, ["process1", "process2"], []),
+        ("MultiGroup", "Group of groups", "GROUP", None, [], ["channel_group", "process_group"])
 ))
-def test_group_params(config_params: ConfigParser, key: str, name: str, description: str, object_type: str,
-                      object_class: type, object_names: list[str], group_names: list[str]):
-    """Test creating GroupObject from config."""
+def test_group_params(name: str, description: str, object_type: str,
+                      object_class: type[EFLRItem], object_names: list[str], group_names: list[str], request):
+    """Test creating GroupObject."""
 
-    g: GroupItem = GroupItem.from_config(config_params, f"Group-{key}")
+    g = GroupItem(
+        name,
+        description=description,
+        object_type=object_type,
+        object_list=[request.getfixturevalue(v) for v in object_names],
+        group_list=[request.getfixturevalue(v) for v in group_names]
+    )
 
     assert g.name == name
     assert g.description.value == description
     assert g.object_type.value == object_type
 
-    for i, name in enumerate(object_names):
-        assert g.object_list.value[i].name == name
-        assert isinstance(g.object_list.value[i], object_class)
+    assert len(g.object_list.value) == len(object_names)
+    for i, obj in enumerate(g.object_list.value):
+        assert isinstance(obj, object_class)
+        assert obj is request.getfixturevalue(object_names[i])
 
-    for i, name in enumerate(group_names):
-        assert g.group_list.value[i].name == name
-        assert isinstance(g.group_list.value[i], GroupItem)
+    assert len(g.group_list.value) == len(group_names)
+    for i, grp in enumerate(g.group_list.value):
+        assert isinstance(grp, GroupItem)
+        assert grp is request.getfixturevalue(group_names[i])
 
+    assert isinstance(g.parent, GroupSet)
+    assert g.parent.set_name is None

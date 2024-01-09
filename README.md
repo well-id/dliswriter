@@ -1,1315 +1,654 @@
 # DLIS Writer
 
-## FIRST STEPS
+Welcome to `dlis-writer`, possibly the only public Python library for creating DLIS files.
 
-Every DLIS file must start with a Storage Unit Label and FileHeader.
-
-### Storage Unit Label
-
-Each DLIS file has to start with a Storage Unit Label (SUL) which is 80 bytes.
-SUL has a specific format different from other Logical Record types.
-
-Using the default is recommended.
-
-*max_record_length* attribute determines the maximum length of each Visible Record.
-This number is limited to **16384** and the default is **8192**.
-Please check [related section on RP66 V1](http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5) for details.
-
-
-```python
-
-from logical_record.storage_unit_label import StorageUnitLabel
-
-sul = StorageUnitLabel()
-
-```
-
-
-### File Header
-
-File Header must be exactly 124 bytes.
-
-Recommended usage is to assign a max 65 characters *str* value to *_id* attribute, which represents the name of the logical file.
-
-```python
-
-from logical_record.file_header import FileHeader
-
-file_header = FileHeader()
-file_header.identifier = 'LOGICAL FILE NAME'
-
-```
+## Table of contents
+- [Release log](#release-log)
+- [About the DLIS format](#about-the-dlis-format)
+- [User guide](#user-guide)
+  - [Minimal example](#minimal-example)
+  - [Extending basic metadata](#extending-basic-metadata)
+  - [Adding more objects](#adding-more-objects)
+  - [Example scripts](#example-scripts)
+- [Developer guide](#developer-guide)
+  - [Logical Records and Visible Records](#logical-records-and-visible-records) 
+  - [Logical Record types](#logical-record-types)
+  - [Storage Unit Label](#storage-unit-label)
+  - [IFLR objects](#iflr-objects)
+    - [Frame Data](#frame-data)
+    - [No-Format Frame Data](#no-format-frame-data)
+    - [IFLR objects and their relations to EFLR objects](#iflr-objects-and-their-relations-to-eflr-objects)
+  - [EFLR objects](#eflr-objects)
+    - [`EFLRSet` and `EFLRItem`](#eflrset-and-eflritem)
+    - [Implemented EFLR objects](#implemented-eflr-objects)
+    - [Relations between EFLR objects](#relations-between-eflr-objects)
+  - [DLIS Attributes](#dlis-attributes)
+    - [The `Attribute` class](#the-attribute-class)
+    - [Attribute subtypes](#attribute-subtypes)
+  - [Writing the binary file](#writing-the-binary-file)
+    - [`DLISFile` object](#dlisfile-object)
+    - [Ways of passing data](#ways-of-passing-data)
+    - [`FileLogicalRecords` and `MultiFrameData`](#filelogicalrecords-and-multiframedata)
+    - [`DLISWriter` and auxiliary objects](#dliswriter-and-auxiliary-objects)
+    - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
+    - [Writer configuration](#writer-configuration)
 
 
+---
+## Release log
+##### 0.0.4: All DLIS objects added
+Exposed all types of DLIS objects (WellReferencePoint, Group, Message, etc.) 
+in `DLISFile` through `add_<object>` methods (e.g. `add_group`).
 
+##### 0.0.3: Instantiating ELFRObjects directly
+Each `EFLRObject` (later renamed to `EFLRInstance`) can be initialised directly by calling the constructor
+of the relevant class (before they were initialised through the corresponding `EFLR`, later renamed to `EFLRSet`).
 
-## Explicitly Formatted Logical Records (EFLR)
+##### 0.0.2: More DLIS objects
+Added support for more objects (Zone, Splice, Axis) to the `DLISFile`.
 
-Majority of the [logical record types](http://w3.energistics.org/rp66/v1/rp66v1_appa.html#A_2) are categorized as EFLR.
+##### 0.0.1: First release
+New structure of the repository, compliant with WellID standards.
 
-This section aims to provide general information that will make things clear for the upcoming sections.
+---
+## About the DLIS format
+DLIS (Digital Log Information Standard) is a binary data format dedicated to storing well log data. 
+It was developed in the 1980's, when data were stored on magnetic tapes.
+Despite numerous advances in the field of information technology, DLIS is still prevalent in the oil and gas industry.
 
-The usage of EFLR objects in this library is mostly the same.
+A DLIS file is composed of _logical records_ - topical units containing pieces of data and/or metadata. 
+There are multiple subtypes of logical records which are predefined for specific types of (meta)data.
+The most important ones are mentioned below, with links to more extensive descriptions 
+in the [Developer guide](#developer-guide).
 
-Due to complicated requirements of the RP66V1 specification, the implementation might look non-intiuitive at first,
-but it allows great control over each object and its attributes.
+Every DLIS file starts with a logical record called [_Storage Unit Label (SUL)_](#storage-unit-label),
+followed by a [_File Header_](#file-header). Both of these mainly contain format-specific metadata.
 
+A file must also have at least one [_Origin_](#origin), which holds the key information 
+about the scanned well, scan procedure, producer, etc.
 
-An EFLR class' attributes are instances of another class called Attribute. 
+Numerical data are kept in a [_Frame_](#frame), composed of several [_Channels_](#channel).
+A channel can be interpreted as a single curve ('column' of data) or a single image (2D data).
 
-Each "Attribute" has:
+Additional metadata can be specified using dedicated logical records subtypes, 
+such as [Parameter](#parameter), [Zone](#zone), [Calibration](#calibration), [Equipment](#equipment), etc.
+See [the list](#implemented-eflr-objects) for more details. 
+Additionally, for possible relations between the different objects, 
+see the relevant [class diagrams](#relations-between-eflr-objects).
 
-1. label
-2. count
-3. representation_code
-4. units
-5. value
+---
+## User guide
+In the sections below you can learn how to define and write a DLIS file using the `dlis-writer`.
 
-Most of the attributes of EFLR objects have default values, and for some of them user is expected to provide one or more of the
-count, representation_code, units, value.
-
-For an EFLR object, let's say origin, the usage of these attributes is shown below:
-
-```
-# Origin object has a file_id field as specified in the RP66V1.
-
-origin.file_id # This is an instance of logical_record.utils.core.Attribute
-
-origin.file_id.label # The label is pre-determined and SHOULD NOT BE CHANGED
-
-origin.file_id.count # The number of values passed to this attribute
-
-origin.file_id.representation_code # Data type of the value(s) passed
-
-origin.file_id.units # The measurement unit of the passed value(s)
-
-origin.file_id.value # A single value, or a list/tuple of values
-
-```
-
-Allowed types and limitations of these attributes for each EFLR can be found in logical_record.utils.rp66.RP66 object and
-the explanation can be found in the next section.
-
-### RP66 object
-
-This object in logical_record.utils.rp66 serves as a dictionary for the entire library.
-
-Each attribute of this object specifies the fields that can be used for each Set Type and
-restrictions on count and representation code for each field.
-
-For example file_id field of ORIGIN set looks like this:
+### Minimal example
+Below you can see a very minimal DLIS file example with two 1D channels (one of which serves as the index)
+and a single 2D channel.
 
 ```python
-'file_id': {
-    'count': 1,
-    'representation_code': 'ASCII'
-}
-```
+import numpy as np  # for creating mock datasets
+from dlis_writer.file import DLISFile  # the main dlis-writer object you will interact with
 
-If count=1, then file_id.value can not contain more than 1 value (a list of values).
-If count=None, then user is allowed to pass >=1 value(s) to field_id.value. For example:
+# create a DLISFile object
+# this also initialises StorageUnitLabel, FileHeader, and Origin with minimal default information
+df = DLISFile()
 
-```python
-'programs': {
-    'count': None,
-    'representation_code': 'ASCII'
-}
-```
+# number of rows for creating the datasets
+# all datasets (channels) belonging to the same frame must have the same number of rows
+n_rows = 100
 
-Here *programs* field of Origin set has a count=None. This means the user can pass more than 1 'ASCII' value using a list or tuple like this:
+# define channels with numerical data and additional information
+#  1) the first channel is also the index channel of the frame;
+#     must be 1D, ideally should be monotonic and equally spaced
+ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
 
-```python
-origin.programs.value = ['PROGRAM 1', 'PROGRAM 2']
-origin.programs.count = 2
-```
+#  2) second channel; in this case 1D and unitless
+ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
 
-If count and representation_code of a field has a value other than **None** user is **not allowed to change** count and representation_code
-for that field.
+#  3) third channel - an image channel (2D data)
+ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
 
-If representation_code for of a field is None, then user **must provide a representation code** which denotes the data type of the value(s)
-of that field.
+# define frame, referencing the above defined channels
+main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 
-A comprehensive example could be the AXIS set type for AXIS EFLR object.
-
-This is the specification dictionary for AXIS in RP66 object.
-
-```python
-AXIS = {
-    'axis_id': {
-        'count': 1,
-        'representation_code': 'IDENT'
-    },
-    'coordinates': {
-        'count': None,
-        'representation_code': None
-    },
-    'spacing': {
-        'count': 1,
-        'representation_code': None
-    }
-}
-```
-
-It shows that an Axis set have 3 fields:
-
-1. axis_id
-2. coordinates
-3. spacing
-
-The field *axis_id* has a count=1 and representation_code='IDENT'. This means user is allowed to pass only 1 value
-and that value must be type of 'IDENT'.
-
-```python
-axis.axis_id.value = 'SOME TEXT'
-```
-
-As the count and representation_code is already specified for *axis_id* in the RP66, user should not change them.
-
-The field *coordinates* have no count and representation_code so user **must provide** these. As there are no restrictions,
-user is free to pass a list or tuple of values as long as all the values have the same data type (representation_code).
-Below code demonstrates 2 different usages with 2 different representation codes:
-
-```python
-
-
-# VALUE PASSED AS LIST OF STRING
-axis.coordinates.representation_code = 'ASCII'
-axis.coordinates.count = 2
-axis.coordinates.value = ["40 23' 42.8676'' N",
-						  "27 47' 32.8956'' E"]
-
-
-
-# VALUE PASSED AS LIST OF FLOAT
-axis.coordinates.representation_code = 'FDOUBL'
-axis.coordinates.count = 2
-axis.coordinates.value = [40.395241, 27.792471]
-
-
-
+# when all the required objects have been added, write the data and metadata to a physical DLIS file
+df.write('./new_dlis_file.DLIS')
 
 ```
 
-The field *spacing* has a count of 1 and representation code will be provided by the user.
-User is free to specify the units attribute of each field.
-*units* might be useful for certain type of fields and *spacing* field of Axis set is a good example to this:
+### Extending basic metadata
+As mentioned above, initialising `DLISFile` object automatically constructs Storage Unit Label,
+File Header, and Origin objects. However, the definition of each of these can be further tuned.
+
+The relevant information can be passed either as a relevant pre-defined object or a dictionary
+of key-word arguments to create one.
 
 ```python
-axis.spacing.representation_code = 'FDOUBL'
-axis.spacing.value = 0.33
-axis.spacing.units = 'm'
+from dlis_writer.file import DLISFile
+from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
+from dlis_writer.logical_record.eflr_types.origin import OriginItem
+
+# pre-defining Storage Unit Label as object
+sul = StorageUnitLabel(set_identifier='MY-SET', sequence_number=5, max_record_length=4096)
+
+# pre-defining File Header as dictionary
+file_header = {'identifier': 'MY-FILE-HEADER', 'sequence_number': 5}
+
+# pre-defining Origin as object
+origin = OriginItem(
+    'MY-ORIGIN',
+    file_id='MY-FILE-ID',
+    file_set_name='MY-FILE-SET-NAME',
+    file_set_number=11,  # you should always define a file set number when defining OriginItem separately
+    file_number=22,
+    well_id=55,
+    well_name='MY-WELL'
+)
+
+# defining DLISFile using the pre-defined objects/dictionaries
+df = DLISFile(storage_unit_label=sul, file_header=file_header, origin=origin)
 ```
 
-
-
-
-### ORIGIN
-
-Every DLIS file must contain at least one ORIGIN logical record and this is usually right after the SUL and FILE-HEADER.
-
-
+The attributes can also be changed later by accessing the relevant objects.
+Note: because most attributes are instances of [`Attribute` class](#the-attribute-class),
+you will need to use `.value` of the attribute you may want to change.
 
 ```python
-
-from logical_record.origin import Origin
-
-origin = Origin('DEFINING ORIGIN')
-
-origin.file_id.value = 'AQLN file_id'
-
-origin.file_set_name.value = 'AQLN file_set_name'
-
-origin.file_set_number.value = 11
-
-origin.file_number.value = 22
-
-origin.file_type.value = 'AQLN file_type'
-
-origin.product.value = 'AQLN product'
-
-origin.version.value = 'AQLN version'
-
-origin.programs.value = 'AQLN programs'
-
-origin.creation_time.value = datetime.now()
-
-origin.order_number.value = 'AQLN order_number'
-
-origin.descent_number.value = 33
-
-origin.run_number.value = 44
-
-origin.well_id.value = 55
-
-origin.well_name.value = 'AQLN well_name'
-
-origin.field_name.value = 'AQLN field_name'
-
-origin.producer_code.value = 1
-
-origin.producer_name.value = 'AQLN producer_name'
-
-origin.company.value = 'AQLN company'
-
-origin.name_space_name.value = 'AQLN name_space_name'
-
-origin.name_space_version.value = 66
-
+origin.company.value = "COMPANY X"  # directly through the pre-defined Origin object
+df.origin.producer_name.value = "PRODUCER Y"  # by accessing the Origin object through the DLISFile
 ```
 
-
-Please note that the *creation_time* field must be a datetime.datetime instance.
+### Adding more objects
+Adding other logical records to the file is done in the same way as adding channels and frames.
+For example, to add a zone (in depth or in time):
 
 ```python
-
-from datetime import datetime
-
-now = datetime_now()
-
-origin.creation_time.value = now
-
+zone1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
+zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=10, maximum=30)
 ```
 
-
-### WELL REFERENCE POINT
-
-Here we did not use *coordinate_3_name* and *coordinate_3_value* fields.
-
+To specify units for numerical values, use `.units` of the relevant attribute, e.g.
 ```python
-
-from logical_record.well_reference_point import WellReferencePoint
-
-well_reference_point = WellReferencePoint('AQLN WELL-REF')
-
-well_reference_point.permanent_datum.value = 'AQLN permanent_datu'
-
-well_reference_point.vertical_zero.value = 'AQLN vertical_zero'
-
-well_reference_point.permanent_datum_elevation.value = 1234.51
-
-well_reference_point.above_permanent_datum.value = 888.51
-
-well_reference_point.magnetic_declination.value = 999.51
-
-well_reference_point.coordinate_1_name.value = 'Lattitude'
-
-well_reference_point.coordinate_1_value.value = 40.395240
-
-well_reference_point.coordinate_2_name.value = 'Longitude'
-
-well_reference_point.coordinate_2_value.value = 27.792470
-
+zone1.minimum.units = 'in'  # inches  
+zone2.maximum.units = 's'   # seconds
 ```
 
-### AXIS
+As per the [logical records relations graph](#relations-between-eflr-objects),
+Zone objects can be used to define e.g. Splice objects (which also refer to Channels):
 
 ```python
-
-from logical_record.axis import Axis
-
-axis = Axis('AXS-1')
-
-axis.axis_id.value = 'FIRST AXIS'
-
-axis.coordinates.representation_code = 'FDOUBL'
-axis.coordinates.count = 2
-axis.coordinates.value = [40.395241, 27.792471]
-
-axis.spacing.representation_code = 'FDOUBL'
-axis.spacing.value = 0.33
-axis.spacing.units = 'm'
-
+splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch3, zones=(zone1, zone2))
 ```
 
-### LONG NAME
+For more objects, see [the example with all kinds of objects](./examples/create_synth_dlis.py)
+and [the description of all implemented objects](#implemented-eflr-objects).
+
+Definition of all additional objects should precede the call to `.write()` of `DLISFile`, 
+otherwise no strict order is observed.
+
+### Example scripts
+Scripts in the [examples](./examples) folder illustrate the basic usage of the library.
+
+- [create_synth_dlis.py](./examples/create_synth_dlis.py) shows how to add every kind 
+of DLIS object to the file - including Parameters, Equipment, Comments, No-Formats, etc.
+It is also shown how multiple frames (in this case, a depth-based and a time-based frame) can be defined.
+
+- [create_dlis_from_data.py](./examples/create_dlis_from_data.py) can be used to make a DLIS file
+from any HDF5 data source.
+
+- [create_synth_dlis_variable_data.py](./examples/create_synth_dlis_variable_data.py) allows creating DLIS files
+with any number of 2D datasets with a user-defined shape, filled with randomised data. 
+
+---
+## Developer guide
+This section describes the `dlis-writer` implementation in more detail.
+The different types of logical records are explained.
+Further, the principles of converting the Python objects to DLIS-compliant bytes are described.
+
+### Logical Records and Visible Records
+[As mentioned before](#about-the-dlis-format), DLIS file consists of multiple _logical records_ (LRs).
+They can be viewed as abstract units, containing a specific type of data and/or metadata.
+
+In a more physical sense, a DLIS file is divided into _visible records_ (VRs). They are byte structures
+of pre-defined format, consisting of a 4-byte header (which includes a visible record start mark and record length)
+and a body (which can be filled with any bytes carrying data and/or metadata, coming from the 
+logical records).
+
+Visible records have a limited length, which is often lower than that of logical records. 
+In this case, the contents of a logical record can be split among several visible records' bodies.
+The _logical record segments_ (parts of the split logical record) contain additional 
+header information indicating e.g. whether the given segment is the first and/or the last one 
+of the original logical record.
+(In case a logical record fits entirely into a single visible record, its body is also wrapped
+in a logical record segment structure, with indication that the given segment is both 
+the first and the last part of the original logical record.)
+
+The maximum length of a VR is defined in [StorageUnitLabel](#storage-unit-label).
+According to the standard, the minimum length is not explicitly defined, but because the
+minimum length of a LR segment is 16 bytes (including 4 LR segment header bytes),
+the resulting minimum length of a VR is 20 bytes.
+
+### Logical Record types
+There are two main types of logical records: [_Explicitly Formatted Logical Records (EFLRs)_](#eflr-objects)
+and [_Indirectly Formatted Logical Records_ (IFLRs)](#iflr-objects). 
+
+The [_Storage Unit Label_](#storage-unit-label), the first record in the file,
+could also be viewed as a logical record. However, due to functional discrepancies, 
+in the library, it does not inherit from the base `LogicalRecord` class; on the other hand,
+it is implemented such that it can mock one and can be used alongside with actual `LogicalRecord` objects.
+
+An overview of the types of logical records is shown below. More details can be found
+in the three sections linked above.
 
-```python
-
-from logical_record.long_name import LongName
-
-long_name = LongName('LNAME-1')
-
-long_name.general_modifier.value = 'SOME ASCII TEXT'
-
-long_name.quantity.value = 'SOME ASCII TEXT'
-
-long_name.quantity_modifier.value = 'SOME ASCII TEXT'
-
-long_name.altered_form.value = 'SOME ASCII TEXT'
-
-long_name.entity.value = 'SOME ASCII TEXT'
-
-long_name.entity_modifier.value = 'SOME ASCII TEXT'
-
-long_name.entity_number.value = 'SOME ASCII TEXT'
-
-long_name.entity_part.value = 'SOME ASCII TEXT'
-
-long_name.entity_part_number.value = 'SOME ASCII TEXT'
-
-long_name.generic_source.value = 'SOME ASCII TEXT'
-
-long_name.source_part.value = 'SOME ASCII TEXT'
-
-long_name.source_part_number.value = 'SOME ASCII TEXT'
-
-long_name.conditions.value = 'SOME ASCII TEXT'
-
-long_name.standard_symbol.value = 'SOME ASCII TEXT'
-
-long_name.private_symbol.value = 'SOME ASCII TEXT'
-
-```
-
-
-### CHANNEL
-
-
-You can think of Channel as a column.
-
-For example let's say in your dataset, you have a column
-called DEPTH, the values are float, the unit is meter, and each cell contains a single value so the dimension
-is 1. This is how you would create the Channel for DEPTH column.
-
-```python
-
-from logical_record.channel import Channel
-
-depth_channel = Channel('DEPTH CHANNEL')
-depth_channel.long_name.value = 'DEPTH'
-depth_channel.properties.value = ['0309 AQLN PROP 1', 'PROP AQLN 2']
-depth_channel.representation_code.value = get_representation_code('FDOUBL')
-depth_channel.units.value = 'm'
-depth_channel.dimension.value = [1]
-depth_channel.element_limit.value = [1]
-
-```
-
-*data.csv* has two more columns, we create channels for those as well.
-
-```python
-
-from logical_record.channel import Channel
-
-curve_1_channel = Channel('CURVE 1 CHANNEL')
-curve_1_channel.long_name.value = 'CURVE 1'
-curve_1_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_1_channel.units.value = 't'
-curve_1_channel.dimension.value = [1]
-curve_1_channel.element_limit.value = [1]
-
-curve_2_channel = Channel('CURVE 2 CHANNEL')
-curve_2_channel.long_name.value = 'CURVE 2'
-curve_2_channel.representation_code.value = get_representation_code('FDOUBL')
-curve_2_channel.units.value = 't'
-curve_2_channel.dimension.value = [1]
-curve_2_channel.element_limit.value = [1]
-
-```
-
-For multi-dimensional columns, you must specify the dimension field's value accordingly.
-Dimension attributes denotes the dimension of the array in a single cell.
-For example the *image.csv* file has dimensions (7657, 384). This means,
-there are 7657 rows, each containing 384 values. So the dimension will be 384 as
-it denotes the dimension of each value in a single cell.
-
-
-```python
-
-from logical_record.channel import Channel
-
-image_channel = Channel('IMG')
-image_channel.long_name.value = 'IMAGE CHANNEL'
-image_channel.representation_code.value = get_representation_code('FDOUBL')
-image_channel.dimension.value = [384]
-image_channel.element_limit.value = [384]
-
-```
-
-
-
-### FRAME & FRAME DATA
-
-Each frame can have a varied number of Channel instances.
-Frames can be thought as separate spreadsheets with different combinations of Channels (columns)
-
-For each Frame, user must first create a Frame(EFLR) object and afterwards for each row of each column (Channel)
-create a Frame Data.
-
-
-Creating the Frame(EFLR)
-
-```python
-
-from logical_record.frame import Frame
-
-frame = Frame('MAIN')
-frame.channels.value = [depth_channel, curve_1_channel, curve_2_channel, image_channel]
-frame.index_type.value = 'BOREHOLE-DEPTH'
-frame.spacing.value = 0.33
-frame.spacing.representation_code = 'FDOUBL'
-frame.spacing.units = 'm'
-
-```
-
-Reading data:
-
-```python
-
-import pandas as pd
-
-data = pd.read_csv('./data/data.csv')
-image = pd.read_csv('./data/image.csv', header=None, sep=' ')
-
-# Remove index col if exists 
-data = data[[col for col in data.columns[1:]]]
-
-# Convert to numpy.ndarray
-data = data.values
-image = image.values
-
-```
-
-Each FrameData object represents a single row. FrameData must follow the Frame object and the order of the data passed should be the same with
-the order of the Channels in Frame.channels.value field.
-
-For this example *frame* is an instance of Frame(EFLR) and has 2 channels: depth_channel and image_channel.
-
-Each frame data should contain depth_channel values followed by image_channel. The data passed to FrameData
-must be a 1 dimensional np.array or a list.
-
-In this example the *depth_channel*, *curve_1_channel*, and *curve_2_channel* are instances of Channel (created previously) and all have a dimension of 1.
-
-*image_channel* on the other hand, has a dimension of 384. So, data that will be passed to each FrameData object
-must be a list of 387 values, first three being the values of *depth_channel*, *curve_1_channel*, and *curve_2_channel* in the same row.
-Following 384 values are the *image_channel* values for the corresponding row.
-
-This example uses numpy's append method to manipulate the datasets to get the list of values passed to FrameData objects.
-
-```python
-
-from logical_record.frame_data import FrameData
-
-frame_data_objects = []
-
-for i in range(len(data)):
-
-    slots = np.append(data[i], image[i])
-
-    frame_data = FrameData(frame=frame, frame_number=i+1, slots=slots)
-    frame_data_objects.append(frame_data)
-
-``` 
-
-Please note that, reading & manipulating datasets might differ depending on the format of the data files.
-
-User is expected to create an array for each row and pass that array to FrameData object.
-
-
-
-### PATH
-
-*frame_type* must be an instance of a Frame(EFLR) object.
-*well_reference_point* must be an instance of a WellReferencePoint(EFLR) object.
-*value* must be a list of Channel instances.
-
-```python
-
-from logical_record.path import Path
-
-path_1 = Path('PATH1')
-
-path_1.frame_type.value = frame
-path_1.well_reference_point.value = well_reference_point
-path_1.value.value = [curve_1_channel, curve_2_channel]
-
-path_1.vertical_depth.value = -187
-path_1.vertical_depth.representation_code = 'SNORM'
-
-path_1.radial_drift.value = 105
-path_1.radial_drift.representation_code = 'SSHORT'
-
-path_1.angular_drift.value = 64.23
-path_1.angular_drift.representation_code = 'FDOUBL'
-
-path_1.time.value = 180
-path_1.time.representation_code = 'SNORM'
-
-path_1.depth_offset.value = -123
-path_1.depth_offset.representation_code = 'SSHORT'
-
-path_1.measure_point_offset.value = 82
-path_1.measure_point_offset.representation_code = 'SSHORT'
-
-path_1.tool_zero_offset.value = -7
-path_1.tool_zero_offset.representation_code = 'SSHORT'
-
-```
-
-
-### ZONE
-
-> [Zone Objects](http://w3.energistics.org/rp66/v1/rp66v1_sec5.html#5_8_1) specify single intervals in depth or time.
-
-Domain attribute can be:
-
-1. BOREHOLE-DEPTH
-2. TIME
-3. VERTICAL-DEPTH
-
-Maximum and Minimum attributes' representation code will depend on the domain attribute.
-
-A comprehensive example showing 4 different usage of this object:
-
-```python
-
-from datetime import datetime
-from logical_record.zone import Zone
-
-# Domain = BOREHOLE-DEPTH
-zone_1 = Zone('ZONE-1')
-zone_1.description.value = 'BOREHOLE-DEPTH-ZONE'
-zone_1.domain.value = 'BOREHOLE-DEPTH'
-
-zone_1.maximum.value = 1300.45
-zone_1.maximum.units = 'm'
-zone_1.maximum.representation_code = 'FDOUBL'
-
-zone_1.minimum.value = 100
-zone_1.minimum.units = 'm'
-zone_1.minimum.representation_code = 'USHORT'
-
-
-# Domain = VERTICAL-DEPTH
-zone_2 = Zone('ZONE-2')
-zone_2.description.value = 'VERTICAL-DEPTH-ZONE'
-zone_2.domain.value = 'VERTICAL-DEPTH'
-
-zone_2.maximum.value = 2300.45
-zone_2.maximum.units = 'm'
-zone_2.maximum.representation_code = 'FDOUBL'
-
-zone_2.minimum.value = 200
-zone_2.minimum.units = 'm'
-zone_2.minimum.representation_code = 'USHORT'
-
-
-# Domain = TIME and values are passed as datetime.datetime instances
-zone_3 = Zone('ZONE-3')
-zone_3.description.value = 'ZONE-TIME'
-zone_3.domain.value = 'TIME'
-
-zone_3.maximum.value = datetime(2022, 7, 13, 11, 30)
-zone_3.maximum.representation_code = 'DTIME'
-
-zone_3.minimum.value = datetime(2022, 7, 12, 9, 0)
-zone_3.minimum.representation_code = 'DTIME'
-
-# Domain = TIME and values are passed as integers denoting n minutes since something.
-zone_4 = Zone('ZONE-4')
-zone_4.description.value = 'ZONE-TIME-2'
-zone_4.domain.value = 'TIME'
-
-zone_4.maximum.value = 90
-zone_4.maximum.units = 'minute'
-zone_4.maximum.representation_code = 'USHORT'
-
-zone_4.minimum.value = 10
-zone_4.minimum.units = 'minute'
-zone_4.minimum.representation_code = 'USHORT'
-
-```
-
-### PARAMETER
-
-Example usage
-
-```python
-
-from logical_record.parameter import Parameter
-
-parameter_1 = Parameter('PARAM-1')
-
-parameter_1.long_name.value = 'LATLONG-GPS'
-
-parameter_1.dimension.value = [1]
-
-parameter_1.zones.value = [zone_1, zone_3]
-
-parameter_1.values.value = ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"]
-parameter_1.values.representation_code = 'ASCII'
-
-```
-
-
-### EQUIPMENT
-
-Please note that even though RP66 V1 does not restrict the representation code for the attributes listed below, to make it easier for the user
-their default representation codes are set to FDOUBL. This object is an exception where you can set the representation codes even though they are not None in the logical_record.utils.rp66.RP66.
-
-- height
-- length
-- minimum_diameter
-- maximum_diameter
-- volume
-- weight
-- hole_size
-- pressure
-- temperature
-- vertical_depth
-- radial_drift
-- angular_drift
-
-
-```python
-
-from logical_record.equipment import Equipment
-
-equipment = Equipment('EQ1')
-equipment.trademark_name.value = 'EQ-TRADEMARKNAME'
-equipment.status.value = 1
-equipment._type.value = 'Tool'
-equipment.serial_number.value = '9101-21391'
-equipment.location.value = 'Well'
-
-equipment.height.value = 140
-equipment.height.units = 'in' 
-
-equipment.length.value = 230.78
-equipment.length.units = 'cm'
-
-equipment.minimum_diameter.value = 2.3
-equipment.minimum_diameter.units = 'm'
-
-equipment.maximum_diameter.value = 3.2
-equipment.maximum_diameter.units = 'm'
-
-equipment.volume.value = 100
-equipment.volume.units = 'cm3'
-
-equipment.weight.value = 1.2
-equipment.weight.units = 't'
-
-equipment.hole_size.value = 323.2
-equipment.hole_size.units = 'm' 
-
-equipment.pressure.value = 18000
-equipment.pressure.units = 'psi' 
-
-equipment.temperature.value = 24
-equipment.temperature.units = 'degC' 
-
-equipment.vertical_depth.value = 587
-equipment.vertical_depth.units = 'm'
-
-equipment.radial_drift.value = 23.22
-equipment.radial_drift.units = 'm' 
-
-equipment.angular_drift.value = 32.5
-equipment.angular_drift.units = 'm'
-
-```
-
-
-### TOOL
-
-*parts* attribute is a list of Equipment object instances.
-*channels* attribute is a list of Channel objects.
-*parameters* attribute is a list of Parameter objects.
-
-
-```python
-
-from logical_record.tool import Tool
-
-tool = Tool('TOOL-1')
-tool.description.value = 'SOME TOOL'
-tool.trademark_name.value = 'SMTL'
-tool.generic_name.value = 'TOOL GEN NAME'
-tool.parts.value = [equipment_1, equipment_2]
-tool.status.value = 1
-tool.channels.value = [depth_channel, curve_1_channel]
-tool.parameters.value = [parameter_1, parameter_3]
-
-```
-
-
-### COMPUTATION
-
-*axis* attribute must be an Axis object
-
-*zones* attribute must be a list of Zone objects
-
-*values* attribute must contain a list of values. Note that the number of values MUST BE THE SAME with number of Zone objects in the *zones* attribute.
-Representation code of *values* must be specified.
-
-*source* attribute can be a reference to another object that is the direct source of this computation.
-There are two representation codes that can be used for referencing an object: 'OBNAME' and 'OBJREF'.
-Below example assigns a Tool object created before as the *source* and sets the representation code to 'OBNAME'.
-
-
-```python
-
-from logical_record.computation import Computation
-
-computation = Computation('COMPT-1')
-
-computation.long_name.value = 'COMPT 1'
-
-computation.properties.value = ['PROP 1', 'AVERAGED']
-
-computation.dimension.value = [1]
-
-computation.axis.value = axis
-
-computation.zones.value = [zone_1, zone_2, zone_3]
-
-computation.values.value = [100, 200, 300]
-computation.values.representation_code = 'UNORM'
-
-computation.source.value = tool
-computation.source.representation_code = 'OBNAME'
-
-```
-
-
-### PROCESS
-
-*status* attribute can take 3 values:
-
-1. COMPLETE
-2. ABORTED
-3. IN-PROGRESS
-
-*input_channels*, *output_channels*, *input_computations*, *output_computations*, and *parameters* attributes are list of related object instances.
-
-```python
-
-from logical_record.process import Process
-
-process_1 = Process('MERGED')
-
-process_1.description.value = 'MERGED'
-
-process_1.trademark_name.value = 'PROCESS 1'
-
-process_1.version.value = '0.0.1'
-
-process_1.properties.value = ['AVERAGED']
-
-process_1.status.value = 'COMPLETE'
-
-process_1.input_channels.value = [curve_1_channel]
-
-process_1.output_channels.value = [multi_dim_channel]
-
-process_1.input_computations.value = [computation_1]
-
-process_1.output_computations.value = [computation_2]
-
-process_1.parameters.value = [parameter_1, parameter_2, parameter_3]
-
-process_1.comments.value = 'SOME COMMENT HERE'
-
-```
-
-
-### CALIBRATION MEASUREMENT
-
-```python
-from logical_record.calibration import CalibrationMeasurement
-
-calibration_measurement_1 = CalibrationMeasurement('CMEASURE-1')
-
-calibration_measurement_1.phase.value = 'BEFORE'
-
-calibration_measurement_1.measurement_source.value = depth_channel
-
-calibration_measurement_1._type.value = 'Plus'
-
-calibration_measurement_1.dimension.value = [1]
-
-calibration_measurement_1.measurement.value = [12.2323]
-calibration_measurement_1.measurement.representation_code = 'FDOUBL'
-
-calibration_measurement_1.sample_count.value = [12]
-calibration_measurement_1.sample_count.representation_code = 'USHORT'
-
-calibration_measurement_1.maximum_deviation.value = [2.2324]
-calibration_measurement_1.maximum_deviation.representation_code = 'FDOUBL'
-
-calibration_measurement_1.standard_deviation.value = [1.123]
-calibration_measurement_1.standard_deviation.representation_code = 'FDOUBL'
-
-calibration_measurement_1.begin_time.value = datetime.now()
-calibration_measurement_1.begin_time.representation_code = 'DTIME'
-
-calibration_measurement_1.duration.value = 15
-calibration_measurement_1.duration.representation_code = 'USHORT'
-calibration_measurement_1.duration.units = 's'
-
-calibration_measurement_1.reference.value = [11]
-calibration_measurement_1.reference.representation_code = 'USHORT'
-
-calibration_measurement_1.standard.value = [11.2]
-calibration_measurement_1.standard.representation_code = 'FDOUBL'
-
-calibration_measurement_1.plus_tolerance.value = [2]
-calibration_measurement_1.plus_tolerance.representation_code = 'USHORT'
-
-calibration_measurement_1.minus_tolerance.value = [1]
-calibration_measurement_1.minus_tolerance.representation_code = 'USHORT'
-```
-
-
-### CALIBRATION COEFFICIENT
-
-
-```python
-from logical_record.calibration import CalibrationCoefficient
-
-calibration_coefficient = CalibrationCoefficient('COEF-1')
-
-calibration_coefficient.label.value = 'Gain'
-
-calibration_coefficient.coefficients.value = [100.2, 201.3]
-calibration_coefficient.coefficients.representation_code = 'FDOUBL'
-
-calibration_coefficient.references.value = [89, 298]
-calibration_coefficient.references.representation_code = 'FDOUBL'
-
-calibration_coefficient.plus_tolerances.value = [100.2, 222.124]
-calibration_coefficient.plus_tolerances.representation_code = 'FDOUBL'
-
-calibration_coefficient.minus_tolerances.value = [87.23, 214]
-calibration_coefficient.minus_tolerances.representation_code = 'FDOUBL'
-```
-
-
-### CALIBRATION
-
-```python
-from logical_record.calibration import Calibration
-
-calibration = Calibration('CALB-MAIN')
-
-calibration.calibrated_channels.value = [depth_channel, curve_1_channel]
-
-calibration.uncalibrated_channels.value = [curve_2_channel, multi_dim_channel, image_channel]
-
-calibration.coefficients.value = [calibration_coefficient]
-
-calibration.measurements.value = [calibration_measurement_1]
-
-calibration.parameters.value = [parameter_1, parameter_2, parameter_3]
-
-calibration.method.value = 'Two-Point-Linear'
-```
-
-
-### GROUP
-
-```python
-from logical_record.group import Group
-
-group_1 = Group('GRP-1')
-
-group_1.description.value = 'MULTI-DIMENSIONAL CHANNELS'
-group_1.item_type.value = 'CHANNEL'
-group_1.object_list.value = [multi_dim_channel, image_channel]
-
-```
-
-
-### SPLICE
-```python
-from logical_record.splice import Splice
-
-splice_1 = Splice('SPLICE-1')
-splice_1.output_channels.value = multi_dim_channel
-splice_1.input_channels.value = [curve_1_channel, curve_2_channel]
-splice_1.zones.value = [zone_1, zone_2, zone_3, zone_4]
-
-```
-
-
-### NO-FORMAT EFLR & FRAME DATA
-
-NO-FORMAT Logical Records allow users to write arbitrary bytes data.
-
-There are 2 steps:
-
-1. Creating NoFormat(EFLR) objects
-2. Creatinf NOFORMAT Frame Data that points to a NoFormat(EFLR) object
-
-
-#### NoFormat (EFLR)
-
-This object can be thought of a parent class for the NoFormat FrameData(s).
-This example creates two NoFormat objects:
-
-
-```python
-from logical_record.no_format import NoFormat
-
-no_format_1 = NoFormat('no_format_1')
-no_format_1.consumer_name.value = 'SOME TEXT NOT FORMATTED'
-no_format_1.description.value = 'TESTING-NO-FORMAT'
-
-no_format_2 = NoFormat('no_format_2')
-no_format_2.consumer_name.value = 'SOME IMAGE NOT FORMATTED'
-no_format_2.description.value = 'TESTING-NO-FORMAT-2'
-
-```
-
-#### NOFORMAT FRAME DATA (IFLR)
-
-NOFORMAT FrameData only has two attributes:
-
-1. no_format_object: A logical_record.no_format.NoFormat instance
-2. data: a binary data
-
-
-An arbitrary number of NOFORMAT FrameData can be created.
-
-This example creates three NOFORMAT FrameData, two of them points to no_format_1,
-and one of them to no_format_2 objects that were created in the previous step.
-
-```python
-from logical_record.frame_data import FrameData
-
-no_format_fdata_1 = NoFormatFrameData()
-no_format_fdata_1.no_format_object = no_format_1
-no_format_fdata_1.image1 = 'Some text that is recorded but never read by anyone.'
-
-no_format_fdata_2 = NoFormatFrameData()
-no_format_fdata_2.no_format_object = no_format_1
-no_format_fdata_2.image1 = 'Some OTHER text that is recorded but never read by anyone.'
-
-no_format_fdata_3 = NoFormatFrameData()
-no_format_fdata_3.no_format_object = no_format_2
-no_format_fdata_3.image1 = 'This could be the BINARY data of an image rather than ascii text'
-
-```
-
-#### COMPLETE CODE
-
-```python
-from logical_record.no_format import NoFormat
-from logical_record.frame_data import NoFormatFrameData
-
-no_format_1 = NoFormat('no_format_1')
-no_format_1.consumer_name.value = 'SOME TEXT NOT FORMATTED'
-no_format_1.description.value = 'TESTING-NO-FORMAT'
-
-no_format_2 = NoFormat('no_format_2')
-no_format_2.consumer_name.value = 'SOME IMAGE NOT FORMATTED'
-no_format_2.description.value = 'TESTING-NO-FORMAT-2'
-
-no_format_fdata_1 = NoFormatFrameData()
-no_format_fdata_1.no_format_object = no_format_1
-no_format_fdata_1.data = 'Some text that is recorded but never read by anyone.'
-
-no_format_fdata_2 = NoFormatFrameData()
-no_format_fdata_2.no_format_object = no_format_1
-no_format_fdata_2.data = 'Some OTHER text that is recorded but never read by anyone.'
-
-no_format_fdata_3 = NoFormatFrameData()
-no_format_fdata_3.no_format_object = no_format_2
-no_format_fdata_3.data = 'This could be the BINARY data of an image rather than ascii text'
-
-```
-
-
-### MESSAGE
-
-*time* attribute can be passed as a datetime.datetime instance or as a numeric value that denotes
-x min/sec/hour/ since something.
-
-```python
-from logical_record.message import Message
-
-message_1 = Message('MESSAGE-1')
-message_1._type.value = 'Command'
-
-message_1.time.value = datetime.now()
-message_1.time.representation_code = 'DTIME'
-
-message_1.borehole_drift.value = 123.34
-message_1.borehole_drift.representation_code = 'FDOUBL'
-
-message_1.vertical_depth.value = 234.45
-message_1.vertical_depth.representation_code = 'FDOUBL'
-
-message_1.radial_drift.value = 345.56
-message_1.radial_drift.representation_code = 'FDOUBL'
-
-message_1.angular_drift.value = 456.67
-message_1.angular_drift.representation_code = 'FDOUBL'
-
-message_1.text.value = 'Test message 11111'
-
-```
-
-
-### COMMENT
-
-```python
-from logical_record.message import Comment
-
-comment_1 = Comment('COMMENT-1')
-comment_1.text.value = 'SOME COMMENT HERE'
-
-comment_2 = Comment('COMMENT-2')
-comment_2.text.value = 'SOME OTHER COMMENT HERE'
-
-```
-
-
-### CREATING DLIS FILE
-
-First step is to create a DLISFile object.
-
-Each DLIS File must have a Storage Unit Label, File Header and an Origin.
-All other Logical Records must have an attribute *origin_reference* that points to the
-related Origin object's *file_set_number*. So, rather than setting some_logical_record.origin_reference
-each time user creates a Logical Record, the Origin object is passed to __init__ of the DLISFile
-and *origin_reference*s of all Logical Records are set internally.
-
-*file_path*: The path of the DLIS file that will be written to.
-*storage_unit_label*: A logical_record.storage_unit_label.StorageUnitLabel instance.
-*file_header*: A logical_record.file_header.FileHeader instance.
-*origin*: A logical_record.origin.Origin instance.
-
-Below example uses the same variable names used in previous steps to create each Logical Record Segment.
-
-For example *sul* is the name that we used when creating the StorageUnitLabel object.
-
-```python
-from logical_record.file import DLISFile
-
-dlis_file = DLISFile(file_path='./output/test.DLIS',
-                     storage_unit_label=sul,
-                     file_header=file_header,
-                     origin=origin)
-```
-
-Next step is to append all the Logical Record Segments created in previous segments.
-This is done by appending the related object instances to *logical_records* attribute of the DLISFile object.
-
-
-```python
-
-dlis_file.logical_records.append(well_reference_point)
-dlis_file.logical_records.append(axis)
-dlis_file.logical_records.append(long_name)
-dlis_file.logical_records.append(depth_channel)
-dlis_file.logical_records.append(curve_1_channel)
-dlis_file.logical_records.append(curve_2_channel)
-dlis_file.logical_records.append(multi_dim_channel)
-dlis_file.logical_records.append(image_channel)
-
-dlis_file.logical_records.append(frame)
-for fdata in frame_data_objects:
-    dlis_file.logical_records.append(fdata)
-
-dlis_file.logical_records.append(path_1)
-dlis_file.logical_records.append(zone_1)
-dlis_file.logical_records.append(zone_2)
-dlis_file.logical_records.append(zone_3)
-dlis_file.logical_records.append(zone_4)
-dlis_file.logical_records.append(parameter_1)
-dlis_file.logical_records.append(parameter_2)
-dlis_file.logical_records.append(parameter_3)
-dlis_file.logical_records.append(equipment_1)
-dlis_file.logical_records.append(equipment_2)
-dlis_file.logical_records.append(tool)
-dlis_file.logical_records.append(computation_1)
-dlis_file.logical_records.append(computation_2)
-dlis_file.logical_records.append(process_1)
-dlis_file.logical_records.append(process_2)
-dlis_file.logical_records.append(calibration_measurement_1)
-dlis_file.logical_records.append(calibration_coefficient)
-dlis_file.logical_records.append(calibration)
-dlis_file.logical_records.append(group_1)
-dlis_file.logical_records.append(splice_1)
-dlis_file.logical_records.append(no_format_1)
-dlis_file.logical_records.append(no_format_2)
-dlis_file.logical_records.append(no_format_fdata_1)
-dlis_file.logical_records.append(no_format_fdata_2)
-dlis_file.logical_records.append(no_format_fdata_3)
-dlis_file.logical_records.append(message_1)
-dlis_file.logical_records.append(comment_1)
-dlis_file.logical_records.append(comment_2)
-
-```
-
-Adding all the logical records at the last step was an arbitrary decision made for demonstration purposes.
-
-A more intuitive way might be:
-
-1. Create StorageUnitLabel
-2. Create FileHeader
-3. Create Origin
-4. Create DLISFile
-5. Create other Logical Records and append them to DLISFile().logical_records on the fly
-
-A basic demonstration of this approach:
-
-```python
-... imports
-..
-.
-
-sul = StorageUnitLabel()
-file_header = FileHeader()
-origin = Origin()
-... origin attributes
-..
-.
-
-dlis_file = DLISFile(file_path='some_path.DLIS', sul, file_header, origin)
-
-
-well_reference_point = WellReferencePoint()
-... well_reference_point attributes
-..
-.
-
-dlis_file.logical_records.append(well_reference_point)
-
-
-channel = Channel()
-... channel attributes
-..
-.
-
-dlis_file.logical_records.append(channel)
-```
-
-
-## DLIS objects
 ```mermaid
 ---
-title: Logical record types overview
+title: Logical Record types overview
 ---
 classDiagram
-    LogicalRecordBase <|-- IflrAndEflrBase
-    LogicalRecordBase <|-- FileHeader
-    LogicalRecordBase <|-- StorageUnitLabel
-    
-    IflrAndEflrBase <|-- IFLR
-    IflrAndEflrBase <|-- EFLR
-    
+    LogicalRecord <|-- EFLRSet 
+    LogicalRecord <|-- IFLR
+
     IFLR <|-- FrameData
     IFLR <|-- NoFormatFrameData
     
-    class LogicalRecordBase{
-        +set_type
-        +key
-        +size
+    EFLRSet o-- "1..*" EFLRItem
+    EFLRItem --> EFLRSet
+    
+    class LogicalRecord{
+        +Enum logical_record_type
+        +bytes lr_type_struct
+        +bool is_eflr
+        
         +represent_as_bytes()
-        +from_config()
     }
     
-    class IflrAndEflrBase{
-        +is_eflr
-        +logical_record_type
-        +segment_attributes
-        +lr_type_struct
-        +make_body_bytes()
-        +make_header_bytes()
-        +split()
-        +make_lr_type_struct()
+    class EFLRSet{
+        +type item_type
+        +str eflr_name
+        +re.Pattern eflr_name_pattern
+        +str set_type
+        +str set_name
+        +int origin_reference
+        +int n_items
+        
+        +clear_eflr_item_dict()
+        +clear_set_instance_dict()
+        +get_eflr_item()
+        +register_item()
+        +get_all_eflr_items()
+        +get_or_make_set()
+        +get_or_make_set()
+        
     }
     
-    class EFLR{
-        +dtime_formats
-        +object_name
-        +set_name
-        +origin_reference
-        +copy_number
-        +obname
-        -_rp66_rules
-        -_attributes
-        -_instance_dict
-        +get_attribute()
+    class EFLRItem{ 
+        +type parent_eflr_class
+        +str name
+        +EFLRSet parent
+        +int origin_reference
+        +int copy_number
+        +dict attributes
+        +bytes obname
+        
+        +make_item_body_bytes()
         +set_attributes()
-        +add_dependent_objects_from_config()
-        +all_from_config()
-        +get_or_make_from_config()
-        +get_instance()
-        -_create_attribute()
-    }
-    
-    class FileHeader{
-        +sequence_number
-        +identifier
-        +origin_reference
-        +copy_number
-        +object_name
     }
     
     class StorageUnitLabel{
-        +storage_unit_structure
-        +dlis_version
-        +max_record_length
-        +sequence_number
-        +set_identifier
+        +str storage_unit_structure
+        +str dlis_version
+        +int max_record_length_limit
+        +int max_record_length
+        +int sequence_number
+        +str set_identifier
+        
+        +represent_as_bytes()
     }
 ```
+
+### Storage Unit Label
+Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.
+Its format is different from that of other logical record types.
+
+The attribute `max_record_length` of SUL determines the maximum length allowed for visible
+records of the file (see [Logical Records and Visible Records](#logical-records-and-visible-records)),
+expressed in bytes. This number is limited to 16384 and the default is 8192.
+
+### IFLR objects
+_IFLR_, or _Indirectly Formatted Logical Record_ objects, are meant for keeping numerical or binary data.
+There are two categories of IFLR: [_Frame Data_](#frame-data) for strictly formatted numerical data 
+and [_No-Format Frame Data_](#no-format-frame-data) for arbitrary data bytes.
+  
+  #### Frame Data
+  Each Frame Data object represents a single row of formatted numerical data. 
+  The order of values in a Frame Data must follow the order of Channels in the [Frame](#frame) it references.  
+  
+  For example, assume a Frame has 2 channels: 1D depth channel (dimension=[1]) 
+  and 2D image channel with 128 columns (dimension=[128]).
+  The generated FrameData objects should contain 129 values: 
+  1 from the depth channel followed by 128 from a row of the image channel. 
+  The values are merged into a single, flat array.
+  
+  In the library, Frame Data objects are generated automatically from Frame object information and data referenced 
+  by the relevant channels; see [MultiFrameData](./src/dlis_writer/file/multi_frame_data.py) for the procedure.
+
+  #### No-Format Frame Data
+  No-Format Frame Data is a wrapper for unformatted data - arbitrary bytes the user wishes to save in the file.
+  It must reference a [No-Format](#no-format) object. The data - as bytes or str - should be added in the 
+  `data` attribute. An arbitrary number of NOFORMAT FrameData can be created.
+
+  #### IFLR objects and their relations to EFLR objects
+  The relations of Frame Data and No-Format Frame-Data to their 'parent' EFLR objects is summarised below.
+  For explanation on the differences between `FrameSet` and `FrameItem` etc., please see [here](#eflrset-and-eflritem).
+  
+  ```mermaid
+  ---
+  title: IFLR objects and their relation to EFLR objects
+  ---
+  classDiagram
+      LogicalRecord <|-- IFLR
+      LogicalRecord <|-- EFLRSet
+      
+      IFLR <|-- FrameData
+      IFLR <|-- NoFormatFrameData
+      
+      EFLRSet <|-- FrameSet
+      EFLRSet <|-- NoFormatSet
+        
+      EFLRItem <|-- FrameItem
+      FrameData --> FrameItem
+
+      EFLRItem <|-- NoFormatItem
+      NoFormatFrameData --> NoFormatItem
+
+      FrameSet o-- FrameItem
+      NoFormatSet o-- NoFormatItem
+      FrameItem --> FrameSet
+      NoFormatItem --> NoFormatSet
+      
+      class FrameData{
+          +FrameItem frame
+          +int frame_number
+          +int origin_reference
+          -slots numpy.ndarray
+      }
+      
+      class NoFormatFrameData{
+          +NoFormatItem no_format_object
+          +Any data
+      }
+  ```
+
+### EFLR objects
+_Explicitly Formatted Logical Records_ are meant for representing metadata according to pre-defined schemes.
+More than 20 such schemes are defined (see [the list](#implemented-eflr-objects)).
+Each one lists a specific set of attributes.
+Some of the EFLRs are required for a DLIS file: [File Header](#file-header), [Origin](#origin),
+[Frame](#frame), and [Channels](#channel). Others are optional ways of specifying more metadata.
+
+#### `EFLRSet` and `EFLRItem`
+The implementation of the ELFRs is split over two separate classes: `EFLRSet` and `EFLRItem`.
+For the different schemes (as mentioned above), subclasses of both `EFLRSet` and `EFLRItem` are defined, 
+e.g. `ChannelSet` and `ChannelItem`, `FrameSet` and `FrameItem`, etc.
+
+`EFLRItem` is e.g. a single Channel, Frame, or Axis. 
+It has its own name (the first positional argument when initialising the object) 
+and a number of attributes ([`Attribute` instances](#dlis-attributes)), pre-defined by the standard.
+For example, for a Channel, these attributes include: units, dimension, representation code,
+minimum and maximum value, and others.
+
+`EFLRSet` can be viewed as a collection of `EFLRItem` instances.
+Because a specific subclass of `EFLRSet` (e.g. `ChannelSet`) 
+can only contain instances of a specific subclass of `EFLRItem` (e.g. `ChannelItem`),
+all `EFLRItem`s added to an `EFLRSet` will have exactly the same set of attribute types.
+Therefore, an `EFLRSet` can be viewed as a table of `EFLRItem`s, with attribute names as table header
+and individual `EFLRItem`s with their attribute values as rows in that table.
+
+As shown in [the class diagram](#logical-record-types) above, it is `EFLRSet`, not `EFLRItem`
+that inherits from `LogicalRecord` base class. While this might be non-intuitive,
+it is consistent with the standard; an Explicitly Formatted Logical Record in the standard is a table
+as described above, with additional metadata.
+
+Theoretically, multiple `EFLRSet` instances of the same type (e.g. multiple `ChannelSet` instances)
+can be defined in a DLIS file. The key requirement is that their names - `set_name`s - are different.
+There cannot be two `ChannelItem`s (or two instances other `EFLRItem` subclass) with the same `set_name`.
+However, usually only a single instance of each `EFLRSet` is defined, and the default `set_name` is `None`.
+
+In the current implementation, there is usually no need to explicitly define `EFLRSet` (subclass) instances
+or to interact with these. User is supposed to interact with the relevant `EFLRItem` subclass instead, 
+e.g. `ChannelItem`. At initialisation, an instance of `ChannelItem` is automatically assigned to a `ChannelSet`.
+The `set_name` argument passed to initialisation of `ChannelItem` is used to retrieve (if already defined) 
+or create a `ChannelSet`. The reference to that `ChannelSet` instance is kept in the `ChannelItem` instance
+in the `parent` attribute. The `ChannelItem` instance is added to a dictionary of `EFLRItem`s 
+in that `ChannelSet` instance. (The same applies to all other subtypes of EFLRs).
+
+
+#### Implemented EFLR objects
+The types of EFLRs implemented in this library are described below.
+Note: the standard defines several more types of EFLRs.
+
+  ##### File Header
+  File Header must immediately follow a [Storage Unit Label](#storage-unit-label) of the file.  
+  Its length must be exactly 124 bytes.
+  The `identifier` attribute of the File Header represents the name of the DLIS file. 
+  It should be a string of max 65 characters.
+
+  ##### Origin
+  Every DLIS file must contain at least one Origin. Usually, it immediately follows the [File Header](#file-header).
+  The Origin keeps key information related to the scanned well, the scan procedure, producer, etc.
+  The `creation_time` attribute of Origin, if not explicitly specified, is set to the current
+  date and time (when the object is initialised).
+
+  While in general the standard permits multiple Origins, 
+  the current implementation only allows a single Origin per file.
+  This is because every object in the file must have an _origin reference_ assigned and at the moment,
+  the `file_set_number` of the single Origin of the file is used as the origin reference for all objects
+  (see `_assign_origin_reference` in [DLISWriter](./src/dlis_writer/file/writer.py)).
+  To allow multiple Origins, one must develop a transparent way os assigning varying origin references
+  to all DLIS objects.
+
+  ##### Channel
+  Channel is meant for wrapping and describing data sets.
+  A single channel refers to a single column of data (a single curve, e.g. depth, time, rpm) 
+  or a 2D data set (an image, e.g. amplitude, radius).
+  
+  In the standard, Channel does not directly contain the data it refers to, but rather described
+  the data's properties, such as the unit and representation code.
+  
+  The dimension and element limit express the horizontal shape of the data, i.e. the number of columns.
+  It is always a list of integers. List of any length would be accepted, but because this implementation
+  only handles 1D and 2D data, this is always a single-element list: `[1]` for 1D datasets
+  and `[n]` for 2D datasets, where `n` is the number of columns in the image (usually 128).
+  In this implementation, dimension and element limit should have the same value. 
+  Setting one at initialisation of Channel automatically sets up the other in the same way.
+
+  A [Frame](#frame) always refers to a list of channels. The order is important; the first channel
+  is used as the index. When a row of data is stored (wrapped in a [FrameData](#frame-data) object),
+  the order of channels as passed to the Frame is preserved.
+  
+  Channels can also be referred to by [Splice](#splice), [Path](#path), [Calibration](#calibration), 
+  [Calibration Measurement](#calibration-measurement), [Process](#process), and [Tool](#tool).
+  
+  On the receiving end, Channel can reference an [Axis](#axis).
+  
+  ##### Frame
+  Frame is a collection of [Channels](#channel). It can be interpreted as a table of numerical data.
+  Channels can be viewed as variable-width, vertical slices of a Frame.
+  Information contained in the Frame (and Channels) is used to generate [FrameData](#frame-data) objects,
+  which are horizontal slices of Frame - this time, strictly one row per slice.
+
+  Frame has an `index_type` `Attribute`, which defines the kind of data used as the common index
+  for all (other) channels in the Frame. The values explicitly allowed by standard are: 
+  'ANGULAR-DRIFT', 'BOREHOLE-DEPTH', 'NON-STANDARD', 'RADIAL-DRIFT', and 'VERTICAL-DEPTH'.
+  However, because most readers accept other expressions for index type, this library also allows it,
+  only issuing a warning in the logs.
+
+  Additional metadata defining a Frame can include its direction ('INCREASING' or 'DECREASING'),
+  spacing (a float value + unit), as well as `index_max` and `index_min`. 
+  These values are needed for some DLIS readers to interpret the data correctly.
+  Therefore, if not explicitly specified by the user, these values are inferred from the data
+  (in particular, from the first channel passed to the frame).
+
+  Frame can be referenced by [Path](#path).
+
+  ##### Axis
+  Axis defines coordinates (expressed either as floats or strings, e.g `"40 23' 42.8676'' N"` is a valid coordinate)
+  and spacing. Axis can be referenced by [Calibration Measurement](#calibration-measurement),
+  [Channel](#channel), [Parameter](#parameter), and [Computation](#computation).
+
+  ##### Calibration Coefficient
+  Calibration Coefficient describes a set of coefficients together with reference values and tolerances.
+  It can be referenced by [Calibration](#calibration).
+
+  ##### Calibration Measurement
+  Calibration Measurement describes measurement performed for the purpose of calibration.
+  It can reference a [Channel](#channel) object and can be referenced by [Calibration](#calibration).
+
+  ##### Calibration
+  Calibration object describes a calibration with performed [measurements](#calibration-measurement)
+  and associated [coefficients](#calibration-coefficient). It can also reference
+  [Channels](#channel) and [Parameters](#parameter).
+  The `method` of a calibration is a string description of the applied method.
+
+  ##### Computation
+  Computation can reference an [Axis](#axis) and [Zones](#zone).
+  Additionally, through `source` `Attribute`, it can reference another object being the direct source 
+  of this computation, e.g. a [Tool](#tool). 
+  There are two representation codes that can be used for referencing an object: 'OBNAME' and 'OBJREF'. 
+  Computation can be referenced by [Process](#process).
+
+  The number of values specified for the `values` `Attribute` must match the number of Zones 
+  added to the Computation (through `zones` `Attribute`).
+
+  ##### Equipment
+  Equipment describes a single part of a [Tool](#tool), specifying its trademark name, serial number, etc.
+  It also contains float data on parameters such as: height, length, diameter, volume, weight, 
+  hole size, pressure, temperature, radial and angular drift. 
+  Each of these values can (and should) have a unit assigned.
+
+  ##### Group
+  A Group can refer to multiple other EFLR objects of a given type.
+  It can also keep references to other groups, creating a hierarchical structure.
+  
+  ##### Long Name
+  Long Name specifies various string attributes of an object to describe it in detail.
+  
+  ##### Message
+  A Message is a string value with associated metadata - such as time 
+  (`datetime` or float - number of minutes/seconds/etc. since a specific event),
+  borehole/radial/angular drift, and vertical depth.
+  
+  ##### Comment
+  A Comment is simpler than a [Message](#message) object; it contains only the comment text.
+
+  ##### No-Format
+  No-Format is a metadata container for unformatted data ([No-Format Frame Data](#no-format-frame-data)).
+  It allows users to write arbitrary bytes of data.
+  Just like [Frame](#frame) can be thought of as a collection of [Frame Data](#frame-data) objects,
+  No-Format is a collection of No-Format Frame Data objects.
+  
+  No-Format specifies information such as consumer name and description of the associated data.
+  
+  ##### Parameter
+  A Parameter is a collection of values, which can be either numbers or strings.
+  It can reference [Zones](#zone) and [Axes](#axis). 
+  It can be referenced by [Calibration](#calibration), [Process](#process), and [Tool](#tool).
+  
+  ##### Path
+  Path describes several numerical values - such as angular/radial drift and measurement offsets - 
+  of the well. It can also reference a [Frame](#frame), [Well Reference Point](#well-reference-point),
+  and [Channels](#channel).
+
+  ##### Process
+  A Process combines multiple other objects: [Channels](#channel), [Computations](#computation), 
+  and [Parameters](#parameter).
+  
+  The `status` `Attribute` of Process can be one of: 'COMPLETE', 'ABORTED', 'IN-PROGRESS'.
+
+  ##### Splice
+  A Splice relates several input and output [Channels](#channel) and [Zones](#zone).
+
+  ##### Tool
+  A Tool is a collection of [Equipment](#equipment) objects (stored in the `parts` `Attribute`).
+  It can also reference [Channels](#channel) and [Parameters](#parameter), 
+  and can be referenced by [Computation](#computation).
+
+  ##### Well Reference Point
+  Well Reference Point can be used to specify up to 3 coordinates of a point. The coordinates
+  should be expressed as floats.
+  Well Reference Point can be referenced by [Path](#path).
+  
+  ##### Zone
+  A zone specifies a single interval in depth or time.
+  The `domain` of a Zone can be one of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+  The expression `minimum` and `maximum` of a Zone depends on the domain.
+  For 'TIME', they could be `datetime` objects or floats (indicating the time since a specific event; 
+  in this case, specifying a time unit is also advisable).
+  For the other domains, they should be floats, ideally with depth units (e.g. 'm').
+
+  Zone can be referenced by [Splice](#splice), [Process](#process), or [Parameter](#parameter).
+
+
+#### Relations between EFLR objects
+Many of the EFLR objects are interrelated - e.g. a Frame refers to multiple Channels,
+each of which can have an Axis; a Calibration uses Calibration Coefficients and Calibration Measurements;
+a Tool has Equipments as parts. The relations are summarised in the diagram below.
+
+_*Note*: in the diagrams below, the description of [`Attribute`s](#dlis-attributes) of the objects has been simplified.
+Only the type of the `.value` part of each `Attribute` is shown - e.g. in `CalibrationItem`, 
+`calibrated_channels` is shown as a list of `ChannelItem` instances, where in fact it is 
+an [`EFLRAttribute`](#attribute-subtypes) whose `.value` takes the form of a list of `ChannelItem` objects._ 
 
 ```mermaid
 ---
 title: EFLR objects relationships
 ---
 classDiagram
-    Path o-- "0..1" WellReferencePoint
-    Path o-- "0..*" Channel
-    Path o-- "0..1" Frame
-    Frame o-- "0..*" Channel
-    Calibration o-- "0..*" CalibrationCoefficient
-    Calibration o-- "0..*" CalibrationMeasurement
-    Calibration o-- "0..*" Channel
-    Calibration o-- "0..*" Parameter
-    CalibrationMeasurement o-- "0..1" Channel
-    CalibrationMeasurement o-- "0..1" Axis
-    Computation o-- "0..*" Zone
-    Computation o-- "0..1" Tool
-    Computation o-- "0..1" Axis
-    Parameter o-- "0..*" Axis
-    Parameter o-- "0..*" Zone
-    Splice o-- "0..*" Channel
-    Splice o-- "0..*" Zone
-    Process o-- "0..*" Channel
-    Process o-- "0..*" Computation
-    Process o-- "0..*" Parameter
-    Tool o-- "0..*" Channel
-    Tool o-- "0..*" Parameter
-    Tool o-- "0..*" Equipment
-    Channel o-- "0..*" Axis
+    PathItem o-- "0..1" WellReferencePointItem
+    PathItem o-- "0..*" ChannelItem
+    PathItem o-- "0..1" FrameItem
+    FrameItem o-- "0..*" ChannelItem
+    CalibrationItem o-- "0..*" ChannelItem
+    CalibrationMeasurementItem o-- "0..1" ChannelItem
+    SpliceItem o-- "0..*" ChannelItem
+    ChannelItem o-- "0..*" AxisItem
+    CalibrationMeasurementItem o-- "0..1" AxisItem
+    ParameterItem o-- "0..*" AxisItem
+    ParameterItem o-- "0..*" ZoneItem
+    CalibrationItem o-- "0..*" CalibrationCoefficientItem
+    CalibrationItem o-- "0..*" CalibrationMeasurementItem
+    CalibrationItem o-- "0..*" ParameterItem
+    ToolItem o-- "0..*" ChannelItem
+    ToolItem o-- "0..*" ParameterItem
+    ToolItem o-- "0..*" EquipmentItem
+    ProcessItem o-- "0..*" ChannelItem
+    ProcessItem o-- "0..*" ComputationItem
+    ProcessItem o-- "0..*" ParameterItem
+    ComputationItem o-- "0..1" AxisItem
+    ComputationItem o-- "0..*" ZoneItem
+    SpliceItem o-- "0..*" ZoneItem
     
-    class Axis{
+    
+    class AxisItem{
         +str axis_id
         +list coordinates
         +float spacing
     }
     
-    class Calibration{
-        +list~Channel~ calibrated_channels
-        +list~Channel~ uncalibrated_channels
-        +list~CalibrationCoefficient~ coefficients
-        +list~CalibrationMeasurement~ measurements
-        +list~Parameter~ parameters
+    class CalibrationItem{
+        +list~ChannelItem~ calibrated_channels
+        +list~ChannelItem~ uncalibrated_channels
+        +list~CalibrationCoefficientItem~ coefficients
+        +list~CalibrationMeasurementItem~ measurements
+        +list~ParameterItem~ parameters
         +str method
     }
     
-    class CalibrationMeasurement{
+    class CalibrationMeasurementItem{
         +str phase
-        +Channel measurement_source
+        +ChannelItem measurement_source
         +str _type
         +list~int~ dimension
-        +Axis axis
+        +AxisItem axis
         +list~float~ measurement
         +list~int~ sample_count
         +list~float~ maximum_deviation
@@ -1322,7 +661,7 @@ classDiagram
         +list~float~ minus_tolerance
     }
     
-    class CalibrationCoefficient{
+    class CalibrationCoefficientItem{
         +str label
         +list~float~ coefficients
         +list~float~ references
@@ -1330,13 +669,13 @@ classDiagram
         +list~float~ minus_tolerances
     }
     
-    class Channel{
+    class ChannelItem{
         +str long_name
         +list~str~ properties
         +RepresentationCode representation_code
         +Units units
         +list~int~ dimension
-        +list~Axis~ axis
+        +list~AxisItem~ axis
         +list~int~ element_limit
         +str source
         +float minimum_value
@@ -1344,17 +683,17 @@ classDiagram
         +str dataset_name
     }
     
-    class Computation{
+    class ComputationItem{
         +str long_name
         +list~str~ properties
         +list~int~ dimension
-        +Axis axis
-        +list~Zone~ zones
+        +AxisItem axis
+        +list~ZoneItem~ zones
         +list~float~ values
-        +Tool source
+        +EFLRItem source
     }
     
-    class Equipment{
+    class EquipmentItem{
         +str trademark_name
         +int status
         +str _type
@@ -1374,9 +713,9 @@ classDiagram
         +float angular_drift
     }
     
-    class Frame{
+    class FrameItem{
         +str description
-        +list~Channel~ channels
+        +list~ChannelItem~ channels
         +str index_type
         +str direction
         +float spacing
@@ -1386,18 +725,18 @@ classDiagram
     }
     
     
-    class Parameter{
+    class ParameterItem{
         +str long_name
         +list~int~ dimension
-        +list~Axis~ axis
-        +list~Axis~ zones
+        +list~AxisItem~ axis
+        +list~AxisItem~ zones
         +list values
     }
     
-    class Path{
-        +Frame frame_type
-        +WellReferencePoint well_reference_point
-        +list~Channel~ value
+    class PathItem{
+        +FrameItem frame_type
+        +WellReferencePointItem well_reference_point
+        +list~ChannelItem~ value
         +float borehole_depth
         +float vertical_depth
         +float radial_drift
@@ -1408,37 +747,37 @@ classDiagram
         +float tool_zero_offset
     }
     
-    class Process{
+    class ProcessItem{
         +str description
         +str trademark_name
         +str version
         +list~str~ properties
         +str status
-        +list~Channel~ input_channels
-        +list~Channel~ output_channels
-        +list~Computation~ input_computations
-        +list~Computation~ output_computations
-        +list~Parameter~ parameters
+        +list~ChannelItem~ input_channels
+        +list~ChannelItem~ output_channels
+        +list~ComputationItem~ input_computations
+        +list~ComputationItem~ output_computations
+        +list~ParameterItem~ parameters
         +str comments
     }
     
-    class Splice{
-        +list~Channel~ output_channels
-        +list~Channel~ input_channels
-        +list~Zone~ zones
+    class SpliceItem{
+        +list~ChannelItem~ output_channels
+        +list~ChannelItem~ input_channels
+        +list~ZoneItem~ zones
     }
     
-    class Tool{
+    class ToolItem{
         +str description
         +str trademark_name
         +str generic_name
-        +list~Equipment~ parts
+        +list~EquipmentItem~ parts
         +int status
-        +list~Channel~ channels
-        +list~Parameter~ parameters
+        +list~ChannelItem~ channels
+        +list~ParameterItem~ parameters
     }
     
-    class WellReferencePoint{
+    class WellReferencePointItem{
         +str permanent_datum
         +str vertical_zero
         +float permanent_datum_elevation
@@ -1452,7 +791,7 @@ classDiagram
         +float coordinate_3_value
     }
     
-    class Zone{
+    class ZoneItem{
         +str description
         +str domain
         +float maximum
@@ -1460,12 +799,16 @@ classDiagram
     }
 ```
 
+Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects 
+and are not explicitly referred to by any (although - as in case of NoFormat - a relation to IFLR objects can exist).
+
 ```mermaid
 ---
 title: Standalone EFLR objects
 ---
 classDiagram
-    class Message{
+
+    class MessageItem{
         +str _type
         +datetime time
         +float borehole_drift
@@ -1475,11 +818,11 @@ classDiagram
         +float text
     }
     
-    class Comment{
+    class CommentItem{
         +str: text
     }
     
-    class LongName{
+    class LongNameItem{
         +str general_modifier
         +str quantity
         +str quantity_modifier
@@ -1497,12 +840,12 @@ classDiagram
         +str private_symbol
     }
     
-    class NoFormat{
+    class NoFormatItem{
         +str consumer_name
         +str description
     }
     
-    class Origin{
+    class OriginItem{
         +str file_id
         +str file_set_name
         +int file_set_number
@@ -1526,45 +869,318 @@ classDiagram
 
     }
     
+    class FileHeader{
+        +str identifier
+        +int sequence_number
+    }
+    
     
 ```
+
+A special case is a Group object, which can refer to any other EFLRs or other groups, as described [here](#group).
 
 ```mermaid
 ---
 title: EFLR Group object
 ---
 classDiagram
-    Group o-- "0..*" EFLR
-    Group o-- "0..*" Group
+    GroupItem o-- "0..*" EFLRItem
+    GroupItem o-- "0..*" GroupItem
 
-    class Group{
+    class GroupItem{
         +str description
         +str object_type
-        +list~EFLR~ object_list
-        +list~Group~ group_list
+        +list~EFLRItem~ object_list
+        +list~GroupItem~ group_list
     }
     
 ```
 
+
+### DLIS Attributes
+The characteristics of EFLR objects of the DLIS are defined using instances of `Attribute` class.
+An `Attribute` holds the value of a given parameter together with the associated unit (if any)
+and a representation code which guides how the contained information is transformed to bytes.
+Allowed units (not a strict set) and representation codes are defined [in the code](./src/dlis_writer/utils/enums.py).
+
+As a rule, `Attribute`s are defined for `EFLRItem`s, instances of which populate the `Attribute`s
+with relevant values. When an `EFLRItem` is converted to bytes, it includes information from all its
+`Attributes`. However, the defined `Attribute` information is also needed in `EFLRSet`s in order to define
+a header for all `EFLRItem`s it contains. For this reason, when the first `EFLRItem` instance for a given
+`EFLRSet` is created, the `Attribute`s from this `EFLRItem` are copied and passed to `ELFRSet`.
+
+#### The `Attribute` class
+The main characteristics of `Attribute` are described below.
+
+- `label`: The name of the `Attribute`. Comes from the standard and should not be changed.
+- `value`: The value(s) specified for this `Attribute`. In general, any type is allowed, but in most cases it is
+  (a list of): str / int / float / `EFLRItem` / `datetime`.
+- `multivalued`: a Boolean indicating whether this `Attribute` instance accepts a list of values (if True) or a single 
+  value (if False). Specified at initialisation of the `Attribute` (which usually takes place at initialisation of the 
+  relevant EFLR object).
+- `count`: Number of values specified for the `Attribute` instance. If the `Attribute` is not `multivalued`, `count` is 
+  always 1. Otherwise, it is the length of the list of values added to the `Attribute` (or `None` if no value is given).
+- `units`: A string representing the units of the `value` of the `Attribute` - if relevant. The standard pre-defines
+  a list of allowed units, but many DLIS readers accept any string value. For this reason, only a log warning is issued
+  if the user specifies a unit other than those given by the standard. 
+- `representation_code`: indication of type of the value(s) of the `Attribute` and guidance on how they should be 
+  converted to bytes to be included in the file. The standard pre-defines representation codes for some 
+  of the `Attribute`s and leaves more-or-less free choice for others. For this reason, many `Attribute`s have the 
+  representation code specified at initialisation and once explicitly specified, the representation code 
+  cannot be changed. The `representation_code` is a `property` which returns either the explicitly passed code (if any)
+  or one inferred from the `Attribute`'s `value` (if possible); if none of these can be determined, 
+  the property returns `None`.
+- `assigned_representation_code`: The explicitly specified (at initialisation or later) representation code 
+  of the `Attribute`. 
+- `inferred_representation_code`: A representation code inferred from the `value` of the `Attribute`, if possible.
+- `parent_eflr`: The `EFLRItem` or `EFLRSet` instance this attribute belongs to. Mainly used for string representation
+  of the `Attribute` (e.g. `Attribute 'description' of ToolItem 'TOOL-1'`, where `TOOL-1` is the parent EFLR).
+- `converter`: A callable which is used to convert the value passed by the user (or each of the individual items 
+  if the `Attribute` is multivalued) to fit the standard-imposed requirements for the given `Attribute`. It can also 
+  include type checks etc. (for example, checking that the objects passed to `calibrated_channels` of `CalibrationItem`)
+  are all instances of `ChannelItem`.
+
+_Settable_ parts of `Attribute` instance include: `value`, `units`, `representation_code` 
+(stored as `assigned_representation_code`), and `converter`. Some subtypes of `Attribute` further restrict 
+what can be set.
+
+
+#### Attribute subtypes
+Several `Attribute` subclasses have been defined to answer the reusable characteristics of the 
+attributes needed for various EFLR objects. The overview can be seen in the diagram below.
 
 ```mermaid
 ---
-title: IFLR objects and their relation to EFLR objects
+title: Attribute and its subtypes
 ---
 classDiagram
-    FrameData o-- "1" Frame
-    NoFormatFrameData o-- "1" NoFormat
+    Attribute <|-- EFLRAttribute
+    Attribute <|-- DTimeAttribute
+    Attribute <|-- NumericAttribute
+    NumericAttribute <|-- DimensionAttribute
+    Attribute <|-- StatusAttribute
     
-    class FrameData{
-        +Frame frame
-        +int frame_number
-        +int origin_reference
-        -slots numpy.ndarray
+    class Attribute{
+        +str label
+        +Any value
+        +str units
+        +int count
+        +RepresentationCode representation_code
+        +RepresentationCode assigned_representation_code
+        +RepresentationCode inferred_representation_code
+        +[EFLRItem, EFLRSet] parent_eflr
+        +Callable converter
+        +bool multivalued
+        
+        +convert_value()
+        +get_as_bytes()
+        +copy()
     }
     
-    class NoFormatFrameData{
-        +NoFormat no_format_object
-        +Any data
+    class EFLRAttribute{
+        -type _object_class
+        
+        -_convert_value()
     }
     
+    class DTimeAttribute{
+        +list~str~ dtime_formats
+        -bool _allow_float
+        
+        +parse_dtime()
+    }
+    
+    class NumericAttribute{
+        -bool _int_only
+        -bool _float_only
+        
+        -_int_parser()
+        -_float_parser()
+        -_convert_number()
+    }
+    
+    class StatusAttribute{
+        +convert_status()
+    }
+
 ```
+
+`EFLRAttribute` has been defined to deal with attributes which should keep reference to other
+`EFLRItem`s - for example, `Channel`s of `Frame`, `Zones` of `Splice`, 
+`CalibrationCoefficient`s and `CalibrationMeasurement`s of `Calibration`.
+The value of an `EFLRAttribute` is an instance of (usually specific subtype of) `EFLRItem`.
+The representation code can be either `OBNAME` or `OBJREF`. The unit should not be defined (is meaningless).
+
+`DTimeAttribute` is meant for keeping time reference, either in the form of a `datetime.datetime` object
+or a number, indicating time since a specific event. The representation code should be adapted
+to the value: `DTIME` for `datetime` objects, otherwise any numeric code (e.g. `FDOUBl`, `USHORT`, etc.)
+The unit should be defined if the value is a number and should express the unit of time
+('s' for seconds, 'min' for minutes, etc.).
+
+`NumericAttribute` keeps numerical data - in the form of int(s) or float(s). It is possible
+to restrict the type of accepted values to ints only or floats only at initialisation of the attribute.
+
+`DimensionAttribute` is a subclass of `NumericAttribute`. It limits the above to ints only and is always
+multivalued (always a list of integers). It is mainly used in [Channel](#channel) objects where it describes
+the shape of the data (only the width, i.e. the number of columns).
+
+`StatusAttribute` encodes the status of [Tool](#tool) and [Equipment](#equipment) objects. Its value can only be 0 or 1.
+
+### Writing the binary file
+The objects described above are Python representation of the information to be included in a DLIS file.
+Subsections below explain how these objects are converted to bytes, which then become a part of the created file.
+
+#### `DLISFile` object
+The [`DLISFile` class](./src/dlis_writer/file/file.py), as shown in the [User guide](#user-guide),
+is the main point of the user's interaction with the library.
+It facilitates defining a (future) file with all kinds of EFLR and IFLR objects and the relations between them.
+
+The interface was initially inspired by that of `h5py`, in particular the HDF5-writer part of it:
+the _child_ objects (e.g. HDF5 _datasets_) can be created and simultaneously linked to the _parent_ objects 
+(e.g. HDF5 _groups_) by calling a relevant method of the parent instance like so:
+
+```python
+new_h5_dataset = some_h5_group.add_dataset(...)
+```
+
+However, while the HDF5 structure is strictly hierarchical, the same cannot be said about DLIS.
+For example, the same Zone can be referenced by multiple Splices, Parameters, and Computations.
+It is also possible to add any object without it referencing or being referenced by other objects.
+This is the case both for _standalone_ objects, such as Message or Comment, and the 
+potentially interlinked objects, such as Zone or Parameter. 
+(Note: adding a standalone Channel object is possible, but is known to cause issues in some readers, e.g. _DeepView_.)
+For this reason, in the `dlis-writer` implementation, adding objects in the `h5py` manner is only possible 
+from the top level - a `DLISFile`:
+
+```python
+dlis_file = DLISFile()
+a_channel = dlis_file.add_channel(...)
+an_axis = dlis_file.add_axis(...)
+```
+
+In order to mark relations between objects, a 'lower-level' object should be created first and then
+passed as argument when creating a 'higher-level' object:
+
+```python
+a_frame = dlis_file.add_frame(..., channels=(a_channel, ...))   # frame can have multiple channels
+a_computation = dlis_file.add_computation(..., axis=an_axis)    # computation can only have 1 axis
+```
+
+This makes it trivial to reuse already defined 'lower-level' objects as many times as needed:
+
+```python
+# (multiple axes possible for both Parameter and Channel)
+a_param = dlis_file.add_parameter(..., axis=(an_axis, ...))  
+another_channel = dlis_file.add_channel(..., axis=(an_axis, ...))
+```
+
+As shown in the [User guide](#user-guide), once all required objects are defined,
+the `write()` method of `DLISFile` can be called to generate DLIS bytes and store them in a file.
+The `write()` method first transforms the data into a [`FileLogicalRecords`](#filelogicalrecords-object) object,
+which is then passed to [`DLISWriter`](#dliswriter-and-auxiliary-objects), responsible for writing the file.
+
+#### Ways of passing data
+Data associated with the file's Channels can be passed when adding a Channel to teh `DLISFile` instance.
+Data added in this way is stored in an internal dictionary, mapped by the Channels' names.
+
+However, it is also possible to pass the data later, when calling the `write()` method
+of the `DLISWriter`. The passed data can be of one of the following forms:
+- A dictionary of `numpy.ndarray`s (1D or 2D, depending on the Channel configuration).
+  The keys of the dictionary must match the `dataset_name`s of the Channels added to the file.
+  (If not explicitly specified, the `dataset_name` of a Channel is the same as its name.)
+- A structured numpy.ndarray, whose _dtype names_ match the `dataset_name`s of the Channels.
+- A path to an HDF5 file, containing the relevant datasets. In this case, the Channels' `dataset_name`s
+  must define the full internal paths to the datasets starting from the root of the file - e.g.
+  `/contents_root/general_group/specific_group/the_dataset`.
+
+Note: even if multiple Frames are defined, the data object passed to the `write()` call should contain
+all datasets to be included in the file. The correct arrangement of the datasets is done internally
+at a later stage. The data is also allowed to contain datasets not to be used in the file;
+these will simply be ignored. However, the writing cannot be done if data for any of the Channels are missing.
+
+When a [`FileLogicalRecords`](#filelogicalrecords-and-multiframedata) object is created,
+the data are wrapped in a [`SourceDataWrapper`](./src/dlis_writer/utils/source_data_wrappers.py),
+in particular one of its subclasses - designed for handling dict, `numpy.ndarray`, or HDF5 data.
+The main objectives of these objects are:
+- ensuring the correct structure (order of channels etc.) of the data when [`FrameData`](#frame-data) instances
+  are created
+- loading the source data in chunks rather than the entire data at a time to address memory limitations.
+
+Note that because creating the required structure is the responsibility of the library,
+not the user, it is assumed that the provided data will not match the needed structure.
+In order to create the (chunks of) structured numpy array needed for Frame Data, the source data must be copied.
+The `SourceDataWrapper` objects copy only as much data as are needed to define a single data chunk for writing.
+When that chunk is exhausted, the 'used' data are discarded and a new chunk is loaded.
+
+The size of the input data chunk is defined in number of rows of the data table.
+It can be controlled by setting `input_chunk_size` in the `write()` call of the `DLISFile`.
+The optimal value varies depending on the structure of the data (number & widths of the individual datasets)
+as well as the hardware configuration.
+
+#### `FileLogicalRecords` and `MultiFrameData`
+The role of `FileLogicalRecords` is to define an iterable of all logical records
+to be included in the final DLIS file, in a correct order.
+
+`DLISFile` is used to define the structure of the file. Numerical data, associated with
+the channels, can be provided either at channel creation or later, 
+[when `write()` is called](#passing-data-at-the-write-call).
+On the other hand, `FileLogicalRecords` object is created with the assumption that data
+are available, so that relevant [Frame Data (IFLR)](#frame-data) objects can be defined.
+
+`FileLogicalRecords` uses `MultiFrameData` objects which combine the Frame, Channels, and
+numerical data information. These objects are also iterable and yield consecutive instances 
+of Frame Data belonging to the given Frame. One `MultiFrameData` object per frame is defined.
+
+#### `DLISWriter` and auxiliary objects
+`DLISWriter` is the object where the bytes creation and writing to file happens.
+Given the iterable of logical records, enclosed in a `FileLogicalRecords` object,
+a `DLISWriter` iterates over the logical records and for each one:
+  1. Assigns an _origin_reference_ to all objects in the file.
+    The origin reference is the `file_set_number` of the Origin object defined in the file.
+  2. Calls for creation of bytes describing that logical record 
+       (see [here](#converting-objects-and-attributes-to-bytes))
+  3. If the bytes sequence is too long to fit into a single visible record,
+       it splits the bytes into several segments (see [the explanation](#logical-records-and-visible-records))
+  4. Wraps the segments (or full bytes sequence) in visible records and writes the resulting bytes to a file.
+
+The writing of bytes is aided by objects of two auxiliary classes: `ByteWriter` and `BufferedOutput`.
+The main motivation between both is to facilitate gradual, _chunked_ writing of bytes to a file
+rather than having to keep everything in memory and dumping it to the file at the very end.
+
+`ByteWriter` manages access to the created DLIS file. Its `write_bytes` method,
+which can be called repetitively, writes or appends the provided bytes to the file.
+The object also keeps track of the total size (in bytes) of the file as it is being created.
+
+The role of `BufferedOutput` is to gather bytes of the created visible records
+and periodically call the `write_bytes` of the `ByteWriter` to send the collected
+bytes to the file and clear its internal cache, getting ready for receiving more bytes.
+The size of the gathered bytes chunk is user-tunable through `output_chunk_size` argument to the
+`write()` method of the [`DLISFile`](#dlisfile-object). 
+It can be adjusted to tackle the tradeoff between the amount of data stored in memory at any given point
+and the number of I/O calls.
+
+#### Converting objects and attributes to bytes
+The way in which different objects are converted to DLIS-compliant bytes
+depends on the category these objects fall into, according to the earlier specified
+[division](#logical-record-types).
+
+- [Storage Unit Label](#storage-unit-label) has its own predefined bytes structure of fixed length.
+  Its content varies minimally, taking into account the parameters specified at its creation,
+  such as visible record length, storage set identifier, etc.
+- The main part of [Frame Data (IFLR)](#frame-data) - the numerical data associated with the Channels - is stored
+  in the object as a row od a structured `numpy.ndarray`. Each entry of the array is converted to
+  bytes using the `numpy`'s built-in `tobytes()` method (with additional `byteswap()` call before that 
+  to account for the big-endianness of DLIS). Additional bytes referring to the [Frame](#frame) 
+  and the index of the current Frame Data in the Frame are added on top.
+- In [No-Format Frame Data](#no-format-frame-data), the _data_ part can be already expressed as bytes,
+  in which case it is used as-is. Otherwise, it is assumed to be of string type and is encoded as ASCII.
+  A reference to the parent [No-Format](#no-format) object is added on top.
+- [EFLR objects](#eflrset-and-eflritem) are treated per `EFLRSet` instance.
+  - First, bytes describing the `EFLRSet` instance are made, including its `set_type`
+    and `set_name` (if present).
+  - Next, _template_ bytes are added. These specify the order and names of [`Attribute`s](#dlis-attributes)
+    characterising the `EFLRItem` instances belonging to the given `EFLRSet`.
+  - Finally, each of the `EFLRItem`'s bytes are added. Bytes of an `EFLRItem` instance consist of
+    its name + _origin reference_ + _copy number_ description, followed by the values and other characteristics
+    (units, repr. codes, etc.) of each of its `Attribute`s in the order specified in the 
+    `EFLRSet`'s _template_.

@@ -1,15 +1,12 @@
-import re
 import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional
-from typing_extensions import Self
-from configparser import ConfigParser
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr.eflr_table import EFLRTable
+    from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
 
 
 logger = logging.getLogger(__name__)
@@ -18,9 +15,9 @@ logger = logging.getLogger(__name__)
 class EFLRItem:
     """Model an item belonging to an Explicitly Formatted Logical Record - e.g. a particular channel."""
 
-    parent_eflr_class: type["EFLRTable"] = NotImplemented
+    parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None, **kwargs):
         """Initialise an EFLRItem.
 
         Args:
@@ -46,7 +43,7 @@ class EFLRItem:
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
 
     @classmethod
-    def _get_parent(cls, parent: Optional["EFLRTable"] = None, set_name: Optional[str] = None) -> "EFLRTable":
+    def _get_parent(cls, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None) -> "EFLRSet":
         """Validate, retrieve, or create a parent EFLRTable instance.
 
         Args:
@@ -68,7 +65,7 @@ class EFLRItem:
 
             return parent
 
-        return cls.parent_eflr_class.get_or_make_table(set_name=set_name)
+        return cls.parent_eflr_class.get_or_make_set(set_name=set_name)
 
     @property
     def attributes(self) -> dict[str, Attribute]:
@@ -172,81 +169,3 @@ class EFLRItem:
         except ValueError:
             raise ValueError(f"Value '{value}' could not be converted to a numeric type")
         return value
-
-    @classmethod
-    def from_config(cls, config: ConfigParser, key: Optional[str] = None, get_if_exists: bool = False,
-                    set_name: Optional[str] = None) -> Self:
-        """Create an EFLRItem instance based on information found in the config object.
-
-        Args:
-            config          :   Config object containing the information on the EFLRItem to be created.
-            key             :   Name of the section describing the EFLRItem to be created (e.g. 'Channel-X').
-                                If not provided, it is assumed to be the same as the name of the EFLRTable subclass
-                                 (e.g. 'Channel').
-            get_if_exists   :   If True and an EFLRItem identified by this section name already exists in the instance
-                                dictionary of the given EFLRTable subclass instance, return that EFLRItem. Otherwise,
-                                create a new one, overwriting the existing one in the dictionary.
-            set_name        :   Name of the set the EFLRItem belongs to, i.e. name identifying the EFLRTable subclass
-                                instance.
-
-
-        Returns:
-            The created/retrieved EFLRItem instance.
-        """
-
-        key = key or cls.parent_eflr_class.eflr_name
-
-        if key not in config.sections():
-            raise RuntimeError(f"Section '{key}' not present in the config")
-
-        name_key = "name"
-
-        if name_key not in config[key].keys():
-            raise RuntimeError(f"Required item '{name_key}' not present in the config section '{key}'")
-
-        other_kwargs = {k: v for k, v in config[key].items() if k != name_key}
-
-        item_name = config[key][name_key]
-        eflr_table = cls.parent_eflr_class.get_or_make_table(set_name=set_name)
-        eflr_item = None
-        if get_if_exists:
-            eflr_item = eflr_table.get_eflr_item(item_name, None)
-        if eflr_item is None:
-            eflr_item = cls(item_name, parent=eflr_table, **other_kwargs)
-
-        for attr in eflr_item.attributes.values():
-            if hasattr(attr, 'finalise_from_config'):  # EFLRAttribute; cannot be imported here - circular import issue
-                attr.finalise_from_config(config)
-
-        return eflr_item
-
-    @classmethod
-    def all_from_config(cls, config: ConfigParser, keys: Optional[list[str]] = None,
-                        key_pattern: Optional[str] = None, **kwargs) -> list[Self]:
-        """Create all items corresponding to given EFLRTable subclass based on config object information.
-
-        Use 'keys' and/or 'key_pattern' arguments (see below) to limit/precise the set of EFLRItems created.
-        If both are provided, 'key_pattern' is ignored.
-        If neither is provided, all config sections whose names begin with the EFLRTable class name followed by a dash
-        will be created.
-
-        Args:
-            config      :   Config object containing the information on the objects to be created.
-            keys        :   List of config section names identifying the objects to be created.
-            key_pattern :   Regex pattern to create a list of section names for objects to be created.
-            **kwargs    :   Keyword arguments passed to 'make_eflr_item_from_config' for each item.
-
-        Returns:
-            List of the created EFLRItem (subclass) instances.
-        """
-
-        if keys is not None and key_pattern is not None:
-            logger.warning("Both 'keys' and 'key_pattern' arguments provided; ignoring the latter")
-
-        if keys is None:
-            if key_pattern is None:
-                key_pattern = cls.parent_eflr_class.eflr_name + r"-\w+"
-            keys = [key for key in config.sections() if re.compile(key_pattern).fullmatch(key)]
-
-        return [cls.from_config(config, key=key, **kwargs) for key in keys]
-

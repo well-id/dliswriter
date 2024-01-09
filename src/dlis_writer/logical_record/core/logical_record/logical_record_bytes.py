@@ -129,5 +129,3 @@ class LogicalRecordBytes:
             # update values before next iteration of the loop
             remaining_size = future_remaining_size
             start_pos += n_bytes
-
-

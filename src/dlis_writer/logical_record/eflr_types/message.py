@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute,
 class MessageItem(EFLRItem):
     """Model an object being part of Message EFLR."""
 
-    parent: "MessageTable"
+    parent: "MessageSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise MessageItem.
@@ -27,7 +27,7 @@ class MessageItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class MessageTable(EFLRTable):
+class MessageSet(EFLRSet):
     """Model Message EFLR."""
 
     set_type = 'MESSAGE'
@@ -38,7 +38,7 @@ class MessageTable(EFLRTable):
 class CommentItem(EFLRItem):
     """Model an object being part of Comment EFLR."""
 
-    parent: "CommentTable"
+    parent: "CommentSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise CommentItem.
@@ -53,7 +53,7 @@ class CommentItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class CommentTable(EFLRTable):
+class CommentSet(EFLRSet):
     """Model Comment EFLR."""
 
     set_type = 'COMMENT'
@@ -61,5 +61,5 @@ class CommentTable(EFLRTable):
     item_type = CommentItem
 
 
-MessageItem.parent_eflr_class = MessageTable
-CommentItem.parent_eflr_class = CommentTable
+MessageItem.parent_eflr_class = MessageSet
+CommentItem.parent_eflr_class = CommentSet

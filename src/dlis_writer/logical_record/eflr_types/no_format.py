@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.core.eflr import EFLRTable, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute
 
@@ -6,7 +6,7 @@ from dlis_writer.logical_record.core.attribute import Attribute
 class NoFormatItem(EFLRItem):
     """Model an object being part of NoFormat EFLR."""
 
-    parent: "NoFormatTable"
+    parent: "NoFormatSet"
 
     def __init__(self, name: str, **kwargs):
         """Initialise NoFormatItem.
@@ -22,12 +22,12 @@ class NoFormatItem(EFLRItem):
         super().__init__(name, **kwargs)
 
 
-class NoFormatTable(EFLRTable):
+class NoFormatSet(EFLRSet):
     """Model NoFormat EFLR."""
-    
+
     set_type = 'NO-FORMAT'
     logical_record_type = EFLRType.UDI
     item_type = NoFormatItem
 
 
-NoFormatItem.parent_eflr_class = NoFormatTable
+NoFormatItem.parent_eflr_class = NoFormatSet

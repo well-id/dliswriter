@@ -2,13 +2,7 @@ import numpy as np
 import h5py    # type: ignore  # untyped library
 from typing import Union, Optional, Any
 import os
-from typing_extensions import Self
 import logging
-from configparser import ConfigParser
-
-from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.converters import ReprCodeConverter
-
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +14,8 @@ class SourceDataWrapper:
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
-                 known_dtypes: Optional[dict[str, type[object]]] = None, **kwargs):
+                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None, **kwargs):
         """Initialise a SourceDataWrapper.
 
         Args:
@@ -30,6 +25,8 @@ class SourceDataWrapper:
             known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
                                 all dtypes. Can also be completely omitted. Missing data types are determined from
                                 the data.
+            from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
+            to_idx          :   Index up to which data should be loaded.
             **kwargs        :   The slot for additional keyword arguments has been added for signature consistency
                                 with all subclasses. No other keyword arguments should actually be passed.
 
@@ -51,7 +48,17 @@ class SourceDataWrapper:
         self._dtype = self.determine_dtypes(self._data_source, self._mapping, known_dtypes=known_dtypes)
 
         # total number of rows - guessed from the first dataset
-        self._n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
+        total_n_rows = self._data_source[next(iter(mapping.values()))].shape[0]
+
+        self._from_idx = from_idx
+        self._to_idx = to_idx if to_idx is not None else total_n_rows
+        self._n_rows = self._to_idx - self._from_idx  # number of rows to be loaded
+
+        if self._from_idx >= total_n_rows:
+            raise ValueError(f"Starting index {self._from_idx} too large for total n. rows {total_n_rows}")
+        if self._n_rows < 1:
+            raise ValueError(f"Starting index {self._from_idx} and end index {self._to_idx} do not yield a positive "
+                             f"number of rows to be loaded")
 
     @property
     def n_rows(self) -> int:
@@ -143,6 +150,8 @@ class SourceDataWrapper:
             A structured numpy array, containing the required chunks of all the relevant data sets from the source data.
         """
 
+        start = self._from_idx + start
+
         idx = slice(start, stop)
         n_rows = (stop or self._n_rows) - start
 
@@ -187,85 +196,26 @@ class SourceDataWrapper:
             logger.debug(f"Loading chunk {total_chunks}/{total_chunks} ({remainder_rows} rows)")
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
-    @staticmethod
-    def make_mappings_from_config(config: ConfigParser) -> tuple[dict[str, str], dict[str, type[object]]]:
-        """Create data set name mapping and dtype mapping (where possible) from a config object.
-
-        Args:
-            config  :   Config object containing the information on the data sets under 'Channel-...' headings
-                        (only those which are added to Frame section in the config as 'channels' or 'channels.value').
-
-        Returns:
-            name mapping    :   a dictionary mapping data type names (names of the channels) on the names/locations
-                                of the corresponding datasets (e.g. HFD5 data set paths).
-            dtype mapping   :   a dictionary mapping data type names on known data types, inferred from representation
-                                codes specified for the corresponding channels (if available).
-
-        Note:
-            The name mapping dict will contain all data sets which will later be included in the loaded chunks.
-            The dtype mapping dict will contain only the known data types (where a representation code was specified).
-        """
-
-        name_mapping = {}
-        dtype_mapping = {}
-
-        frame_config = config['Frame']
-        if 'channels' in frame_config:
-            frame_channels = frame_config['channels']
-        elif 'channels.value' in frame_config:
-            frame_channels = frame_config['channels.value']
-        else:
-            raise RuntimeError("No channels defined for the frame")
-        frame_channels_list = frame_channels.split(', ')
-
-        for section in config.sections():
-            if section.startswith('Channel') and section in frame_channels_list:
-                cs = config[section]
-
-                # add channel info to the name mapping
-                if 'dataset_name' in cs.keys():
-                    name_mapping[cs['name']] = cs['dataset_name']
-                else:
-                    name_mapping[cs['name']] = cs['name']
-
-                # add channel info to the dtype mapping
-                repr_code = cs.get('representation_code', cs.get('representation_code.value', None))
-                if isinstance(repr_code, str) and repr_code.isdigit():
-                    repr_code = RepresentationCode(int(repr_code))
-                elif repr_code is not None:
-                    repr_code = RepresentationCode[repr_code]
-
-                if repr_code is not None:
-                    dtype_mapping[cs['name']] = SourceDataWrapper.get_dtype(repr_code)
-
-        return name_mapping, dtype_mapping
-
-    @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], allow_none: bool = True) -> type[object]:
-        """Determine a numpy dtype for a given representation code.
-
-        Args:
-            repr_code   :   Representation code to convert to a numpy dtype.
-            allow_none  :   If True and 'repr_code' is None, return the default repr code - FDOUBL.
-
-        Returns:
-            A numpy.dtype object corresponding to the given representation code.
-        """
-
-        if repr_code is None:
-            if allow_none:
-                return SourceDataWrapper.get_dtype(RepresentationCode.FDOUBL)
-            else:
-                raise ValueError("Expected a RepresentationCode; got None")
-
-        return ReprCodeConverter.repr_codes_to_numpy_dtypes[repr_code]
-
     @classmethod
-    def from_config(cls, data_source: data_source_type, config: ConfigParser, **kwargs) -> Self:
-        """Create a SourceDataWrapper from the source data object and config info."""
+    def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
+                     mapping: Optional[dict] = None, **kwargs) \
+            -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
-        name_mapping, dtype_mapping = cls.make_mappings_from_config(config)
-        return cls(data_source, name_mapping, known_dtypes=dtype_mapping, **kwargs)
+        if isinstance(source, dict):
+            return DictDataWrapper(source, mapping, **kwargs)
+
+        if isinstance(source, np.ndarray):
+            return NumpyDataWrapper(source, mapping, **kwargs)
+
+        try:
+            source_str = str(source)
+        except (TypeError, ValueError):
+            raise TypeError(f"Expected a path-like; got {type(source)}: {source}")
+        if source_str.split('.')[-1].lower() not in ('h5', 'hdf5'):
+            raise ValueError(f"Expected a path to an HDF5 file; got {source_str}")
+        if mapping is None:
+            raise ValueError("Mapping must be provided to create a HDF5DataWrapper")
+        return HDF5DataWrapper(source, mapping, **kwargs)
 
 
 class HDF5DataWrapper(SourceDataWrapper):
