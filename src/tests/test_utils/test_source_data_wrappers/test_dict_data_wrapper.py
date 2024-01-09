@@ -1,6 +1,7 @@
 import numpy as np
 from pathlib import Path
 import pytest
+import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 
@@ -212,3 +213,63 @@ def test_load_chunk_alternative_mapping(data):
 
     assert (chunk['AMP'] == data['amplitude'][10:20]).all()
     assert (chunk['MD'] == data['depth'][10:20]).all()
+
+
+@pytest.mark.parametrize(("from_idx", "to_idx", "n_rows"), ((0, None, 100), (20, 60, 40)))
+def test_chunked_generator_all_rows(data, caplog, from_idx, to_idx, n_rows):
+    w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
+
+    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+        gen = w.make_chunked_generator(chunk_rows=None)
+        rows = list(gen)
+
+    assert f"Data will be loaded in a single chunk of {n_rows}" in caplog.text
+    assert "Loading chunk 1/1" in caplog.text
+
+    assert len(rows) == n_rows
+
+    assert rows[0]['depth'] == data['depth'][from_idx:to_idx][0]
+    assert (rows[17]['amplitude'] == data['amplitude'][from_idx:to_idx][17]).all()
+    assert rows[-2]['rpm'] == data['rpm'][from_idx:to_idx][n_rows-2]
+
+
+@pytest.mark.parametrize(("chunk_rows", "n_chunks"), ((10, 10), (25, 4)))
+def test_chunked_generator_full_chunks(data, caplog, chunk_rows, n_chunks):
+    w = DictDataWrapper(data)
+
+    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+        gen = w.make_chunked_generator(chunk_rows=chunk_rows)
+        rows = list(gen)
+
+    assert f"Data will be loaded in {n_chunks} chunk(s) of {chunk_rows} rows" in caplog.text
+    assert "plus a last, smaller chunk" not in caplog.text
+
+    for i in range(n_chunks):
+        assert f"Loading chunk {i+1}/{n_chunks}" in caplog.text
+
+    assert len(rows) == 100
+
+    assert rows[15]['depth'] == data['depth'][15]
+    assert (rows[0]['amplitude'] == data['amplitude'][0]).all()
+    assert rows[3]['rpm'] == data['rpm'][3]
+
+
+@pytest.mark.parametrize(("chunk_rows", "n_full_chunks", "remainder_rows"), ((15, 6, 10), (40, 2, 20), (60, 1, 40)))
+def test_chunked_generator_remainder_chunk(data, caplog, chunk_rows, n_full_chunks, remainder_rows):
+    w = DictDataWrapper(data)
+
+    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+        gen = w.make_chunked_generator(chunk_rows=chunk_rows)
+        rows = list(gen)
+
+    assert f"Data will be loaded in {n_full_chunks} chunk(s) of {chunk_rows} rows" in caplog.text
+    assert f"plus a last, smaller chunk of {remainder_rows} rows" in caplog.text
+
+    for i in range(n_full_chunks + 1):
+        assert f"Loading chunk {i+1}/{n_full_chunks + 1}" in caplog.text
+
+    assert len(rows) == 100
+
+    assert rows[80]['depth'] == data['depth'][80]
+    assert (rows[2]['amplitude'] == data['amplitude'][2]).all()
+    assert rows[24]['rpm'] == data['rpm'][24]
