@@ -36,6 +36,9 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
+##### 0.0.5: Cleanup
+Some name changes, restructuring. Updated README.
+
 ##### 0.0.4: All DLIS objects added
 Exposed all types of DLIS objects (WellReferencePoint, Group, Message, etc.) 
 in `DLISFile` through `add_<object>` methods (e.g. `add_group`).
