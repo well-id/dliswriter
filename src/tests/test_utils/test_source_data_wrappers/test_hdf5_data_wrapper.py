@@ -47,9 +47,9 @@ def test_alternative_mappings(short_reference_data_path: Path, new_mapping: dict
 
 
 @pytest.mark.parametrize(('known_dtypes', 'dtype_check'), (
-        ({'time': np.float32, 'rpm': np.float16}, (np.float32, np.float64, np.float64, np.float16)),
-        ({'rpm': np.int64}, (np.float64, np.float64, np.float64, np.int64)),
-        ({'rad': np.float32, 'amp': np.int64}, (np.float64, np.float32, np.int64, np.float64))
+        ({'time': np.float32, 'rpm': np.float32}, (np.float32, np.float64, np.float64, np.float32)),
+        ({'rpm': np.int32}, (np.float64, np.float64, np.float64, np.int32)),
+        ({'rad': np.float32, 'amp': np.int32}, (np.float64, np.float32, np.int32, np.float64))
 ))
 def test_creation_with_known_dtypes(short_reference_data_path: Path, known_dtypes: dict, dtype_check: tuple,
                                     mapping: dict) -> None:

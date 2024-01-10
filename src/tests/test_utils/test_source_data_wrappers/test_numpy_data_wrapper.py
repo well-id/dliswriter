@@ -10,8 +10,8 @@ def dtype() -> np.dtype:
     data_types = [
         ('depth', float),
         ('rpm', int),
-        ('amplitude', np.float16, 128),
-        ('radius', np.int64, 20)
+        ('amplitude', np.float32, 128),
+        ('radius', np.int32, 20)
     ]
     return np.dtype(data_types)
 
@@ -44,8 +44,8 @@ def test_creation(data: np.ndarray) -> None:
     assert w.dtype.names == ('depth', 'rpm', 'amplitude', 'radius')
     assert w.dtype[0] == np.float64
     assert w.dtype[1] == np.int32
-    assert w.dtype[2] == (np.float16, (128,))
-    assert w.dtype[3] == (np.int64, (20,))
+    assert w.dtype[2] == (np.float32, (128,))
+    assert w.dtype[3] == (np.int32, (20,))
 
 
 def test_creation_with_mapping(data: np.ndarray) -> None:
@@ -54,8 +54,8 @@ def test_creation_with_mapping(data: np.ndarray) -> None:
     assert w.dtype.names == ('DPTH', 'RPM', 'AMP', 'RAD')
     assert w.dtype[0] == np.float64
     assert w.dtype[1] == np.int32
-    assert w.dtype[2] == (np.float16, (128,))
-    assert w.dtype[3] == (np.int64, (20,))
+    assert w.dtype[2] == (np.float32, (128,))
+    assert w.dtype[3] == (np.int32, (20,))
 
 
 def test_creation_with_mapping_different_order(data: np.ndarray) -> None:
@@ -64,8 +64,8 @@ def test_creation_with_mapping_different_order(data: np.ndarray) -> None:
     assert w.dtype.names == ('RAD', 'AMP', 'RPM', 'DPTH')
     assert w.dtype[3] == np.float64
     assert w.dtype[2] == np.int32
-    assert w.dtype[1] == (np.float16, (128,))
-    assert w.dtype[0] == (np.int64, (20,))
+    assert w.dtype[1] == (np.float32, (128,))
+    assert w.dtype[0] == (np.int32, (20,))
 
 
 def test_creation_with_mapping_omitting_dsets(data: np.ndarray) -> None:
@@ -73,12 +73,12 @@ def test_creation_with_mapping_omitting_dsets(data: np.ndarray) -> None:
 
     assert w.dtype.names == ('AMP', 'DPTH')
     assert w.dtype[1] == np.float64
-    assert w.dtype[0] == (np.float16, (128,))
+    assert w.dtype[0] == (np.float32, (128,))
 
 
 @pytest.mark.parametrize(('known_dtypes', 'dtype_check'), (
-        ({'depth': np.float32, 'rpm': np.float64}, (np.float32, np.float64, np.float16, np.int64)),
-        ({'rpm': np.int64}, (np.float64, np.int64, np.float16, np.int64)),
+        ({'depth': np.float32, 'rpm': np.float64}, (np.float32, np.float64, np.float32, np.int32)),
+        ({'rpm': np.int32}, (np.float64, np.int32, np.float32, np.int32)),
         ({'radius': np.float32, 'amplitude': np.float64}, (np.float64, np.int32, np.float64, np.float32))
 ))
 def test_creation_with_known_dtypes(data: np.ndarray, known_dtypes: dict, dtype_check: tuple) -> None:
@@ -94,13 +94,13 @@ def test_creation_with_known_dtypes_and_mapping(data: np.ndarray) -> None:
     w = NumpyDataWrapper(
         data,
         mapping={'RAD': 'radius', 'AMP': 'amplitude', 'RPM': 'rpm'},
-        known_dtypes={'AMP': np.int32, 'RPM': np.float16}
+        known_dtypes={'AMP': np.int32, 'RPM': np.float32}
     )
 
     assert w.dtype.names == ('RAD', 'AMP', 'RPM')
-    assert w.dtype[0] == (np.int64, (20,))  # radius
+    assert w.dtype[0] == (np.int32, (20,))  # radius
     assert w.dtype[1] == (np.int32, (128,))  # amplitude
-    assert w.dtype[2] == np.float16  # rpm
+    assert w.dtype[2] == np.float32  # rpm
 
 
 @pytest.mark.parametrize('dat', (

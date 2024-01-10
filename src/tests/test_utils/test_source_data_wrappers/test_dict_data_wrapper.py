@@ -18,7 +18,7 @@ def data() -> source_data_type:
     d = {
         'depth': np.arange(n) * 0.1,
         'rpm': (10 * np.random.rand(n)).astype(int),
-        'amplitude': np.random.rand(n, 128).astype(np.float16)
+        'amplitude': np.random.rand(n, 128).astype(np.float32)
     }
 
     return d
@@ -43,7 +43,7 @@ def test_creation_without_mapping(data: source_data_type) -> None:
     assert w.dtype.names == ('depth', 'rpm', 'amplitude')
     assert w.dtype[0] == np.float64
     assert w.dtype[1] == np.int32
-    assert w.dtype[2] == (np.float16, (128,))
+    assert w.dtype[2] == (np.float32, (128,))
 
 
 def test_creation_with_mapping(data: source_data_type) -> None:
@@ -54,7 +54,7 @@ def test_creation_with_mapping(data: source_data_type) -> None:
     assert w.dtype.names == ('MD', 'RPM', 'AMP')
     assert w.dtype[0] == np.float64
     assert w.dtype[1] == np.int32
-    assert w.dtype[2] == (np.float16, (128,))
+    assert w.dtype[2] == (np.float32, (128,))
 
 
 def test_creation_with_mapping_omitting_dsets(data: source_data_type) -> None:
@@ -64,7 +64,7 @@ def test_creation_with_mapping_omitting_dsets(data: source_data_type) -> None:
 
     assert w.dtype.names == ('MD', 'AMP')
     assert w.dtype[0] == np.float64
-    assert w.dtype[1] == (np.float16, (128,))
+    assert w.dtype[1] == (np.float32, (128,))
 
 
 def test_creation_with_known_dtypes(data: source_data_type) -> None:
@@ -74,7 +74,7 @@ def test_creation_with_known_dtypes(data: source_data_type) -> None:
 
     assert w.dtype[0] == np.float32
     assert w.dtype[1] == np.float64
-    assert w.dtype[2] == (np.float16, (128,))
+    assert w.dtype[2] == (np.float32, (128,))
 
 
 def test_creation_with_known_dtypes_and_mapping(data: source_data_type) -> None:
@@ -83,10 +83,10 @@ def test_creation_with_known_dtypes_and_mapping(data: source_data_type) -> None:
     w = DictDataWrapper(
         data,
         mapping={'MD': 'depth', 'RPM': 'rpm', 'AMP': 'amplitude'},
-        known_dtypes={'MD': np.float16, 'AMP': np.float64}  # names the same as keys of the mapping dict
+        known_dtypes={'MD': np.float32, 'AMP': np.float64}  # names the same as keys of the mapping dict
     )
 
-    assert w.dtype[0] == np.float16
+    assert w.dtype[0] == np.float32
     assert w.dtype[1] == np.int32
     assert w.dtype[2] == (np.float64, (128,))
 

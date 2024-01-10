@@ -4,6 +4,9 @@ from typing import Union, Optional, Any, Generator
 import os
 import logging
 
+from dlis_writer.utils.converters import ReprCodeConverter
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -109,8 +112,20 @@ class SourceDataWrapper:
             dset_row0 = dset[0:1]  # get in form of a 1-element (or 1-row) array, not a single number
             # for h5 data, the above retrieves the first row of the current data set
 
+            # determine the numpy number dtype
+            number_type = known_dtypes.get(dtype_name, dset_row0.dtype)
+            if isinstance(number_type, np.dtype):
+                number_type_name = number_type.name
+            elif isinstance(number_type, type) and issubclass(number_type, np.generic):
+                number_type_name = number_type.__name__
+            else:
+                raise ValueError(f"Type for dataset '{dtype_name}' is not a numpy dtype: gpt {number_type}")
+            if number_type_name not in ReprCodeConverter.numpy_dtypes_to_repr_codes:
+                raise ValueError(f"Dtype for dataset '{dtype_name}': {number_type_name} is not supported; "
+                                 f"allowed dtypes are: {', '.join(ReprCodeConverter.numpy_dtypes_to_repr_codes)}")
+
             # determine the dtype of the data set (2- or 3-tuple)
-            dt = (dtype_name, known_dtypes.get(dtype_name, dset_row0.dtype))
+            dt = (dtype_name, number_type)
             if dset_row0.ndim > 1:
                 if dset_row0.ndim > 2:
                     raise RuntimeError("Data sets with more than 2 dimensions are not supported")
