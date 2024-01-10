@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType
@@ -15,7 +16,7 @@ class SpliceItem(EFLRItem):
 
     parent: "SpliceSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise SpliceItem.
 
         Args:

@@ -13,7 +13,7 @@ class IFLR(LogicalRecord):
     logical_record_type: IFLRType   #: int-enum denoting type of the EFLR
     is_eflr = False                 #: indication that this is an indirectly formatted LR
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise an IFLR."""
 
         super().__init__()

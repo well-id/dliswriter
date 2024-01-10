@@ -1,6 +1,6 @@
 import logging
 import numpy as np
-from typing import Union
+from typing import Union, Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
@@ -27,7 +27,7 @@ class FrameItem(EFLRItem):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise FrameItem.
 
         Args:
@@ -64,6 +64,8 @@ class FrameItem(EFLRItem):
     def convert_encrypted(value: Union[str, int, float, bool]) -> int:
         """Convert a provided 'encrypted' attribute value to an integer flag (0 or 1)."""
 
+        if isinstance(value, bool):
+            return int(value)
         if isinstance(value, str):
             if value.lower() in ('1', 'true', 't', 'yes', 'y'):
                 return 1
@@ -75,12 +77,10 @@ class FrameItem(EFLRItem):
             if value != 1 and value != 0:
                 raise ValueError(f"Expected a 0 or a 1; got {value}")
             return int(value)
-        if isinstance(value, bool):
-            return int(value)
         else:
             raise TypeError(f"Cannot convert {type(value)} object ({value}) to integer")
 
-    def setup_from_data(self, data: SourceDataWrapper):
+    def setup_from_data(self, data: SourceDataWrapper) -> None:
         """Set up attributes of the frame and its channels based on the source data."""
 
         if not self.channels.value:
@@ -91,7 +91,7 @@ class FrameItem(EFLRItem):
 
         self._setup_frame_params_from_data(data)
 
-    def _setup_frame_params_from_data(self, data: SourceDataWrapper):
+    def _setup_frame_params_from_data(self, data: SourceDataWrapper) -> None:
         """Set up the index characteristics of the frame based on the source data.
 
         The index characteristics include: min and max value, spacing, and direction (increasing/decreasing).
@@ -100,7 +100,7 @@ class FrameItem(EFLRItem):
         This assumption is frequently made in DLIS readers.
         """
 
-        def assign_if_none(attr, value, key='value'):
+        def assign_if_none(attr: Attribute, value: Any, key: str = 'value') -> None:
             """Check if an attribute part has already been assigned. If not, assign it to the provided value.
 
             Args:
@@ -130,12 +130,12 @@ class FrameItem(EFLRItem):
                 at.representation_code = repr_code
 
     @property
-    def channel_name_mapping(self):
+    def channel_name_mapping(self) -> dict:
         return {ch.name: ch.dataset_name for ch in self.channels.value}
 
     @property
-    def channel_dtype_mapping(self):
-        def get_dtype(rc):
+    def channel_dtype_mapping(self) -> dict:
+        def get_dtype(rc: Union[RepC, None]) -> type[object]:
             return ReprCodeConverter.get_dtype(rc, RepC.FDOUBL)
 
         return {ch.name: get_dtype(ch.representation_code.value) for ch in self.channels.value}

@@ -1,6 +1,6 @@
 import re
 import logging
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Any
 
 from dlis_writer.logical_record.core.logical_record import LRMeta
 
@@ -27,7 +27,7 @@ class EFLRSetMeta(LRMeta):
     eflr_name: str
     eflr_name_pattern = re.compile(r'(?P<name>\w+)Set')
 
-    def __new__(cls, *args, **kwargs) -> "EFLRSetMeta":
+    def __new__(cls, *args: Any, **kwargs: Any) -> "EFLRSetMeta":
         """Create a new EFLRSet class (instance of EFLRSetMeta).
 
         All positional and keyword arguments are passed to the super-metaclass: LRMeta.

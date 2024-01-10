@@ -1,3 +1,5 @@
+from typing import Any
+
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
@@ -8,7 +10,7 @@ class MessageItem(EFLRItem):
 
     parent: "MessageSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise MessageItem.
 
         Args:
@@ -40,7 +42,7 @@ class CommentItem(EFLRItem):
 
     parent: "CommentSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise CommentItem.
 
         Args:

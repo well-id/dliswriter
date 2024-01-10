@@ -1,6 +1,9 @@
+from typing import Union
+
 from dlis_writer.logical_record.core.iflr import IFLR
 from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import IFLRType
+from dlis_writer.logical_record.eflr_types.no_format import NoFormatItem
 
 
 class NoFormatFrameData(IFLR):
@@ -8,13 +11,13 @@ class NoFormatFrameData(IFLR):
 
     logical_record_type = IFLRType.NOFMT
 
-    def __init__(self):
+    def __init__(self, no_format_object: NoFormatItem, data: Union[str, bytes, bytearray]) -> None:
         """Initialise NoFormatFrameData."""
 
         super().__init__()
 
-        self.no_format_object = None
-        self.data = None
+        self.no_format_object = no_format_object
+        self.data = data
 
     def _make_body_bytes(self) -> bytes:
         """Create bytes representing the body of the object."""

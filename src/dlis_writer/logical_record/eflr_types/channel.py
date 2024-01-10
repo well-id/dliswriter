@@ -1,5 +1,5 @@
 import logging
-from typing import Union, Optional
+from typing import Union, Optional, Any
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
@@ -19,7 +19,7 @@ class ChannelItem(EFLRItem):
 
     parent: "ChannelSet"
 
-    def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, dataset_name: Optional[str] = None, **kwargs: Any) -> None:
         """Initialise ChannelItem.
 
         Args:
@@ -57,19 +57,19 @@ class ChannelItem(EFLRItem):
         return self._dataset_name if self._dataset_name is not None else self.name
 
     @dataset_name.setter
-    def dataset_name(self, name: str):
+    def dataset_name(self, name: str) -> None:
         """Set a new dataset name."""
 
         self._dataset_name = name
 
-    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper):
+    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper) -> None:
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
 
         sub_data = data[self.name]
         self._set_dimension_from_data(sub_data)
         self._set_repr_code_from_data(sub_data)
 
-    def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]):
+    def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dim = list(sub_data.shape[1:]) or [1]
@@ -88,7 +88,7 @@ class ChannelItem(EFLRItem):
             logger.debug(f"Setting element limit of {self} to {dim}")
             self.element_limit.value = dim
 
-    def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]):
+    def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dt = sub_data.dtype
@@ -110,7 +110,7 @@ class ChannelItem(EFLRItem):
             logger.debug(f"Setting representation code of {self} to {suggested_rc.name}")
             self.representation_code.value = suggested_rc
 
-    def set_defaults(self):
+    def set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:
@@ -130,7 +130,7 @@ class ChannelItem(EFLRItem):
             self.long_name.value = self.name
 
     @staticmethod
-    def convert_unit(unit: Union[str, None]):
+    def convert_unit(unit: Union[str, None]) -> Union[str, None]:
         """Check that unit is one of the values allowed by the standard (or None)."""
 
         if unit is None:
@@ -144,7 +144,7 @@ class ChannelItem(EFLRItem):
         return unit
 
     @staticmethod
-    def convert_repr_code(rc: Union[RepC, str, int]):
+    def convert_repr_code(rc: Union[RepC, str, int]) -> Union[RepC, None]:
         """Retrieve a member of a RepresentationCode enum from the name or value (or the member itself)."""
 
         return RepC.get_member(rc, allow_none=True)

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
@@ -15,7 +16,7 @@ class ParameterItem(EFLRItem):
 
     parent: "ParameterSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise ParameterItem.
 
         Args:
@@ -33,7 +34,7 @@ class ParameterItem(EFLRItem):
 
         self._set_defaults()
 
-    def _set_defaults(self):
+    def _set_defaults(self) -> None:
         """Set default values of some attributes if no values have been set so far."""
 
         if not self.dimension.value:

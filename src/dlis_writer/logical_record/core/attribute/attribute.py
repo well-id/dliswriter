@@ -54,7 +54,7 @@ class Attribute:
         self._parent_eflr = parent_eflr
 
     @staticmethod
-    def _check_type(value: Any, *expected_types: type, allow_none: bool = False):
+    def _check_type(value: Any, *expected_types: type, allow_none: bool = False) -> None:
         """Check that value is an instance of the expected type. If not, raise a TypeError."""
 
         if allow_none and value is None:
@@ -82,7 +82,7 @@ class Attribute:
         return self._value
 
     @value.setter
-    def value(self, val: Any):
+    def value(self, val: Any) -> None:
         """Set a new value of the attribute. Use the provided converter (if any) to transform/validate the value."""
 
         self._value = self.convert_value(val)
@@ -94,7 +94,7 @@ class Attribute:
         return self.assigned_representation_code or self.inferred_representation_code
 
     @representation_code.setter
-    def representation_code(self, rc: Union[RepresentationCode, str, int]):
+    def representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
         """Set a new representation code for the attribute."""
 
         self._set_representation_code(rc)
@@ -132,7 +132,7 @@ class Attribute:
 
         return self._guess_repr_code()
 
-    def _set_representation_code(self, rc: Union[RepresentationCode, str, int]):
+    def _set_representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
         """Set representation code, having checked that no (other) representation code has previously been set.
 
         This check is implemented because it is assumed that if a representation code is assigned at init, it is the
@@ -154,7 +154,7 @@ class Attribute:
         return self._units
 
     @units.setter
-    def units(self, units: str):
+    def units(self, units: str) -> None:
         """Set new units for the attribute."""
 
         if units is not None:
@@ -205,7 +205,7 @@ class Attribute:
         return self._converter or (lambda v: v)
 
     @converter.setter
-    def converter(self, conv: Union[Callable, None]):
+    def converter(self, conv: Union[Callable, None]) -> None:
         """Set a new converter for the attribute (or remove an existing one by passing 'None')."""
 
         if conv is None:

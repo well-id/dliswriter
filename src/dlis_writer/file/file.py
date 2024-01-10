@@ -744,9 +744,7 @@ class DLISFile:
             A configured NoFormatFrameData instance.
         """
 
-        d = NoFormatFrameData()
-        d.no_format_object = no_format_object
-        d.data = data
+        d = NoFormatFrameData(no_format_object, data)
 
         self._no_format_frame_data.append(d)
         return d

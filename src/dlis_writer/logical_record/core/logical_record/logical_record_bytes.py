@@ -1,5 +1,5 @@
 import logging
-from typing import Optional
+from typing import Optional, Generator
 
 from dlis_writer.logical_record.core.logical_record.segment_attributes import SegmentAttributes
 from dlis_writer.utils.enums import RepresentationCode as RepC
@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class LogicalRecordBytes:
     """Wrap bytes of a LogicalRecord and StorageUnitLabel, adding segmenting functionalities."""
 
-    padding = RepC.USHORT.convert(1)  #: padding byte added if the number of bytes in a segment is odd
+    padding: bytes = RepC.USHORT.convert(1)  #: padding byte added if the number of bytes in a segment is odd
 
     def __init__(self, bts: bytes, lr_type_struct: bytes, is_eflr: bool = False):
         """Initialise a LogicalRecordBytes object.
@@ -92,7 +92,7 @@ class LogicalRecordBytes:
 
         return new_bts, size
 
-    def make_segments(self, max_n_bytes: int):
+    def make_segments(self, max_n_bytes: int) -> Generator:
         """Define a generator which splits the logical record bytes into segments of given maximal size.
 
         See make_segment for a more detailed description.
