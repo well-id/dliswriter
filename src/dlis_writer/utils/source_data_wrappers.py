@@ -1,6 +1,6 @@
 import numpy as np
 import h5py    # type: ignore  # untyped library
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, Generator
 import os
 import logging
 
@@ -15,7 +15,7 @@ class SourceDataWrapper:
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
                  known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
-                 to_idx: Optional[int] = None, **kwargs):
+                 to_idx: Optional[int] = None, **kwargs: Any) -> None:
         """Initialise a SourceDataWrapper.
 
         Args:
@@ -173,7 +173,7 @@ class SourceDataWrapper:
 
         return chunk
 
-    def make_chunked_generator(self, chunk_rows: Union[int, None]):
+    def make_chunked_generator(self, chunk_rows: Union[int, None]) -> Generator:
         """Define a generator yielding consecutive chunks of input data with the specified size.
 
         Args:
@@ -210,7 +210,7 @@ class SourceDataWrapper:
 
     @classmethod
     def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
-                     mapping: Optional[dict] = None, **kwargs) \
+                     mapping: Optional[dict] = None, **kwargs: Any) \
             -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
         if isinstance(source, dict):
@@ -233,7 +233,9 @@ class SourceDataWrapper:
 class HDF5DataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a HDF5 file."""
 
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
+    _data_source: h5py.File
+
+    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs: Any) -> None:
         """Initialise HDF5DataWrapper.
 
         Args:
@@ -251,7 +253,7 @@ class HDF5DataWrapper(SourceDataWrapper):
 
         super().__init__(h5_data, mapping, **kwargs)
 
-    def close(self):
+    def close(self) -> None:
         """Close the HDF5 file (if open)."""
 
         if hasattr(self, '_data_source'):  # object might be partially initialised
@@ -262,7 +264,7 @@ class HDF5DataWrapper(SourceDataWrapper):
             else:
                 logger.debug("Source data file closed")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Close the HDF5 file when deleting the object (if still open at this point)."""
 
         self.close()
@@ -273,7 +275,7 @@ class NumpyDataWrapper(SourceDataWrapper):
 
     _data_source: np.ndarray
 
-    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs):
+    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs: Any) -> None:
         """Initialise NumpyDataWrapper.
 
         Args:
@@ -313,7 +315,7 @@ class NumpyDataWrapper(SourceDataWrapper):
         return super().load_chunk(start, stop)
 
     @staticmethod
-    def _check_source_arr(arr: np.ndarray):
+    def _check_source_arr(arr: np.ndarray) -> None:
         """Check that the input array is a structured, 1D numpy array."""
 
         if not isinstance(arr, np.ndarray):
@@ -329,7 +331,7 @@ class NumpyDataWrapper(SourceDataWrapper):
 class DictDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
-    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs):
+    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs: Any) -> None:
         """Initialise DictDataWrapper.
 
         Args:
@@ -349,7 +351,7 @@ class DictDataWrapper(SourceDataWrapper):
         super().__init__(data_dict, mapping, **kwargs)
 
     @staticmethod
-    def _check_source_dict(data_dict: dict[str, np.ndarray]):
+    def _check_source_dict(data_dict: dict[str, np.ndarray]) -> None:
         """Check that all values of the source dictionary are numpy arrays."""
 
         if not isinstance(data_dict, dict):

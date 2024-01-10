@@ -5,7 +5,7 @@ import coloredlogs    # type: ignore  # untyped library
 FORMAT = '%(name)s [%(levelname)s] %(asctime)s: %(message)s'  #: format for console log messages
 
 
-def install_logger(logger: logging.Logger, level: int = logging.DEBUG):
+def install_logger(logger: logging.Logger, level: int = logging.DEBUG) -> None:
     """Set up a colored logging output.
 
     Args:

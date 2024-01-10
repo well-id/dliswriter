@@ -59,7 +59,7 @@ class RepresentationCode(int, Enum):
     ATTREF = 25, None
     STATUS = 26, Struct('>B')
 
-    def convert(self, value: Any):
+    def convert(self, value: Any) -> bytes:
         if self.converter is None:
             raise RuntimeError("Converter struct not defined; cannot directly convert the value to bytes")
         return self.converter.pack(value)
