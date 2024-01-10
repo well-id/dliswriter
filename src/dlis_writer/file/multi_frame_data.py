@@ -44,7 +44,7 @@ class MultiFrameData:
         self._data_item_generator = None
 
     @staticmethod
-    def _check_type(value: typing.Any, *expected_types: type):
+    def _check_type(value: typing.Any, *expected_types: type) -> None:
         """Check that value is an instance of the expected type. If not, raise a TypeError."""
 
         if not isinstance(value, expected_types):
@@ -57,7 +57,7 @@ class MultiFrameData:
 
         return self._frame
 
-    def set_origin_reference(self, value: int):
+    def set_origin_reference(self, value: int) -> None:
         """Store origin reference so that it is assigned to every FrameData object at its creation later on."""
 
         self._origin_reference = value

@@ -31,7 +31,7 @@ class ByteWriter:
 
         return self._total_size
 
-    def write_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None):
+    def write_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None) -> None:
         """Write (in 'wb' or 'ab' mode, as needed) the bytes into the file.
 
         Args:
@@ -78,7 +78,7 @@ class BufferedOutput:
 
         self._writer = writer  #: file writer object
 
-    def add_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None):
+    def add_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None) -> None:
         """Add bytes to the current output buffer.
 
         If the bytes would not fit in the current output buffer, send the currently kept bytes to the file writer,
@@ -103,7 +103,7 @@ class BufferedOutput:
         self._bts[self._filled_size:new_size] = bts
         self._filled_size = new_size
 
-    def pass_bytes_to_writer(self):
+    def pass_bytes_to_writer(self) -> None:
         """Send the currently kept bytes to the file writer. Set up a new, empty output buffer."""
 
         self._writer.write_bytes(self._bts[:self._filled_size], self._filled_size)
@@ -131,7 +131,7 @@ class DLISWriter:
         self._fmt_version = RepresentationCode.USHORT.convert(255) + RepresentationCode.USHORT.convert(1)
 
     @staticmethod
-    def _check_visible_record_length(vrl: int):
+    def _check_visible_record_length(vrl: int) -> None:
         """Check the type and value of visible record length against several criteria."""
 
         if not isinstance(vrl, int):
@@ -147,7 +147,7 @@ class DLISWriter:
             raise ValueError("Visible record length must be an even number")
 
     @staticmethod
-    def _assign_origin_reference(logical_records: FileLogicalRecords):
+    def _assign_origin_reference(logical_records: FileLogicalRecords) -> None:
         """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
 
         origins: list[OriginItem] = logical_records.origin.get_all_eflr_items()  # type: ignore
@@ -187,7 +187,7 @@ class DLISWriter:
 
         return RepresentationCode.UNORM.convert(size) + self._fmt_version + body
 
-    def _check_output_chunk_size(self, output_chunk_size: Union[int, float]):
+    def _check_output_chunk_size(self, output_chunk_size: Union[int, float]) -> None:
         """Check output chunk size type (integer or float with zero decimal part) and value (>= max VR length)."""
 
         if not isinstance(output_chunk_size, (int, float)):
@@ -201,7 +201,7 @@ class DLISWriter:
                              f"(= {self._visible_record_length}); got {output_chunk_size}")
 
     def _create_visible_records(self, logical_records: FileLogicalRecords, writer: ByteWriter,
-                                output_chunk_size: Union[int, float] = 2 ** 32):
+                                output_chunk_size: Union[int, float, None] = None) -> None:
         """Create visible records constituting the DLIS file. Write the created bytes to the file.
 
         Bytes of each logical record are placed in a new visible record. If necessary, bytes of logical record are split
@@ -219,6 +219,7 @@ class DLISWriter:
         all_lrb_gen = (lr.represent_as_bytes() for lr in logical_records)  # generator yielding logical records' bytes
 
         # prepare BufferedOutput object - temporarily keep added bytes, store them in the file when buffer is full
+        output_chunk_size = output_chunk_size or 2 ** 32
         self._check_output_chunk_size(output_chunk_size)
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
         output = BufferedOutput(int(output_chunk_size), writer)
@@ -237,7 +238,7 @@ class DLISWriter:
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
     def create_dlis(self, logical_records: FileLogicalRecords, filename: Union[str, os.PathLike[str]],
-                    output_chunk_size: Union[int, float] = 2**32):
+                    output_chunk_size: Union[int, float, None]) -> None:
         """Create a DLIS file from logical records specification (found in the config) and numerical data.
 
         Args:

@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar
+from typing import Any, Union, Optional, TypeVar, Sequence
 import numpy as np
 import os
 from timeit import timeit
@@ -1077,7 +1077,7 @@ class DLISFile:
             data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
             from_idx: int = 0,
             to_idx: Optional[int] = None,
-            **kwargs
+            **kwargs: Any
     ) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
@@ -1107,7 +1107,7 @@ class DLISFile:
             self,
             chunk_size: Optional[int] = None,
             data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-            **kwargs
+            **kwargs: Any
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
@@ -1117,7 +1117,7 @@ class DLISFile:
             orig=self._origin.parent
         )
 
-        def get_parents(objects):
+        def get_parents(objects: Sequence[EFLRItem]) -> set:
             return set(obj.parent for obj in objects)
 
         flr.add_channels(*get_parents(self._channels))
@@ -1132,7 +1132,7 @@ class DLISFile:
     def write(self, dlis_file_name: Union[str, os.PathLike[str]],
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
               data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-              from_idx: int = 0, to_idx: Optional[int] = None):
+              from_idx: int = 0, to_idx: Optional[int] = None) -> None:
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -1145,7 +1145,7 @@ class DLISFile:
             to_idx                  :   Index up to which data should be loaded.
         """
 
-        def timed_func():
+        def timed_func() -> None:
             """Perform the action of creating a DLIS file.
 
             This function is used in a timeit call to time the file creation.
