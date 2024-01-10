@@ -52,34 +52,19 @@ class ReprCodeConverter:
     numeric_codes = float_codes + int_codes                             #: representation codes for all numbers
 
     # mapping of numpy dtype names on corresponding representation codes
-    # TODO: verify
-    numpy_dtypes: dict[str, RepresentationCode] = {
-        'int_': RepresentationCode.SLONG,
+    numpy_dtypes_to_repr_codes: dict[str, RepresentationCode] = {
         'int8': RepresentationCode.SSHORT,
         'int16': RepresentationCode.SNORM,
-        'int32': RepresentationCode.SNORM,
-        'int64': RepresentationCode.SLONG,
+        'int32': RepresentationCode.SLONG,
         'uint8': RepresentationCode.USHORT,
-        'uint16': RepresentationCode.USHORT,
-        'uint32': RepresentationCode.UNORM,
-        'uint64': RepresentationCode.ULONG,
-        'float_': RepresentationCode.FDOUBL,
-        'float16': RepresentationCode.FSINGL,
+        'uint16': RepresentationCode.UNORM,
+        'uint32': RepresentationCode.ULONG,
         'float32': RepresentationCode.FSINGL,
         'float64': RepresentationCode.FDOUBL
     }
 
     # mapping of numerical representation codes on corresponding numpy dtypes
-    repr_codes_to_numpy_dtypes = {
-        RepresentationCode.FDOUBL: np.float64,
-        RepresentationCode.FSINGL: np.float32,
-        RepresentationCode.USHORT: np.uint16,
-        RepresentationCode.UNORM: np.uint32,
-        RepresentationCode.ULONG: np.uint64,
-        RepresentationCode.SSHORT: np.int8,
-        RepresentationCode.SNORM: np.int32,
-        RepresentationCode.SLONG: np.int64
-    }
+    repr_codes_to_numpy_dtypes = {v: getattr(np, k) for k, v in numpy_dtypes_to_repr_codes.items()}
 
     # mapping of different object types on corresponding representation codes
     generic_types: dict[type, RepresentationCode] = {
@@ -93,7 +78,7 @@ class ReprCodeConverter:
     def determine_repr_code_from_numpy_dtype(cls, dt: np.dtype) -> RepresentationCode:
         """Determine representation code for a given numpy dtype."""
 
-        repr_code = cls.numpy_dtypes.get(dt.name, None)
+        repr_code = cls.numpy_dtypes_to_repr_codes.get(dt.name, None)
         if repr_code is None:
             raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {dt}")
         return repr_code

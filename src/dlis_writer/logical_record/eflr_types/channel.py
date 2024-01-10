@@ -93,7 +93,7 @@ class ChannelItem(EFLRItem):
 
         dt = sub_data.dtype
 
-        suggested_rc = ReprCodeConverter.numpy_dtypes.get(dt.name, None)
+        suggested_rc = ReprCodeConverter.numpy_dtypes_to_repr_codes.get(dt.name, None)
         current_rc = self.representation_code.value
 
         if suggested_rc is None:
