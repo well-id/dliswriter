@@ -2,10 +2,12 @@ import pytest
 from _pytest.logging import LogCaptureFixture
 from typing import Union, Any
 import numpy as np
+from datetime import datetime
 
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import numpy_dtype_type
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 
@@ -105,15 +107,40 @@ def test_clearing_unit(chan: ChannelItem) -> None:
 
 @pytest.mark.parametrize(("dt", "repc"), (
         (np.float64, RepresentationCode.FDOUBL),
+        (np.dtype(np.float64), RepresentationCode.FDOUBL),
         (np.uint8, RepresentationCode.USHORT),
         (np.int16, RepresentationCode.SNORM),
-        (np.int32, RepresentationCode.SLONG)
+        (np.dtype(np.int32), RepresentationCode.SLONG)
 ))
-def test_setting_cast_dtype(chan: ChannelItem, dt: type[np.generic], repc: RepresentationCode) -> None:
+def test_setting_cast_dtype(chan: ChannelItem, dt: numpy_dtype_type, repc: RepresentationCode) -> None:
     """Test that representation code is correctly set based on provided cast dtype."""
 
     chan.cast_dtype = dt
     assert chan.representation_code.value is repc
+
+
+def test_clearing_cast_dtype(chan: ChannelItem) -> None:
+    """Test that clearing cast dtype also clears representation code."""
+
+    chan.cast_dtype = np.float64
+    assert chan.cast_dtype == np.float64
+    assert chan.representation_code.value is not None
+
+    chan.cast_dtype = None
+    assert chan.cast_dtype is None
+    assert chan.representation_code.value is None
+
+
+@pytest.mark.parametrize('dt', (np.float16, np.int64, np.bool_))
+def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: numpy_dtype_type) -> None:
+    with pytest.raises(ValueError, match="Dtype .* is not supported.*"):
+        chan.cast_dtype = dt
+
+
+@pytest.mark.parametrize('dt', (float, bool, object, 4.2, datetime.now()))
+def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: Any) -> None:
+    with pytest.raises(ValueError, match=".* is not a numpy dtype"):
+        chan.cast_dtype = dt
 
 
 def test_attribute_set_directly_error(chan: ChannelItem) -> None:
