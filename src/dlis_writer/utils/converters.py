@@ -5,6 +5,9 @@ from typing import Callable, Any, Iterable, Union, Optional
 from dlis_writer.utils.enums import RepresentationCode
 
 
+numpy_dtype_type = Union[np.dtype, type[np.generic]]
+
+
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:
     """Encode a string value as ASCII.
 
@@ -75,13 +78,24 @@ class ReprCodeConverter:
     }
 
     @classmethod
-    def determine_repr_code_from_numpy_dtype(cls, dt: np.dtype) -> RepresentationCode:
+    def validate_numpy_dtype(cls, number_type: numpy_dtype_type) -> tuple[str, RepresentationCode]:
+        if isinstance(number_type, np.dtype):
+            number_type_name = number_type.name
+        elif isinstance(number_type, type) and issubclass(number_type, np.generic):
+            number_type_name = number_type.__name__
+        else:
+            raise ValueError(f"{number_type} is not a numpy dtype")
+        if number_type_name not in ReprCodeConverter.numpy_dtypes_to_repr_codes:
+            raise ValueError(f"Dtype {number_type_name} is not supported; "
+                             f"allowed dtypes are: {', '.join(ReprCodeConverter.numpy_dtypes_to_repr_codes)}")
+
+        return number_type_name, cls.numpy_dtypes_to_repr_codes[number_type_name]
+
+    @classmethod
+    def determine_repr_code_from_numpy_dtype(cls, dt: numpy_dtype_type) -> RepresentationCode:
         """Determine representation code for a given numpy dtype."""
 
-        repr_code = cls.numpy_dtypes_to_repr_codes.get(dt.name, None)
-        if repr_code is None:
-            raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {dt}")
-        return repr_code
+        return cls.validate_numpy_dtype(dt)[1]
 
     @classmethod
     def determine_repr_code_from_generic_type(cls, t: type) -> RepresentationCode:

@@ -114,15 +114,7 @@ class SourceDataWrapper:
 
             # determine the numpy number dtype
             number_type = known_dtypes.get(dtype_name, dset_row0.dtype)
-            if isinstance(number_type, np.dtype):
-                number_type_name = number_type.name
-            elif isinstance(number_type, type) and issubclass(number_type, np.generic):
-                number_type_name = number_type.__name__
-            else:
-                raise ValueError(f"Type for dataset '{dtype_name}' is not a numpy dtype: gpt {number_type}")
-            if number_type_name not in ReprCodeConverter.numpy_dtypes_to_repr_codes:
-                raise ValueError(f"Dtype for dataset '{dtype_name}': {number_type_name} is not supported; "
-                                 f"allowed dtypes are: {', '.join(ReprCodeConverter.numpy_dtypes_to_repr_codes)}")
+            ReprCodeConverter.validate_numpy_dtype(number_type)
 
             # determine the dtype of the data set (2- or 3-tuple)
             dt = (dtype_name, number_type)

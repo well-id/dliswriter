@@ -6,7 +6,7 @@ from h5py import Dataset    # type: ignore  # untyped library
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
-from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.converters import ReprCodeConverter, numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
@@ -19,12 +19,14 @@ class ChannelItem(EFLRItem):
 
     parent: "ChannelSet"
 
-    def __init__(self, name: str, dataset_name: Optional[str] = None, **kwargs: Any) -> None:
+    def __init__(self, name: str, dataset_name: Optional[str] = None, cast_dtype: Optional[numpy_dtype_type] = None,
+                 **kwargs: Any) -> None:
         """Initialise ChannelItem.
 
         Args:
             name            :   Name of the ChannelItem.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
+            cast_dtype      :   Numpy data type the channel data should be cast to.
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
@@ -50,6 +52,9 @@ class ChannelItem(EFLRItem):
 
         self.set_defaults()
 
+        self._verify_cast_dtype(cast_dtype)
+        self._cast_dtype = cast_dtype
+
     @property
     def dataset_name(self) -> str:
         """Name of the data corresponding to this channel in the SourceDataWrapper."""
@@ -61,6 +66,24 @@ class ChannelItem(EFLRItem):
         """Set a new dataset name."""
 
         self._dataset_name = name
+
+    @property
+    def cast_dtype(self) -> Union[numpy_dtype_type, None]:
+        """Numpy data type the channel data will be cast to."""
+
+        return self._cast_dtype
+
+    @cast_dtype.setter
+    def cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        """Set or remove channel cast dtype."""
+
+        self._verify_cast_dtype(dt)
+        self._cast_dtype = dt
+    def _verify_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        if dt is None:
+            return
+
+        ReprCodeConverter.validate_numpy_dtype(dt)
 
     def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper) -> None:
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
