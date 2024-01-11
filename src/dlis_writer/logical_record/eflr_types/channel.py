@@ -30,11 +30,14 @@ class ChannelItem(EFLRItem):
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
+        self._cast_dtype = None  # need the attribute defined for representation code check
+
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.properties = Attribute(
             'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
         self.representation_code = Attribute(
-            'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT, parent_eflr=self)
+            'representation_code', converter=self.convert_and_validate_repr_code,
+            representation_code=RepC.USHORT, parent_eflr=self)
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
@@ -79,11 +82,16 @@ class ChannelItem(EFLRItem):
 
         self._verify_cast_dtype(dt)
         self._cast_dtype = dt
+
     def _verify_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
         if dt is None:
             return
 
-        ReprCodeConverter.validate_numpy_dtype(dt)
+        dtype_name, rc_from_dt = ReprCodeConverter.validate_numpy_dtype(dt)
+        if {current_rc := self.representation_code.value} is not None:
+            if current_rc is not rc_from_dt:
+                raise ValueError(f"The cast dtype {dtype_name} does not match the currently set representation code "
+                                 f"for the channel data: {current_rc}")
 
     def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper) -> None:
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
@@ -166,11 +174,26 @@ class ChannelItem(EFLRItem):
 
         return unit
 
-    @staticmethod
-    def convert_repr_code(rc: Union[RepC, str, int]) -> Union[RepC, None]:
-        """Retrieve a member of a RepresentationCode enum from the name or value (or the member itself)."""
+    def convert_and_validate_repr_code(self, rc: Union[RepC, str, int, None]) -> Union[RepC, None]:
+        """Retrieve a member of a RepresentationCode enum from the name or value (or the member itself).
 
-        return RepC.get_member(rc, allow_none=True)
+        Validate that the representation code matches a numpy dtype and does not conflict the currently set cast dtype.
+        """
+
+        valid_rc = RepC.get_member(rc, allow_none=True)  # if rc is None, valid_rc will be None too
+        if valid_rc is None:
+            return
+
+        dt_from_rc = ReprCodeConverter.repr_codes_to_numpy_dtypes.get(valid_rc, None)
+        if dt_from_rc is None:
+            raise ValueError(f"There is no numpy dtype corresponding to representation code {valid_rc}")
+
+        if self._cast_dtype:
+            if dt_from_rc != self._cast_dtype:
+                raise ValueError(f"The representation code {valid_rc} does not match the currently set cast dtype: "
+                                 f"{self._cast_dtype}")
+
+        return valid_rc
 
 
 class ChannelSet(EFLRSet):

@@ -107,7 +107,7 @@ def test_clearing_unit(chan: ChannelItem) -> None:
         ("FDOUBL", RepresentationCode.FDOUBL),
         ("USHORT", RepresentationCode.USHORT),
         (15, RepresentationCode.USHORT),
-        (RepresentationCode.UVARI, RepresentationCode.UVARI)
+        (RepresentationCode.SLONG, RepresentationCode.SLONG)
 ))
 def test_setting_repr_code(chan: ChannelItem, val: Union[str, int, RepresentationCode], repc: RepresentationCode)\
         -> None:
