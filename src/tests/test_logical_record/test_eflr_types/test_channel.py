@@ -143,6 +143,47 @@ def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: An
         chan.cast_dtype = dt
 
 
+@pytest.mark.parametrize('rc', (7, 'FSINGL', RepresentationCode.USHORT))
+def test_setting_repr_code_error(chan: ChannelItem, rc: Any) -> None:
+    with pytest.raises(RuntimeError, match="Representation code of channel should not be set directly.*"):
+        chan.representation_code.value = rc
+
+
+@pytest.mark.parametrize(('data', 'rc'), (
+    (np.arange(10).astype(np.int32), RepresentationCode.SLONG),
+    (np.random.rand(3).astype(np.float64), RepresentationCode.FDOUBL),
+    (np.zeros(2).astype(np.uint16), RepresentationCode.UNORM)
+))
+def test_setting_repr_code_from_data(chan: ChannelItem, data: np.ndarray, rc: RepresentationCode) -> None:
+    chan.cast_dtype = None
+
+    chan._set_repr_code_from_data(data)
+    assert chan.cast_dtype == data.dtype
+    assert chan.representation_code.value is rc
+
+
+@pytest.mark.parametrize(('dt', 'data', 'rc'), (
+    (np.int8, np.arange(10).astype(np.int16), RepresentationCode.SSHORT),
+    (np.float32, np.random.rand(3).astype(np.float64), RepresentationCode.FSINGL),
+    (np.int16, np.zeros(2).astype(np.uint16), RepresentationCode.SNORM),
+    (np.uint16, np.zeros(2).astype(np.int16), RepresentationCode.UNORM)
+))
+def test_setting_repr_code_from_data_mismatch(chan: ChannelItem, dt: numpy_dtype_type, data: np.ndarray,
+                                              rc: RepresentationCode, caplog: pytest.LogCaptureFixture) -> None:
+    chan.cast_dtype = dt
+    assert chan.cast_dtype == dt
+    assert chan.representation_code.value is rc
+
+    chan._set_repr_code_from_data(data)
+
+    assert f"Data will be cast from {data.dtype} to {dt}" in caplog.text
+
+    # not changed!
+    assert chan.cast_dtype != data.dtype
+    assert chan.cast_dtype == dt
+    assert chan.representation_code.value is rc
+
+
 def test_attribute_set_directly_error(chan: ChannelItem) -> None:
     """Test that a RuntimeError is raised if an attempt to set an Attribute directly is made."""
 

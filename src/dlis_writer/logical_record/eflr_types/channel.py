@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReprCodeAttribute(Attribute):
-    def __init__(self, parent_eflr: Optional[Union[EFLRSet, EFLRItem]] = None):
+    def __init__(self, parent_eflr: Optional[Union[EFLRSet, EFLRItem]] = None) -> None:
         super().__init__('representation_code', converter=self.no_set, representation_code=RepC.USHORT,
                          parent_eflr=parent_eflr)
 
