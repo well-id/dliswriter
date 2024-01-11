@@ -13,13 +13,13 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, eflr_types.Chan
         name="depth",
         dataset_name="/contents/depth",
         units="m",
-        representation_code="FDOUBL"
+        cast_dtype=np.float64
     )
 
     ch_rpm = df.add_channel(
         name="surface rpm",
         dataset_name="contents/rpm",
-        representation_code=7,
+        cast_dtype=np.float64,
         dimension=[1]
     )
 

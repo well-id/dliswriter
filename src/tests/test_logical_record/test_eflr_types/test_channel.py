@@ -1,6 +1,7 @@
 import pytest
 from _pytest.logging import LogCaptureFixture
 from typing import Union, Any
+import numpy as np
 
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
@@ -16,7 +17,7 @@ def test_channel_creation(axis1: AxisItem) -> None:
         dataset_name='amplitude',
         long_name='Amplitude channel',
         properties=["property1", "property 2 with multiple words"],
-        representation_code=RepresentationCode.FSINGL,
+        cast_dtype=np.float32,
         units='acre',
         dimension=12,
         element_limit=12,
@@ -102,26 +103,17 @@ def test_clearing_unit(chan: ChannelItem) -> None:
     assert chan.units.value is None
 
 
-@pytest.mark.parametrize(("val", "repc"), (
-        (7, RepresentationCode.FDOUBL),
-        ("FDOUBL", RepresentationCode.FDOUBL),
-        ("USHORT", RepresentationCode.USHORT),
-        (15, RepresentationCode.USHORT),
-        (RepresentationCode.SLONG, RepresentationCode.SLONG)
+@pytest.mark.parametrize(("dt", "repc"), (
+        (np.float64, RepresentationCode.FDOUBL),
+        (np.uint8, RepresentationCode.USHORT),
+        (np.int16, RepresentationCode.SNORM),
+        (np.int32, RepresentationCode.SLONG)
 ))
-def test_setting_repr_code(chan: ChannelItem, val: Union[str, int, RepresentationCode], repc: RepresentationCode)\
-        -> None:
-    """Test that representation code is correctly set, whether the name, value, or the enum member itself is passed."""
+def test_setting_cast_dtype(chan: ChannelItem, dt: type[np.generic], repc: RepresentationCode) -> None:
+    """Test that representation code is correctly set based on provided cast dtype."""
 
-    chan.representation_code.value = val
+    chan.cast_dtype = dt
     assert chan.representation_code.value is repc
-
-
-def test_clearing_repr_code(chan: ChannelItem) -> None:
-    """Test removing previously defined representation code."""
-
-    chan.representation_code.value = None
-    assert chan.representation_code.value is None
 
 
 def test_attribute_set_directly_error(chan: ChannelItem) -> None:

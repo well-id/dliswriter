@@ -94,8 +94,7 @@ def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem
         channel_name = dataset_name.split('/')[-1]
         ch = df.add_channel(
             channel_name,
-            dataset_name=dataset_name,
-            representation_code=ReprCodeConverter.determine_repr_code_from_numpy_dtype(dataset.dtype).value
+            dataset_name=dataset_name
         )
         channels.append(ch)
 

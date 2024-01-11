@@ -7,7 +7,7 @@ from datetime import timedelta
 import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import numpy_dtype_type
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
@@ -288,8 +288,8 @@ class DLISFile:
             name: str,
             data: Optional[np.ndarray] = None,
             dataset_name: Optional[str] = None,
+            cast_dtype: Optional[numpy_dtype_type] = None,
             long_name: Optional[str] = None,
-            representation_code: Optional[Union[str, int, RepresentationCode]] = None,
             dimension: Optional[Union[int, list[int]]] = None,
             element_limit: Optional[Union[int, list[int]]] = None,
             properties: Optional[list[str]] = None,
@@ -306,9 +306,9 @@ class DLISFile:
             data                :   Data associated with the channel.
             dataset_name        :   Name of the data array associated with the channel in the data source provided
                                     at init of DLISFile.
+            cast_dtype          :   Numpy data type the channel data should be cast to - e.g. np.float64, np.int32.
             long_name           :   Description of the channel.
             properties          :   List of properties of the channel.
-            representation_code :   Representation code for the channel data. Determined automatically if not provided.
             dimension           :   Dimension of the channel data. Determined automatically if not provided.
             element_limit       :   Element limit of the channel data. Determined automatically if not provided.
                                     Should be the same as dimension (in the current implementation of dlis_writer).
@@ -329,8 +329,8 @@ class DLISFile:
             name,
             long_name=long_name,
             dataset_name=dataset_name,
+            cast_dtype=cast_dtype,
             properties=properties,
-            representation_code=representation_code,
             dimension=dimension,
             element_limit=element_limit,
             units=units,
@@ -1166,7 +1166,7 @@ if __name__ == '__main__':
 
     n_rows = 100
     ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
+    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10), cast_dtype=np.int32)
     ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
     main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 

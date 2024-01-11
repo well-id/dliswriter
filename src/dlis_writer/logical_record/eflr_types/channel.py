@@ -1,5 +1,5 @@
 import logging
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, Self
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
@@ -12,6 +12,26 @@ from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
 logger = logging.getLogger(__name__)
+
+
+class ReprCodeAttribute(Attribute):
+    def __init__(self, parent_eflr: Optional[Union[EFLRSet, EFLRItem]] = None):
+        super().__init__('representation_code', converter=self.no_set, representation_code=RepC.USHORT,
+                         parent_eflr=parent_eflr)
+
+    def no_set(self, rc: Any) -> None:
+        """Do not allow setting repr code of channel directly."""
+
+        raise RuntimeError("Representation code of channel should not be set directly. Set `cast_dtype` instead.")
+
+    def set_from_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        if dt is None:
+            self._value = None
+        else:
+            self._value = ReprCodeConverter.determine_repr_code_from_numpy_dtype(dt)
+
+    def copy(self) -> Self:
+        return self.__class__()
 
 
 class ChannelItem(EFLRItem):
@@ -35,9 +55,7 @@ class ChannelItem(EFLRItem):
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.properties = Attribute(
             'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
-        self.representation_code = Attribute(
-            'representation_code', converter=self.convert_and_validate_repr_code,
-            representation_code=RepC.USHORT, parent_eflr=self)
+        self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
@@ -49,14 +67,12 @@ class ChannelItem(EFLRItem):
         self.maximum_value = NumericAttribute(
             'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
 
-        self._dataset_name: Union[str, None] = dataset_name
-
         super().__init__(name, **kwargs)
 
-        self.set_defaults()
+        self._dataset_name: Union[str, None] = dataset_name
+        self._set_cast_dtype(cast_dtype)
 
-        self._verify_cast_dtype(cast_dtype)
-        self._cast_dtype = cast_dtype
+        self.set_defaults()
 
     @property
     def dataset_name(self) -> str:
@@ -80,18 +96,14 @@ class ChannelItem(EFLRItem):
     def cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
         """Set or remove channel cast dtype."""
 
-        self._verify_cast_dtype(dt)
+        self._set_cast_dtype(dt)
+
+    def _set_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        if dt is not None:
+            ReprCodeConverter.validate_numpy_dtype(dt)
+
         self._cast_dtype = dt
-
-    def _verify_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
-        if dt is None:
-            return
-
-        dtype_name, rc_from_dt = ReprCodeConverter.validate_numpy_dtype(dt)
-        if {current_rc := self.representation_code.value} is not None:
-            if current_rc is not rc_from_dt:
-                raise ValueError(f"The cast dtype {dtype_name} does not match the currently set representation code "
-                                 f"for the channel data: {current_rc}")
+        self.representation_code.set_from_dtype(self.cast_dtype)
 
     def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper) -> None:
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
@@ -124,22 +136,12 @@ class ChannelItem(EFLRItem):
 
         dt = sub_data.dtype
 
-        suggested_rc = ReprCodeConverter.numpy_dtypes_to_repr_codes.get(dt.name, None)
-        current_rc = self.representation_code.value
-
-        if suggested_rc is None:
-            if not current_rc:
-                raise RuntimeError(f"Could not automatically convert dtype '{dt}' to a representation code; "
-                                   f"please specify the representation code for {self} manually")
+        if self.cast_dtype is not None:
+            if dt != self.cast_dtype:
+                logger.warning(f"Data will be cast from {dt} to {self.cast_dtype}")
             return
 
-        if current_rc:
-            if suggested_rc is not current_rc:
-                logger.warning(f"Representation code for {self} is {current_rc.name}, but according to the data "
-                               f"it should be {suggested_rc.name}")
-        else:
-            logger.debug(f"Setting representation code of {self} to {suggested_rc.name}")
-            self.representation_code.value = suggested_rc
+        self._set_cast_dtype(dt)
 
     def set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
@@ -173,27 +175,6 @@ class ChannelItem(EFLRItem):
             logger.warning(f"'{unit}' is not one of the allowed units")
 
         return unit
-
-    def convert_and_validate_repr_code(self, rc: Union[RepC, str, int, None]) -> Union[RepC, None]:
-        """Retrieve a member of a RepresentationCode enum from the name or value (or the member itself).
-
-        Validate that the representation code matches a numpy dtype and does not conflict the currently set cast dtype.
-        """
-
-        valid_rc = RepC.get_member(rc, allow_none=True)  # if rc is None, valid_rc will be None too
-        if valid_rc is None:
-            return
-
-        dt_from_rc = ReprCodeConverter.repr_codes_to_numpy_dtypes.get(valid_rc, None)
-        if dt_from_rc is None:
-            raise ValueError(f"There is no numpy dtype corresponding to representation code {valid_rc}")
-
-        if self._cast_dtype:
-            if dt_from_rc != self._cast_dtype:
-                raise ValueError(f"The representation code {valid_rc} does not match the currently set cast dtype: "
-                                 f"{self._cast_dtype}")
-
-        return valid_rc
 
 
 class ChannelSet(EFLRSet):

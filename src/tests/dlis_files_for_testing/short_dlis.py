@@ -47,7 +47,7 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.Ch
         dataset_name="image1",
         long_name="Some not so very long channel name",
         properties=["property1", "property 2 with multiple words"],
-        representation_code=2,
+        cast_dtype=np.float32,
         units="acre",
         dimension=12,
         axis=ax1,

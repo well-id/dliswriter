@@ -13,20 +13,20 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
         name="posix time",
         dataset_name="/contents/time",
         units="s",
-        representation_code=7,
+        cast_dtype=np.float64,
         dimension=[1]
     )
 
     ch_rpm = df.add_channel(
         name="surface rpm",
         dataset_name="contents/rpm",
-        representation_code=7
+        cast_dtype=np.float64,
     )
 
     ch_amp = df.add_channel(
         name="amplitude",
         dataset_name="contents/image0",
-        representation_code=2
+        cast_dtype=np.float32
     )
 
     ch_radius = df.add_channel(
@@ -34,7 +34,7 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
         dataset_name="/contents/image1",
         dimension=[128],
         units="in",
-        representation_code="FSINGL"
+        cast_dtype=np.float32
     )
 
     ch_radius_pooh = df.add_channel(
@@ -42,7 +42,7 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
         dataset_name="contents/image2",
         dimension=[128],
         units="m",
-        representation_code=2
+        cast_dtype=np.float32
     )
 
     return ch_time, ch_rpm, ch_amp, ch_radius, ch_radius_pooh
