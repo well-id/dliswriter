@@ -148,4 +148,34 @@ def test_all_numpy_dtypes(new_dlis_path: Path, data_arr: np.ndarray) -> None:
     with load_dlis(new_dlis_path) as f:
         ch = select_channel(f, 'data')
         assert ch.dimension == [data_arr.shape[-1]]
+        assert ch.curves().dtype == data_arr.dtype
         assert (ch.curves() == data_arr).all()
+
+
+@pytest.mark.parametrize(('data_arr', 'cast_dtype', 'rc'), (
+    (np.random.randint(-10, 30, (10, 3)), np.float64, 7),
+    (np.random.rand(30, 10) + 20, np.float32, 2),
+    (np.random.randint(0, 2**16, size=(2, 30), dtype=np.uint16), np.uint32, 17),
+    (1024 * np.random.rand(100), np.uint16, 16),
+    (30 * np.random.rand(128, 10), np.uint8, 15),
+    (np.random.randint(-2**16, 2**16, size=100), np.int32, 14),
+    (100 * np.random.rand(20) - 30, np.int16, 13),
+    (50 * np.random.rand(12, 13) - 40, np.int8, 12)
+))
+def test_numpy_dtypes_with_casting(new_dlis_path: Path, data_arr: np.ndarray, cast_dtype: type[np.generic],
+                                   rc: int) -> None:
+
+    data_arr = np.atleast_2d(data_arr)
+    data_dict = {
+        'index': np.arange(data_arr.shape[0]).astype(np.float64),
+        'data': data_arr
+    }
+
+    write_dlis_from_dict(new_dlis_path, data_dict=data_dict, channel_kwargs={'data': {'cast_dtype': cast_dtype}})
+
+    with load_dlis(new_dlis_path) as f:
+        ch = select_channel(f, 'data')
+        assert ch.dimension == [data_arr.shape[-1]]
+        assert ch.reprc == rc
+        assert ch.curves().dtype == cast_dtype
+        assert (ch.curves() == data_arr.astype(cast_dtype)).all()
