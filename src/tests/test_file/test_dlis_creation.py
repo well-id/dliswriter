@@ -1,11 +1,12 @@
 import h5py    # type: ignore  # untyped library
 import pytest
 from pathlib import Path
+import numpy as np
 
 from dlis_writer.misc.dlis_file_comparator import compare
 
 from tests.common import N_COLS, load_dlis, select_channel
-from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis
+from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis, dlis_from_dict
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_data_path: Path,
@@ -122,3 +123,28 @@ def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, ne
         check_contents('amplitude', '/contents/image0')
         check_contents('radius', '/contents/image1')
         check_contents('radius_pooh', '/contents/image2')
+
+
+@pytest.mark.parametrize('data_arr', (
+    np.random.rand(100).astype(np.float64),
+    np.random.rand(10, 20).astype(np.float64),
+    np.random.rand(30, 10).astype(np.float32),
+    np.random.randint(0, 2**8, size=15, dtype=np.uint8),
+    np.random.randint(-2**16, 2**16-1, size=280, dtype=np.int32),
+    np.random.randint(-2**15, 2**15-1, size=33, dtype=np.int16),
+    np.random.randint(-2**7, 2**7-1, size=(12, 13), dtype=np.int8)
+))
+def test_all_numpy_dtypes(new_dlis_path: Path, data_arr: np.ndarray) -> None:
+
+    data_arr = np.atleast_2d(data_arr)
+    data_dict = {
+        'index': np.arange(data_arr.shape[0]).astype(np.float64),
+        'data': data_arr
+    }
+
+    dlis_from_dict(new_dlis_path, data_dict=data_dict)
+
+    with load_dlis(new_dlis_path) as f:
+        ch = select_channel(f, 'data')
+        assert ch.dimension == [data_arr.shape[-1]]
+        assert (ch.curves() == data_arr).all()
