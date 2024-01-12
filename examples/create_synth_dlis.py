@@ -37,7 +37,7 @@ ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5])
 # define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
 ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10, units='m')     # index channel - always scalar
-ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(float), axis=ax1)  # 1D data
+ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32), axis=ax1)  # 1D data
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5))    # image channel - 2D data
 ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.rand(n_rows_depth))
 main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_type='BOREHOLE-DEPTH')

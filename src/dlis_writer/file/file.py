@@ -1087,14 +1087,14 @@ class DLISFile:
         if isinstance(data, dict):
             self._data_dict = self._data_dict | data
             data_object = DictDataWrapper(self._data_dict, mapping=fr.channel_name_mapping,
-                                          known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
+                                          known_dtypes=fr.known_channel_dtypes_mapping, from_idx=from_idx, to_idx=to_idx)
         else:
             if self._data_dict:
                 raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
                                 f"(Note: a dictionary is the only allowed type because some channels have been added"
                                 f"with associated data arrays")
             data_object = SourceDataWrapper.make_wrapper(
-                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping,
+                data, mapping=fr.channel_name_mapping, known_dtypes=fr.known_channel_dtypes_mapping,
                 from_idx=from_idx, to_idx=to_idx
             )
 
