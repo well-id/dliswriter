@@ -19,7 +19,7 @@ def _add_channels(df: DLISFile, data_dict: dict) -> tuple[eflr_types.ChannelItem
     return tuple(channels)
 
 
-def dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict) -> None:
+def write_dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict) -> None:
     df = DLISFile(
         origin=make_origin(),
         file_header=make_file_header(),

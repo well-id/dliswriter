@@ -6,7 +6,7 @@ import numpy as np
 from dlis_writer.misc.dlis_file_comparator import compare
 
 from tests.common import N_COLS, load_dlis, select_channel
-from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis, dlis_from_dict
+from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis, write_dlis_from_dict
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_data_path: Path,
@@ -127,12 +127,13 @@ def test_channel_curves(reference_data_path: Path, reference_data: h5py.File, ne
 
 @pytest.mark.parametrize('data_arr', (
     np.random.rand(100).astype(np.float64),
-    np.random.rand(10, 20).astype(np.float64),
     np.random.rand(30, 10).astype(np.float32),
+    np.random.randint(0, 2**32, size=(2, 30), dtype=np.uint32),
+    np.random.randint(0, 2**16, size=(100, 5), dtype=np.uint16),
     np.random.randint(0, 2**8, size=15, dtype=np.uint8),
-    np.random.randint(-2**16, 2**16-1, size=280, dtype=np.int32),
-    np.random.randint(-2**15, 2**15-1, size=33, dtype=np.int16),
-    np.random.randint(-2**7, 2**7-1, size=(12, 13), dtype=np.int8)
+    np.random.randint(-2**16, 2**16, size=280, dtype=np.int32),
+    np.random.randint(-2**15, 2**15, size=33, dtype=np.int16),
+    np.random.randint(-2**7, 2**7, size=(12, 13), dtype=np.int8)
 ))
 def test_all_numpy_dtypes(new_dlis_path: Path, data_arr: np.ndarray) -> None:
 
@@ -142,7 +143,7 @@ def test_all_numpy_dtypes(new_dlis_path: Path, data_arr: np.ndarray) -> None:
         'data': data_arr
     }
 
-    dlis_from_dict(new_dlis_path, data_dict=data_dict)
+    write_dlis_from_dict(new_dlis_path, data_dict=data_dict)
 
     with load_dlis(new_dlis_path) as f:
         ch = select_channel(f, 'data')
