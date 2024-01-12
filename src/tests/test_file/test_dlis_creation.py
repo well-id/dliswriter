@@ -1,25 +1,11 @@
-import os
 import h5py    # type: ignore  # untyped library
 import pytest
 from pathlib import Path
-from typing import Generator
 
 from dlis_writer.misc.dlis_file_comparator import compare
 
 from tests.common import N_COLS, load_dlis, select_channel
 from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis
-
-
-@pytest.fixture
-def new_dlis_path(base_data_path: Path) -> Generator:
-    """Path for a new DLIS file to be created. The file is removed afterwards."""
-
-    new_path = base_data_path/'outputs/new_fake_dlis.DLIS'
-    os.makedirs(new_path.parent, exist_ok=True)
-    yield new_path
-
-    if new_path.exists():  # does not exist if file creation failed
-        os.remove(new_path)
 
 
 def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_data_path: Path,

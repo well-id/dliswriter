@@ -76,6 +76,18 @@ def short_dlis(short_reference_data_path: Path, base_data_path: Path) -> Generat
 
 
 @pytest.fixture
+def new_dlis_path(base_data_path: Path) -> Generator:
+    """Path for a new DLIS file to be created. The file is removed afterwards."""
+
+    new_path = base_data_path/'outputs/new_fake_dlis.DLIS'
+    os.makedirs(new_path.parent, exist_ok=True)
+    yield new_path
+
+    if new_path.exists():  # does not exist if file creation failed
+        os.remove(new_path)
+
+
+@pytest.fixture
 def channel1() -> eflr_types.ChannelItem:
     return eflr_types.ChannelItem("Channel 1")
 

@@ -1,8 +1,12 @@
 import numpy as np
 import pytest
+from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.utils.converters import ReprCodeConverter
+
+from tests.dlis_files_for_testing.dict_based_dlis import write_dict_based_dlis
+from tests.common import load_dlis, select_channel
 
 
 def _check_conversion(arr: np.ndarray, rc: RepresentationCode) -> None:
@@ -47,4 +51,30 @@ def test_unsigned_ints(data):
     _check_conversion(data.astype(np.uint32), RepresentationCode.ULONG)
     _check_conversion(data.astype(np.uint16), RepresentationCode.UNORM)
     _check_conversion(data.astype(np.uint8), RepresentationCode.USHORT)
+
+
+@pytest.mark.parametrize('data_arr', (
+    np.random.rand(100).astype(np.float64),
+    np.random.rand(10, 20).astype(np.float64),
+    np.random.rand(30, 10).astype(np.float32),
+    np.random.randint(0, 2**8, size=15, dtype=np.uint8),
+    np.random.randint(-2**16, 2**16-1, size=280, dtype=np.int32),
+    np.random.randint(-2**15, 2**15-1, size=33, dtype=np.int16),
+    np.random.randint(-2**7, 2**7-1, size=(12, 13), dtype=np.int8)
+))
+def test_all_types(new_dlis_path: Path, data_arr: np.ndarray):
+
+    data_arr = np.atleast_2d(data_arr)
+    data_dict = {
+        'index': np.arange(data_arr.shape[0]).astype(np.float64),
+        'data': data_arr
+    }
+
+    write_dict_based_dlis(new_dlis_path, data_dict=data_dict)
+
+    with load_dlis(new_dlis_path) as f:
+        ch = select_channel(f, 'data')
+        assert ch.dimension == [data_arr.shape[-1]]
+        assert (ch.curves() == data_arr).all()
+
 
