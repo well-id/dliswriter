@@ -134,11 +134,8 @@ class FrameItem(EFLRItem):
         return {ch.name: ch.dataset_name for ch in self.channels.value}
 
     @property
-    def channel_dtype_mapping(self) -> dict:
-        def get_dtype(rc: Union[RepC, None]) -> type[object]:
-            return ReprCodeConverter.get_dtype(rc, RepC.FDOUBL)
-
-        return {ch.name: get_dtype(ch.representation_code.value) for ch in self.channels.value}
+    def known_channel_dtypes_mapping(self) -> dict:
+        return {ch.name: ch.cast_dtype for ch in self.channels.value if ch.cast_dtype is not None}
 
 
 class FrameSet(EFLRSet):
