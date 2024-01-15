@@ -3,11 +3,32 @@ from pathlib import Path
 import os
 from typing import Generator
 from dlisio import dlis
+import numpy as np
 
 from dlis_writer.file.file import DLISFile
 
 from tests.common import load_dlis
 from tests.dlis_files_for_testing.double_frame_dlis import write_double_frame_dlis
+
+
+@pytest.fixture(scope='session')
+def double_frame_data() -> tuple[dict, dict]:
+    n_rows_1 = 100
+    n_rows_2 = 200
+
+    frame1_data = {
+        'DEPTH': np.arange(n_rows_1),
+        'RPM': 10 * np.random.rand(n_rows_1),
+        'AMPLITUDE': np.random.rand(n_rows_1, 10),
+    }
+
+    frame2_data = {
+        'DEPTH': np.arange(n_rows_2) / 10,
+        'RPM': (np.arange(n_rows_2) % 10).astype(np.int32),
+        'AMPLITUDE': np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6
+    }
+
+    return frame1_data, frame2_data
 
 
 @pytest.fixture(scope='session')
@@ -20,8 +41,8 @@ def double_frame_dlis_path(base_data_path: Path) -> Generator:
 
 
 @pytest.fixture(scope='session')
-def double_frame_dlis(double_frame_dlis_path: Path) -> Generator:
-    df = write_double_frame_dlis(double_frame_dlis_path)
+def double_frame_dlis(double_frame_dlis_path: Path, double_frame_data: tuple[dict, dict]) -> Generator:
+    df = write_double_frame_dlis(double_frame_dlis_path, *double_frame_data)
     yield df
 
 
