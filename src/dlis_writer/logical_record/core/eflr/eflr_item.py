@@ -39,9 +39,15 @@ class EFLRItem:
         self.parent.register_item(self)
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
-        self.copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
+        self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
 
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
+
+    @property
+    def copy_number(self) -> int:
+        """Copy number of this EFLRItem."""
+
+        return self._copy_number
 
     def _compute_copy_number(self) -> int:
         """Compute copy number of this ELFRItem, i.e. how many other objects of the same type and name there are."""
