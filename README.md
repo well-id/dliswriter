@@ -36,6 +36,10 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
+##### 0.0.6 Representation codes
+Fixed representation codes for numpy dtypes.
+Tests & improvements for utils (repr code converter, source data wrappers, etc.).
+
 ##### 0.0.5: Cleanup
 Some name changes, restructuring. Updated README.
 
