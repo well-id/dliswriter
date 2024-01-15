@@ -120,6 +120,15 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return self._eflr_item_list[:]  # copy
 
+    def get_all_eflr_items_from_all_sets(self) -> list[EFLRItem]:
+        """Return a list of all EFLRItem instances registered with all EFLRSet instances of this type."""
+
+        s = []
+        for eflr_set in self.get_all_sets():
+            s.extend(eflr_set.get_all_eflr_items())
+
+        return s
+
     @property
     def n_items(self) -> int:
         """Number of EFLRItem instances registered with this EFLRSet instance."""
