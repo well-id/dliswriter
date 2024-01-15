@@ -1,7 +1,7 @@
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
 
 
-def test_from_config():
+def test_from_config() -> None:
     """Test creating LongNameObject."""
 
     t = 'SOME ASCII TEXT'

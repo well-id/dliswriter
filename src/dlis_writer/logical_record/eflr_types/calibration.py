@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
@@ -17,7 +18,7 @@ class CalibrationMeasurementItem(EFLRItem):
 
     parent: "CalibrationMeasurementSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise CalibrationMeasurementItem.
 
         Args:
@@ -58,7 +59,7 @@ class CalibrationCoefficientItem(EFLRItem):
 
     parent: "CalibrationCoefficientSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise CalibrationCoefficientItem.
 
         Args:
@@ -88,7 +89,7 @@ class CalibrationItem(EFLRItem):
 
     parent: "CalibrationSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise CalibrationItem.
 
         Args:

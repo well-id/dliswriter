@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
@@ -13,7 +14,7 @@ class GroupItem(EFLRItem):
 
     parent: "GroupSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise GroupItem.
 
         Args:

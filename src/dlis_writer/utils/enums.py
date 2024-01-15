@@ -59,10 +59,21 @@ class RepresentationCode(int, Enum):
     ATTREF = 25, None
     STATUS = 26, Struct('>B')
 
-    def convert(self, value: Any):
+    def convert(self, value: Any) -> bytes:
         if self.converter is None:
             raise RuntimeError("Converter struct not defined; cannot directly convert the value to bytes")
         return self.converter.pack(value)
+
+    def decode_bytes(self, value: bytes) -> tuple[Any]:
+        if self.converter is None:
+            raise RuntimeError("Converter struct not defined; cannot directly decode the bytes")
+
+        s = self.converter.size
+        v = len(value)
+        if v % s:
+            raise ValueError(f"Size of the provided bytes must be an integer multiple of {s}; got {v}")
+
+        return tuple(self.converter.unpack(value[i*s:(i+1)*s])[0] for i in range(v//s))
 
     @classmethod
     def get_member(cls, v: Union[str, int, None, Self], allow_none: bool = False) -> Union[Self, None]:

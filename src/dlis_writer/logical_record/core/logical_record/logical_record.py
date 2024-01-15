@@ -1,6 +1,6 @@
 from abc import abstractmethod
 import logging
-from typing import Union
+from typing import Union, Any
 
 from dlis_writer.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
 from dlis_writer.utils.enums import RepresentationCode, EFLRType, IFLRType
@@ -19,7 +19,7 @@ class LRMeta(type):
     logical_record_type: Union[EFLRType, IFLRType]
     _lr_type_struct: bytes
 
-    def __new__(cls, *args, **kwargs):
+    def __new__(cls, *args: Any, **kwargs: Any):
         """Create a new LogicalRecord (sub)class.
 
         Add a class-level attribute _lr_type_struct to be set when the value is first accessed through the corresponding
@@ -45,7 +45,7 @@ class LogicalRecord(metaclass=LRMeta):
     is_eflr: bool = NotImplemented  #: indication whether this is an explicitly or indirectly formatted LR
     logical_record_type: Union[EFLRType, IFLRType] = NotImplemented  #: int-enum denoting type of the logical record
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a LogicalRecord."""
 
         pass

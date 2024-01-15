@@ -45,7 +45,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return f"{self.__class__.__name__} {repr(self.set_name)}"
 
-    def clear_eflr_item_dict(self):
+    def clear_eflr_item_dict(self) -> None:
         """Remove all references to EFLRItem instances from the internal dictionary."""
 
         self._eflr_item_dict.clear()
@@ -57,7 +57,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         return self._origin_reference
 
     @origin_reference.setter
-    def origin_reference(self, val: int):
+    def origin_reference(self, val: int) -> None:
         """Set a new origin reference of the EFLRSet instance and all EFLRItem instances registered with it."""
 
         self._origin_reference = val
@@ -111,7 +111,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return self._eflr_item_dict.get(name, *args)
 
-    def register_item(self, child: EFLRItem):
+    def register_item(self, child: EFLRItem) -> None:
         """Register a child EFLRItem with this EFLRSet."""
 
         if not isinstance(child, self.item_type):
@@ -137,7 +137,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         return len(self._eflr_item_dict)
 
     @classmethod
-    def clear_set_instance_dict(cls):
+    def clear_set_instance_dict(cls) -> None:
         """Remove all instances of the EFLRSet (sub)class from the internal dictionary."""
 
         if cls._eflr_set_instance_dict:

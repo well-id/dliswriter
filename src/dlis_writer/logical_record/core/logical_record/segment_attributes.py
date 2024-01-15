@@ -35,7 +35,7 @@ class SegmentAttributes:
         return self._value[7]
 
     @has_padding.setter
-    def has_padding(self, b: bool):
+    def has_padding(self, b: bool) -> None:
         """Set whether the described segment has a padding byte added."""
 
         self._value[7] = b
@@ -47,7 +47,7 @@ class SegmentAttributes:
 
 
 @lru_cache
-def ushort(v):
+def ushort(v: int) -> bytes:
     """Transform a number to bytes using USHORT format. Cache the results for future calls."""
 
-    return RepresentationCode.USHORT.converter.pack(v)
+    return RepresentationCode.USHORT.convert(v)

@@ -1,4 +1,5 @@
 import pytest
+from typing import Any
 
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, EquipmentItem
 
@@ -8,7 +9,7 @@ from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, Equipm
         ("EQ2", 0, "5559101-21391"),
         ("EqX", 1, "12311")
 ))
-def test_creation(name: str, status: int, serial_number: str):
+def test_creation(name: str, status: int, serial_number: str) -> None:
     """Check that EquipmentObject instances are correctly created from config."""
 
     eq = EquipmentItem(
@@ -27,7 +28,7 @@ def test_creation(name: str, status: int, serial_number: str):
     assert eq.parent.set_name is None
 
 
-def test_params_and_units():
+def test_params_and_units() -> None:
     """Check setting up EquipmentObject's parameters and units."""
 
     eq = EquipmentItem(
@@ -58,7 +59,7 @@ def test_params_and_units():
         }
     )
 
-    def check(name, val, unit):
+    def check(name: str, val: Any, unit: str) -> None:
         attr = getattr(eq, name)
         assert attr.value == val
         assert attr.units == unit

@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class FileLogicalRecords:
     """Collection of logical records to constitute a DLIS file."""
 
-    def __init__(self, sul: StorageUnitLabel, fh: eflr_types.FileHeaderSet, orig: eflr_types.OriginSet):
+    def __init__(self, sul: StorageUnitLabel, fh: eflr_types.FileHeaderSet, orig: eflr_types.OriginSet) -> None:
         """Initialise FileLogicalRecords object.
 
         Args:
@@ -36,7 +36,7 @@ class FileLogicalRecords:
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[typing.Union[EFLRSet, NoFormatFrameData]] = []
 
-    def set_origin_reference(self, value: int):
+    def set_origin_reference(self, value: int) -> None:
         """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
 
         self._file_header.origin_reference = value
@@ -68,7 +68,7 @@ class FileLogicalRecords:
         return self._storage_unit_label, self._file_header, self._origin
 
     @staticmethod
-    def _check_type(value: typing.Any, expected_type: type):
+    def _check_type(value: typing.Any, expected_type: type) -> None:
         """Check that the provided value is an instance of the expected type.
 
         Args:
@@ -83,7 +83,7 @@ class FileLogicalRecords:
             raise TypeError(f"Expected an instance of {expected_type.__name__}; got {type(value)}")
 
     @staticmethod
-    def _check_types(values: typing.Iterable, expected_type: typing.Union[type, tuple[type, ...]]):
+    def _check_types(values: typing.Iterable, expected_type: typing.Union[type, tuple[type, ...]]) -> None:
         """Check that the provided values are all instances of the expected type.
 
         Args:
@@ -100,7 +100,7 @@ class FileLogicalRecords:
             raise TypeError(f"Expected only {' / '.join(t.__name__ for t in expected_type)} objects; "
                             f"got {', '.join(type(v).__name__ for v in values)}")
 
-    def add_channels(self, *channels: eflr_types.ChannelSet):
+    def add_channels(self, *channels: eflr_types.ChannelSet) -> None:
         """Add Channel logical records to the collection."""
 
         self._check_types(channels, eflr_types.ChannelSet)
@@ -112,7 +112,7 @@ class FileLogicalRecords:
 
         return self._frames
 
-    def add_frames(self, *frames: eflr_types.FrameSet):
+    def add_frames(self, *frames: eflr_types.FrameSet) -> None:
         """Add Frame logical records to the collection."""
 
         self._check_types(frames, eflr_types.FrameSet)
@@ -124,7 +124,7 @@ class FileLogicalRecords:
 
         return self._frame_data_objects
 
-    def add_frame_data_objects(self, *fds: MultiFrameData):
+    def add_frame_data_objects(self, *fds: MultiFrameData) -> None:
         """Add MultiFrameData objects (collections of FrameData objects) to the collection."""
 
         self._check_types(fds, MultiFrameData)
@@ -138,7 +138,7 @@ class FileLogicalRecords:
         Adds the lengths of all added MultiFrameData objects - i.e. FrameData records that will be generated from them.
         """
 
-        def get_len(lr_list):
+        def get_len(lr_list: list) -> int:
             return sum(lr.n_items for lr in lr_list)
 
         len_channels = get_len(self._channels)                          # number of Channel EFLRs
@@ -147,7 +147,7 @@ class FileLogicalRecords:
         len_data = sum(len(mfd) for mfd in self.frame_data_objects)     # number of FrameData objects to be generated
         return len(self.header_records) + len_channels + len_frames + len_data + len_other  # total length
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Generator:
         """Iterate over all logical records defined in the object.
 
         Yields: StorageUnitLabel, EFLR, and IFLR objects.
@@ -162,20 +162,20 @@ class FileLogicalRecords:
 
         yield from self._other_logical_records
 
-    def add_logical_records(self, *lrs: typing.Union[EFLRSet, NoFormatFrameData]):
+    def add_logical_records(self, *lrs: typing.Union[EFLRSet, NoFormatFrameData]) -> None:
         """Add other EFLR objects (other than Channel, Frame, Origin, FileHeader) to the collection."""
 
         self._check_types(lrs, (EFLRSet, NoFormatFrameData))
         self._other_logical_records.extend(lrs)
 
-    def check_objects(self):
+    def check_objects(self) -> None:
         """Check that the collection contains all required objects in the required (min/max) numbers.
 
         Raises:
             RuntimeError    :   If not enough or too many of any of the required object types are defined.
         """
 
-        def verify_n(names: list[str], class_name: str, exactly_one: bool = False):
+        def verify_n(names: list[str], class_name: str, exactly_one: bool = False) -> None:
             """Check that at least one (or exactly one, if the corresponding flag is True) objects are defined.
 
             Args:
@@ -192,13 +192,13 @@ class FileLogicalRecords:
                 raise RuntimeError(f"Expected exactly one {class_name}Object, got {n} with names: "
                                    f"{', '.join(repr(n) for n in names)}")
 
-        def check(eflr: EFLRSet, exactly_one: bool = False):
+        def check(eflr: EFLRSet, exactly_one: bool = False) -> None:
             """Check that at least/exactly one EFLRObject is defined for the provided EFLR."""
 
             names = [o.name for o in eflr.get_all_eflr_items()]
             verify_n(names, eflr.__class__.__name__, exactly_one=exactly_one)
 
-        def check_list(eflr_list: list[EFLRSet], class_name: str):
+        def check_list(eflr_list: typing.Sequence[EFLRSet], class_name: str) -> None:
             """Check that at least one EFLRObject is defined across the list of EFLRs of the given type."""
 
             names: list[str] = []
@@ -213,7 +213,7 @@ class FileLogicalRecords:
 
         self._check_channels()
 
-    def _check_channels(self):
+    def _check_channels(self) -> None:
         """Check that all defined ChannelObject instances are assigned to at least one FrameObject.
 
         Issues a warning in the logs if the condition is not fulfilled (possible issues with opening file in DeepView).

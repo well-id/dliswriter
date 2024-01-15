@@ -37,7 +37,7 @@ def make_parser() -> ArgumentParser:
     return parser
 
 
-def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
+def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace) -> None:
     """Generate synthetic data and store it in a HDF5 file.
 
     Args:
@@ -58,7 +58,7 @@ def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace):
     )
 
 
-def main():
+def main() -> None:
     install_logger(logger)
 
     pargs = make_parser().parse_args()

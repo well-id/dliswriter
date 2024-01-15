@@ -1,7 +1,7 @@
 import logging
 from numbers import Number
 from datetime import datetime
-from typing import Union, Optional
+from typing import Union, Optional, Any
 from typing_extensions import Self
 
 from .attribute import Attribute
@@ -21,7 +21,7 @@ class EFLRAttribute(Attribute):
     """
 
     def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None,
-                 representation_code: Optional[RepC] = None, **kwargs):
+                 representation_code: Optional[RepC] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
 
         Args:
@@ -59,7 +59,7 @@ class EFLRAttribute(Attribute):
             object_class=self._object_class
         )
 
-    def _convert_value(self, v: type[EFLRItem]):
+    def _convert_value(self, v: type[EFLRItem]) -> type[EFLRItem]:
         """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
 
         object_class = self._object_class.item_type if self._object_class else EFLRItem
@@ -77,7 +77,7 @@ class DTimeAttribute(Attribute):
         """Error raised if a provided string does not match any of the allowed formats."""
         pass
 
-    def __init__(self, *args, allow_float: bool = False, **kwargs):
+    def __init__(self, *args: Any, allow_float: bool = False, **kwargs: Any) -> None:
         """Initialise a DTimeAttribute.
 
         Args:
@@ -143,7 +143,7 @@ class DTimeAttribute(Attribute):
 class NumericAttribute(Attribute):
     """Model an attribute which can only have numerical values."""
 
-    def __init__(self, *args, int_only: bool = False, float_only: bool = False, **kwargs):
+    def __init__(self, *args: Any, int_only: bool = False, float_only: bool = False, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
 
         Args:
@@ -166,7 +166,7 @@ class NumericAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_number
 
-    def copy(self):
+    def copy(self) -> Self:
         """Create a copy of the attribute instance."""
 
         return self.__class__(
@@ -187,7 +187,7 @@ class NumericAttribute(Attribute):
         return super().representation_code
 
     @representation_code.setter
-    def representation_code(self, rc: Union[RepC, str, int]):
+    def representation_code(self, rc: Union[RepC, str, int]) -> None:
         """Set a new representation code for the attribute. Check that the code refers to numerical values."""
 
         self._set_representation_code(rc)
@@ -198,7 +198,7 @@ class NumericAttribute(Attribute):
             else:
                 self._value = self._convert_number(self._value)
 
-    def _check_repr_code_numeric(self, rc: Union[RepC, None]):
+    def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""
 
         if rc is None:
@@ -257,7 +257,7 @@ class NumericAttribute(Attribute):
 class DimensionAttribute(NumericAttribute):
     """Model an attribute expressing dimensions (e.g. dimension or element_limit of Channel)."""
 
-    def __init__(self, *args, representation_code=RepC.UVARI, **kwargs):
+    def __init__(self, *args: Any, representation_code: RepC = RepC.UVARI, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
 
         Args:
@@ -284,7 +284,7 @@ class DimensionAttribute(NumericAttribute):
 class StatusAttribute(Attribute):
     """Model an attribute which can only have value 1 or 0."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a StatusAttribute.
 
         Args:
@@ -296,11 +296,12 @@ class StatusAttribute(Attribute):
             if name in kwargs:
                 raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
 
-        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)
+        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)  # type: ignore
+        # ^ no, representation_code is not passed multiple times
         self._converter = self.convert_status
 
     @staticmethod
-    def convert_status(val: Union[bool, int, float]):
+    def convert_status(val: Union[bool, int, float]) -> int:
         """Convert a provided value to 1 or 0."""
 
         if isinstance(val, bool):
@@ -315,7 +316,7 @@ class StatusAttribute(Attribute):
 
         return val
 
-    def copy(self):
+    def copy(self) -> Self:
         """Create a copy of the attribute instance."""
 
         return self.__class__(

@@ -12,7 +12,8 @@ from dlis_writer.logical_record.core.eflr import EFLRItem
         ("MultiGroup", "Group of groups", "GROUP", None, [], ["channel_group", "process_group"])
 ))
 def test_group_params(name: str, description: str, object_type: str,
-                      object_class: type[EFLRItem], object_names: list[str], group_names: list[str], request):
+                      object_class: type[EFLRItem], object_names: list[str], group_names: list[str],
+                      request: pytest.FixtureRequest) -> None:
     """Test creating GroupObject."""
 
     g = GroupItem(

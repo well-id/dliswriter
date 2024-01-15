@@ -1,12 +1,12 @@
 import logging
-from typing import Union, Optional
+from typing import Union, Optional, Any, Self
 import numpy as np
 from h5py import Dataset    # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
-from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.converters import ReprCodeConverter, numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
@@ -14,25 +14,48 @@ from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 logger = logging.getLogger(__name__)
 
 
+class ReprCodeAttribute(Attribute):
+    def __init__(self, parent_eflr: Optional[Union[EFLRSet, EFLRItem]] = None) -> None:
+        super().__init__('representation_code', converter=self.no_set, representation_code=RepC.USHORT,
+                         parent_eflr=parent_eflr)
+
+    def no_set(self, rc: Any) -> None:
+        """Do not allow setting repr code of channel directly."""
+
+        raise RuntimeError("Representation code of channel should not be set directly. Set `cast_dtype` instead.")
+
+    def set_from_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        if dt is None:
+            self._value = None
+        else:
+            self._value = ReprCodeConverter.determine_repr_code_from_numpy_dtype(dt)
+
+    def copy(self) -> Self:
+        return self.__class__()
+
+
 class ChannelItem(EFLRItem):
     """Model an object being part of Channel EFLR."""
 
     parent: "ChannelSet"
 
-    def __init__(self, name, dataset_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, dataset_name: Optional[str] = None, cast_dtype: Optional[numpy_dtype_type] = None,
+                 **kwargs: Any) -> None:
         """Initialise ChannelItem.
 
         Args:
             name            :   Name of the ChannelItem.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
+            cast_dtype      :   Numpy data type the channel data should be cast to.
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
+
+        self._cast_dtype = None  # need the attribute defined for representation code check
 
         self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
         self.properties = Attribute(
             'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
-        self.representation_code = Attribute(
-            'representation_code', converter=self.convert_repr_code, representation_code=RepC.USHORT, parent_eflr=self)
+        self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = Attribute(
             'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
@@ -44,9 +67,10 @@ class ChannelItem(EFLRItem):
         self.maximum_value = NumericAttribute(
             'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
 
-        self._dataset_name: Union[str, None] = dataset_name
-
         super().__init__(name, **kwargs)
+
+        self._dataset_name: Union[str, None] = dataset_name
+        self._set_cast_dtype(cast_dtype)
 
         self.set_defaults()
 
@@ -57,19 +81,38 @@ class ChannelItem(EFLRItem):
         return self._dataset_name if self._dataset_name is not None else self.name
 
     @dataset_name.setter
-    def dataset_name(self, name: str):
+    def dataset_name(self, name: str) -> None:
         """Set a new dataset name."""
 
         self._dataset_name = name
 
-    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper):
+    @property
+    def cast_dtype(self) -> Union[numpy_dtype_type, None]:
+        """Numpy data type the channel data will be cast to."""
+
+        return self._cast_dtype
+
+    @cast_dtype.setter
+    def cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        """Set or remove channel cast dtype."""
+
+        self._set_cast_dtype(dt)
+
+    def _set_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        if dt is not None:
+            ReprCodeConverter.validate_numpy_dtype(dt)
+
+        self._cast_dtype = dt
+        self.representation_code.set_from_dtype(self.cast_dtype)
+
+    def set_dimension_and_repr_code_from_data(self, data: SourceDataWrapper) -> None:
         """Determine and dimension and representation code attributes of the ChannelItem based on the source data."""
 
         sub_data = data[self.name]
         self._set_dimension_from_data(sub_data)
         self._set_repr_code_from_data(sub_data)
 
-    def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]):
+    def _set_dimension_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine dimension (and element limit) of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dim = list(sub_data.shape[1:]) or [1]
@@ -88,29 +131,19 @@ class ChannelItem(EFLRItem):
             logger.debug(f"Setting element limit of {self} to {dim}")
             self.element_limit.value = dim
 
-    def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]):
+    def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
 
         dt = sub_data.dtype
 
-        suggested_rc = ReprCodeConverter.numpy_dtypes.get(dt.name, None)
-        current_rc = self.representation_code.value
-
-        if suggested_rc is None:
-            if not current_rc:
-                raise RuntimeError(f"Could not automatically convert dtype '{dt}' to a representation code; "
-                                   f"please specify the representation code for {self} manually")
+        if self.cast_dtype is not None:
+            if dt != self.cast_dtype:
+                logger.warning(f"Data will be cast from {dt} to {self.cast_dtype}")
             return
 
-        if current_rc:
-            if suggested_rc is not current_rc:
-                logger.warning(f"Representation code for {self} is {current_rc.name}, but according to the data "
-                               f"it should be {suggested_rc.name}")
-        else:
-            logger.debug(f"Setting representation code of {self} to {suggested_rc.name}")
-            self.representation_code.value = suggested_rc
+        self._set_cast_dtype(dt)
 
-    def set_defaults(self):
+    def set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:
@@ -130,7 +163,7 @@ class ChannelItem(EFLRItem):
             self.long_name.value = self.name
 
     @staticmethod
-    def convert_unit(unit: Union[str, None]):
+    def convert_unit(unit: Union[str, None]) -> Union[str, None]:
         """Check that unit is one of the values allowed by the standard (or None)."""
 
         if unit is None:
@@ -142,12 +175,6 @@ class ChannelItem(EFLRItem):
             logger.warning(f"'{unit}' is not one of the allowed units")
 
         return unit
-
-    @staticmethod
-    def convert_repr_code(rc: Union[RepC, str, int]):
-        """Retrieve a member of a RepresentationCode enum from the name or value (or the member itself)."""
-
-        return RepC.get_member(rc, allow_none=True)
 
 
 class ChannelSet(EFLRSet):

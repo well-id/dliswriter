@@ -1,5 +1,6 @@
 import pytest
 from datetime import datetime
+from typing import Union
 
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet, ZoneItem
 from dlis_writer.utils.enums import RepresentationCode
@@ -10,7 +11,8 @@ from dlis_writer.utils.enums import RepresentationCode
         ("Z2", "some zone", "BOREHOLE-DEPTH", -300.5, -500.0, float, RepresentationCode.FDOUBL),
         ("ZoneX", "time zone", "TIME", "2050/03/02 15:20:00", "2050/03/02 10:10:00", datetime, RepresentationCode.DTIME)
 ))
-def test_zone_creation(name, description, domain, maximum, minimum, m_type, rc):
+def test_zone_creation(name: str, description: str, domain: str, maximum: Union[int, float], minimum: Union[int, float],
+                       m_type: type, rc: RepresentationCode) -> None:
     """Test creating ZoneObject from config."""
 
     zone = ZoneItem(

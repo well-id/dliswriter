@@ -5,6 +5,9 @@ from typing import Callable, Any, Iterable, Union, Optional
 from dlis_writer.utils.enums import RepresentationCode
 
 
+numpy_dtype_type = Union[np.dtype, type[np.generic]]
+
+
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:
     """Encode a string value as ASCII.
 
@@ -52,34 +55,19 @@ class ReprCodeConverter:
     numeric_codes = float_codes + int_codes                             #: representation codes for all numbers
 
     # mapping of numpy dtype names on corresponding representation codes
-    # TODO: verify
-    numpy_dtypes: dict[str, RepresentationCode] = {
-        'int_': RepresentationCode.SLONG,
+    numpy_dtypes_to_repr_codes: dict[str, RepresentationCode] = {
         'int8': RepresentationCode.SSHORT,
         'int16': RepresentationCode.SNORM,
-        'int32': RepresentationCode.SNORM,
-        'int64': RepresentationCode.SLONG,
+        'int32': RepresentationCode.SLONG,
         'uint8': RepresentationCode.USHORT,
-        'uint16': RepresentationCode.USHORT,
-        'uint32': RepresentationCode.UNORM,
-        'uint64': RepresentationCode.ULONG,
-        'float_': RepresentationCode.FDOUBL,
-        'float16': RepresentationCode.FSINGL,
+        'uint16': RepresentationCode.UNORM,
+        'uint32': RepresentationCode.ULONG,
         'float32': RepresentationCode.FSINGL,
         'float64': RepresentationCode.FDOUBL
     }
 
     # mapping of numerical representation codes on corresponding numpy dtypes
-    repr_codes_to_numpy_dtypes = {
-        RepresentationCode.FDOUBL: np.float64,
-        RepresentationCode.FSINGL: np.float32,
-        RepresentationCode.USHORT: np.uint16,
-        RepresentationCode.UNORM: np.uint32,
-        RepresentationCode.ULONG: np.uint64,
-        RepresentationCode.SSHORT: np.int8,
-        RepresentationCode.SNORM: np.int32,
-        RepresentationCode.SLONG: np.int64
-    }
+    repr_codes_to_numpy_dtypes = {v: getattr(np, k) for k, v in numpy_dtypes_to_repr_codes.items()}
 
     # mapping of different object types on corresponding representation codes
     generic_types: dict[type, RepresentationCode] = {
@@ -90,17 +78,31 @@ class ReprCodeConverter:
     }
 
     @classmethod
-    def determine_repr_code_from_numpy_dtype(cls, dt: np.dtype) -> RepresentationCode:
+    def validate_numpy_dtype(cls, number_type: numpy_dtype_type) -> tuple[str, RepresentationCode]:
+        if isinstance(number_type, np.dtype):
+            number_type_name = number_type.name
+        elif isinstance(number_type, type) and issubclass(number_type, np.generic):
+            number_type_name = number_type.__name__
+        else:
+            raise ValueError(f"{number_type} is not a numpy dtype")
+        if number_type_name not in ReprCodeConverter.numpy_dtypes_to_repr_codes:
+            raise ValueError(f"Dtype {number_type_name} is not supported; "
+                             f"allowed dtypes are: {', '.join(ReprCodeConverter.numpy_dtypes_to_repr_codes)}")
+
+        return number_type_name, cls.numpy_dtypes_to_repr_codes[number_type_name]
+
+    @classmethod
+    def determine_repr_code_from_numpy_dtype(cls, dt: numpy_dtype_type) -> RepresentationCode:
         """Determine representation code for a given numpy dtype."""
 
-        repr_code = cls.numpy_dtypes.get(dt.name, None)
-        if repr_code is None:
-            raise cls.ReprCodeError(f"Cannot determine representation code for numpy dtype {dt}")
-        return repr_code
+        return cls.validate_numpy_dtype(dt)[1]
 
     @classmethod
     def determine_repr_code_from_generic_type(cls, t: type) -> RepresentationCode:
         """Determine representation code for a given type (e.g. int, float, str, etc.)."""
+
+        if not isinstance(t, type):
+            raise TypeError(f"{t} is not a type")
 
         repr_code = cls.generic_types.get(t, None)
         if not repr_code:
@@ -163,8 +165,8 @@ class ReprCodeConverter:
         return cls._determine_repr_code_single(v)
 
     @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], default: Optional[RepresentationCode] = None)\
-            -> type[object]:
+    def determine_numpy_dtype_from_repr_code(repr_code: Union[RepresentationCode, None],
+                                             default: Optional[RepresentationCode] = None) -> type[object]:
         """Determine a numpy dtype for a given representation code.
 
         Args:
@@ -177,7 +179,7 @@ class ReprCodeConverter:
 
         if repr_code is None:
             if default is not None:
-                return ReprCodeConverter.get_dtype(default)
+                return ReprCodeConverter.determine_numpy_dtype_from_repr_code(default)
             else:
                 raise ValueError("Expected a RepresentationCode; got None")
 

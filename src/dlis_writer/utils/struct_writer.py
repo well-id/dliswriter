@@ -63,8 +63,8 @@ def write_struct_ascii(value: Any) -> bytes:
     The first bytes are the number of characters in the value (converted to str).
     """
 
-    value = str(value)
-    return write_struct_uvari(len(value)) + value.encode('ascii')
+    value_str = str(value)
+    return write_struct_uvari(len(value_str)) + value_str.encode('ascii')
 
 
 def write_struct_uvari(value: int) -> bytes:

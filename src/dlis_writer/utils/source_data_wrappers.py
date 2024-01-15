@@ -1,8 +1,11 @@
 import numpy as np
 import h5py    # type: ignore  # untyped library
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, Generator
 import os
 import logging
+
+from dlis_writer.utils.converters import ReprCodeConverter
+
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +18,7 @@ class SourceDataWrapper:
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
                  known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
-                 to_idx: Optional[int] = None, **kwargs):
+                 to_idx: Optional[int] = None, **kwargs: Any) -> None:
         """Initialise a SourceDataWrapper.
 
         Args:
@@ -109,8 +112,12 @@ class SourceDataWrapper:
             dset_row0 = dset[0:1]  # get in form of a 1-element (or 1-row) array, not a single number
             # for h5 data, the above retrieves the first row of the current data set
 
+            # determine the numpy number dtype
+            number_type = known_dtypes.get(dtype_name, dset_row0.dtype)
+            ReprCodeConverter.validate_numpy_dtype(number_type)
+
             # determine the dtype of the data set (2- or 3-tuple)
-            dt = (dtype_name, known_dtypes.get(dtype_name, dset_row0.dtype))
+            dt = (dtype_name, number_type)
             if dset_row0.ndim > 1:
                 if dset_row0.ndim > 2:
                     raise RuntimeError("Data sets with more than 2 dimensions are not supported")
@@ -119,21 +126,21 @@ class SourceDataWrapper:
 
         return np.dtype(dtypes)
 
-    def __getitem__(self, item: str) -> Union[np.ndarray, h5py.Dataset]:
+    def __getitem__(self, item: str) -> np.ndarray:
         """Retrieve a dataset of the given name from the dataset.
 
         The name should be the one used for the dtype name, not the data set name/location
         (i.e. taken from the keys, not values, of the 'mapping' dictionary specified at init).
 
         Returns:
-            h5py.Dataset if the source data object was a h5py.File; np.ndarray otherwise.
+            A np.ndarray with the data.
         """
 
         try:
             data = self._data_source[self._mapping[item]]
         except (ValueError, KeyError):
             raise ValueError(f"No dataset '{item}' found in the source data")
-        return data
+        return data[self._from_idx:self._to_idx]
 
     def load_chunk(self, start: int, stop: Union[int, None]) -> np.ndarray:
         """Copy a chunk of the source data into a structured numpy array of the pre-determined dtype.
@@ -150,10 +157,22 @@ class SourceDataWrapper:
             A structured numpy array, containing the required chunks of all the relevant data sets from the source data.
         """
 
-        start = self._from_idx + start
+        if start < 0:
+            raise ValueError("Start row cannot be negative")
 
-        idx = slice(start, stop)
-        n_rows = (stop or self._n_rows) - start
+        if start > self._n_rows:
+            raise ValueError(f"Cannot load chunk from row {start} because the data source has only {self._n_rows} rows")
+
+        if stop is None:
+            stop = self._n_rows
+
+        if stop > self._n_rows:
+            raise ValueError(f"Cannot load chunk up to row {stop} because the data source has only {self._n_rows} rows")
+        if stop < start:
+            raise ValueError(f"Stop row cannot be smaller than start row; got {stop} and {start}")
+
+        idx = slice(self._from_idx + start, self._from_idx + stop)
+        n_rows = stop - start
 
         chunk = np.zeros(n_rows, dtype=self._dtype)
         for key, loc in self._mapping.items():
@@ -161,7 +180,7 @@ class SourceDataWrapper:
 
         return chunk
 
-    def make_chunked_generator(self, chunk_rows: Union[int, None]):
+    def make_chunked_generator(self, chunk_rows: Union[int, None]) -> Generator:
         """Define a generator yielding consecutive chunks of input data with the specified size.
 
         Args:
@@ -198,7 +217,7 @@ class SourceDataWrapper:
 
     @classmethod
     def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
-                     mapping: Optional[dict] = None, **kwargs) \
+                     mapping: Optional[dict] = None, **kwargs: Any) \
             -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
         if isinstance(source, dict):
@@ -221,7 +240,9 @@ class SourceDataWrapper:
 class HDF5DataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a HDF5 file."""
 
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs):
+    _data_source: h5py.File
+
+    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs: Any) -> None:
         """Initialise HDF5DataWrapper.
 
         Args:
@@ -239,7 +260,7 @@ class HDF5DataWrapper(SourceDataWrapper):
 
         super().__init__(h5_data, mapping, **kwargs)
 
-    def close(self):
+    def close(self) -> None:
         """Close the HDF5 file (if open)."""
 
         if hasattr(self, '_data_source'):  # object might be partially initialised
@@ -250,7 +271,7 @@ class HDF5DataWrapper(SourceDataWrapper):
             else:
                 logger.debug("Source data file closed")
 
-    def __del__(self):
+    def __del__(self) -> None:
         """Close the HDF5 file when deleting the object (if still open at this point)."""
 
         self.close()
@@ -261,7 +282,7 @@ class NumpyDataWrapper(SourceDataWrapper):
 
     _data_source: np.ndarray
 
-    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs):
+    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs: Any) -> None:
         """Initialise NumpyDataWrapper.
 
         Args:
@@ -301,7 +322,7 @@ class NumpyDataWrapper(SourceDataWrapper):
         return super().load_chunk(start, stop)
 
     @staticmethod
-    def _check_source_arr(arr: np.ndarray):
+    def _check_source_arr(arr: np.ndarray) -> None:
         """Check that the input array is a structured, 1D numpy array."""
 
         if not isinstance(arr, np.ndarray):
@@ -317,7 +338,7 @@ class NumpyDataWrapper(SourceDataWrapper):
 class DictDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
-    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs):
+    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs: Any) -> None:
         """Initialise DictDataWrapper.
 
         Args:
@@ -337,9 +358,15 @@ class DictDataWrapper(SourceDataWrapper):
         super().__init__(data_dict, mapping, **kwargs)
 
     @staticmethod
-    def _check_source_dict(data_dict: dict[str, np.ndarray]):
+    def _check_source_dict(data_dict: dict[str, np.ndarray]) -> None:
         """Check that all values of the source dictionary are numpy arrays."""
 
+        if not isinstance(data_dict, dict):
+            raise TypeError(f"Expected a dictionary, got {type(data_dict)}: {data_dict}")
+
+        if not all(isinstance(k, str) for k in data_dict):
+            raise TypeError(f"Source dictionary keys must be strings; got {', '.join(str(type(k)) for k in data_dict)}")
+
         if not all(isinstance(v, np.ndarray) for v in data_dict.values()):
-            raise ValueError(f"Dict values must be numpy arrays; "
-                             f"got {', '.join(str(type(v)) for v in data_dict.values())}")
+            raise TypeError(f"Dict values must be numpy arrays; "
+                            f"got {', '.join(str(type(v)) for v in data_dict.values())}")

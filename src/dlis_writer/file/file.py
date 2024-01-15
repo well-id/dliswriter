@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar
+from typing import Any, Union, Optional, TypeVar, Sequence
 import numpy as np
 import os
 from timeit import timeit
@@ -7,7 +7,7 @@ from datetime import timedelta
 import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import numpy_dtype_type
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
-dtime_or_number_type = Union[datetime.datetime, int, float]
+dtime_or_number_type = Union[str, datetime.datetime, int, float]
 values_type = Optional[Union[list[str], list[int], list[float]]]
 
 
@@ -288,8 +288,8 @@ class DLISFile:
             name: str,
             data: Optional[np.ndarray] = None,
             dataset_name: Optional[str] = None,
+            cast_dtype: Optional[numpy_dtype_type] = None,
             long_name: Optional[str] = None,
-            representation_code: Optional[Union[str, int, RepresentationCode]] = None,
             dimension: Optional[Union[int, list[int]]] = None,
             element_limit: Optional[Union[int, list[int]]] = None,
             properties: Optional[list[str]] = None,
@@ -306,9 +306,9 @@ class DLISFile:
             data                :   Data associated with the channel.
             dataset_name        :   Name of the data array associated with the channel in the data source provided
                                     at init of DLISFile.
+            cast_dtype          :   Numpy data type the channel data should be cast to - e.g. np.float64, np.int32.
             long_name           :   Description of the channel.
             properties          :   List of properties of the channel.
-            representation_code :   Representation code for the channel data. Determined automatically if not provided.
             dimension           :   Dimension of the channel data. Determined automatically if not provided.
             element_limit       :   Element limit of the channel data. Determined automatically if not provided.
                                     Should be the same as dimension (in the current implementation of dlis_writer).
@@ -329,8 +329,8 @@ class DLISFile:
             name,
             long_name=long_name,
             dataset_name=dataset_name,
+            cast_dtype=cast_dtype,
             properties=properties,
-            representation_code=representation_code,
             dimension=dimension,
             element_limit=element_limit,
             units=units,
@@ -744,9 +744,7 @@ class DLISFile:
             A configured NoFormatFrameData instance.
         """
 
-        d = NoFormatFrameData()
-        d.no_format_object = no_format_object
-        d.data = data
+        d = NoFormatFrameData(no_format_object, data)
 
         self._no_format_frame_data.append(d)
         return d
@@ -1077,7 +1075,7 @@ class DLISFile:
             data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
             from_idx: int = 0,
             to_idx: Optional[int] = None,
-            **kwargs
+            **kwargs: Any
     ) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
@@ -1089,14 +1087,14 @@ class DLISFile:
         if isinstance(data, dict):
             self._data_dict = self._data_dict | data
             data_object = DictDataWrapper(self._data_dict, mapping=fr.channel_name_mapping,
-                                          known_dtypes=fr.channel_dtype_mapping, from_idx=from_idx, to_idx=to_idx)
+                                          known_dtypes=fr.known_channel_dtypes_mapping, from_idx=from_idx, to_idx=to_idx)
         else:
             if self._data_dict:
                 raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
                                 f"(Note: a dictionary is the only allowed type because some channels have been added"
                                 f"with associated data arrays")
             data_object = SourceDataWrapper.make_wrapper(
-                data, mapping=fr.channel_name_mapping, known_dtypes=fr.channel_dtype_mapping,
+                data, mapping=fr.channel_name_mapping, known_dtypes=fr.known_channel_dtypes_mapping,
                 from_idx=from_idx, to_idx=to_idx
             )
 
@@ -1107,7 +1105,7 @@ class DLISFile:
             self,
             chunk_size: Optional[int] = None,
             data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-            **kwargs
+            **kwargs: Any
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
@@ -1117,7 +1115,7 @@ class DLISFile:
             orig=self._origin.parent
         )
 
-        def get_parents(objects):
+        def get_parents(objects: Sequence[EFLRItem]) -> set:
             return set(obj.parent for obj in objects)
 
         flr.add_channels(*get_parents(self._channels))
@@ -1132,7 +1130,7 @@ class DLISFile:
     def write(self, dlis_file_name: Union[str, os.PathLike[str]],
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
               data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-              from_idx: int = 0, to_idx: Optional[int] = None):
+              from_idx: int = 0, to_idx: Optional[int] = None) -> None:
         """Create a DLIS file form the current specifications.
 
         Args:
@@ -1145,7 +1143,7 @@ class DLISFile:
             to_idx                  :   Index up to which data should be loaded.
         """
 
-        def timed_func():
+        def timed_func() -> None:
             """Perform the action of creating a DLIS file.
 
             This function is used in a timeit call to time the file creation.
@@ -1168,7 +1166,7 @@ if __name__ == '__main__':
 
     n_rows = 100
     ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
+    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10), cast_dtype=np.int32)
     ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
     main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 

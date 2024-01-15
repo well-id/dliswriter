@@ -29,7 +29,7 @@ def make_parser() -> ArgumentParser:
     return parser
 
 
-def main():
+def main() -> None:
     install_logger(logger)
 
     pargs = make_parser().parse_args()

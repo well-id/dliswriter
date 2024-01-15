@@ -17,7 +17,8 @@ class EFLRItem:
 
     parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None, **kwargs):
+    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None,
+                 **kwargs: Any) -> None:
         """Initialise an EFLRItem.
 
         Args:
@@ -78,7 +79,7 @@ class EFLRItem:
 
         return f"{self.__class__.__name__} '{self.name}'"
 
-    def __setattr__(self, key: str, value: Any):
+    def __setattr__(self, key: str, value: Any) -> None:
         """Limit the possibility of setting attributes by excluding Attribute instances.
 
         This prevents overwriting Attribute instances being attributes of this EFLRItem. ValueError is raised at such
@@ -117,7 +118,7 @@ class EFLRItem:
 
         return b'p' + self.obname + self._make_attrs_bytes()
 
-    def set_attributes(self, **kwargs):
+    def set_attributes(self, **kwargs: Any) -> None:
         """Set the values and other characteristics of the EFLRItem's attributes.
 
         Args:

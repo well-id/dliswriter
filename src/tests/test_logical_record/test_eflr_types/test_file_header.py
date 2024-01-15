@@ -4,7 +4,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderSet, Fil
 
 
 @pytest.mark.parametrize(("identifier", "sequence_number"), (("a", 9), ("123ert", 3)))
-def test_creation(identifier: str, sequence_number: int):
+def test_creation(identifier: str, sequence_number: int) -> None:
     """Test creating a FileHeaderObject."""
 
     fh = FileHeaderItem(identifier, sequence_number=sequence_number)

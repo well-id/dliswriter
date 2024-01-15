@@ -4,7 +4,7 @@ import h5py    # type: ignore  # untyped library
 from pathlib import Path
 from argparse import ArgumentParser
 import logging
-from typing import Union
+from typing import Union, Any
 
 from dlis_writer.utils.logging import install_logger
 
@@ -29,7 +29,8 @@ def make_image(n_points: int, n_cols: int, divider: int = 11) -> np.ndarray:
     return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
-def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols: int = 128, time_based: bool = False):
+def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols: int = 128,
+                  time_based: bool = False) -> None:
     """Populate a HFD5 Group with synthetic datasets.
 
     This created 3 scalar (1D) datasets ('time' or 'depth', 'rpm', and 'col3') and as many 2D datasets as specified
@@ -63,7 +64,8 @@ def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols
             f'image{i}', data=make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand())))
 
 
-def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwrite: bool = False, **kwargs):
+def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwrite: bool = False,
+                     **kwargs: Any) -> None:
     """Create a synthetic HDF5 data file.
 
     Args:
@@ -102,7 +104,7 @@ def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwri
     logger.info(f"Fake data with {n_points} points saved to file '{fpath}'")
 
 
-def main():
+def main() -> None:
     """Create a synthetic HDF5 data file based on information from command line arguments."""
 
     install_logger(logger)

@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
@@ -15,7 +16,7 @@ class ComputationItem(EFLRItem):
 
     parent: "ComputationSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise ComputationItem.
 
         Args:
@@ -36,14 +37,14 @@ class ComputationItem(EFLRItem):
         self._set_defaults()
         self.check_values_and_zones()
 
-    def _set_defaults(self):
+    def _set_defaults(self) -> None:
         """Set up default values of ComputationItem parameters if not explicitly set previously."""
 
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
             self.dimension.value = [1]
 
-    def check_values_and_zones(self):
+    def check_values_and_zones(self) -> None:
         """Check that the currently set values and zones attributes match in sizes."""
 
         if self.values.value is not None and self.zones.value is not None:

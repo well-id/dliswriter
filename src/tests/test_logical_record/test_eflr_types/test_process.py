@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.process import ProcessSet, ProcessIte
         ("Prc2", ["channel1"], ["channel2"], ["computation1", "computation2"], []),
 ))
 def test_process_params(name: str, input_channels: list[str], output_channels: list[str], input_compts: list[str],
-                        output_compts: list[str], request):
+                        output_compts: list[str], request: pytest.FixtureRequest) -> None:
     """Test creating ProcessObject from config."""
 
     proc = ProcessItem(

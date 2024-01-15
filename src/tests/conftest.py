@@ -3,6 +3,7 @@ import numpy as np
 from pathlib import Path
 import h5py    # type: ignore  # untyped library
 import os
+from typing import Generator
 
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
@@ -12,7 +13,7 @@ from tests.dlis_files_for_testing import write_short_dlis
 
 
 @pytest.fixture(autouse=True)
-def cleanup():
+def cleanup() -> Generator:
     """Remove all defined EFLR instances from the internal dicts before each test."""
 
     clear_eflr_instance_registers()
@@ -34,7 +35,7 @@ def reference_data_path(base_data_path: Path) -> Path:
 
 
 @pytest.fixture(scope='session')
-def reference_data(reference_data_path: Path):
+def reference_data(reference_data_path: Path) -> Generator:
     """The reference HDF5 data file, open in read mode."""
 
     f = h5py.File(reference_data_path, 'r')
@@ -50,7 +51,7 @@ def short_reference_data_path(base_data_path: Path) -> Path:
 
 
 @pytest.fixture(scope='session')
-def short_reference_data(short_reference_data_path: Path):
+def short_reference_data(short_reference_data_path: Path) -> Generator:
     """The reference short HDF5 data file, open in read mode."""
 
     f = h5py.File(short_reference_data_path, 'r')
@@ -59,7 +60,7 @@ def short_reference_data(short_reference_data_path: Path):
 
 
 @pytest.fixture(scope='session')
-def short_dlis(short_reference_data_path: Path, base_data_path: Path):
+def short_dlis(short_reference_data_path: Path, base_data_path: Path) -> Generator:
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
 
     clear_eflr_instance_registers()
@@ -75,29 +76,42 @@ def short_dlis(short_reference_data_path: Path, base_data_path: Path):
 
 
 @pytest.fixture
-def channel1():
+def new_dlis_path(base_data_path: Path) -> Generator:
+    """Path for a new DLIS file to be created. The file is removed afterwards."""
+
+    new_path = base_data_path/'outputs/new_fake_dlis.DLIS'
+    os.makedirs(new_path.parent, exist_ok=True)
+    yield new_path
+
+    if new_path.exists():  # does not exist if file creation failed
+        os.remove(new_path)
+
+
+@pytest.fixture
+def channel1() -> eflr_types.ChannelItem:
     return eflr_types.ChannelItem("Channel 1")
 
 
 @pytest.fixture
-def channel2():
+def channel2() -> eflr_types.ChannelItem:
     return eflr_types.ChannelItem("Channel 2")
 
 
 @pytest.fixture
-def channel3():
+def channel3() -> eflr_types.ChannelItem:
     return eflr_types.ChannelItem("Channel 3")
 
 
 @pytest.fixture
-def chan():
-    """Mock ChannelObject instance for tests."""
+def chan() -> Generator:
+    """Mock ChannelItem instance for tests."""
 
     yield eflr_types.ChannelItem("some_channel")
 
 
 @pytest.fixture
-def channels(channel1, channel2, channel3, chan):
+def channels(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem, channel3: eflr_types.ChannelItem,
+             chan: eflr_types.ChannelItem) -> dict:
     return {
         'Channel 1': channel1,
         'Channel 2': channel2,
@@ -115,81 +129,82 @@ def mock_data() -> NumpyDataWrapper:
 
 
 @pytest.fixture
-def ccoef1():
+def ccoef1() -> eflr_types.CalibrationCoefficientItem:
     return eflr_types.CalibrationCoefficientItem("COEF-1")
 
 
 @pytest.fixture
-def cmeasure1():
+def cmeasure1() -> eflr_types.CalibrationMeasurementItem:
     return eflr_types.CalibrationMeasurementItem("CMEASURE-1")
 
 
 @pytest.fixture
-def axis1():
+def axis1() -> eflr_types.AxisItem:
     return eflr_types.AxisItem("Axis-1")
 
 
 @pytest.fixture
-def param1():
+def param1() -> eflr_types.ParameterItem:
     return eflr_types.ParameterItem("Param-1")
 
 
 @pytest.fixture
-def param2():
+def param2() -> eflr_types.ParameterItem:
     return eflr_types.ParameterItem("Param-2")
 
 
 @pytest.fixture
-def param3():
+def param3() -> eflr_types.ParameterItem:
     return eflr_types.ParameterItem("Param-3")
 
 
 @pytest.fixture
-def zone1():
+def zone1() -> eflr_types.ZoneItem:
     return eflr_types.ZoneItem("Zone-1")
 
 
 @pytest.fixture
-def zone2():
+def zone2() -> eflr_types.ZoneItem:
     return eflr_types.ZoneItem("Zone-2")
 
 
 @pytest.fixture
-def zone3():
+def zone3() -> eflr_types.ZoneItem:
     return eflr_types.ZoneItem("Zone-3")
 
 
 @pytest.fixture
-def zones(zone1, zone2, zone3):
+def zones(zone1: eflr_types.ZoneItem, zone2: eflr_types.ZoneItem, zone3: eflr_types.ZoneItem) -> dict:
     return {"Zone-1": zone1, "Zone-2": zone2, "Zone-3": zone3}
 
 
 @pytest.fixture
-def process1():
+def process1() -> eflr_types.ProcessItem:
     return eflr_types.ProcessItem("Process 1")
 
 
 @pytest.fixture
-def process2():
+def process2() -> eflr_types.ProcessItem:
     return eflr_types.ProcessItem("Prc2")
 
 
 @pytest.fixture
-def channel_group(channel1, channel2, channel3):
+def channel_group(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem,
+                  channel3: eflr_types.ChannelItem) -> eflr_types.GroupItem:
     return eflr_types.GroupItem("Group of channels", object_type="CHANNEL",
                                 object_list=[channel1, channel2, channel3])
 
 
 @pytest.fixture
-def process_group(process2, process1):
+def process_group(process2: eflr_types.ProcessItem, process1: eflr_types.ProcessItem) -> eflr_types.GroupItem:
     return eflr_types.GroupItem("Group of processes", object_type="PROCESS", object_list=[process1, process2])
 
 
 @pytest.fixture
-def computation1():
+def computation1() -> eflr_types.ComputationItem:
     return eflr_types.ComputationItem("Compt1")
 
 
 @pytest.fixture
-def computation2():
+def computation2() -> eflr_types.ComputationItem:
     return eflr_types.ComputationItem("CMPT-2")

@@ -1,14 +1,17 @@
 import pytest
 from _pytest.logging import LogCaptureFixture
 from typing import Union, Any
+import numpy as np
+from datetime import datetime
 
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.converters import numpy_dtype_type
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 
-def test_channel_creation(axis1):
+def test_channel_creation(axis1: AxisItem) -> None:
     """Check that a ChannelObject is correctly set up."""
 
     channel = ChannelItem(
@@ -16,7 +19,7 @@ def test_channel_creation(axis1):
         dataset_name='amplitude',
         long_name='Amplitude channel',
         properties=["property1", "property 2 with multiple words"],
-        representation_code=RepresentationCode.FSINGL,
+        cast_dtype=np.float32,
         units='acre',
         dimension=12,
         element_limit=12,
@@ -46,7 +49,7 @@ def test_channel_creation(axis1):
 
 
 @pytest.mark.parametrize("name", ("Channel-1", "amplitude"))
-def test_dataset_name_not_specified(name):
+def test_dataset_name_not_specified(name: str) -> None:
     """Check that if dataset name is not specified, it's the same as channel name."""
 
     c = ChannelItem(name)
@@ -55,7 +58,7 @@ def test_dataset_name_not_specified(name):
 
 
 @pytest.mark.parametrize(('dimension', 'element_limit'), (([10], None), ([10, 10], None), (None, [1, 2, 3])))
-def test_dimension_and_element_limit(dimension: Union[list[int], None], element_limit: Union[list[int], None]):
+def test_dimension_and_element_limit(dimension: Union[list[int], None], element_limit: Union[list[int], None]) -> None:
     """Test that it is enough to specify dimension OR element limit in the config for both to be set to that value."""
 
     config: dict[str, Any] = {'name': 'some channel'}
@@ -72,7 +75,7 @@ def test_dimension_and_element_limit(dimension: Union[list[int], None], element_
     assert channel.element_limit.value is not None
 
 
-def test_dimension_and_element_limit_not_specified():
+def test_dimension_and_element_limit_not_specified() -> None:
     """Test that if neither dimension nor element limit are specified, none of them is set."""
 
     channel = ChannelItem("some channel")
@@ -80,7 +83,7 @@ def test_dimension_and_element_limit_not_specified():
     assert channel.element_limit.value is None
 
 
-def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture):
+def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture) -> None:
     """Test that if dimension and element limit do not match, this fact is included as a warning in log messages."""
 
     ChannelItem('some channel', dimension=12, element_limit=(12, 10))
@@ -88,42 +91,100 @@ def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture):
 
 
 @pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("T", 'T')))
-def test_setting_unit(chan: ChannelItem, val: str, unit: str):
+def test_setting_unit(chan: ChannelItem, val: str, unit: str) -> None:
     """Test setting Attribute 'units' of Channel."""
 
     chan.units.value = val
     assert chan.units.value is unit
 
 
-def test_clearing_unit(chan: ChannelItem):
+def test_clearing_unit(chan: ChannelItem) -> None:
     """Test removing previously defined channel unit."""
 
     chan.units.value = None
     assert chan.units.value is None
 
 
-@pytest.mark.parametrize(("val", "repc"), (
-        (7, RepresentationCode.FDOUBL),
-        ("FDOUBL", RepresentationCode.FDOUBL),
-        ("USHORT", RepresentationCode.USHORT),
-        (15, RepresentationCode.USHORT),
-        (RepresentationCode.UVARI, RepresentationCode.UVARI)
+@pytest.mark.parametrize(("dt", "repc"), (
+        (np.float64, RepresentationCode.FDOUBL),
+        (np.dtype(np.float64), RepresentationCode.FDOUBL),
+        (np.uint8, RepresentationCode.USHORT),
+        (np.int16, RepresentationCode.SNORM),
+        (np.dtype(np.int32), RepresentationCode.SLONG)
 ))
-def test_setting_repr_code(chan: ChannelItem, val: Union[str, int, RepresentationCode], repc: RepresentationCode):
-    """Test that representation code is correctly set, whether the name, value, or the enum member itself is passed."""
+def test_setting_cast_dtype(chan: ChannelItem, dt: numpy_dtype_type, repc: RepresentationCode) -> None:
+    """Test that representation code is correctly set based on provided cast dtype."""
 
-    chan.representation_code.value = val
+    chan.cast_dtype = dt
     assert chan.representation_code.value is repc
 
 
-def test_clearing_repr_code(chan: ChannelItem):
-    """Test removing previously defined representation code."""
+def test_clearing_cast_dtype(chan: ChannelItem) -> None:
+    """Test that clearing cast dtype also clears representation code."""
 
-    chan.representation_code.value = None
+    chan.cast_dtype = np.float64
+    assert chan.cast_dtype == np.float64
+    assert chan.representation_code.value is not None
+
+    chan.cast_dtype = None
+    assert chan.cast_dtype is None
     assert chan.representation_code.value is None
 
 
-def test_attribute_set_directly_error(chan: ChannelItem):
+@pytest.mark.parametrize('dt', (np.float16, np.int64, np.bool_))
+def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: numpy_dtype_type) -> None:
+    with pytest.raises(ValueError, match="Dtype .* is not supported.*"):
+        chan.cast_dtype = dt
+
+
+@pytest.mark.parametrize('dt', (float, bool, object, 4.2, datetime.now()))
+def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: Any) -> None:
+    with pytest.raises(ValueError, match=".* is not a numpy dtype"):
+        chan.cast_dtype = dt
+
+
+@pytest.mark.parametrize('rc', (7, 'FSINGL', RepresentationCode.USHORT))
+def test_setting_repr_code_error(chan: ChannelItem, rc: Any) -> None:
+    with pytest.raises(RuntimeError, match="Representation code of channel should not be set directly.*"):
+        chan.representation_code.value = rc
+
+
+@pytest.mark.parametrize(('data', 'rc'), (
+    (np.arange(10).astype(np.int32), RepresentationCode.SLONG),
+    (np.random.rand(3).astype(np.float64), RepresentationCode.FDOUBL),
+    (np.zeros(2).astype(np.uint16), RepresentationCode.UNORM)
+))
+def test_setting_repr_code_from_data(chan: ChannelItem, data: np.ndarray, rc: RepresentationCode) -> None:
+    chan.cast_dtype = None
+
+    chan._set_repr_code_from_data(data)
+    assert chan.cast_dtype == data.dtype
+    assert chan.representation_code.value is rc
+
+
+@pytest.mark.parametrize(('dt', 'data', 'rc'), (
+    (np.int8, np.arange(10).astype(np.int16), RepresentationCode.SSHORT),
+    (np.float32, np.random.rand(3).astype(np.float64), RepresentationCode.FSINGL),
+    (np.int16, np.zeros(2).astype(np.uint16), RepresentationCode.SNORM),
+    (np.uint16, np.zeros(2).astype(np.int16), RepresentationCode.UNORM)
+))
+def test_setting_repr_code_from_data_mismatch(chan: ChannelItem, dt: numpy_dtype_type, data: np.ndarray,
+                                              rc: RepresentationCode, caplog: pytest.LogCaptureFixture) -> None:
+    chan.cast_dtype = dt
+    assert chan.cast_dtype == dt
+    assert chan.representation_code.value is rc
+
+    chan._set_repr_code_from_data(data)
+
+    assert f"Data will be cast from {data.dtype} to {dt}" in caplog.text
+
+    # not changed!
+    assert chan.cast_dtype != data.dtype
+    assert chan.cast_dtype == dt
+    assert chan.representation_code.value is rc
+
+
+def test_attribute_set_directly_error(chan: ChannelItem) -> None:
     """Test that a RuntimeError is raised if an attempt to set an Attribute directly is made."""
 
     with pytest.raises(RuntimeError, match="Cannot set DLIS Attribute 'units'.*"):
@@ -134,7 +195,7 @@ def test_attribute_set_directly_error(chan: ChannelItem):
 
 
 @pytest.mark.parametrize('value', (10.6, [10, 11.2]))
-def test_setting_dimension_error(chan: ChannelItem, value: Any):
+def test_setting_dimension_error(chan: ChannelItem, value: Any) -> None:
     """Test that a ValueError is raised if an un-parsable value is attempted to be set as dimension."""
 
     with pytest.raises(ValueError):
@@ -142,7 +203,7 @@ def test_setting_dimension_error(chan: ChannelItem, value: Any):
 
 
 @pytest.mark.parametrize(("name", "dim"), (("time", [1]), ("amplitude", [10]), ('radius', [12])))
-def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str, dim: list[int]):
+def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str, dim: list[int]) -> None:
     """Check that dimension and element limit are correctly inferred from data."""
 
     chan.name = name
@@ -154,7 +215,7 @@ def test_setting_dimension_from_data(chan: ChannelItem, mock_data: NumpyDataWrap
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [30]), ("amplitude", [10], [1])))
 def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str,
                                                           dim: list[int], prev_dim: list[int],
-                                                          caplog: LogCaptureFixture):
+                                                          caplog: LogCaptureFixture) -> None:
     """Test that if dimension from data does not match the previously set one, a warning is included in logs."""
 
     chan.name = name
@@ -167,7 +228,7 @@ def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, moc
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12], [10])))
 def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str,
                                                               dim: list[int], prev_dim: list[int],
-                                                              caplog: LogCaptureFixture):
+                                                              caplog: LogCaptureFixture) -> None:
     """Test that if element limit from data does not match the previously set one, a warning is included in logs."""
 
     chan.name = name

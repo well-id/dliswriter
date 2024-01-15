@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.frame import FrameSet
@@ -16,7 +17,7 @@ class PathItem(EFLRItem):
 
     parent: "PathSet"
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise PathItem.
 
         Args:

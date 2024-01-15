@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
@@ -18,7 +19,7 @@ class ProcessItem(EFLRItem):
 
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
-    def __init__(self, name: str, **kwargs):
+    def __init__(self, name: str, **kwargs: Any) -> None:
         """Initialise ProcessItem.
 
         Args:
@@ -45,7 +46,7 @@ class ProcessItem(EFLRItem):
         super().__init__(name, **kwargs)
 
     @classmethod
-    def check_status(cls, status):
+    def check_status(cls, status: str) -> str:
         if status not in cls.allowed_status:
             raise ValueError(f"'status' should be one of: {', '.join(cls.allowed_status)}; got {status}")
         return status

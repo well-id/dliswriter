@@ -1,4 +1,5 @@
 import pytest
+from typing import Any
 
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet, ParameterItem
 from dlis_writer.utils.enums import RepresentationCode
@@ -9,7 +10,7 @@ from dlis_writer.utils.enums import RepresentationCode
         ("some param", [2.33, 2.1], float, 2, RepresentationCode.FDOUBL),
         ("p89", -12.1211, float, 1, RepresentationCode.FDOUBL)
 ))
-def test_from_config(name, value, value_type: type, n_values: int, repr_code: RepresentationCode):
+def test_from_config(name: str, value: Any, value_type: type, n_values: int, repr_code: RepresentationCode) -> None:
     """Test creating ParameterItem."""
 
     param = ParameterItem(name, values=value)
