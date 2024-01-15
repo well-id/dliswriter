@@ -23,3 +23,9 @@ def test_str_attributes(name: str, axis_id: str, units: str) -> None:
 def test_coordinates(given: list, expected: list) -> None:
     axis = AxisItem('some_name', coordinates=given)
     assert axis.coordinates.value == expected
+
+
+def test_copy_numbers() -> None:
+    for i in range(5):
+        ax = AxisItem('XYZ')
+        assert ax.copy_number == i
