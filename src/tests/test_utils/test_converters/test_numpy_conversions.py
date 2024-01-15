@@ -11,7 +11,7 @@ def _check_conversion(arr: np.ndarray, rc: RepresentationCode) -> None:
 
     assert arr.size == decoded_arr.size
     assert (arr == decoded_arr).all()
-    assert arr.dtype == ReprCodeConverter.get_dtype(rc)
+    assert arr.dtype == ReprCodeConverter.determine_numpy_dtype_from_repr_code(rc)
 
 
 @pytest.mark.parametrize("data", (

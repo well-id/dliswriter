@@ -101,6 +101,9 @@ class ReprCodeConverter:
     def determine_repr_code_from_generic_type(cls, t: type) -> RepresentationCode:
         """Determine representation code for a given type (e.g. int, float, str, etc.)."""
 
+        if not isinstance(t, type):
+            raise TypeError(f"{t} is not a type")
+
         repr_code = cls.generic_types.get(t, None)
         if not repr_code:
             raise cls.ReprCodeError(f"Cannot determine representation code for type {t}")
@@ -162,8 +165,8 @@ class ReprCodeConverter:
         return cls._determine_repr_code_single(v)
 
     @staticmethod
-    def get_dtype(repr_code: Union[RepresentationCode, None], default: Optional[RepresentationCode] = None)\
-            -> type[object]:
+    def determine_numpy_dtype_from_repr_code(repr_code: Union[RepresentationCode, None],
+                                             default: Optional[RepresentationCode] = None) -> type[object]:
         """Determine a numpy dtype for a given representation code.
 
         Args:
@@ -176,7 +179,7 @@ class ReprCodeConverter:
 
         if repr_code is None:
             if default is not None:
-                return ReprCodeConverter.get_dtype(default)
+                return ReprCodeConverter.determine_numpy_dtype_from_repr_code(default)
             else:
                 raise ValueError("Expected a RepresentationCode; got None")
 
