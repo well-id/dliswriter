@@ -87,3 +87,30 @@ def test_frame_channels(double_frame_dlis_contents: dlis.LogicalFile, nr: int) -
     for ch in ch:
         assert ch.copynumber == nr
 
+
+@pytest.mark.parametrize('nr', (0, 1))
+def test_frame_data(double_frame_dlis_contents: dlis.LogicalFile, double_frame_data: tuple[dict, dict],
+                    nr: int) -> None:
+
+    frame_channels = double_frame_dlis_contents.frames[nr].channels
+    data = double_frame_data[nr]
+
+    assert (frame_channels[0].curves() == data['DEPTH']).all()
+    assert (frame_channels[1].curves() == data['RPM']).all()
+    assert (frame_channels[2].curves() == data['AMPLITUDE']).all()
+
+
+def test_dataset_names(double_frame_dlis: DLISFile):
+    file_channels = double_frame_dlis.channels
+
+    assert file_channels[0].dataset_name == 'DEPTH'
+    assert file_channels[1].dataset_name == 'RPM'
+    assert file_channels[2].dataset_name == 'AMPLITUDE'
+
+    assert file_channels[3].dataset_name == 'DEPTH__1'
+    assert file_channels[4].dataset_name == 'RPM__1'
+    assert file_channels[5].dataset_name == 'AMPLITUDE__1'
+
+    assert all(dn in double_frame_dlis._data_dict for dn in (
+        'DEPTH', 'RPM', 'AMPLITUDE', 'DEPTH__1', 'RPM__1', 'AMPLITUDE__1'
+    ))
