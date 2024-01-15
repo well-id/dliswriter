@@ -22,9 +22,9 @@ df = DLISFile(origin=origin, file_header=file_header)
 
 # define frame 1
 n_rows_1 = 100
-ch_depth_1 = df.add_channel('DEPTH', data=np.arange(n_rows_1), units='m', set_name='1')
-ch_rpm_1 = df.add_channel("RPM", data=10 * np.random.rand(n_rows_1), set_name='1')
-ch_amp_1 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_1, 5), set_name='1')
+ch_depth_1 = df.add_channel('DEPTH', data=np.arange(n_rows_1), units='m')
+ch_rpm_1 = df.add_channel("RPM", data=10 * np.random.rand(n_rows_1))
+ch_amp_1 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_1, 10))
 frame1 = df.add_frame("FRAME1", channels=(ch_depth_1, ch_rpm_1, ch_amp_1), index_type='BOREHOLE-DEPTH')
 
 
@@ -34,9 +34,9 @@ for ch in (ch_depth_1, ch_rpm_1, ch_amp_1):
 
 # define frame 2
 n_rows_2 = 200
-ch_depth_2 = df.add_channel('DEPTH', data=np.arange(n_rows_2), units='m', set_name='2')
-ch_rpm_2 = df.add_channel("RPM", data=(np.arange(n_rows_2) % 10).astype(np.int32), set_name='2')
-ch_amp_2 = df.add_channel("AMPLITUDE", data=np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6, set_name='2')
+ch_depth_2 = df.add_channel('DEPTH', data=np.arange(n_rows_2), units='m')
+ch_rpm_2 = df.add_channel("RPM", data=(np.arange(n_rows_2) % 10).astype(np.int32))
+ch_amp_2 = df.add_channel("AMPLITUDE", data=np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6)
 frame2 = df.add_frame("FRAME2", channels=(ch_depth_2, ch_rpm_2, ch_amp_2), index_type='BOREHOLE-DEPTH')
 
 for ch in (ch_depth_2, ch_rpm_2, ch_amp_2):

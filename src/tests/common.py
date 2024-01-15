@@ -11,7 +11,7 @@ def clear_eflr_instance_registers() -> None:
 
     for eflr_type in eflr_sets:
         for eflr in eflr_type.get_all_sets():
-            eflr.clear_eflr_item_dict()
+            eflr.clear_eflr_item_list()
         eflr_type.clear_set_instance_dict()
 
 
