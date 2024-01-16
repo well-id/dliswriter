@@ -24,10 +24,9 @@ class SpliceItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the SpliceItem Attributes.
         """
 
-        self.output_channel = EFLRAttribute('output_channel', object_class=ChannelSet, parent_eflr=self)
-        self.input_channels = EFLRAttribute(
-            'input_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)
+        self.output_channel = EFLRAttribute('output_channel', object_class=ChannelSet)
+        self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
+        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
 
         super().__init__(name, **kwargs)
 

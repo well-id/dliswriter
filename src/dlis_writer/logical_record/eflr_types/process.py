@@ -27,21 +27,17 @@ class ProcessItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ProcessItem Attributes.
         """
 
-        self.description = TextAttribute('description', parent_eflr=self)
-        self.trademark_name = TextAttribute('trademark_name', parent_eflr=self)
-        self.version = TextAttribute('version', parent_eflr=self)
-        self.properties = IdentAttribute('properties', multivalued=True, parent_eflr=self)
-        self.status = IdentAttribute('status', converter=self.check_status, parent_eflr=self)
-        self.input_channels = EFLRAttribute(
-            'input_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.output_channels = EFLRAttribute(
-            'output_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.input_computations = EFLRAttribute(
-            'input_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
-        self.output_computations = EFLRAttribute(
-            'output_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
-        self.comments = TextAttribute('comments', multivalued=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.trademark_name = TextAttribute('trademark_name')
+        self.version = TextAttribute('version')
+        self.properties = IdentAttribute('properties', multivalued=True)
+        self.status = IdentAttribute('status', converter=self.check_status)
+        self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
+        self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
+        self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)
+        self.output_computations = EFLRAttribute('output_computations', object_class=ComputationSet, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
+        self.comments = TextAttribute('comments', multivalued=True)
 
         super().__init__(name, **kwargs)
 

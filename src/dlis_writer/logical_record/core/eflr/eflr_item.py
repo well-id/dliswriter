@@ -41,6 +41,9 @@ class EFLRItem:
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
 
+        for attribute in self.attributes.values():
+            attribute.parent_eflr = self
+
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
 
     @property

@@ -26,22 +26,22 @@ class CalibrationMeasurementItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
-        self.phase = IdentAttribute('phase', parent_eflr=self)
+        self.phase = IdentAttribute('phase')
         self.measurement_source = EFLRAttribute(
-            'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelSet, parent_eflr=self)
-        self._type = IdentAttribute('_type', parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
-        self.measurement = NumericAttribute('measurement', multivalued=True, parent_eflr=self)
-        self.sample_count = NumericAttribute('sample_count', int_only=True, parent_eflr=self)
-        self.maximum_deviation = NumericAttribute('maximum_deviation', parent_eflr=self)
-        self.standard_deviation = NumericAttribute('standard_deviation', parent_eflr=self)
-        self.begin_time = DTimeAttribute('begin_time', allow_float=True, parent_eflr=self)
-        self.duration = NumericAttribute('duration', parent_eflr=self)
-        self.reference = NumericAttribute('reference', multivalued=True, parent_eflr=self)
-        self.standard = NumericAttribute('standard', multivalued=True, parent_eflr=self)
-        self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True, parent_eflr=self)
-        self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True, parent_eflr=self)
+            'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelSet)
+        self._type = IdentAttribute('_type')
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
+        self.measurement = NumericAttribute('measurement', multivalued=True)
+        self.sample_count = NumericAttribute('sample_count', int_only=True)
+        self.maximum_deviation = NumericAttribute('maximum_deviation')
+        self.standard_deviation = NumericAttribute('standard_deviation')
+        self.begin_time = DTimeAttribute('begin_time', allow_float=True)
+        self.duration = NumericAttribute('duration')
+        self.reference = NumericAttribute('reference', multivalued=True)
+        self.standard = NumericAttribute('standard', multivalued=True)
+        self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True)
+        self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
 
         super().__init__(name, **kwargs)
 
@@ -67,11 +67,11 @@ class CalibrationCoefficientItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
-        self.label = IdentAttribute('label', parent_eflr=self)
-        self.coefficients = NumericAttribute('coefficients', multivalued=True, parent_eflr=self)
-        self.references = NumericAttribute('references', multivalued=True, parent_eflr=self)
-        self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True, parent_eflr=self)
-        self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True, parent_eflr=self)
+        self.label = IdentAttribute('label')
+        self.coefficients = NumericAttribute('coefficients', multivalued=True)
+        self.references = NumericAttribute('references', multivalued=True)
+        self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True)
+        self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True)
 
         super().__init__(name, **kwargs)
 
@@ -98,15 +98,15 @@ class CalibrationItem(EFLRItem):
         """
 
         self.calibrated_channels = EFLRAttribute(
-            'calibrated_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
+            'calibrated_channels', object_class=ChannelSet, multivalued=True)
         self.uncalibrated_channels = EFLRAttribute(
-            'uncalibrated_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
+            'uncalibrated_channels', object_class=ChannelSet, multivalued=True)
         self.coefficients = EFLRAttribute(
-            'coefficients', object_class=CalibrationCoefficientSet, multivalued=True, parent_eflr=self)
+            'coefficients', object_class=CalibrationCoefficientSet, multivalued=True)
         self.measurements = EFLRAttribute(
-            'measurements', object_class=CalibrationMeasurementSet, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
-        self.method = IdentAttribute('method', parent_eflr=self)
+            'measurements', object_class=CalibrationMeasurementSet, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
+        self.method = IdentAttribute('method')
 
         super().__init__(name, **kwargs)
 

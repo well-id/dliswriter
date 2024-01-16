@@ -20,10 +20,10 @@ class ZoneItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ZoneItem Attributes.
         """
 
-        self.description = TextAttribute('description', parent_eflr=self)
-        self.domain = IdentAttribute('domain', converter=self.check_domain, parent_eflr=self)
-        self.maximum = DTimeAttribute('maximum', allow_float=True, parent_eflr=self)
-        self.minimum = DTimeAttribute('minimum', allow_float=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.domain = IdentAttribute('domain', converter=self.check_domain)
+        self.maximum = DTimeAttribute('maximum', allow_float=True)
+        self.minimum = DTimeAttribute('minimum', allow_float=True)
 
         super().__init__(name, **kwargs)
 

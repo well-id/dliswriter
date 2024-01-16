@@ -25,18 +25,17 @@ class PathItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the PathItem Attributes.
         """
 
-        self.frame_type = EFLRAttribute('frame_type', object_class=FrameSet, parent_eflr=self)
-        self.well_reference_point = EFLRAttribute(
-            'well_reference_point', object_class=WellReferencePointSet, parent_eflr=self)
-        self.value = EFLRAttribute('value', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.borehole_depth = NumericAttribute('borehole_depth', parent_eflr=self)
-        self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
-        self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
-        self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
-        self.time = NumericAttribute('time', parent_eflr=self)
-        self.depth_offset = NumericAttribute('depth_offset', parent_eflr=self)
-        self.measure_point_offset = NumericAttribute('measure_point_offset', parent_eflr=self)
-        self.tool_zero_offset = NumericAttribute('tool_zero_offset', parent_eflr=self)
+        self.frame_type = EFLRAttribute('frame_type', object_class=FrameSet)
+        self.well_reference_point = EFLRAttribute('well_reference_point', object_class=WellReferencePointSet)
+        self.value = EFLRAttribute('value', object_class=ChannelSet, multivalued=True)
+        self.borehole_depth = NumericAttribute('borehole_depth')
+        self.vertical_depth = NumericAttribute('vertical_depth')
+        self.radial_drift = NumericAttribute('radial_drift')
+        self.angular_drift = NumericAttribute('angular_drift')
+        self.time = NumericAttribute('time')
+        self.depth_offset = NumericAttribute('depth_offset')
+        self.measure_point_offset = NumericAttribute('measure_point_offset')
+        self.tool_zero_offset = NumericAttribute('tool_zero_offset')
 
         super().__init__(name, **kwargs)
 

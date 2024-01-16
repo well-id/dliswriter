@@ -18,8 +18,8 @@ class NoFormatItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the NoFormatItem Attributes.
         """
 
-        self.consumer_name = IdentAttribute('consumer_name', parent_eflr=self)
-        self.description = TextAttribute('description', parent_eflr=self)
+        self.consumer_name = IdentAttribute('consumer_name')
+        self.description = TextAttribute('description')
 
         super().__init__(name, **kwargs)
 

@@ -18,10 +18,9 @@ class AxisItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the AxisItem Attributes.
         """
 
-        self.axis_id = IdentAttribute('axis_id', parent_eflr=self)
-        self.coordinates = Attribute('coordinates', multivalued=True, parent_eflr=self,
-                                     converter=self.convert_maybe_numeric)
-        self.spacing = NumericAttribute('spacing', parent_eflr=self)
+        self.axis_id = IdentAttribute('axis_id')
+        self.coordinates = Attribute('coordinates', multivalued=True, converter=self.convert_maybe_numeric)
+        self.spacing = NumericAttribute('spacing')
 
         super().__init__(name, **kwargs)
 

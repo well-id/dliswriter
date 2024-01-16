@@ -24,11 +24,11 @@ class ParameterItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ParameterItem Attributes.
         """
 
-        self.long_name = TextAttribute('long_name', parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)
-        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True, parent_eflr=self)
+        self.long_name = TextAttribute('long_name')
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
+        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
+        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True)
 
         super().__init__(name, **kwargs)
 

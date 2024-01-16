@@ -35,15 +35,14 @@ class FrameItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
-        self.description = TextAttribute('description', parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.index_type = IdentAttribute('index_type', converter=self.parse_index_type, parent_eflr=self)
-        self.direction = IdentAttribute('direction', parent_eflr=self)
-        self.spacing = NumericAttribute('spacing', parent_eflr=self)
-        self.encrypted = NumericAttribute(
-            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT, parent_eflr=self)
-        self.index_min = NumericAttribute('index_min', parent_eflr=self)
-        self.index_max = NumericAttribute('index_max', parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True)
+        self.index_type = IdentAttribute('index_type', converter=self.parse_index_type)
+        self.direction = IdentAttribute('direction')
+        self.spacing = NumericAttribute('spacing')
+        self.encrypted = NumericAttribute('encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
+        self.index_min = NumericAttribute('index_min')
+        self.index_max = NumericAttribute('index_max')
 
         super().__init__(name, **kwargs)
 

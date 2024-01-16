@@ -23,10 +23,10 @@ class GroupItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the GroupItem Attributes.
         """
 
-        self.description = TextAttribute('description', parent_eflr=self)
-        self.object_type = IdentAttribute('object_type', parent_eflr=self)
-        self.object_list = EFLRAttribute('object_list', multivalued=True, parent_eflr=self)
-        self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.object_type = IdentAttribute('object_type')
+        self.object_list = EFLRAttribute('object_list', multivalued=True)
+        self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True)
 
         super().__init__(name, **kwargs)
 

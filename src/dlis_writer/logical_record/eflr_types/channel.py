@@ -53,18 +53,16 @@ class ChannelItem(EFLRItem):
 
         self._cast_dtype = None  # need the attribute defined for representation code check
 
-        self.long_name = TextAttribute('long_name', parent_eflr=self)
-        self.properties = IdentAttribute('properties', multivalued=True, parent_eflr=self)
+        self.long_name = TextAttribute('long_name')
+        self.properties = IdentAttribute('properties', multivalued=True)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = IdentAttribute('units', converter=self.convert_unit, parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
-        self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
-        self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
-        self.minimum_value = NumericAttribute(
-            'minimum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
-        self.maximum_value = NumericAttribute(
-            'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
+        self.units = IdentAttribute('units', converter=self.convert_unit)
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
+        self.element_limit = DimensionAttribute('element_limit')
+        self.source = Attribute('source', representation_code=RepC.OBJREF)
+        self.minimum_value = NumericAttribute('minimum_value', representation_code=RepC.FDOUBL, multivalued=True)
+        self.maximum_value = NumericAttribute('maximum_value', representation_code=RepC.FDOUBL, multivalued=True)
 
         super().__init__(name, **kwargs)
 

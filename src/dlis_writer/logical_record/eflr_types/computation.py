@@ -25,13 +25,13 @@ class ComputationItem(EFLRItem):
             **kwargs        :   Values of to be set as characteristics of the ComputationItem Attributes.
         """
 
-        self.long_name = TextAttribute('long_name', parent_eflr=self)
-        self.properties = IdentAttribute('properties', multivalued=True, parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)
-        self.values = NumericAttribute('values', multivalued=True, parent_eflr=self)
-        self.source = EFLRAttribute('source', parent_eflr=self)
+        self.long_name = TextAttribute('long_name')
+        self.properties = IdentAttribute('properties', multivalued=True)
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet)
+        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
+        self.values = NumericAttribute('values', multivalued=True)
+        self.source = EFLRAttribute('source')
 
         super().__init__(name, **kwargs)
 

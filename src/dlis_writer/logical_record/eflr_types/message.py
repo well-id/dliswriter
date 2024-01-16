@@ -18,13 +18,13 @@ class MessageItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the MessageItem Attributes.
         """
 
-        self._type = IdentAttribute('_type', parent_eflr=self)
-        self.time = DTimeAttribute('time', allow_float=True, parent_eflr=self)
-        self.borehole_drift = NumericAttribute('borehole_drift', parent_eflr=self)
-        self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
-        self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
-        self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
-        self.text = TextAttribute('text', multivalued=True, parent_eflr=self)
+        self._type = IdentAttribute('_type')
+        self.time = DTimeAttribute('time', allow_float=True)
+        self.borehole_drift = NumericAttribute('borehole_drift')
+        self.vertical_depth = NumericAttribute('vertical_depth')
+        self.radial_drift = NumericAttribute('radial_drift')
+        self.angular_drift = NumericAttribute('angular_drift')
+        self.text = TextAttribute('text', multivalued=True)
 
         super().__init__(name, **kwargs)
 
@@ -50,7 +50,7 @@ class CommentItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CommentItem Attributes.
         """
 
-        self.text = TextAttribute('text', multivalued=True, parent_eflr=self)
+        self.text = TextAttribute('text', multivalued=True)
 
         super().__init__(name, **kwargs)
 

@@ -25,13 +25,13 @@ class ToolItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ToolItem Attributes.
         """
 
-        self.description = TextAttribute('description', parent_eflr=self)
-        self.trademark_name = TextAttribute('trademark_name', parent_eflr=self)
-        self.generic_name = TextAttribute('generic_name', parent_eflr=self)
-        self.parts = EFLRAttribute('parts', object_class=EquipmentSet, multivalued=True, parent_eflr=self)
-        self.status = StatusAttribute('status', parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.trademark_name = TextAttribute('trademark_name')
+        self.generic_name = TextAttribute('generic_name')
+        self.parts = EFLRAttribute('parts', object_class=EquipmentSet, multivalued=True)
+        self.status = StatusAttribute('status')
+        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
 
         super().__init__(name, **kwargs)
 

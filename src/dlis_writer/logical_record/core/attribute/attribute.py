@@ -53,7 +53,7 @@ class Attribute:
         self._units = units
         self._value = value
         self._converter = converter  # to convert value
-        self._parent_eflr = parent_eflr
+        self.parent_eflr = parent_eflr
 
     @staticmethod
     def _check_type(value: Any, *expected_types: type, allow_none: bool = False) -> None:
@@ -69,7 +69,7 @@ class Attribute:
     def __str__(self) -> str:
         """String representation of the attribute."""
 
-        return f"{self.__class__.__name__} '{self._label}'" + (f' of {self._parent_eflr}' if self._parent_eflr else '')
+        return f"{self.__class__.__name__} '{self._label}'" + (f' of {self.parent_eflr}' if self.parent_eflr else '')
 
     @property
     def label(self) -> str:
@@ -192,12 +192,6 @@ class Attribute:
         """True if multiple values (list of values) can be added; False otherwise."""
 
         return self._multivalued
-
-    @property
-    def parent_eflr(self) -> "Union[EFLRSet, EFLRItem, None]":
-        """EFLR or ELFRObject instance the attribute belongs to."""
-
-        return self._parent_eflr
 
     def convert_value(self, value: Any) -> Any:
         """Transform/validate the provided value according to the provided converter.
