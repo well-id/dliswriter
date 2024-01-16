@@ -13,12 +13,12 @@ import logging
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.core.eflr import EFLRItem
 from dlis_writer.logical_record.eflr_types import OriginItem, ChannelItem
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 
 # colored logs output
 logger = logging.getLogger(__name__)
-install_logger(logger)
+install_colored_logger(logger)
 
 
 # set up origin & file header with custom parameters - by creating an instance or dict of kwargs

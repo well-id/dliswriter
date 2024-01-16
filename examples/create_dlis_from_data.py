@@ -1,7 +1,7 @@
 import logging
 from argparse import ArgumentParser
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 from utils import prepare_directory, make_dlis_file_spec
 
@@ -30,7 +30,7 @@ def make_parser() -> ArgumentParser:
 
 
 def main() -> None:
-    install_logger(logger)
+    install_colored_logger(logger)
 
     pargs = make_parser().parse_args()
 

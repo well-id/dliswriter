@@ -2,7 +2,7 @@ import os
 import logging
 from typing import Union
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 
 logger = logging.getLogger(__name__)
@@ -47,7 +47,7 @@ def compare(f1: path_type, f2: path_type, verbose: bool = True) -> bool:
 
 
 if __name__ == '__main__':
-    install_logger(logger)
+    install_colored_logger(logger)
 
     from sys import argv
 

@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 import logging
 from typing import Union, Any
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 
 logger = logging.getLogger(__name__)
@@ -107,8 +107,6 @@ def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwri
 def main() -> None:
     """Create a synthetic HDF5 data file based on information from command line arguments."""
 
-    install_logger(logger)
-
     parser = ArgumentParser("Creating HFD5 file with mock well data")
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
@@ -138,4 +136,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    install_colored_logger(logger)
+
     main()

@@ -2,7 +2,7 @@ import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 from dlis_writer.misc.synthetic_data_generator import create_data_file
 
 
@@ -59,7 +59,7 @@ def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace) -> N
 
 
 def main() -> None:
-    install_logger(logger)
+    install_colored_logger(logger)
 
     pargs = make_parser().parse_args()
 
