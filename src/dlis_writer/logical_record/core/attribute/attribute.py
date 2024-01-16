@@ -17,6 +17,8 @@ class Attribute:
     """Represent an RP66 V1 Attribute."""
 
     settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set
+    _valid_repr_codes = tuple(RepresentationCode.__members__.values())
+    _default_repr_code = None
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
@@ -47,7 +49,7 @@ class Attribute:
 
         self._label = label.strip('_').upper().replace('_', '-')
         self._multivalued = multivalued
-        self._representation_code = representation_code
+        self._representation_code = representation_code if representation_code is not None else self._default_repr_code
         self._units = units
         self._value = value
         self._converter = converter  # to convert value
@@ -97,6 +99,9 @@ class Attribute:
     def representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
         """Set a new representation code for the attribute."""
 
+        if 'representation_code' not in self.settables:
+            raise RuntimeError(f"Representation code for {self.__class__.__name__} cannot be set")
+
         self._set_representation_code(rc)
 
     def _guess_repr_code(self) -> Union[RepresentationCode, None]:
@@ -145,6 +150,10 @@ class Attribute:
 
         if self._representation_code is not None and self._representation_code is not rcm:
             raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
+
+        if rcm not in self._valid_repr_codes:
+            raise ValueError(f"Representation code {rcm} is not valid for {self.__class__}; "
+                             f"valid codes are: {', '.join(str(r) for r in self._valid_repr_codes)}")
         self._representation_code = rcm
 
     @property
@@ -156,6 +165,9 @@ class Attribute:
     @units.setter
     def units(self, units: str) -> None:
         """Set new units for the attribute."""
+
+        if 'units' not in self.settables:
+            raise RuntimeError(f"Units of {self.__class__.__name__} cannot be set")
 
         if units is not None:
             self._check_type(units, str)

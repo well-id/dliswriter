@@ -20,14 +20,16 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None,
-                 representation_code: Optional[RepC] = None, **kwargs: Any) -> None:
+    settables = ('representation_code', 'value')  # can't set units for EFLRAttribute
+    _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
+    _default_repr_code = RepC.OBNAME
+
+    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
 
         Args:
             label               :   Attribute label.
             object_class        :   EFLR subclass corresponding to the class of the object(s) - value of the attribute.
-            representation_code :   Representation code to be used for the value. Can be OBNAME or OBJREF.
             kwargs              :   Keyword arguments passed to Attribute.
         """
 
@@ -35,15 +37,10 @@ class EFLRAttribute(Attribute):
             if kwargs.get(arg_name, None) is not None:
                 raise TypeError(f"{self.__class__.__name__} does not accept '{arg_name}' argument")
 
-        if representation_code is None:
-            representation_code = RepC.OBNAME
-        if representation_code not in (RepC.OBNAME, RepC.OBJREF):
-            raise ValueError(f"Representation code '{representation_code.name}' is not allowed for an EFLRAttribute")
-
         if object_class is not None and not issubclass(object_class, EFLRSet):
             raise TypeError(f"Expected an EFLR subclass; got {object_class}")
 
-        super().__init__(label=label, representation_code=representation_code, **kwargs)
+        super().__init__(label=label, **kwargs)
 
         self._object_class = object_class
         self._converter = self._convert_value
@@ -72,6 +69,7 @@ class DTimeAttribute(Attribute):
     """Model an attribute whose value is a datetime object."""
 
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]  #: accepted date-time formats
+    _valid_repr_codes = (RepC.DTIME, RepC.FDOUBL, RepC.FSINGL)
 
     class DTimeFormatError(ValueError):
         """Error raised if a provided string does not match any of the allowed formats."""
@@ -142,6 +140,8 @@ class DTimeAttribute(Attribute):
 
 class NumericAttribute(Attribute):
     """Model an attribute which can only have numerical values."""
+
+    _valid_repr_codes = ReprCodeConverter.numeric_codes
 
     def __init__(self, *args: Any, int_only: bool = False, float_only: bool = False, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
@@ -257,19 +257,22 @@ class NumericAttribute(Attribute):
 class DimensionAttribute(NumericAttribute):
     """Model an attribute expressing dimensions (e.g. dimension or element_limit of Channel)."""
 
-    def __init__(self, *args: Any, representation_code: RepC = RepC.UVARI, **kwargs: Any) -> None:
+    settables = ('value',)
+    _valid_repr_codes = (RepC.UVARI,)
+    _default_repr_code = RepC.UVARI
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
 
         Args:
             args                :   Positional arguments passed to NumericAttribute.
-            representation_code :   Representation code for the attribute value.
             kwargs              :   Keyword arguments passed to NumericAttribute.
         """
 
         if 'converter' in kwargs:
             raise TypeError(f"{self.__class__.__name__} does not accept 'converter' argument")
 
-        super().__init__(*args, representation_code=representation_code, int_only=True, multivalued=True, **kwargs)
+        super().__init__(*args, int_only=True, multivalued=True, **kwargs)
 
     def copy(self) -> Self:
         """Create a copy of the attribute instance."""
@@ -284,6 +287,10 @@ class DimensionAttribute(NumericAttribute):
 class StatusAttribute(Attribute):
     """Model an attribute which can only have value 1 or 0."""
 
+    settables = ('value',)
+    _valid_repr_codes = (RepC.STATUS,)
+    _default_repr_code = RepC.STATUS
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a StatusAttribute.
 
@@ -296,8 +303,8 @@ class StatusAttribute(Attribute):
             if name in kwargs:
                 raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
 
-        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)  # type: ignore
-        # ^ no, representation_code is not passed multiple times
+        super().__init__(*args, **kwargs)
+
         self._converter = self.convert_status
 
     @staticmethod
