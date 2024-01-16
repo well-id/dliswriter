@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dlis-writer"
-version = "0.0.6"
+version = "0.0.7"
 authors = [
   { name="Dominika Dlugosz", email="dominika.dlugosz@wellid.no" },
   { name="Kamil Grunwald", email="kamil.grunwald@wellid.no" },

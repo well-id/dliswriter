@@ -36,6 +36,12 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
+##### 0.0.7 Equivalent (_parallel_) frames
+Made it easier to add frames with the same set of channel (dataset) names, but separate data - e.g. 
+two of each: DEPTH, RPM, and AMPLITUDE, coming from two separate measurements, 
+associated with relevant frames (FRAME_1, FRAME_2).
+See [this example](./examples/create_dlis_equivalent_frames.py).
+
 ##### 0.0.6 Representation codes
 Fixed representation codes for numpy dtypes.
 Tests & improvements for utils (repr code converter, source data wrappers, etc.).
