@@ -15,17 +15,16 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
             'phase': 'BEFORE',
             'measurement_source': channel1,
             '_type': 'Plus',
-            'axis.value': axis1,
-            'measurement.value': 12.2323,
-            'sample_count.value': 12,
+            'axis': axis1,
+            'measurement': {'value': 12.2323},
+            'sample_count': {'value': 12},
             'maximum_deviation': 2.2324,
             'begin_time': '2050/03/12 12:30:00',
-            'duration': 15,
-            'duration.units': 's',
+            'duration': {'value': 15, 'units': 's'},
             'reference': [11],
-            'standard.value': [11.2],
+            'standard': [11.2],
             'plus_tolerance': [2],
-            'minus_tolerance.value': 1
+            'minus_tolerance': {'value': 1}
         }
     )
 

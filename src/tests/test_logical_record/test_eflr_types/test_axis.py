@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisItem
     ('Axis-X', 'Another axis', 's')
 ))
 def test_str_attributes(name: str, axis_id: str, units: str) -> None:
-    axis = AxisItem(name, **{'axis_id': axis_id, 'spacing.units': units})
+    axis = AxisItem(name, axis_id=axis_id, spacing={'units': units})
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id

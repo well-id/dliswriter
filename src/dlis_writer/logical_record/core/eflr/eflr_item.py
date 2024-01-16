@@ -143,18 +143,23 @@ class EFLRItem:
         or maximum_value.value respectively) is set to the value of the keyword argument.
         """
 
-        for attr_name, attr_value in kwargs.items():
-            attr_name_main, *attr_parts = attr_name.split('.')
-            attr_part = attr_parts[0] if attr_parts else 'value'
-            if attr_part not in Attribute.settables:
-                raise ValueError(f"Cannot set {attr_part} of an Attribute item")
+        def set_value(_attr: Attribute, _value: Any, _key: str = 'value'):
+            logger.debug(f"Setting {_attr.label}.{_key} of {self} to {repr(_value)}")
+            setattr(_attr, _key, _value)
 
-            attr = getattr(self, attr_name_main, None)
+        for attr_name, attr_value in kwargs.items():
+            attr = getattr(self, attr_name, None)
             if not attr or not isinstance(attr, Attribute):
                 raise AttributeError(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
 
-            logger.debug(f"Setting attribute '{attr_name}' of {self} to {repr(attr_value)}")
-            setattr(attr, attr_part, attr_value)
+            if isinstance(attr_value, dict):
+                for key, value in attr_value.items():
+                    if key not in attr.settables:
+                        raise ValueError(f"Cannot set {key} of a(n) {attr.__class__.__name__}")
+                    set_value(attr, value, key)
+
+            else:
+                set_value(attr, attr_value)
 
     @classmethod
     def convert_maybe_numeric(cls, val: Union[str, int, float]) -> Union[str, int, float]:

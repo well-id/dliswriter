@@ -34,28 +34,17 @@ def test_params_and_units() -> None:
     eq = EquipmentItem(
         "Equipment-1",
         **{
-            'height': 140,
-            'height.units': 'in',
-            'length': 230.78,
-            'length.units': 'cm',
-            'minimum_diameter': 2.3,
-            'minimum_diameter.units': 'm',
-            'maximum_diameter': 3.2,
-            'maximum_diameter.units': 'm',
-            'weight': 1.2,
-            'weight.units': 't',
-            'hole_size': 323.2,
-            'hole_size.units': 'm',
-            'pressure': 18000,
-            'pressure.units': 'psi',
-            'temperature': 24,
-            'temperature.units': 'degC',
-            'vertical_depth': 587,
-            'vertical_depth.units': 'm',
-            'radial_drift': 23.22,
-            'radial_drift.units': 'm',
-            'angular_drift': 32.5,
-            'angular_drift.units': 'm'
+            'height': {'value': 140, 'units': 'in'},
+            'length': {'value': 230.78, 'units': 'cm'},
+            'minimum_diameter': {'value': 2.3, 'units': 'm'},
+            'maximum_diameter': {'value': 3.2, 'units': 'm'},
+            'weight': {'value': 1.2, 'units': 't'},
+            'hole_size': {'value': 323.2, 'units': 'm'},
+            'pressure': {'value': 18000, 'units': 'psi'},
+            'temperature': {'value': 24, 'units': 'degC'},
+            'vertical_depth': {'value': 587, 'units': 'm'},
+            'radial_drift': {'value': 23.22, 'units': 'm'},
+            'angular_drift': {'value': 32.5, 'units': 'm'}
         }
     )
 
