@@ -6,7 +6,7 @@ from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, TextAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -27,9 +27,9 @@ class ProcessItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ProcessItem Attributes.
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
-        self.version = Attribute('version', representation_code=RepC.ASCII, parent_eflr=self)
+        self.description = TextAttribute('description', parent_eflr=self)
+        self.trademark_name = TextAttribute('trademark_name', parent_eflr=self)
+        self.version = TextAttribute('version', parent_eflr=self)
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
         self.status = Attribute('status', converter=self.check_status, representation_code=RepC.IDENT, parent_eflr=self)
         self.input_channels = EFLRAttribute(
@@ -41,7 +41,7 @@ class ProcessItem(EFLRItem):
         self.output_computations = EFLRAttribute(
             'output_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
         self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
-        self.comments = Attribute('comments', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self.comments = TextAttribute('comments', multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 

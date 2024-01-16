@@ -4,9 +4,8 @@ from typing import Union, Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute, TextAttribute
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -35,7 +34,7 @@ class FrameItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.description = TextAttribute('description', parent_eflr=self)
         self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
         self.index_type = Attribute(
             'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)

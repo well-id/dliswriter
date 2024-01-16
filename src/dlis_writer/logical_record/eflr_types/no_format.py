@@ -2,7 +2,7 @@ from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.logical_record.core.attribute import Attribute, TextAttribute
 
 
 class NoFormatItem(EFLRItem):
@@ -19,7 +19,7 @@ class NoFormatItem(EFLRItem):
         """
 
         self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT, parent_eflr=self)
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.description = TextAttribute('description', parent_eflr=self)
 
         super().__init__(name, **kwargs)
 

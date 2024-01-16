@@ -2,10 +2,10 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute, TextAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +24,7 @@ class ParameterItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the ParameterItem Attributes.
         """
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.long_name = TextAttribute('long_name', parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)

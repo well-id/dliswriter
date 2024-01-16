@@ -5,7 +5,8 @@ from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttribute, DimensionAttribute, Attribute
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute, Attribute,
+                                                       TextAttribute)
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class ComputationItem(EFLRItem):
             **kwargs        :   Values of to be set as characteristics of the ComputationItem Attributes.
         """
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.long_name = TextAttribute('long_name', parent_eflr=self)
         self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=AxisSet, parent_eflr=self)

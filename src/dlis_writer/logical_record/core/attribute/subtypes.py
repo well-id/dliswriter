@@ -299,13 +299,7 @@ class StatusAttribute(Attribute):
             kwargs      :   Keyword arguments passed to Attribute.
         """
 
-        for name in ('converter', 'representation_code'):
-            if name in kwargs:
-                raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
-
-        super().__init__(*args, **kwargs)
-
-        self._converter = self.convert_status
+        super().__init__(*args, **kwargs, converter=self.convert_status)
 
     @staticmethod
     def convert_status(val: Union[bool, int, float]) -> int:
@@ -329,6 +323,38 @@ class StatusAttribute(Attribute):
         return self.__class__(
             label=self._label,
             multivalued=self._multivalued,
-            units=self._units,
+            value=self._value
+        )
+
+
+class TextAttribute(Attribute):
+    """Model an attribute representing text in ASCII format."""
+
+    settables = ('value',)
+    _valid_repr_codes = (RepC.ASCII,)
+    _default_repr_code = RepC.ASCII
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialise an ASCIIAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        super().__init__(*args, **kwargs, converter=self._check_string)
+
+    @staticmethod
+    def _check_string(v: str) -> str:
+        if not isinstance(v, str):
+            raise TypeError(f'Expected a str, got {type(v)}: {v}')
+        return v
+
+    def copy(self) -> Self:
+        """Create a copy of the attribute instance."""
+
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
             value=self._value
         )

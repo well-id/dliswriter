@@ -2,7 +2,7 @@ from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute, StatusAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute, StatusAttribute, TextAttribute
 
 
 class EquipmentItem(EFLRItem):
@@ -18,7 +18,7 @@ class EquipmentItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the EquipmentItem Attributes.
         """
 
-        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
+        self.trademark_name = TextAttribute('trademark_name', parent_eflr=self)
         self.status = StatusAttribute('status', parent_eflr=self)
         self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
         self.serial_number = Attribute('serial_number', representation_code=RepC.IDENT, parent_eflr=self)

@@ -2,7 +2,7 @@ from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute, TextAttribute
 
 
 class MessageItem(EFLRItem):
@@ -24,7 +24,7 @@ class MessageItem(EFLRItem):
         self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
         self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
         self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self.text = TextAttribute('text', multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 
@@ -50,7 +50,7 @@ class CommentItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CommentItem Attributes.
         """
 
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self.text = TextAttribute('text', multivalued=True, parent_eflr=self)
 
         super().__init__(name, **kwargs)
 
