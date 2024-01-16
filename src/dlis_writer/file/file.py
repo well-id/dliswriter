@@ -354,17 +354,19 @@ class DLISFile:
     def _get_unique_dataset_name(self, channel_name: str, dataset_name: Optional[str] = None) -> str:
         """Determine a unique name for channel's data in the internal data dict."""
 
+        current_dataset_names = [ch.dataset_name for ch in self._channels]
+
         if dataset_name is not None:
-            if dataset_name in self._data_dict:
+            if dataset_name in current_dataset_names:
                 raise ValueError(f"A data set with name '{dataset_name}' already exists")
             return dataset_name
 
-        if channel_name not in self._data_dict:
+        if channel_name not in current_dataset_names:
             return channel_name
 
         for i in range(1, self._max_dataset_copy):
             n = f"{channel_name}__{i}"
-            if n not in self._data_dict:
+            if n not in current_dataset_names:
                 break
         else:
             # loop not broken - all options exhausted

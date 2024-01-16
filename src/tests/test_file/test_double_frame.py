@@ -100,7 +100,7 @@ def test_frame_data(double_frame_dlis_contents: dlis.LogicalFile, double_frame_d
     assert (frame_channels[2].curves() == data['AMPLITUDE']).all()
 
 
-def test_dataset_names(double_frame_dlis: DLISFile):
+def test_dataset_names(double_frame_dlis: DLISFile) -> None:
     file_channels = double_frame_dlis.channels
 
     assert file_channels[0].dataset_name == 'DEPTH'
@@ -114,3 +114,54 @@ def test_dataset_names(double_frame_dlis: DLISFile):
     assert all(dn in double_frame_dlis._data_dict for dn in (
         'DEPTH', 'RPM', 'AMPLITUDE', 'DEPTH__1', 'RPM__1', 'AMPLITUDE__1'
     ))
+
+
+@pytest.mark.parametrize(("channel_name", "dataset_name"), (("DEPTH", "depth"), ("XYZ", "XZY")))
+def test_unique_dataset_name_from_dataset_name(
+        double_frame_dlis: DLISFile, channel_name: str, dataset_name: str) -> None:
+
+    ch = double_frame_dlis.add_channel(channel_name, dataset_name=dataset_name)
+    assert ch.dataset_name == dataset_name
+
+
+@pytest.mark.parametrize(("channel_name", "dataset_name"), (("RPM", "RPM"), ("new_channel", "AMPLITUDE")))
+def test_unique_dataset_name_but_dataset_name_exists(
+        double_frame_dlis: DLISFile, channel_name: str, dataset_name: str) -> None:
+
+    with pytest.raises(ValueError, match=f"A data set with name '{dataset_name}' already exists"):
+        double_frame_dlis.add_channel(channel_name, dataset_name=dataset_name)
+
+
+@pytest.mark.parametrize("channel_name", ("NEW_CHANNEL", "XXX"))
+def test_unique_dataset_name_from_new_channel_name(double_frame_dlis: DLISFile, channel_name: str) -> None:
+
+    ch = double_frame_dlis.add_channel(channel_name)
+    assert ch.dataset_name == channel_name
+
+
+@pytest.mark.parametrize("channel_name", ("ABC", "SURFACE_RPM"))
+def test_unique_dataset_name_from_repeated_channel_name(double_frame_dlis: DLISFile, channel_name: str) -> None:
+    chs = []
+    for i in range(5):
+        chs.append(double_frame_dlis.add_channel(channel_name))
+
+    assert chs[0].name == channel_name
+    assert chs[0].dataset_name == channel_name
+
+    for i in range(1, 5):
+        assert chs[i].name == channel_name
+        assert chs[i].dataset_name == f"{channel_name}__{i}"
+
+    assert len(set(chs)) == 5  # 5 separate objects
+
+
+def test_multiple_axes(double_frame_dlis_contents: dlis.LogicalFile) -> None:
+    frames = double_frame_dlis_contents.frames
+    for i in range(2):
+        axes = frames[i].channels[0].axis
+        assert len(axes) == 1
+        axis = axes[0]
+        assert axis.name == 'AXIS'
+        assert axis.copynumber == i
+
+    assert frames[0].channels[0].axis[0] is not frames[1].channels[0].axis[0]  # separate objects
