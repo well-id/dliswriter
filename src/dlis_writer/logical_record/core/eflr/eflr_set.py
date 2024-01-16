@@ -34,7 +34,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         self.set_name = set_name
         self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
-        self._eflr_item_dict: dict[str, EFLRItem] = {}  # instances of EFLRItem registered with this EFLRSet instance
+        self._eflr_item_list: list[EFLRItem] = []  # instances of EFLRItem registered with this EFLRSet instance
         self._attributes: dict[str, Attribute] = {}   # attributes of this EFLRSet (cpd from an EFLRItem instance)
         self._origin_reference: Union[int, None] = None
 
@@ -45,10 +45,10 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return f"{self.__class__.__name__} {repr(self.set_name)}"
 
-    def clear_eflr_item_dict(self) -> None:
+    def clear_eflr_item_list(self) -> None:
         """Remove all references to EFLRItem instances from the internal dictionary."""
 
-        self._eflr_item_dict.clear()
+        self._eflr_item_list.clear()
 
     @property
     def origin_reference(self) -> Union[int, None]:
@@ -61,7 +61,7 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         """Set a new origin reference of the EFLRSet instance and all EFLRItem instances registered with it."""
 
         self._origin_reference = val
-        for obj in self._eflr_item_dict.values():
+        for obj in self._eflr_item_list:
             obj.origin_reference = val
 
     def _make_set_component_bytes(self) -> bytes:
@@ -101,25 +101,15 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return bts
 
-    def get_eflr_item(self, name: str, *args: Any) -> Union[EFLRItem, Any]:
-        """Get an EFLRItem instance from the internal dict by its name.
-
-        Args:
-            name    :   Name of the EFLR item (under which it was registered).
-            *args   :   A maximum of 1 arg is allowed. It is used as the fallback value if the item is not found.
-        """
-
-        return self._eflr_item_dict.get(name, *args)
-
     def register_item(self, child: EFLRItem) -> None:
         """Register a child EFLRItem with this EFLRSet."""
 
         if not isinstance(child, self.item_type):
             raise TypeError(f"Expected an instance of {self.item_type}; got {type(child)}: {child}")
 
-        self._eflr_item_dict[child.name] = child
+        self._eflr_item_list.append(child)
 
-        if len(self._eflr_item_dict) == 1:
+        if len(self._eflr_item_list) == 1:
             for attr_name, attr in child.attributes.items():
                 self._attributes[attr_name] = attr.copy()
 
@@ -128,13 +118,22 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
     def get_all_eflr_items(self) -> list[EFLRItem]:
         """Return a list of all EFLRItem instances registered with this EFLRSet instance."""
 
-        return list(self._eflr_item_dict.values())
+        return self._eflr_item_list[:]  # copy
+
+    def get_all_eflr_items_from_all_sets(self) -> list[EFLRItem]:
+        """Return a list of all EFLRItem instances registered with all EFLRSet instances of this type."""
+
+        s = []
+        for eflr_set in self.get_all_sets():
+            s.extend(eflr_set.get_all_eflr_items())
+
+        return s
 
     @property
     def n_items(self) -> int:
         """Number of EFLRItem instances registered with this EFLRSet instance."""
 
-        return len(self._eflr_item_dict)
+        return len(self._eflr_item_list)
 
     @classmethod
     def clear_set_instance_dict(cls) -> None:

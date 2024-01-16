@@ -75,6 +75,7 @@ class DLISFile:
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
         self._data_dict: dict[str, np.ndarray] = {}
+        self._max_dataset_copy = 1000
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
@@ -325,6 +326,8 @@ class DLISFile:
         if data is not None and not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}: {data}")
 
+        dataset_name = self._get_unique_dataset_name(channel_name=name, dataset_name=dataset_name)
+
         ch = eflr_types.ChannelItem(
             name,
             long_name=long_name,
@@ -347,6 +350,29 @@ class DLISFile:
             self._data_dict[ch.dataset_name] = data
 
         return ch
+
+    def _get_unique_dataset_name(self, channel_name: str, dataset_name: Optional[str] = None) -> str:
+        """Determine a unique name for channel's data in the internal data dict."""
+
+        current_dataset_names = [ch.dataset_name for ch in self._channels]
+
+        if dataset_name is not None:
+            if dataset_name in current_dataset_names:
+                raise ValueError(f"A data set with name '{dataset_name}' already exists")
+            return dataset_name
+
+        if channel_name not in current_dataset_names:
+            return channel_name
+
+        for i in range(1, self._max_dataset_copy):
+            n = f"{channel_name}__{i}"
+            if n not in current_dataset_names:
+                break
+        else:
+            # loop not broken - all options exhausted
+            raise RuntimeError(f"Cannot find a unique dataset name for channel '{channel_name}'")
+
+        return n
 
     def add_comment(
             self, name: str,

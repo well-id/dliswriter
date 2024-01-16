@@ -277,13 +277,12 @@ classDiagram
         +int origin_reference
         +int n_items
         
-        +clear_eflr_item_dict()
+        +clear_eflr_item_list()
         +clear_set_instance_dict()
-        +get_eflr_item()
         +register_item()
         +get_all_eflr_items()
         +get_or_make_set()
-        +get_or_make_set()
+        +get_all_sets()
         
     }
     
