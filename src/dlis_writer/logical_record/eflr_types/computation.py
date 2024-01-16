@@ -4,9 +4,9 @@ from typing import Any
 from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute, Attribute,
-                                                       TextAttribute)
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute,
+                                                       TextAttribute, IdentAttribute)
 
 
 logger = logging.getLogger(__name__)
@@ -26,7 +26,7 @@ class ComputationItem(EFLRItem):
         """
 
         self.long_name = TextAttribute('long_name', parent_eflr=self)
-        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
+        self.properties = IdentAttribute('properties', multivalued=True, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=AxisSet, parent_eflr=self)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)

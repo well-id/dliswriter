@@ -4,7 +4,7 @@ from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute, TextAttribute
+from dlis_writer.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -25,10 +25,10 @@ class OriginItem(EFLRItem):
         """
 
         self.file_id = TextAttribute('file_id', parent_eflr=self)
-        self.file_set_name = Attribute('file_set_name', representation_code=RepC.IDENT, parent_eflr=self)
+        self.file_set_name = IdentAttribute('file_set_name', parent_eflr=self)
         self.file_set_number = NumericAttribute('file_set_number', representation_code=RepC.UVARI, parent_eflr=self)
         self.file_number = NumericAttribute('file_number', representation_code=RepC.UVARI, parent_eflr=self)
-        self.file_type = Attribute('file_type', representation_code=RepC.IDENT, parent_eflr=self)
+        self.file_type = IdentAttribute('file_type', parent_eflr=self)
         self.product = TextAttribute('product', parent_eflr=self)
         self.version = TextAttribute('version', parent_eflr=self)
         self.programs = TextAttribute('programs', multivalued=True, parent_eflr=self)
@@ -42,7 +42,7 @@ class OriginItem(EFLRItem):
         self.producer_code = NumericAttribute('producer_code', representation_code=RepC.UNORM, parent_eflr=self)
         self.producer_name = TextAttribute('producer_name', parent_eflr=self)
         self.company = TextAttribute('company', parent_eflr=self)
-        self.name_space_name = Attribute('name_space_name', representation_code=RepC.IDENT, parent_eflr=self)
+        self.name_space_name = IdentAttribute('name_space_name', parent_eflr=self)
         self.name_space_version = NumericAttribute(
             'name_space_version', representation_code=RepC.UVARI, parent_eflr=self)
 

@@ -6,8 +6,8 @@ from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute,
-                                                       DTimeAttribute, DimensionAttribute)
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute,
+                                                       DTimeAttribute, DimensionAttribute, IdentAttribute)
 
 
 logger = logging.getLogger(__name__)
@@ -26,10 +26,10 @@ class CalibrationMeasurementItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
-        self.phase = Attribute('phase', representation_code=RepC.IDENT, parent_eflr=self)
+        self.phase = IdentAttribute('phase', parent_eflr=self)
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelSet, parent_eflr=self)
-        self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
+        self._type = IdentAttribute('_type', parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
         self.measurement = NumericAttribute('measurement', multivalued=True, parent_eflr=self)
@@ -67,7 +67,7 @@ class CalibrationCoefficientItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
-        self.label = Attribute('label', representation_code=RepC.IDENT, parent_eflr=self)
+        self.label = IdentAttribute('label', parent_eflr=self)
         self.coefficients = NumericAttribute('coefficients', multivalued=True, parent_eflr=self)
         self.references = NumericAttribute('references', multivalued=True, parent_eflr=self)
         self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True, parent_eflr=self)
@@ -106,7 +106,7 @@ class CalibrationItem(EFLRItem):
         self.measurements = EFLRAttribute(
             'measurements', object_class=CalibrationMeasurementSet, multivalued=True, parent_eflr=self)
         self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
-        self.method = Attribute('method', representation_code=RepC.IDENT, parent_eflr=self)
+        self.method = IdentAttribute('method', parent_eflr=self)
 
         super().__init__(name, **kwargs)
 

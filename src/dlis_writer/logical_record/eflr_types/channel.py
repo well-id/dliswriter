@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter, numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
-                                                       TextAttribute)
+                                                       TextAttribute, IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -54,11 +54,9 @@ class ChannelItem(EFLRItem):
         self._cast_dtype = None  # need the attribute defined for representation code check
 
         self.long_name = TextAttribute('long_name', parent_eflr=self)
-        self.properties = Attribute(
-            'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
+        self.properties = IdentAttribute('properties', multivalued=True, parent_eflr=self)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = Attribute(
-            'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
+        self.units = IdentAttribute('units', converter=self.convert_unit, parent_eflr=self)
         self.dimension = DimensionAttribute('dimension', parent_eflr=self)
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
         self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)

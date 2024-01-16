@@ -1,8 +1,8 @@
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute, TextAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import IdentAttribute, DTimeAttribute, NumericAttribute, TextAttribute
 
 
 class MessageItem(EFLRItem):
@@ -18,7 +18,7 @@ class MessageItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the MessageItem Attributes.
         """
 
-        self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
+        self._type = IdentAttribute('_type', parent_eflr=self)
         self.time = DTimeAttribute('time', allow_float=True, parent_eflr=self)
         self.borehole_drift = NumericAttribute('borehole_drift', parent_eflr=self)
         self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)

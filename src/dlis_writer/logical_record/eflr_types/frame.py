@@ -5,7 +5,8 @@ from typing import Union, Any
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute, TextAttribute
+from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,
+                                                       IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -36,9 +37,8 @@ class FrameItem(EFLRItem):
 
         self.description = TextAttribute('description', parent_eflr=self)
         self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.index_type = Attribute(
-            'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)
-        self.direction = Attribute('direction', representation_code=RepC.IDENT, parent_eflr=self)
+        self.index_type = IdentAttribute('index_type', converter=self.parse_index_type, parent_eflr=self)
+        self.direction = IdentAttribute('direction', parent_eflr=self)
         self.spacing = NumericAttribute('spacing', parent_eflr=self)
         self.encrypted = NumericAttribute(
             'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT, parent_eflr=self)

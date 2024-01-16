@@ -358,3 +358,31 @@ class TextAttribute(Attribute):
             multivalued=self._multivalued,
             value=self._value
         )
+
+
+class IdentAttribute(Attribute):
+    """Model an attribute represented as IDENT."""
+
+    settables = ('value',)
+    _valid_repr_codes = (RepC.IDENT,)
+    _default_repr_code = RepC.IDENT
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialise an IDENTAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        super().__init__(*args, **kwargs)
+
+    def copy(self) -> Self:
+        """Create a copy of the attribute instance."""
+
+        return self.__class__(
+            label=self._label,
+            multivalued=self._multivalued,
+            value=self._value
+        )
+

@@ -1,8 +1,8 @@
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute, StatusAttribute, TextAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import NumericAttribute, StatusAttribute, TextAttribute, IdentAttribute
 
 
 class EquipmentItem(EFLRItem):
@@ -20,9 +20,9 @@ class EquipmentItem(EFLRItem):
 
         self.trademark_name = TextAttribute('trademark_name', parent_eflr=self)
         self.status = StatusAttribute('status', parent_eflr=self)
-        self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
-        self.serial_number = Attribute('serial_number', representation_code=RepC.IDENT, parent_eflr=self)
-        self.location = Attribute('location', representation_code=RepC.IDENT, parent_eflr=self)
+        self._type = IdentAttribute('_type', parent_eflr=self)
+        self.serial_number = IdentAttribute('serial_number', parent_eflr=self)
+        self.location = IdentAttribute('location', parent_eflr=self)
         self.height = NumericAttribute('height', parent_eflr=self)
         self.length = NumericAttribute('length', parent_eflr=self)
         self.minimum_diameter = NumericAttribute('minimum_diameter', parent_eflr=self)
