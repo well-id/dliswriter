@@ -958,6 +958,9 @@ classDiagram
     Attribute <|-- NumericAttribute
     NumericAttribute <|-- DimensionAttribute
     Attribute <|-- StatusAttribute
+    Attribute <|-- TextAttribute
+    Attribute <|-- IdentAttribute
+
     
     class Attribute{
         +str label
@@ -970,6 +973,10 @@ classDiagram
         +[EFLRItem, EFLRSet] parent_eflr
         +Callable converter
         +bool multivalued
+        +tuple settables
+        -tuple _valid_repr_codes
+        -RepresentationCode _default_repr_code
+
         
         +convert_value()
         +get_as_bytes()
@@ -1000,6 +1007,14 @@ classDiagram
     
     class StatusAttribute{
         +convert_status()
+    }
+    
+    class TextAttribute{
+        _check_string()
+    }
+    
+    class IdentAttribute{
+        
     }
 
 ```
