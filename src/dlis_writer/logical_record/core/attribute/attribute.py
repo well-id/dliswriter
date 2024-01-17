@@ -35,7 +35,7 @@ class Attribute:
             value               :   Value(s) of the attribute.
             converter           :   Function used to convert/validate the provided value later, through the 'value'
                                     property setter.
-            parent_eflr         :   EFLR or EFLRObject instance this attribute belongs to.
+            parent_eflr         :   EFLRSet or EFLRItem instance this attribute belongs to.
 
         """
 
@@ -222,7 +222,7 @@ class Attribute:
             self._converter = conv
 
     def _write_for_template(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes and characteristics needed for an EFLR template."""
+        """Transform the attribute to bytes and characteristics needed for an EFLRSet template."""
 
         if self._label:
             bts += write_struct_ascii(self._label)
@@ -236,7 +236,7 @@ class Attribute:
         return bts, characteristics
 
     def _write_for_body(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes anf characteristics needed to describe this part of an EFLRObject."""
+        """Transform the attribute to bytes and characteristics needed to describe this part of an EFLRItem."""
 
         # label
         characteristics += '0'
@@ -276,7 +276,7 @@ class Attribute:
         return bts, characteristics
 
     def _write_values(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes and characteristics for template/describing its EFLRObject."""
+        """Transform the attribute to bytes and characteristics for template/describing its EFLRItem."""
 
         rc = self.representation_code
         value = self._value
@@ -299,7 +299,7 @@ class Attribute:
         """Convert attribute to bytes to be put in the DLIS file.
 
         Args:
-            for_template: If True, create the bytes for EFLR template; otherwise, for EFLRObject description.
+            for_template: If True, create the bytes for EFLRSet template; otherwise, for EFLRItem description.
         """
 
         bts = b''
