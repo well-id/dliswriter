@@ -1,7 +1,7 @@
 import pytest
 from typing import Any
 
-from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, EquipmentItem
+from dlis_writer import EquipmentSet, EquipmentItem, AttrSetup
 
 
 @pytest.mark.parametrize(("name", "status", "serial_number"), (
@@ -35,16 +35,16 @@ def test_params_and_units() -> None:
         "Equipment-1",
         **{
             'height': {'value': 140, 'units': 'in'},
-            'length': {'value': 230.78, 'units': 'cm'},
-            'minimum_diameter': {'value': 2.3, 'units': 'm'},
-            'maximum_diameter': {'value': 3.2, 'units': 'm'},
+            'length': AttrSetup(230.78, 'cm'),
+            'minimum_diameter': AttrSetup(2.3, units='m'),
+            'maximum_diameter': AttrSetup(value=3.2, units='m'),
             'weight': {'value': 1.2, 'units': 't'},
             'hole_size': {'value': 323.2, 'units': 'm'},
             'pressure': {'value': 18000, 'units': 'psi'},
             'temperature': {'value': 24, 'units': 'degC'},
             'vertical_depth': {'value': 587, 'units': 'm'},
-            'radial_drift': {'value': 23.22, 'units': 'm'},
-            'angular_drift': {'value': 32.5, 'units': 'm'}
+            'radial_drift': AttrSetup(23.22, 'm'),
+            'angular_drift': AttrSetup(32.5, 'm')
         }
     )
 

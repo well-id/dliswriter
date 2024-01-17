@@ -1,5 +1,5 @@
 from dlis_writer.file.file import DLISFile
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, AttrSetup
 from dlis_writer.logical_record.core.attribute import *
 from dlis_writer.logical_record.eflr_types import *
 from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
