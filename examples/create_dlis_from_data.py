@@ -6,9 +6,6 @@ from dlis_writer.utils.logging import install_colored_logger
 from utils import prepare_directory, make_dlis_file_spec
 
 
-logger = logging.getLogger(__name__)
-
-
 def make_parser() -> ArgumentParser:
     """Define an argument parser for defining the DLIS file to be created."""
 
@@ -30,7 +27,7 @@ def make_parser() -> ArgumentParser:
 
 
 def main() -> None:
-    install_colored_logger(logger)
+    install_colored_logger(logging.getLogger('dlis_writer'))
 
     pargs = make_parser().parse_args()
 

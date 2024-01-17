@@ -9,9 +9,7 @@ from dlis_writer.utils.enums import RepresentationCode
 
 
 # colored logs output
-logger = logging.getLogger(__name__)
-install_colored_logger(logger)
-
+install_colored_logger(logging.getLogger('dlis_writer'))
 
 # set up origin & file header with custom parameters - by creating an instance or dict of kwargs
 origin = OriginItem("DEFAULT ORIGIN", file_set_number=1, company="XXX")

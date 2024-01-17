@@ -17,8 +17,7 @@ from dlis_writer.utils.logging import install_colored_logger
 
 
 # colored logs output
-logger = logging.getLogger(__name__)
-install_colored_logger(logger)
+install_colored_logger(logging.getLogger('dlis_writer'))
 
 
 # set up origin & file header with custom parameters - by creating an instance or dict of kwargs

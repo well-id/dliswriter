@@ -9,9 +9,6 @@ from dlis_writer.misc.synthetic_data_generator import create_data_file
 from utils import path_type, prepare_directory, make_dlis_file_spec
 
 
-logger = logging.getLogger(__name__)
-
-
 def make_parser() -> ArgumentParser:
     """Define an argument parser for defining the DLIS file to be created."""
 
@@ -59,7 +56,7 @@ def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace) -> N
 
 
 def main() -> None:
-    install_colored_logger(logger)
+    install_colored_logger(logging.getLogger('dlis_writer'))
 
     pargs = make_parser().parse_args()
 
