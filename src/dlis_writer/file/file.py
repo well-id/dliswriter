@@ -8,7 +8,7 @@ import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.converters import numpy_dtype_type
-from dlis_writer.logical_record.core.eflr import EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
@@ -23,11 +23,14 @@ logger = logging.getLogger(__name__)
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
 dtime_or_number_type = Union[str, datetime.datetime, int, float]
-values_type = Optional[Union[list[str], list[int], list[float]]]
+values_type = Union[list[str], list[int], list[float]]
 
 
 T = TypeVar('T')
 ListOrTuple = Union[list[T], tuple[T, ...]]
+
+TT = TypeVar('TT')
+ComplexAttr = Union[TT, dict, AttrSetup]
 
 
 class DLISFile:
@@ -111,8 +114,8 @@ class DLISFile:
             self,
             name: str,
             axis_id: Optional[str] = None,
-            coordinates: values_type = None,
-            spacing: Optional[number_type] = None,
+            coordinates: Optional[ComplexAttr[values_type]] = None,
+            spacing: Optional[ComplexAttr[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
@@ -182,9 +185,9 @@ class DLISFile:
             name: str,
             label: Optional[str] = None,
             coefficients: Optional[list[number_type]] = None,
-            references: Optional[list[number_type]] = None,
-            plus_tolerances: Optional[list[number_type]] = None,
-            minus_tolerances: Optional[list[number_type]] = None,
+            references: Optional[ComplexAttr[list[number_type]]] = None,
+            plus_tolerances: Optional[ComplexAttr[list[number_type]]] = None,
+            minus_tolerances: Optional[ComplexAttr[list[number_type]]] = None,
             set_name: Optional[str] = None,
     ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
@@ -223,16 +226,16 @@ class DLISFile:
             measurement_type: Optional[str] = None,
             dimension: Optional[list[int]] = None,
             axis: Optional[eflr_types.AxisItem] = None,
-            measurement: Optional[list[number_type]] = None,
-            sample_count: Optional[int] = None,
-            maximum_deviation: Optional[number_type] = None,
-            standard_deviation: Optional[number_type] = None,
-            begin_time: Optional[dtime_or_number_type] = None,
-            duration: Optional[number_type] = None,
-            reference: Optional[list[number_type]] = None,
-            standard: Optional[list[number_type]] = None,
-            plus_tolerance: Optional[list[number_type]] = None,
-            minus_tolerance: Optional[list[number_type]] = None,
+            measurement: Optional[ComplexAttr[list[number_type]]] = None,
+            sample_count: Optional[ComplexAttr[int]] = None,
+            maximum_deviation: Optional[ComplexAttr[number_type]] = None,
+            standard_deviation: Optional[ComplexAttr[number_type]] = None,
+            begin_time: Optional[ComplexAttr[dtime_or_number_type]] = None,
+            duration: Optional[ComplexAttr[number_type]] = None,
+            reference: Optional[ComplexAttr[list[number_type]]] = None,
+            standard: Optional[ComplexAttr[list[number_type]]] = None,
+            plus_tolerance: Optional[ComplexAttr[list[number_type]]] = None,
+            minus_tolerance: Optional[ComplexAttr[list[number_type]]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
@@ -296,8 +299,8 @@ class DLISFile:
             properties: Optional[list[str]] = None,
             units: Optional[str] = None,
             axis: Optional[eflr_types.AxisItem] = None,
-            minimum_value: Optional[float] = None,
-            maximum_value: Optional[float] = None,
+            minimum_value: Optional[ComplexAttr[float]] = None,
+            maximum_value: Optional[ComplexAttr[float]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
@@ -407,7 +410,7 @@ class DLISFile:
             dimension: Optional[list[int]] = None,
             axis: Optional[eflr_types.AxisItem] = None,
             zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: Optional[list[number_type]] = None,
+            values: Optional[ComplexAttr[list[number_type]]] = None,
             source: Optional[EFLRItem] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ComputationItem:
@@ -451,18 +454,18 @@ class DLISFile:
             eq_type: Optional[str] = None,
             serial_number: Optional[str] = None,
             location: Optional[str] = None,
-            height: Optional[number_type] = None,
-            length: Optional[number_type] = None,
-            minimum_diameter: Optional[number_type] = None,
-            maximum_diameter: Optional[number_type] = None,
-            volume: Optional[number_type] = None,
-            weight: Optional[number_type] = None,
-            hole_size: Optional[number_type] = None,
-            pressure: Optional[number_type] = None,
-            temperature: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
+            height: Optional[ComplexAttr[number_type]] = None,
+            length: Optional[ComplexAttr[number_type]] = None,
+            minimum_diameter: Optional[ComplexAttr[number_type]] = None,
+            maximum_diameter: Optional[ComplexAttr[number_type]] = None,
+            volume: Optional[ComplexAttr[number_type]] = None,
+            weight: Optional[ComplexAttr[number_type]] = None,
+            hole_size: Optional[ComplexAttr[number_type]] = None,
+            pressure: Optional[ComplexAttr[number_type]] = None,
+            temperature: Optional[ComplexAttr[number_type]] = None,
+            vertical_depth: Optional[ComplexAttr[number_type]] = None,
+            radial_drift: Optional[ComplexAttr[number_type]] = None,
+            angular_drift: Optional[ComplexAttr[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.EquipmentItem:
         """Define an equipment object.
@@ -524,10 +527,10 @@ class DLISFile:
             description: Optional[str] = None,
             index_type: Optional[str] = None,
             direction: Optional[str] = None,
-            spacing: Optional[number_type] = None,
+            spacing: Optional[ComplexAttr[number_type]] = None,
             encrypted: Optional[int] = None,
-            index_min: Optional[number_type] = None,
-            index_max: Optional[number_type] = None,
+            index_min: Optional[ComplexAttr[number_type]] = None,
+            index_max: Optional[ComplexAttr[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
@@ -686,11 +689,11 @@ class DLISFile:
             self,
             name: str,
             message_type: Optional[str] = None,
-            time: Optional[dtime_or_number_type] = None,
-            borehole_drift: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
+            time: Optional[ComplexAttr[dtime_or_number_type]] = None,
+            borehole_drift: Optional[ComplexAttr[number_type]] = None,
+            vertical_depth: Optional[ComplexAttr[number_type]] = None,
+            radial_drift: Optional[ComplexAttr[number_type]] = None,
+            angular_drift: Optional[ComplexAttr[number_type]] = None,
             text: Optional[list[str]] = None,
             set_name: Optional[str] = None,
     ) -> eflr_types.MessageItem:
@@ -782,7 +785,7 @@ class DLISFile:
             dimension: Optional[list[int]] = None,
             axis: Optional[eflr_types.AxisItem] = None,
             zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: values_type = None,
+            values: Optional[ComplexAttr[values_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
@@ -819,14 +822,14 @@ class DLISFile:
             frame_type: Optional[eflr_types.FrameItem] = None,
             well_reference_point: Optional[eflr_types.WellReferencePointItem] = None,
             value: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            borehole_depth: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
-            time: Optional[number_type] = None,
-            depth_offset: Optional[number_type] = None,
-            measure_point_offset: Optional[number_type] = None,
-            tool_zero_offset: Optional[number_type] = None,
+            borehole_depth: Optional[ComplexAttr[number_type]] = None,
+            vertical_depth: Optional[ComplexAttr[number_type]] = None,
+            radial_drift: Optional[ComplexAttr[number_type]] = None,
+            angular_drift: Optional[ComplexAttr[number_type]] = None,
+            time: Optional[ComplexAttr[number_type]] = None,
+            depth_offset: Optional[ComplexAttr[number_type]] = None,
+            measure_point_offset: Optional[ComplexAttr[number_type]] = None,
+            tool_zero_offset: Optional[ComplexAttr[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
@@ -1005,15 +1008,15 @@ class DLISFile:
             name: str,
             permanent_datum: Optional[str] = None,
             vertical_zero: Optional[str] = None,
-            permanent_datum_elevation: Optional[number_type] = None,
-            above_permanent_datum: Optional[number_type] = None,
-            magnetic_declination: Optional[number_type] = None,
+            permanent_datum_elevation: Optional[ComplexAttr[number_type]] = None,
+            above_permanent_datum: Optional[ComplexAttr[number_type]] = None,
+            magnetic_declination: Optional[ComplexAttr[number_type]] = None,
             coordinate_1_name: Optional[str] = None,
-            coordinate_1_value: Optional[number_type] = None,
+            coordinate_1_value: Optional[ComplexAttr[number_type]] = None,
             coordinate_2_name: Optional[str] = None,
-            coordinate_2_value: Optional[number_type] = None,
+            coordinate_2_value: Optional[ComplexAttr[number_type]] = None,
             coordinate_3_name: Optional[str] = None,
-            coordinate_3_value: Optional[number_type] = None,
+            coordinate_3_value: Optional[ComplexAttr[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
@@ -1061,8 +1064,8 @@ class DLISFile:
             name: str,
             description: Optional[str] = None,
             domain: Optional[str] = None,
-            maximum: Optional[dtime_or_number_type] = None,
-            minimum: Optional[dtime_or_number_type] = None,
+            maximum: Optional[ComplexAttr[dtime_or_number_type]] = None,
+            minimum: Optional[ComplexAttr[dtime_or_number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
