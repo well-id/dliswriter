@@ -1,3 +1,5 @@
+"""Create an exemplary DLIS file with synthetic data and all kinds of DLIS objects supported in this library."""
+
 from datetime import datetime, timedelta
 import numpy as np
 import logging

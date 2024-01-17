@@ -1,3 +1,8 @@
+"""Create a DLIS file from a HDF5 data file.
+
+All channels etc. are added automatically from the contents of the data file.
+"""
+
 import logging
 from argparse import ArgumentParser
 

@@ -1,3 +1,7 @@
+"""Create synthetic data with a given number of rows and optionally, given number and width of images (2D data).
+Define channels for the data and write them into a DLIS file.
+"""
+
 import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
