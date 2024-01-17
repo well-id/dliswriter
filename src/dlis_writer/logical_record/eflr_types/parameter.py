@@ -32,8 +32,6 @@ class ParameterItem(EFLRItem):
 
         super().__init__(name, **kwargs)
 
-        self._set_defaults()
-
     def _set_defaults(self) -> None:
         """Set default values of some attributes if no values have been set so far."""
 

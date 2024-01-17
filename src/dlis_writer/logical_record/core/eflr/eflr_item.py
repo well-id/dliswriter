@@ -150,8 +150,15 @@ class EFLRItem:
 
         return _bytes
 
+    def _set_defaults(self) -> None:
+        """Called before writing the item's bytes. Set default values to some attributes if they were not set at all."""
+
+        pass
+
     def make_item_body_bytes(self) -> bytes:
         """Create bytes describing the item: its name and values of its attributes."""
+
+        self._set_defaults()
 
         return b'p' + self.obname + self._make_attrs_bytes()
 

@@ -69,8 +69,6 @@ class ChannelItem(EFLRItem):
         self._dataset_name: Union[str, None] = dataset_name
         self._set_cast_dtype(cast_dtype)
 
-        self.set_defaults()
-
     @property
     def dataset_name(self) -> str:
         """Name of the data corresponding to this channel in the SourceDataWrapper."""
@@ -140,7 +138,7 @@ class ChannelItem(EFLRItem):
 
         self._set_cast_dtype(dt)
 
-    def set_defaults(self) -> None:
+    def _set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:

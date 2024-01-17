@@ -35,7 +35,6 @@ class ComputationItem(EFLRItem):
 
         super().__init__(name, **kwargs)
 
-        self._set_defaults()
         self.check_values_and_zones()
 
     def _set_defaults(self) -> None:

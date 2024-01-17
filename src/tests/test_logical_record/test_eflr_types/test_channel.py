@@ -70,6 +70,8 @@ def test_dimension_and_element_limit(dimension: Union[list[int], None], element_
         config["element_limit"] = element_limit
 
     channel = ChannelItem(**config)
+    channel.origin_reference = 1
+    channel.make_item_body_bytes()  # defaults are set here
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
@@ -86,7 +88,9 @@ def test_dimension_and_element_limit_not_specified() -> None:
 def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture) -> None:
     """Test that if dimension and element limit do not match, this fact is included as a warning in log messages."""
 
-    ChannelItem('some channel', dimension=12, element_limit=(12, 10))
+    ch = ChannelItem('some channel', dimension=12, element_limit=(12, 10))
+    ch.origin_reference = 1
+    ch.make_item_body_bytes()  # check for the dimension and element limit mismatch is done here
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
