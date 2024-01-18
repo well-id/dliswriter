@@ -1,5 +1,3 @@
-from typing import Any
-
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import RepresentationCode
@@ -18,14 +16,13 @@ class FileHeaderItem(EFLRItem):
 
     identifier_length_limit = 65    #: max length of the file header name
 
-    def __init__(self, identifier: str, parent: "FileHeaderSet", sequence_number: int = 1, **kwargs: Any) -> None:
+    def __init__(self, identifier: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
         """Initialise FileHeaderItem.
 
         Args:
             identifier      :   Name of the FileHeaderItem.
             parent          :   Parent FileHeaderSet of this FileHeaderItem.
             sequence_number :   Sequence number of the file.
-            **kwargs        :   Values of to be set as characteristics of the FileHeaderItem Attributes.
         """
 
         self.identifier = identifier
@@ -36,7 +33,7 @@ class FileHeaderItem(EFLRItem):
         if len(identifier) > self.identifier_length_limit:
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
 
-        super().__init__(name='0', parent=parent, **kwargs)
+        super().__init__(name='0', parent=parent)
 
     def _make_attrs_bytes(self) -> bytes:
         """Create bytes describing the values of attributes of FIleHeaderItem."""
