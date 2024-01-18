@@ -5,7 +5,7 @@ import numpy as np
 import logging
 
 from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer import AttrSetup, OriginItem, RepresentationCode, DLISFile
+from dlis_writer import AttrSetup, OriginItem, DLISFile
 
 
 # colored logs output
@@ -73,13 +73,12 @@ parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3), values=["val1", "v
 # note how complex attribute values can be passed as a dict or an AttrSetup object;
 equipment1 = df.add_equipment("EQ1", status=1, eq_type='Tool', serial_number='1239-12312',
                               weight={'value': 123.2, 'units': 'kg'},
-                              length=AttrSetup(2, 'm', representation_code=RepresentationCode.UNORM))
+                              length=AttrSetup(2, 'm'))
 
-# 'value', 'units' and 'representation_code' can also be added later to the created object.
+# 'value' and 'units' can also be added later to the created object.
 equipment2 = df.add_equipment("EQ2", location='Well', trademark_name='Some trademark TM')
 equipment2.hole_size.value = 23.5
 equipment2.hole_size.units = 'in'
-equipment2.hole_size.representation_code = 'FSINGL'  # type: ignore  # using converter associated with the property
 # ^ can use the enum member, name (str), or value (int)
 
 equipment3 = df.add_equipment('EQ3')
