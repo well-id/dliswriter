@@ -9,7 +9,8 @@ def test_splice_creation(zone1: ZoneItem, zone3: ZoneItem, chan: ChannelItem, ch
         "splc1",
         zones=(zone1, zone3),
         input_channels=(channel2, channel1, chan),
-        output_channel=channel3
+        output_channel=channel3,
+        parent=SpliceSet()
     )
 
     assert splice.name == "splc1"

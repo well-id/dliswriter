@@ -1,12 +1,14 @@
+"""Create a DLIS file from a HDF5 data file.
+
+All channels etc. are added automatically from the contents of the data file.
+"""
+
 import logging
 from argparse import ArgumentParser
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 from utils import prepare_directory, make_dlis_file_spec
-
-
-logger = logging.getLogger(__name__)
 
 
 def make_parser() -> ArgumentParser:
@@ -30,7 +32,7 @@ def make_parser() -> ArgumentParser:
 
 
 def main() -> None:
-    install_logger(logger)
+    install_colored_logger(logging.getLogger('dlis_writer'))
 
     pargs = make_parser().parse_args()
 

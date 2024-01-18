@@ -1,14 +1,15 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, Sequence
+from typing import Any, Union, Optional, TypeVar, Sequence, TypedDict
 import numpy as np
 import os
 from timeit import timeit
 from datetime import timedelta
 import logging
+from collections import defaultdict
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.converters import numpy_dtype_type
-from dlis_writer.logical_record.core.eflr import EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
@@ -23,28 +24,26 @@ logger = logging.getLogger(__name__)
 kwargs_type = dict[str, Any]
 number_type = Union[int, float]
 dtime_or_number_type = Union[str, datetime.datetime, int, float]
-values_type = Optional[Union[list[str], list[int], list[float]]]
-
+values_type = Union[list[str], list[int], list[float]]
 
 T = TypeVar('T')
 ListOrTuple = Union[list[T], tuple[T, ...]]
+
+AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str}, total=False)
+AttrSetupType = Union[T, AttrDict, AttrSetup]
+OptAttrSetupType = Optional[AttrSetupType]
 
 
 class DLISFile:
     """Define the structure and contents of a DLIS and create a file based on the provided information."""
 
-    def __init__(
-            self,
-            storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
-            file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None,
-            origin: Optional[Union[eflr_types.OriginItem, kwargs_type]] = None
-    ):
+    def __init__(self, storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
+                 file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None):
         """Initialise DLISFile.
 
         Args:
             storage_unit_label  :   An instance of StorageUnitLabel or keyword arguments to create one.
             file_header         :   An instance of FileHeaderObject or keyword arguments to create one.
-            origin              :   An instance of OriginObject or keyword arguments to create one.
         """
 
         if isinstance(storage_unit_label, StorageUnitLabel):
@@ -59,16 +58,9 @@ class DLISFile:
         else:
             file_header = file_header or {}
             fid = file_header.get('identifier', 'FILE HEADER')
-            self._file_header = eflr_types.FileHeaderItem(fid, **file_header)
+            self._file_header = eflr_types.FileHeaderItem(fid, **file_header, parent=eflr_types.FileHeaderSet())
 
-        if isinstance(origin, eflr_types.OriginItem):
-            self._origin = origin
-        else:
-            origin = origin or {}
-            on = origin.get('name', 'ORIGIN')
-            fsn = origin.get('file_set_number', 1)
-            self._origin = eflr_types.OriginItem(on, file_set_number=fsn, **origin)
-
+        self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []
         self._frames: list[eflr_types.FrameItem] = []
         self._other_eflr: list[EFLRItem] = []
@@ -76,6 +68,8 @@ class DLISFile:
 
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
+
+        self._eflr_sets = defaultdict(lambda: {})
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
@@ -107,12 +101,30 @@ class DLISFile:
 
         return self._frames
 
+    def get_or_make_eflr_set(self, eflr_item_type: type[EFLRItem], set_name: str = None) -> EFLRSet:
+
+        # the relevant EFLRSet subclass
+        eflr_set_type = eflr_item_type.parent_eflr_class
+
+        # dict mapping set names on EFLRSet (subclass) instances
+        eflr_set_dict = self._eflr_sets[eflr_set_type]
+
+        # instance of the EFLRSet with the given set name - if exists
+        eflr_set_instance = eflr_set_dict.get(set_name, None)
+
+        # (if not exists - create it)
+        if eflr_set_instance is None:
+            eflr_set_instance = eflr_set_type(set_name=set_name)
+            eflr_set_dict[set_name] = eflr_set_instance
+
+        return eflr_set_instance
+
     def add_axis(
             self,
             name: str,
-            axis_id: Optional[str] = None,
-            coordinates: values_type = None,
-            spacing: Optional[number_type] = None,
+            axis_id: OptAttrSetupType[str] = None,
+            coordinates: OptAttrSetupType[values_type] = None,
+            spacing: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
@@ -130,7 +142,7 @@ class DLISFile:
             axis_id=axis_id,
             coordinates=coordinates,
             spacing=spacing,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.AxisItem, set_name=set_name)
         )
 
         self._other_eflr.append(ax)
@@ -139,12 +151,12 @@ class DLISFile:
     def add_calibration(
             self,
             name: str,
-            calibrated_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            uncalibrated_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            coefficients: Optional[ListOrTuple[eflr_types.CalibrationCoefficientItem]] = None,
-            measurements: Optional[ListOrTuple[eflr_types.CalibrationMeasurementItem]] = None,
-            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
-            method: Optional[str] = None,
+            calibrated_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            uncalibrated_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            coefficients: OptAttrSetupType[ListOrTuple[eflr_types.CalibrationCoefficientItem]] = None,
+            measurements: OptAttrSetupType[ListOrTuple[eflr_types.CalibrationMeasurementItem]] = None,
+            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
+            method: OptAttrSetupType[str] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.CalibrationItem:
         """Define a calibration item and add it to the DLIS.
@@ -171,7 +183,7 @@ class DLISFile:
             measurements=measurements,
             parameters=parameters,
             method=method,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -180,11 +192,11 @@ class DLISFile:
     def add_calibration_coefficient(
             self,
             name: str,
-            label: Optional[str] = None,
-            coefficients: Optional[list[number_type]] = None,
-            references: Optional[list[number_type]] = None,
-            plus_tolerances: Optional[list[number_type]] = None,
-            minus_tolerances: Optional[list[number_type]] = None,
+            label: OptAttrSetupType[str] = None,
+            coefficients: OptAttrSetupType[list[number_type]] = None,
+            references: OptAttrSetupType[list[number_type]] = None,
+            plus_tolerances: OptAttrSetupType[list[number_type]] = None,
+            minus_tolerances: OptAttrSetupType[list[number_type]] = None,
             set_name: Optional[str] = None,
     ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
@@ -209,7 +221,7 @@ class DLISFile:
             references=references,
             plus_tolerances=plus_tolerances,
             minus_tolerances=minus_tolerances,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationCoefficientItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -218,21 +230,21 @@ class DLISFile:
     def add_calibration_measurement(
             self,
             name: str,
-            phase: Optional[str] = None,
-            measurement_source: Optional[eflr_types.ChannelItem] = None,
-            measurement_type: Optional[str] = None,
-            dimension: Optional[list[int]] = None,
-            axis: Optional[eflr_types.AxisItem] = None,
-            measurement: Optional[list[number_type]] = None,
-            sample_count: Optional[int] = None,
-            maximum_deviation: Optional[number_type] = None,
-            standard_deviation: Optional[number_type] = None,
-            begin_time: Optional[dtime_or_number_type] = None,
-            duration: Optional[number_type] = None,
-            reference: Optional[list[number_type]] = None,
-            standard: Optional[list[number_type]] = None,
-            plus_tolerance: Optional[list[number_type]] = None,
-            minus_tolerance: Optional[list[number_type]] = None,
+            phase: OptAttrSetupType[str] = None,
+            measurement_source: OptAttrSetupType[eflr_types.ChannelItem] = None,
+            measurement_type: OptAttrSetupType[str] = None,
+            dimension: OptAttrSetupType[list[int]] = None,
+            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+            measurement: OptAttrSetupType[list[number_type]] = None,
+            sample_count: OptAttrSetupType[int] = None,
+            maximum_deviation: OptAttrSetupType[number_type] = None,
+            standard_deviation: OptAttrSetupType[number_type] = None,
+            begin_time: OptAttrSetupType[dtime_or_number_type] = None,
+            duration: OptAttrSetupType[number_type] = None,
+            reference: OptAttrSetupType[list[number_type]] = None,
+            standard: OptAttrSetupType[list[number_type]] = None,
+            plus_tolerance: OptAttrSetupType[list[number_type]] = None,
+            minus_tolerance: OptAttrSetupType[list[number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
@@ -278,7 +290,7 @@ class DLISFile:
             standard=standard,
             plus_tolerance=plus_tolerance,
             minus_tolerance=minus_tolerance,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationMeasurementItem, set_name=set_name)
         )
 
         self._other_eflr.append(m)
@@ -290,14 +302,14 @@ class DLISFile:
             data: Optional[np.ndarray] = None,
             dataset_name: Optional[str] = None,
             cast_dtype: Optional[numpy_dtype_type] = None,
-            long_name: Optional[str] = None,
-            dimension: Optional[Union[int, list[int]]] = None,
-            element_limit: Optional[Union[int, list[int]]] = None,
-            properties: Optional[list[str]] = None,
-            units: Optional[str] = None,
-            axis: Optional[eflr_types.AxisItem] = None,
-            minimum_value: Optional[float] = None,
-            maximum_value: Optional[float] = None,
+            long_name: OptAttrSetupType[str] = None,
+            dimension: OptAttrSetupType[Union[int, list[int]]] = None,
+            element_limit: OptAttrSetupType[Union[int, list[int]]] = None,
+            properties: OptAttrSetupType[list[str]] = None,
+            units: OptAttrSetupType[str] = None,
+            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+            minimum_value: OptAttrSetupType[float] = None,
+            maximum_value: OptAttrSetupType[float] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
@@ -340,7 +352,7 @@ class DLISFile:
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ChannelItem, set_name=set_name)
         )
         # skipping dimension and element limit because they will be determined from the data
 
@@ -376,7 +388,7 @@ class DLISFile:
 
     def add_comment(
             self, name: str,
-            text: Optional[list[str]] = None,
+            text: OptAttrSetupType[list[str]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.CommentItem:
         """Create a comment item and add it to the DLIS.
@@ -393,7 +405,7 @@ class DLISFile:
         c = eflr_types.CommentItem(
             name=name,
             text=text,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CommentItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -402,13 +414,13 @@ class DLISFile:
     def add_computation(
             self,
             name: str,
-            long_name: Optional[str] = None,
-            properties: Optional[list[str]] = None,
-            dimension: Optional[list[int]] = None,
-            axis: Optional[eflr_types.AxisItem] = None,
-            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: Optional[list[number_type]] = None,
-            source: Optional[EFLRItem] = None,
+            long_name: OptAttrSetupType[str] = None,
+            properties: OptAttrSetupType[list[str]] = None,
+            dimension: OptAttrSetupType[list[int]] = None,
+            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
+            values: OptAttrSetupType[list[number_type]] = None,
+            source: OptAttrSetupType[EFLRItem] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ComputationItem:
         """Create a computation item and add it to the DLIS.
@@ -437,7 +449,7 @@ class DLISFile:
             zones=zones,
             values=values,
             source=source,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ComputationItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -446,23 +458,23 @@ class DLISFile:
     def add_equipment(
             self,
             name: str,
-            trademark_name: Optional[str] = None,
-            status: Optional[int] = None,
-            eq_type: Optional[str] = None,
-            serial_number: Optional[str] = None,
-            location: Optional[str] = None,
-            height: Optional[number_type] = None,
-            length: Optional[number_type] = None,
-            minimum_diameter: Optional[number_type] = None,
-            maximum_diameter: Optional[number_type] = None,
-            volume: Optional[number_type] = None,
-            weight: Optional[number_type] = None,
-            hole_size: Optional[number_type] = None,
-            pressure: Optional[number_type] = None,
-            temperature: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
+            trademark_name: OptAttrSetupType[str] = None,
+            status: OptAttrSetupType[int] = None,
+            eq_type: OptAttrSetupType[str] = None,
+            serial_number: OptAttrSetupType[str] = None,
+            location: OptAttrSetupType[str] = None,
+            height: OptAttrSetupType[number_type] = None,
+            length: OptAttrSetupType[number_type] = None,
+            minimum_diameter: OptAttrSetupType[number_type] = None,
+            maximum_diameter: OptAttrSetupType[number_type] = None,
+            volume: OptAttrSetupType[number_type] = None,
+            weight: OptAttrSetupType[number_type] = None,
+            hole_size: OptAttrSetupType[number_type] = None,
+            pressure: OptAttrSetupType[number_type] = None,
+            temperature: OptAttrSetupType[number_type] = None,
+            vertical_depth: OptAttrSetupType[number_type] = None,
+            radial_drift: OptAttrSetupType[number_type] = None,
+            angular_drift: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.EquipmentItem:
         """Define an equipment object.
@@ -511,7 +523,7 @@ class DLISFile:
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
             angular_drift=angular_drift,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.EquipmentItem, set_name=set_name)
         )
 
         self._other_eflr.append(eq)
@@ -520,14 +532,14 @@ class DLISFile:
     def add_frame(
             self,
             name: str,
-            channels: Optional[ListOrTuple[eflr_types.ChannelItem]],
-            description: Optional[str] = None,
-            index_type: Optional[str] = None,
-            direction: Optional[str] = None,
-            spacing: Optional[number_type] = None,
-            encrypted: Optional[int] = None,
-            index_min: Optional[number_type] = None,
-            index_max: Optional[number_type] = None,
+            channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]],
+            description: OptAttrSetupType[str] = None,
+            index_type: OptAttrSetupType[str] = None,
+            direction: OptAttrSetupType[str] = None,
+            spacing: OptAttrSetupType[number_type] = None,
+            encrypted: OptAttrSetupType[int] = None,
+            index_min: OptAttrSetupType[number_type] = None,
+            index_max: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
@@ -573,7 +585,7 @@ class DLISFile:
             encrypted=encrypted,
             index_min=index_min,
             index_max=index_max,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.FrameItem, set_name=set_name)
         )
 
         self._frames.append(fr)
@@ -582,10 +594,10 @@ class DLISFile:
     def add_group(
             self,
             name: str,
-            description: Optional[str] = None,
-            object_type: Optional[str] = None,
-            object_list: Optional[ListOrTuple[EFLRItem]] = None,
-            group_list: Optional[ListOrTuple[eflr_types.GroupItem]] = None,
+            description: OptAttrSetupType[str] = None,
+            object_type: OptAttrSetupType[str] = None,
+            object_list: OptAttrSetupType[ListOrTuple[EFLRItem]] = None,
+            group_list: OptAttrSetupType[ListOrTuple[eflr_types.GroupItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.GroupItem:
         """Create a group of EFLR items and add it to the DLIS.
@@ -608,7 +620,7 @@ class DLISFile:
             object_type=object_type,
             object_list=object_list,
             group_list=group_list,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.GroupItem, set_name=set_name)
         )
 
         self._other_eflr.append(g)
@@ -617,20 +629,20 @@ class DLISFile:
     def add_long_name(
             self,
             name: str,
-            general_modifier: Optional[list[str]] = None,
-            quantity: Optional[str] = None,
-            quantity_modifier: Optional[list[str]] = None,
-            altered_form: Optional[str] = None,
-            entity: Optional[str] = None,
-            entity_modifier: Optional[list[str]] = None,
-            entity_number: Optional[str] = None,
-            entity_part: Optional[str] = None,
-            entity_part_number: Optional[str] = None,
-            generic_source: Optional[str] = None,
-            source_part: Optional[list[str]] = None,
-            source_part_number: Optional[list[str]] = None,
-            conditions: Optional[list[str]] = None,
-            standard_symbol: Optional[str] = None,
+            general_modifier: OptAttrSetupType[list[str]] = None,
+            quantity: OptAttrSetupType[str] = None,
+            quantity_modifier: OptAttrSetupType[list[str]] = None,
+            altered_form: OptAttrSetupType[str] = None,
+            entity: OptAttrSetupType[str] = None,
+            entity_modifier: OptAttrSetupType[list[str]] = None,
+            entity_number: OptAttrSetupType[str] = None,
+            entity_part: OptAttrSetupType[str] = None,
+            entity_part_number: OptAttrSetupType[str] = None,
+            generic_source: OptAttrSetupType[str] = None,
+            source_part: OptAttrSetupType[list[str]] = None,
+            source_part_number: OptAttrSetupType[list[str]] = None,
+            conditions: OptAttrSetupType[list[str]] = None,
+            standard_symbol: OptAttrSetupType[str] = None,
             private_symbol: Optional[str] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.LongNameItem:
@@ -676,7 +688,7 @@ class DLISFile:
             conditions=conditions,
             standard_symbol=standard_symbol,
             private_symbol=private_symbol,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.LongNameItem, set_name=set_name)
         )
 
         self._other_eflr.append(ln)
@@ -685,13 +697,13 @@ class DLISFile:
     def add_message(
             self,
             name: str,
-            message_type: Optional[str] = None,
-            time: Optional[dtime_or_number_type] = None,
-            borehole_drift: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
-            text: Optional[list[str]] = None,
+            message_type: OptAttrSetupType[str] = None,
+            time: OptAttrSetupType[dtime_or_number_type] = None,
+            borehole_drift: OptAttrSetupType[number_type] = None,
+            vertical_depth: OptAttrSetupType[number_type] = None,
+            radial_drift: OptAttrSetupType[number_type] = None,
+            angular_drift: OptAttrSetupType[number_type] = None,
+            text: OptAttrSetupType[list[str]] = None,
             set_name: Optional[str] = None,
     ) -> eflr_types.MessageItem:
         """Create a message and add it to DLIS.
@@ -720,7 +732,7 @@ class DLISFile:
             radial_drift=radial_drift,
             angular_drift=angular_drift,
             text=text,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.MessageItem, set_name=set_name)
         )
 
         self._other_eflr.append(m)
@@ -729,8 +741,8 @@ class DLISFile:
     def add_no_format(
             self,
             name: str,
-            consumer_name: Optional[str] = None,
-            description: Optional[str] = None,
+            consumer_name: OptAttrSetupType[str] = None,
+            description: OptAttrSetupType[str] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.NoFormatItem:
         """Create a no-format item and add it to the DLIS.
@@ -749,7 +761,7 @@ class DLISFile:
             name=name,
             consumer_name=consumer_name,
             description=description,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.NoFormatItem, set_name=set_name)
         )
 
         self._other_eflr.append(nf)
@@ -775,14 +787,100 @@ class DLISFile:
         self._no_format_frame_data.append(d)
         return d
 
+    def add_origin(
+            self,
+            name: str,
+            file_set_number: AttrSetupType[int],
+            file_set_name: OptAttrSetupType[str] = None,
+            file_id: OptAttrSetupType[str] = None,
+            file_number: OptAttrSetupType[int] = None,
+            file_type: OptAttrSetupType[str] = None,
+            product: OptAttrSetupType[str] = None,
+            version: OptAttrSetupType[str] = None,
+            programs: OptAttrSetupType[list[str]] = None,
+            creation_time: OptAttrSetupType[Union[datetime, str]] = None,
+            order_number: OptAttrSetupType[str] = None,
+            descent_number: OptAttrSetupType[int] = None,
+            run_number: OptAttrSetupType[int] = None,
+            well_id: OptAttrSetupType[int] = None,
+            well_name: OptAttrSetupType[str] = None,
+            field_name: OptAttrSetupType[str] = None,
+            producer_code: OptAttrSetupType[int] = None,
+            producer_name: OptAttrSetupType[str] = None,
+            company: OptAttrSetupType[str] = None,
+            name_space_name: OptAttrSetupType[str] = None,
+            name_space_version: OptAttrSetupType[int] = None,
+            set_name: Optional[str] = None
+    ) -> eflr_types.OriginItem:
+        """Create an origin.
+
+        Args:
+            name                :   Name of the parameter.
+            file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
+            file_set_name       :   File set name.
+            file_id             :   File ID.
+            file_number         :   File number.
+            file_type           :   File type.
+            product             :   Product description.
+            version             :   Version indicator.
+            programs            :   List of programs.
+            creation_time       :   Creation time.
+            order_number        :   Order number.
+            descent_number      :   Descent number.
+            run_number          :   Run number.
+            well_id             :   Well ID.
+            well_name           :   Well name.
+            field_name          :   Field name.
+            producer_code       :   Producer code.
+            producer_name       :   Producer name.
+            company             :   Company name.
+            name_space_name     :   Name space name.
+            name_space_version  :   Name space version.
+            set_name            :   Name of the OriginSet this origin should be added to.
+
+        Returns:
+            A configured OriginItem instance.
+        """
+
+        if self._origin:
+            raise RuntimeError("An OriginItem is already defined for the current DLISFile")
+
+        o = eflr_types.OriginItem(
+            name=name,
+            file_set_number=file_set_number,
+            file_set_name=file_set_name,
+            file_id=file_id,
+            file_number=file_number,
+            file_type=file_type,
+            product=product,
+            version=version,
+            programs=programs,
+            creation_time=creation_time,
+            order_number=order_number,
+            descent_number=descent_number,
+            run_number=run_number,
+            well_id=well_id,
+            well_name=well_name,
+            field_name=field_name,
+            producer_code=producer_code,
+            producer_name=producer_name,
+            company=company,
+            name_space_name=name_space_name,
+            name_space_version=name_space_version,
+            parent=self.get_or_make_eflr_set(eflr_types.OriginItem, set_name=set_name)
+        )
+
+        self._origin = o
+        return o
+
     def add_parameter(
             self,
             name: str,
-            long_name: Optional[str] = None,
-            dimension: Optional[list[int]] = None,
-            axis: Optional[eflr_types.AxisItem] = None,
-            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: values_type = None,
+            long_name: OptAttrSetupType[str] = None,
+            dimension: OptAttrSetupType[list[int]] = None,
+            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
+            values: OptAttrSetupType[values_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
@@ -807,7 +905,7 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ParameterItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -816,17 +914,17 @@ class DLISFile:
     def add_path(
             self,
             name: str,
-            frame_type: Optional[eflr_types.FrameItem] = None,
-            well_reference_point: Optional[eflr_types.WellReferencePointItem] = None,
-            value: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            borehole_depth: Optional[number_type] = None,
-            vertical_depth: Optional[number_type] = None,
-            radial_drift: Optional[number_type] = None,
-            angular_drift: Optional[number_type] = None,
-            time: Optional[number_type] = None,
-            depth_offset: Optional[number_type] = None,
-            measure_point_offset: Optional[number_type] = None,
-            tool_zero_offset: Optional[number_type] = None,
+            frame_type: OptAttrSetupType[eflr_types.FrameItem] = None,
+            well_reference_point: OptAttrSetupType[eflr_types.WellReferencePointItem] = None,
+            value: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            borehole_depth: OptAttrSetupType[number_type] = None,
+            vertical_depth: OptAttrSetupType[number_type] = None,
+            radial_drift: OptAttrSetupType[number_type] = None,
+            angular_drift: OptAttrSetupType[number_type] = None,
+            time: OptAttrSetupType[number_type] = None,
+            depth_offset: OptAttrSetupType[number_type] = None,
+            measure_point_offset: OptAttrSetupType[number_type] = None,
+            tool_zero_offset: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
@@ -863,7 +961,7 @@ class DLISFile:
             depth_offset=depth_offset,
             measure_point_offset=measure_point_offset,
             tool_zero_offset=tool_zero_offset,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.PathItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -872,17 +970,17 @@ class DLISFile:
     def add_process(
             self,
             name: str,
-            description: Optional[str] = None,
-            trademark_name: Optional[str] = None,
-            version: Optional[str] = None,
-            properties: Optional[list[str]] = None,
-            status: Optional[str] = None,
-            input_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            output_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            input_computations: Optional[ListOrTuple[eflr_types.ComputationItem]] = None,
-            output_computations: Optional[ListOrTuple[eflr_types.ComputationItem]] = None,
-            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
-            comments: Optional[list[str]] = None,
+            description: OptAttrSetupType[str] = None,
+            trademark_name: OptAttrSetupType[str] = None,
+            version: OptAttrSetupType[str] = None,
+            properties: OptAttrSetupType[list[str]] = None,
+            status: OptAttrSetupType[str] = None,
+            input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            output_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            input_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
+            output_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
+            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
+            comments: OptAttrSetupType[list[str]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ProcessItem:
         """Define a process item and add it to DLIS.
@@ -919,7 +1017,7 @@ class DLISFile:
             output_computations=output_computations,
             parameters=parameters,
             comments=comments,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ProcessItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -928,9 +1026,9 @@ class DLISFile:
     def add_splice(
             self,
             name: str,
-            output_channel: Optional[eflr_types.ChannelItem] = None,
-            input_channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            zones: Optional[ListOrTuple[eflr_types.ZoneItem]] = None,
+            output_channel: OptAttrSetupType[eflr_types.ChannelItem] = None,
+            input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.SpliceItem:
         """Create a splice object.
@@ -951,21 +1049,22 @@ class DLISFile:
             output_channel=output_channel,
             input_channels=input_channels,
             zones=zones,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.SpliceItem, set_name=set_name)
         )
+
         self._other_eflr.append(sp)
         return sp
 
     def add_tool(
             self,
             name: str,
-            description: Optional[str] = None,
-            trademark_name: Optional[str] = None,
-            generic_name: Optional[str] = None,
-            parts: Optional[ListOrTuple[eflr_types.EquipmentItem]] = None,
-            status: Optional[int] = None,
-            channels: Optional[ListOrTuple[eflr_types.ChannelItem]] = None,
-            parameters: Optional[ListOrTuple[eflr_types.ParameterItem]] = None,
+            description: OptAttrSetupType[str] = None,
+            trademark_name: OptAttrSetupType[str] = None,
+            generic_name: OptAttrSetupType[str] = None,
+            parts: OptAttrSetupType[ListOrTuple[eflr_types.EquipmentItem]] = None,
+            status: OptAttrSetupType[int] = None,
+            channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ToolItem:
         """Create a tool object.
@@ -994,7 +1093,7 @@ class DLISFile:
             status=status,
             channels=channels,
             parameters=parameters,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ToolItem, set_name=set_name)
         )
 
         self._other_eflr.append(t)
@@ -1003,17 +1102,17 @@ class DLISFile:
     def add_well_reference_point(
             self,
             name: str,
-            permanent_datum: Optional[str] = None,
-            vertical_zero: Optional[str] = None,
-            permanent_datum_elevation: Optional[number_type] = None,
-            above_permanent_datum: Optional[number_type] = None,
-            magnetic_declination: Optional[number_type] = None,
-            coordinate_1_name: Optional[str] = None,
-            coordinate_1_value: Optional[number_type] = None,
-            coordinate_2_name: Optional[str] = None,
-            coordinate_2_value: Optional[number_type] = None,
-            coordinate_3_name: Optional[str] = None,
-            coordinate_3_value: Optional[number_type] = None,
+            permanent_datum: OptAttrSetupType[str] = None,
+            vertical_zero: OptAttrSetupType[str] = None,
+            permanent_datum_elevation: OptAttrSetupType[number_type] = None,
+            above_permanent_datum: OptAttrSetupType[number_type] = None,
+            magnetic_declination: OptAttrSetupType[number_type] = None,
+            coordinate_1_name: OptAttrSetupType[str] = None,
+            coordinate_1_value: OptAttrSetupType[number_type] = None,
+            coordinate_2_name: OptAttrSetupType[str] = None,
+            coordinate_2_value: OptAttrSetupType[number_type] = None,
+            coordinate_3_name: OptAttrSetupType[str] = None,
+            coordinate_3_value: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
@@ -1050,7 +1149,7 @@ class DLISFile:
             coordinate_2_value=coordinate_2_value,
             coordinate_3_name=coordinate_3_name,
             coordinate_3_value=coordinate_3_value,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.WellReferencePointItem, set_name=set_name)
         )
 
         self._other_eflr.append(w)
@@ -1059,10 +1158,10 @@ class DLISFile:
     def add_zone(
             self,
             name: str,
-            description: Optional[str] = None,
-            domain: Optional[str] = None,
-            maximum: Optional[dtime_or_number_type] = None,
-            minimum: Optional[dtime_or_number_type] = None,
+            description: OptAttrSetupType[str] = None,
+            domain: OptAttrSetupType[str] = None,
+            maximum: OptAttrSetupType[dtime_or_number_type] = None,
+            minimum: OptAttrSetupType[dtime_or_number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
@@ -1089,7 +1188,7 @@ class DLISFile:
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ZoneItem, set_name=set_name)
         )
 
         self._other_eflr.append(z)
@@ -1134,6 +1233,9 @@ class DLISFile:
             **kwargs: Any
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
+
+        if not self._origin:
+            raise RuntimeError("No OriginItem defined for this DLISFile")
 
         flr = FileLogicalRecords(
             sul=self._sul,
@@ -1182,18 +1284,3 @@ class DLISFile:
 
         exec_time = timeit(timed_func, number=1)
         logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
-
-
-if __name__ == '__main__':
-    # basic example for creating a DLIS file
-    # for a more advanced example, see dlis-writer/examples/create_synth_dlis.py
-
-    df = DLISFile()
-
-    n_rows = 100
-    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10), cast_dtype=np.int32)
-    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
-    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
-
-    df.write('./tmp.DLIS', input_chunk_size=20)

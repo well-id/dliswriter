@@ -13,7 +13,7 @@ from dlis_writer.utils.enums import RepresentationCode
 def test_from_config(name: str, value: Any, value_type: type, n_values: int, repr_code: RepresentationCode) -> None:
     """Test creating ParameterItem."""
 
-    param = ParameterItem(name, values=value)
+    param = ParameterItem(name, values=value, parent=ParameterItem.make_parent())
 
     assert param.name == name
 

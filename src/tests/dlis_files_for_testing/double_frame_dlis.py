@@ -3,7 +3,7 @@ from typing import Union
 
 from dlis_writer.file import DLISFile
 
-from tests.dlis_files_for_testing.common import make_file_header, make_sul, make_origin
+from tests.dlis_files_for_testing.common import make_df
 
 
 def _define_frame_from_data(df: DLISFile, name: str, data: dict):
@@ -20,11 +20,7 @@ def _define_frame_from_data(df: DLISFile, name: str, data: dict):
 
 
 def create_dlis_file_object(*data_dicts) -> DLISFile:
-    df = DLISFile(
-        origin=make_origin(),
-        file_header=make_file_header(),
-        storage_unit_label=make_sul()
-    )
+    df = make_df()
 
     for i, d in enumerate(data_dicts):
         _define_frame_from_data(df, f'FRAME{i+1}', d)

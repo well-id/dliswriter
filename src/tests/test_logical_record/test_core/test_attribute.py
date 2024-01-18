@@ -28,28 +28,6 @@ def test_clearing_unit(attr: Attribute) -> None:
     assert attr.units is None
 
 
-@pytest.mark.parametrize(("val", "repr_code"), (
-        (2, RepresentationCode.FSINGL),
-        ("FSINGL", RepresentationCode.FSINGL),
-        ("STATUS", RepresentationCode.STATUS),
-        (26, RepresentationCode.STATUS)
-))
-def test_setting_repr_code(attr: Attribute, val: Union[int, str], repr_code: RepresentationCode) -> None:
-    """Test that setting representation code works correctly, both from code name and value (as int or str)."""
-
-    attr.representation_code = val  # type: ignore  # mypy property setter bug
-    assert attr.representation_code is repr_code
-
-
-@pytest.mark.parametrize(("code1", "code2"), ((2, 3), (3, 2), (1, 8)))
-def test_setting_repr_code_already_set(attr: Attribute, code1: int, code2: int) -> None:
-    """Check that a RuntimeError is raised if an attempt to change an already set representation code is made."""
-
-    attr.representation_code = code1  # type: ignore  # mypy property setter bug
-    with pytest.raises(RuntimeError, match="representation code .* is already set .*"):
-        attr.representation_code = code2  # type: ignore  # mypy property setter bug
-
-
 @pytest.mark.parametrize("dts", ("2050/03/21 15:30:00", "2003.12.31 09:30:00"))
 def test_parse_dtime(dts: str) -> None:
     """Check that correctly formatted date-time strings are parsed correctly."""

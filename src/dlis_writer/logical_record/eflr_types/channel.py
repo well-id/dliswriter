@@ -7,7 +7,8 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter, numpy_dtype_type
-from dlis_writer.logical_record.core.attribute import Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
+                                                       TextAttribute, IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -39,12 +40,13 @@ class ChannelItem(EFLRItem):
 
     parent: "ChannelSet"
 
-    def __init__(self, name: str, dataset_name: Optional[str] = None, cast_dtype: Optional[numpy_dtype_type] = None,
-                 **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ChannelSet", dataset_name: Optional[str] = None,
+                 cast_dtype: Optional[numpy_dtype_type] = None, **kwargs: Any) -> None:
         """Initialise ChannelItem.
 
         Args:
             name            :   Name of the ChannelItem.
+            parent          :   Parent ChannelSet of this ChannelItem.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
             cast_dtype      :   Numpy data type the channel data should be cast to.
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
@@ -52,27 +54,21 @@ class ChannelItem(EFLRItem):
 
         self._cast_dtype = None  # need the attribute defined for representation code check
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
-        self.properties = Attribute(
-            'properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
+        self.long_name = TextAttribute('long_name')
+        self.properties = IdentAttribute('properties', multivalued=True)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = Attribute(
-            'units', converter=self.convert_unit, representation_code=RepC.IDENT, parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True, parent_eflr=self)
-        self.element_limit = DimensionAttribute('element_limit', parent_eflr=self)
-        self.source = Attribute('source', representation_code=RepC.OBJREF, parent_eflr=self)
-        self.minimum_value = NumericAttribute(
-            'minimum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
-        self.maximum_value = NumericAttribute(
-            'maximum_value', representation_code=RepC.FDOUBL, multivalued=True, parent_eflr=self)
+        self.units = IdentAttribute('units', converter=self.convert_unit)
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
+        self.element_limit = DimensionAttribute('element_limit')
+        self.source = Attribute('source', representation_code=RepC.OBJREF)
+        self.minimum_value = NumericAttribute('minimum_value', representation_code=RepC.FDOUBL, multivalued=True)
+        self.maximum_value = NumericAttribute('maximum_value', representation_code=RepC.FDOUBL, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
         self._dataset_name: Union[str, None] = dataset_name
         self._set_cast_dtype(cast_dtype)
-
-        self.set_defaults()
 
     @property
     def dataset_name(self) -> str:
@@ -143,7 +139,7 @@ class ChannelItem(EFLRItem):
 
         self._set_cast_dtype(dt)
 
-    def set_defaults(self) -> None:
+    def _set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:

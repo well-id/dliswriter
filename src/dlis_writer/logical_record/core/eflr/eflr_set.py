@@ -1,26 +1,23 @@
 import logging
-from typing import Union, Optional, Any
+from typing import Union, Optional
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
-from dlis_writer.logical_record.core.eflr.eflr_set_meta import EFLRSetMeta
 from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)
 
 
-class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
+class EFLRSet(LogicalRecord):
     """Model an Explicitly Formatted Logical Record."""
 
     set_type: str = NotImplemented                  #: set type of each particular EFLR (e.g. Channel); see the standard
     logical_record_type: EFLRType = NotImplemented  #: int-enum denoting type of the EFLR
     is_eflr: bool = True                            #: indication that this is an explicitly formatted LR
     item_type: type[EFLRItem] = EFLRItem            #: EFLRItem subclass which can be held within this EFLRTable type
-
-    _eflr_set_instance_dict: dict[Union[str, None], "EFLRSet"]
 
     def __init__(self, set_name: Optional[str] = None):
         """Initialise an EFLRTable.
@@ -38,17 +35,10 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
         self._attributes: dict[str, Attribute] = {}   # attributes of this EFLRSet (cpd from an EFLRItem instance)
         self._origin_reference: Union[int, None] = None
 
-        self._eflr_set_instance_dict[self.set_name] = self
-
     def __str__(self) -> str:
         """Represent the EFLRSet instance as str."""
 
         return f"{self.__class__.__name__} {repr(self.set_name)}"
-
-    def clear_eflr_item_list(self) -> None:
-        """Remove all references to EFLRItem instances from the internal dictionary."""
-
-        self._eflr_item_list.clear()
 
     @property
     def origin_reference(self) -> Union[int, None]:
@@ -120,40 +110,8 @@ class EFLRSet(LogicalRecord, metaclass=EFLRSetMeta):
 
         return self._eflr_item_list[:]  # copy
 
-    def get_all_eflr_items_from_all_sets(self) -> list[EFLRItem]:
-        """Return a list of all EFLRItem instances registered with all EFLRSet instances of this type."""
-
-        s = []
-        for eflr_set in self.get_all_sets():
-            s.extend(eflr_set.get_all_eflr_items())
-
-        return s
-
     @property
     def n_items(self) -> int:
         """Number of EFLRItem instances registered with this EFLRSet instance."""
 
         return len(self._eflr_item_list)
-
-    @classmethod
-    def clear_set_instance_dict(cls) -> None:
-        """Remove all instances of the EFLRSet (sub)class from the internal dictionary."""
-
-        if cls._eflr_set_instance_dict:
-            logger.debug(f"Removing all defined instances of {cls.__name__}")
-            cls._eflr_set_instance_dict.clear()
-
-    @classmethod
-    def get_or_make_set(cls, set_name: Optional[str] = None) -> "EFLRSet":
-        """Retrieve an EFLRSet instance with given set name from the internal dict or create one."""
-
-        if set_name in cls._eflr_set_instance_dict:
-            return cls._eflr_set_instance_dict[set_name]
-
-        return cls(set_name)
-
-    @classmethod
-    def get_all_sets(cls) -> list["EFLRSet"]:
-        """Return a list of all EFLRSet (subclass) instances which are stored in the internal dictionary."""
-
-        return list(cls._eflr_set_instance_dict.values())

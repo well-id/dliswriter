@@ -1,11 +1,7 @@
 from datetime import datetime
 
-from dlis_writer.logical_record.eflr_types.calibration import (CalibrationMeasurementItem,
-                                                               CalibrationCoefficientItem, CalibrationItem)
-from dlis_writer.logical_record.eflr_types.channel import ChannelItem
-from dlis_writer.logical_record.eflr_types.axis import AxisItem
-from dlis_writer.logical_record.eflr_types.parameter import ParameterItem
-from dlis_writer.logical_record.core.attribute import EFLRAttribute
+from dlis_writer import (AttrSetup, AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
+                         CalibrationCoefficientItem, CalibrationItem, EFLRAttribute)
 
 
 def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem) -> None:
@@ -15,18 +11,18 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
             'phase': 'BEFORE',
             'measurement_source': channel1,
             '_type': 'Plus',
-            'axis.value': axis1,
-            'measurement.value': 12.2323,
-            'sample_count.value': 12,
+            'axis': axis1,
+            'measurement': AttrSetup(12.2323),
+            'sample_count': {'value': 12},
             'maximum_deviation': 2.2324,
             'begin_time': '2050/03/12 12:30:00',
-            'duration': 15,
-            'duration.units': 's',
+            'duration': AttrSetup(15, 's'),
             'reference': [11],
-            'standard.value': [11.2],
+            'standard': [11.2],
             'plus_tolerance': [2],
-            'minus_tolerance.value': 1
-        }
+            'minus_tolerance': AttrSetup(value=1),
+        },
+        parent=CalibrationMeasurementItem.make_parent()
     )
 
     assert m.name == "CMEASURE-1"
@@ -59,6 +55,7 @@ def test_calibration_coefficient_creation() -> None:
         references=[89, 298],
         plus_tolerances=[100.2, 222.124],
         minus_tolerances=[87.23, 214],
+        parent=CalibrationCoefficientItem.make_parent()
     )
 
     assert c.name == "COEF-1"
@@ -92,7 +89,8 @@ def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, chan
         uncalibrated_channels=(channel3,),
         coefficients=(ccoef1,),
         measurements=(cmeasure1,),
-        parameters=(param1, param2, param3)
+        parameters=(param1, param2, param3),
+        parent=CalibrationItem.make_parent()
     )
 
     assert c.name == "CALIB-MAIN"

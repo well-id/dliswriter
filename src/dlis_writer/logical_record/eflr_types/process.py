@@ -5,8 +5,8 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -19,31 +19,28 @@ class ProcessItem(EFLRItem):
 
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ProcessSet", **kwargs: Any) -> None:
         """Initialise ProcessItem.
 
         Args:
             name        :   Name of the ProcessItem.
+            parent      :   Parent ProcessSet of this ProcessItem.
             **kwargs    :   Values of to be set as characteristics of the ProcessItem Attributes.
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.trademark_name = Attribute('trademark_name', representation_code=RepC.ASCII, parent_eflr=self)
-        self.version = Attribute('version', representation_code=RepC.ASCII, parent_eflr=self)
-        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
-        self.status = Attribute('status', converter=self.check_status, representation_code=RepC.IDENT, parent_eflr=self)
-        self.input_channels = EFLRAttribute(
-            'input_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.output_channels = EFLRAttribute(
-            'output_channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.input_computations = EFLRAttribute(
-            'input_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
-        self.output_computations = EFLRAttribute(
-            'output_computations', object_class=ComputationSet, multivalued=True, parent_eflr=self)
-        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True, parent_eflr=self)
-        self.comments = Attribute('comments', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.trademark_name = TextAttribute('trademark_name')
+        self.version = TextAttribute('version')
+        self.properties = IdentAttribute('properties', multivalued=True)
+        self.status = IdentAttribute('status', converter=self.check_status)
+        self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
+        self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
+        self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)
+        self.output_computations = EFLRAttribute('output_computations', object_class=ComputationSet, multivalued=True)
+        self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
+        self.comments = TextAttribute('comments', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     @classmethod
     def check_status(cls, status: str) -> str:

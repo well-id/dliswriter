@@ -12,22 +12,23 @@ import logging
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.core.eflr import EFLRItem
-from dlis_writer.logical_record.eflr_types import OriginItem, ChannelItem
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.logical_record.eflr_types import ChannelItem
+from dlis_writer.utils.logging import install_colored_logger
 
 
 # colored logs output
-logger = logging.getLogger(__name__)
-install_logger(logger)
+install_colored_logger(logging.getLogger('dlis_writer'))
 
 
-# set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginItem("DEFAULT ORIGIN", file_set_number=80, company="XXX")
+# set file header with custom parameters - by creating an instance or dict of kwargs
 file_header = {'sequence_number': 2}
 
 
 # create DLISFile instance, pass the origin and file header
-df = DLISFile(origin=origin, file_header=file_header)
+df = DLISFile(file_header=file_header)
+
+# add origin - required item
+df.add_origin("DEFAULT ORIGIN", file_set_number=80, company="XXX")
 
 
 # define frame 1

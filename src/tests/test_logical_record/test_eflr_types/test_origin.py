@@ -17,7 +17,8 @@ def test_origin_creation() -> None:
         well_id=5,
         well_name="Test well name",
         field_name="Test field name",
-        company="Test company"
+        company="Test company",
+        parent=OriginSet()
     )
 
     assert origin.name == 'DEFAULT ORIGIN'
@@ -48,7 +49,7 @@ def test_origin_creation() -> None:
 def test_origin_creation_no_dtime_in_attributes() -> None:
     """Test that if creation_time is missing, the origin gets the current date and time as creation time."""
 
-    origin = OriginItem("Some origin name", well_name="Some well name", file_set_number=11)
+    origin = OriginItem("Some origin name", well_name="Some well name", file_set_number=11, parent=OriginSet())
 
     assert origin.name == "Some origin name"
     assert origin.well_name.value == "Some well name"
@@ -59,7 +60,7 @@ def test_origin_creation_no_dtime_in_attributes() -> None:
 def test_origin_creation_no_attributes() -> None:
     """Test creating OriginItem with minimum number of parameters."""
 
-    origin = OriginItem("Some origin name", file_set_number=2)
+    origin = OriginItem("Some origin name", file_set_number=2, parent=OriginSet())
 
     assert origin.name == "Some origin name"
     assert origin.well_name.value is None

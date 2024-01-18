@@ -16,7 +16,8 @@ def test_creating_tool(name: str, description: str, status: int, param_names: li
         description=description,
         status=status,
         parameters=[request.getfixturevalue(v) for v in param_names],
-        channels=[request.getfixturevalue(v) for v in channel_names]
+        channels=[request.getfixturevalue(v) for v in channel_names],
+        parent=ToolSet()
     )
 
     assert tool.name == name

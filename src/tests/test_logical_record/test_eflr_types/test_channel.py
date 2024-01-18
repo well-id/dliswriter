@@ -26,7 +26,8 @@ def test_channel_creation(axis1: AxisItem) -> None:
         source='some source',
         minimum_value=[0.],
         maximum_value=[127.6],
-        axis=[axis1]
+        axis=[axis1],
+        parent=ChannelSet()
     )
 
     assert channel.name == 'Channel'
@@ -52,7 +53,7 @@ def test_channel_creation(axis1: AxisItem) -> None:
 def test_dataset_name_not_specified(name: str) -> None:
     """Check that if dataset name is not specified, it's the same as channel name."""
 
-    c = ChannelItem(name)
+    c = ChannelItem(name, parent=ChannelSet())
     assert c.name == name
     assert c.dataset_name == name
 
@@ -69,7 +70,9 @@ def test_dimension_and_element_limit(dimension: Union[list[int], None], element_
     if element_limit is not None:
         config["element_limit"] = element_limit
 
-    channel = ChannelItem(**config)
+    channel = ChannelItem(**config, parent=ChannelSet())
+    channel.origin_reference = 1
+    channel.make_item_body_bytes()  # defaults are set here
     assert channel.dimension.value == channel.element_limit.value
     assert channel.dimension.value is not None
     assert channel.element_limit.value is not None
@@ -78,7 +81,7 @@ def test_dimension_and_element_limit(dimension: Union[list[int], None], element_
 def test_dimension_and_element_limit_not_specified() -> None:
     """Test that if neither dimension nor element limit are specified, none of them is set."""
 
-    channel = ChannelItem("some channel")
+    channel = ChannelItem("some channel", parent=ChannelSet())
     assert channel.dimension.value is None
     assert channel.element_limit.value is None
 
@@ -86,7 +89,9 @@ def test_dimension_and_element_limit_not_specified() -> None:
 def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture) -> None:
     """Test that if dimension and element limit do not match, this fact is included as a warning in log messages."""
 
-    ChannelItem('some channel', dimension=12, element_limit=(12, 10))
+    ch = ChannelItem('some channel', dimension=12, element_limit=(12, 10), parent=ChannelSet())
+    ch.origin_reference = 1
+    ch.make_item_body_bytes()  # check for the dimension and element limit mismatch is done here
     assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
 
 
@@ -239,14 +244,14 @@ def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem,
 
 
 def test_copy_numbers(chan: ChannelItem) -> None:
-    ch1 = ChannelItem('X')
-    ch2 = ChannelItem('X')
-    ch3 = ChannelItem('X')
+    ch1 = ChannelItem('X', chan.parent)
+    ch2 = ChannelItem('X', chan.parent)
+    ch3 = ChannelItem('X', chan.parent)
 
     assert ch1.copy_number == 0
     assert ch2.copy_number == 1
     assert ch3.copy_number == 2
 
     assert chan.copy_number == 0
-    chan_chan = ChannelItem(chan.name)
+    chan_chan = ChannelItem(chan.name, parent=chan.parent)
     assert chan_chan.copy_number == 1
