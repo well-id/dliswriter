@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class Attribute:
     """Represent an RP66 V1 Attribute."""
 
-    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set
+    settables = ('units', 'value')  #: attributes of the object which can be set
     _valid_repr_codes = tuple(RepresentationCode.__members__.values())
     _default_repr_code = None
 
@@ -93,16 +93,7 @@ class Attribute:
     def representation_code(self) -> Union[RepresentationCode, None]:
         """Representation code of the attribute; explicitly assigned if available, otherwise guessed from the value."""
 
-        return self.assigned_representation_code or self.inferred_representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
-        """Set a new representation code for the attribute."""
-
-        if 'representation_code' not in self.settables:
-            raise RuntimeError(f"Representation code for {self.__class__.__name__} cannot be set")
-
-        self._set_representation_code(rc)
+        return self._representation_code or self.inferred_representation_code
 
     def _guess_repr_code(self) -> Union[RepresentationCode, None]:
         """Attempt determining representation code of the attribute from the set value.
@@ -124,12 +115,6 @@ class Attribute:
         except ReprCodeConverter.ReprCodeError as exc:
             logger.warning(exc.args[0])
             return None
-
-    @property
-    def assigned_representation_code(self) -> Union[RepresentationCode, None]:
-        """Explicitly assigned representation code of the attribute."""
-
-        return self._representation_code
 
     @property
     def inferred_representation_code(self) -> Union[RepresentationCode, None]:

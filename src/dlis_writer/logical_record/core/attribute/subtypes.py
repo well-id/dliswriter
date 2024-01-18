@@ -20,7 +20,7 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    settables = ('representation_code', 'value')  # can't set units for EFLRAttribute
+    settables = ('value',)  # can't set units for EFLRAttribute
     _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
     _default_repr_code = RepC.OBNAME
 
@@ -180,24 +180,6 @@ class NumericAttribute(Attribute):
             float_only=self._float_only
         )
 
-    @property
-    def representation_code(self) -> Union[RepC, None]:
-        """Representation code of the attribute."""
-
-        return super().representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc: Union[RepC, str, int]) -> None:
-        """Set a new representation code for the attribute. Check that the code refers to numerical values."""
-
-        self._set_representation_code(rc)
-        self._check_repr_code_numeric(self._representation_code)
-        if self._value is not None:
-            if self._multivalued:
-                self._value = [self._convert_number(v) for v in self._value]
-            else:
-                self._value = self._convert_number(self._value)
-
     def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""
 
@@ -214,7 +196,7 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Union[int, float]) -> int:
+    def _int_parser(value: Number) -> int:
         """Parse a provided value as an integer."""
 
         if not isinstance(value, Number):
@@ -226,7 +208,7 @@ class NumericAttribute(Attribute):
         return int(value)
 
     @staticmethod
-    def _float_parser(value: Union[int, float]) -> float:
+    def _float_parser(value: Number) -> float:
         """Parse a provided value as a float."""
 
         if not isinstance(value, Number):
@@ -234,24 +216,13 @@ class NumericAttribute(Attribute):
 
         return float(value)
 
-    def _convert_number(self, value: Union[int, float]) -> Union[int, float]:
+    def _convert_number(self, value: Number) -> Union[int, float]:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
-        rc = self._representation_code
-        if rc is None:
-            try:
-                value = self._int_parser(value)
-            except (ValueError, TypeError):
-                value = self._float_parser(value)
-            return value
-
-        if rc in ReprCodeConverter.int_codes:
+        if self._int_only or self.representation_code in ReprCodeConverter.int_codes:
             return self._int_parser(value)
 
-        if rc in ReprCodeConverter.float_codes:
-            return self._float_parser(value)
-
-        raise RuntimeError(f"Representation code {rc.name} is not numeric")
+        return self._float_parser(value)
 
 
 class DimensionAttribute(NumericAttribute):

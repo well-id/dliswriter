@@ -8,7 +8,6 @@ import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.converters import numpy_dtype_type
-from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
@@ -25,12 +24,11 @@ kwargs_type = dict[str, Any]
 number_type = Union[int, float]
 dtime_or_number_type = Union[str, datetime.datetime, int, float]
 values_type = Union[list[str], list[int], list[float]]
-repr_code_type = Union[RepresentationCode, str, int]
 
 T = TypeVar('T')
 ListOrTuple = Union[list[T], tuple[T, ...]]
 
-AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str, 'representation_code': repr_code_type}, total=False)
+AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str}, total=False)
 AttrSetupType = Union[T, AttrDict, AttrSetup]
 OptAttrSetupType = Optional[AttrSetupType]
 

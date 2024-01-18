@@ -294,7 +294,6 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         values=[100, 200, 300],
         source=tools[0]
     )
-    c1.values.representation_code = "UNORM"     # type: ignore  # using converter associated with the property
 
     c2 = df.add_computation(
         name="COMPT2",

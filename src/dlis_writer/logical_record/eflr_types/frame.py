@@ -124,8 +124,6 @@ class FrameItem(EFLRItem):
 
         for at in (self.index_min, self.index_max, self.spacing):
             assign_if_none(at, key='units', value=unit)
-            if at.assigned_representation_code is None:
-                at.representation_code = repr_code
 
     @property
     def channel_name_mapping(self) -> dict:

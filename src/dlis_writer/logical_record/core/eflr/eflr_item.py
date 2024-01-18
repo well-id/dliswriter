@@ -3,7 +3,6 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional, Generator
 
 from dlis_writer.utils.struct_writer import write_struct_obname
-from dlis_writer.utils.enums import RepresentationCode
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
 
 if TYPE_CHECKING:
@@ -19,17 +18,15 @@ class AttrSetup:
     # Note: the initial plan was to make it a dataclass, but this doesn't give the PyCharm IDE typing hints,
     # which is one of the main points of this class
 
-    def __init__(self, value: Optional[Any] = None, units: Optional[str] = None,
-                 representation_code: Optional[Union[RepresentationCode, str, int]] = None) -> None:
+    def __init__(self, value: Optional[Any] = None, units: Optional[str] = None) -> None:
         """Initialise AttrSetup with any of the passed values."""
 
         self.value = value
         self.units = units
-        self.representation_code = representation_code
         # Note: no checks done here, because they're done in EFLRItem/Attribute later anyway
 
     def items(self) -> Generator:
-        for item_name in ('value', 'units', 'representation_code'):
+        for item_name in ('value', 'units'):
             if (item_value := getattr(self, item_name)) is not None:
                 yield item_name, item_value
 

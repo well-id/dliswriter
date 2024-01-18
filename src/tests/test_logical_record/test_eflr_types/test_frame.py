@@ -13,7 +13,7 @@ def test_frame_creation() -> None:
             'index_type': 'BOREHOLE-DEPTH',
             'encrypted': 1,
             'description': "The main frame",
-            'spacing': {'value': 0.2, 'units': 'm', 'representation_code': 7}
+            'spacing': {'value': 0.2, 'units': 'm'}
 
         }
     )

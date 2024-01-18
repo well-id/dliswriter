@@ -34,9 +34,6 @@ def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]) -> ef
     )
 
     fr.spacing.units = "m"
-    fr.spacing.representation_code = 7      # type: ignore  # using converter associated with the property
-    fr.index_max.representation_code = 7    # type: ignore  # using converter associated with the property
-    fr.index_min.representation_code = 7    # type: ignore  # using converter associated with the property
 
     return fr
 
