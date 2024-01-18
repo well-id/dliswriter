@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisItem
     ('Axis-X', 'Another axis', 's')
 ))
 def test_str_attributes(name: str, axis_id: str, units: str) -> None:
-    axis = AxisItem(name, axis_id=axis_id, spacing={'units': units})
+    axis = AxisItem(name, axis_id=axis_id, spacing={'units': units}, parent=AxisItem.make_parent())
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id
@@ -21,11 +21,13 @@ def test_str_attributes(name: str, axis_id: str, units: str) -> None:
         ([8], [8])
 ))
 def test_coordinates(given: list, expected: list) -> None:
-    axis = AxisItem('some_name', coordinates=given)
+    axis = AxisItem('some_name', coordinates=given, parent=AxisItem.make_parent())
     assert axis.coordinates.value == expected
 
 
 def test_copy_numbers() -> None:
+    parent = parent=AxisItem.make_parent()
+
     for i in range(5):
-        ax = AxisItem('XYZ')
+        ax = AxisItem('XYZ', parent=parent)
         assert ax.copy_number == i

@@ -22,6 +22,7 @@ def make_origin() -> eflr_types.OriginItem:
         well_name="Test well name",
         field_name="Test field name",
         company="Test company",
+        parent=eflr_types.OriginItem.make_parent()
     )
 
     return origin
@@ -128,12 +129,12 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
     z4.maximum.units = "min"
     z4.minimum.units = "min"
 
-    zx = eflr_types.ZoneItem(
+    zx = df.add_zone(
         name="Zone-X",
         description="Zone not added to any parameter",
         domain="TIME",
         maximum=10,
-        minimum=1
+        minimum=1,
     )
     zx.maximum.units = "s"
     zx.minimum.units = "s"

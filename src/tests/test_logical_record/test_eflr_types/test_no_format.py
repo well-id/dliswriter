@@ -8,12 +8,13 @@ from dlis_writer.logical_record.eflr_types.no_format import NoFormatSet, NoForma
         ("no_fmt2", "xyz", "TESTING NO FORMAT 2")
 ))
 def test_creation(name: str, consumer_name: str, description: str) -> None:
-    """Test creating NoFormatObject."""
+    """Test creating NoFormatItem."""
 
     w = NoFormatItem(
         name=name,
         consumer_name=consumer_name,
-        description=description
+        description=description,
+        parent=NoFormatSet()
     )
 
     assert w.name == name

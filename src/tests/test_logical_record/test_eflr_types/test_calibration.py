@@ -20,8 +20,9 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
             'reference': [11],
             'standard': [11.2],
             'plus_tolerance': [2],
-            'minus_tolerance': AttrSetup(value=1)
-        }
+            'minus_tolerance': AttrSetup(value=1),
+        },
+        parent=CalibrationMeasurementItem.make_parent()
     )
 
     assert m.name == "CMEASURE-1"
@@ -54,6 +55,7 @@ def test_calibration_coefficient_creation() -> None:
         references=[89, 298],
         plus_tolerances=[100.2, 222.124],
         minus_tolerances=[87.23, 214],
+        parent=CalibrationCoefficientItem.make_parent()
     )
 
     assert c.name == "COEF-1"
@@ -87,7 +89,8 @@ def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, chan
         uncalibrated_channels=(channel3,),
         coefficients=(ccoef1,),
         measurements=(cmeasure1,),
-        parameters=(param1, param2, param3)
+        parameters=(param1, param2, param3),
+        parent=CalibrationItem.make_parent()
     )
 
     assert c.name == "CALIB-MAIN"

@@ -15,7 +15,8 @@ def test_creation(name: str, status: int, serial_number: str) -> None:
     eq = EquipmentItem(
         name,
         status=status,
-        serial_number=serial_number
+        serial_number=serial_number,
+        parent=EquipmentSet()
     )
 
     assert eq.name == name
@@ -45,7 +46,8 @@ def test_params_and_units() -> None:
             'vertical_depth': {'value': 587, 'units': 'm'},
             'radial_drift': AttrSetup(23.22, 'm'),
             'angular_drift': AttrSetup(32.5, 'm')
-        }
+        },
+        parent=EquipmentItem.make_parent()
     )
 
     def check(name: str, val: Any, unit: str) -> None:

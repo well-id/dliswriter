@@ -14,8 +14,8 @@ def test_frame_creation() -> None:
             'encrypted': 1,
             'description': "The main frame",
             'spacing': {'value': 0.2, 'units': 'm'}
-
-        }
+        },
+        parent=FrameSet()
     )
 
     assert frame.name == 'MAIN-FRAME'
@@ -40,7 +40,8 @@ def test_creation_with_channels(channel_names: tuple[str], channels: dict) -> No
 
     frame = FrameItem(
         'Some frame',
-        channels=[channels[k] for k in channel_names]
+        channels=[channels[k] for k in channel_names],
+        parent=FrameSet()
     )
 
     assert frame.channels.value is not None
