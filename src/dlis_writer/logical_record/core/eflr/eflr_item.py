@@ -183,7 +183,7 @@ class EFLRItem:
 
             if isinstance(attr_value, (dict, AttrSetup)):
                 for key, value in attr_value.items():
-                    if key not in attr.settables:
+                    if key not in ('value', 'units'):
                         raise ValueError(f"Cannot set {key} of a(n) {attr.__class__.__name__}")
                     set_value(attr, value, key)
 

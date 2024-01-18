@@ -973,8 +973,8 @@ classDiagram
         +[EFLRItem, EFLRSet] parent_eflr
         +Callable converter
         +bool multivalued
-        +tuple settables
         -tuple _valid_repr_codes
+        -bool _units_settable
         -RepresentationCode _default_repr_code
 
         

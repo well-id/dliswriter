@@ -16,9 +16,9 @@ logger = logging.getLogger(__name__)
 class Attribute:
     """Represent an RP66 V1 Attribute."""
 
-    settables = ('units', 'value')  #: attributes of the object which can be set
     _valid_repr_codes = tuple(RepresentationCode.__members__.values())
     _default_repr_code = None
+    _units_settable = True
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
@@ -151,7 +151,7 @@ class Attribute:
     def units(self, units: str) -> None:
         """Set new units for the attribute."""
 
-        if 'units' not in self.settables:
+        if not self._units_settable:
             raise RuntimeError(f"Units of {self.__class__.__name__} cannot be set")
 
         if units is not None:

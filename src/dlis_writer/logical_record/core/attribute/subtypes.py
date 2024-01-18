@@ -20,7 +20,7 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    settables = ('value',)  # can't set units for EFLRAttribute
+    _units_settable = False
     _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
     _default_repr_code = RepC.OBNAME
 
@@ -228,7 +228,7 @@ class NumericAttribute(Attribute):
 class DimensionAttribute(NumericAttribute):
     """Model an attribute expressing dimensions (e.g. dimension or element_limit of Channel)."""
 
-    settables = ('value',)
+    _units_settable = False
     _valid_repr_codes = (RepC.UVARI,)
     _default_repr_code = RepC.UVARI
 
@@ -258,7 +258,7 @@ class DimensionAttribute(NumericAttribute):
 class StatusAttribute(Attribute):
     """Model an attribute which can only have value 1 or 0."""
 
-    settables = ('value',)
+    _units_settable = False
     _valid_repr_codes = (RepC.STATUS,)
     _default_repr_code = RepC.STATUS
 
@@ -301,7 +301,7 @@ class StatusAttribute(Attribute):
 class TextAttribute(Attribute):
     """Model an attribute representing text in ASCII format."""
 
-    settables = ('value',)
+    _units_settable = False
     _valid_repr_codes = (RepC.ASCII,)
     _default_repr_code = RepC.ASCII
 
@@ -334,7 +334,7 @@ class TextAttribute(Attribute):
 class IdentAttribute(Attribute):
     """Model an attribute represented as IDENT."""
 
-    settables = ('value',)
+    _units_settable = False
     _valid_repr_codes = (RepC.IDENT,)
     _default_repr_code = RepC.IDENT
 
