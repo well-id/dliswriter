@@ -58,7 +58,7 @@ class DLISFile:
         else:
             file_header = file_header or {}
             fid = file_header.get('identifier', 'FILE HEADER')
-            self._file_header = eflr_types.FileHeaderItem(fid, **file_header)
+            self._file_header = eflr_types.FileHeaderItem(fid, **file_header, parent=eflr_types.FileHeaderSet())
 
         self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []

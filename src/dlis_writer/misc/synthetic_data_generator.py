@@ -56,7 +56,7 @@ def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols
 
     logger.debug("Creating two more linear datasets")
     h5_group.create_dataset('rpm', data=10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points)))
-    h5_group.create_dataset('col3', data=np.arange(n_points, dtype=np.float16))
+    h5_group.create_dataset('col3', data=np.arange(n_points, dtype=np.float32))
 
     for i in range(n_images):
         logger.debug(f"Creating image dataset {i+1}/{n_images}")
