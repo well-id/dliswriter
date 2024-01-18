@@ -5,10 +5,11 @@ import os
 from timeit import timeit
 from datetime import timedelta
 import logging
+from collections import defaultdict
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.converters import numpy_dtype_type
-from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
+from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
@@ -80,6 +81,8 @@ class DLISFile:
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
 
+        self._eflr_sets = defaultdict(lambda: {})
+
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
         """Storage Unit Label of the DLIS."""
@@ -110,6 +113,24 @@ class DLISFile:
 
         return self._frames
 
+    def get_or_make_eflr_set(self, eflr_item_type: type[EFLRItem], set_name: str = None) -> EFLRSet:
+
+        # the relevant EFLRSet subclass
+        eflr_set_type = eflr_item_type.parent_eflr_class
+
+        # dict mapping set names on EFLRSet (subclass) instances
+        eflr_set_dict = self._eflr_sets[eflr_set_type]
+
+        # instance of the EFLRSet with the given set name - if exists
+        eflr_set_instance = eflr_set_dict.get(set_name, None)
+
+        # (if not exists - create it)
+        if eflr_set_instance is None:
+            eflr_set_instance = eflr_set_type(set_name=set_name)
+            eflr_set_dict[set_name] = eflr_set_instance
+
+        return eflr_set_instance
+
     def add_axis(
             self,
             name: str,
@@ -133,7 +154,7 @@ class DLISFile:
             axis_id=axis_id,
             coordinates=coordinates,
             spacing=spacing,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.AxisItem, set_name=set_name)
         )
 
         self._other_eflr.append(ax)
@@ -174,7 +195,7 @@ class DLISFile:
             measurements=measurements,
             parameters=parameters,
             method=method,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -212,7 +233,7 @@ class DLISFile:
             references=references,
             plus_tolerances=plus_tolerances,
             minus_tolerances=minus_tolerances,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationCoefficientItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -281,7 +302,7 @@ class DLISFile:
             standard=standard,
             plus_tolerance=plus_tolerance,
             minus_tolerance=minus_tolerance,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CalibrationMeasurementItem, set_name=set_name)
         )
 
         self._other_eflr.append(m)
@@ -343,7 +364,7 @@ class DLISFile:
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ChannelItem, set_name=set_name)
         )
         # skipping dimension and element limit because they will be determined from the data
 
@@ -396,7 +417,7 @@ class DLISFile:
         c = eflr_types.CommentItem(
             name=name,
             text=text,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.CommentItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -440,7 +461,7 @@ class DLISFile:
             zones=zones,
             values=values,
             source=source,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ComputationItem, set_name=set_name)
         )
 
         self._other_eflr.append(c)
@@ -514,7 +535,7 @@ class DLISFile:
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
             angular_drift=angular_drift,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.EquipmentItem, set_name=set_name)
         )
 
         self._other_eflr.append(eq)
@@ -576,7 +597,7 @@ class DLISFile:
             encrypted=encrypted,
             index_min=index_min,
             index_max=index_max,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.FrameItem, set_name=set_name)
         )
 
         self._frames.append(fr)
@@ -611,7 +632,7 @@ class DLISFile:
             object_type=object_type,
             object_list=object_list,
             group_list=group_list,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.GroupItem, set_name=set_name)
         )
 
         self._other_eflr.append(g)
@@ -679,7 +700,7 @@ class DLISFile:
             conditions=conditions,
             standard_symbol=standard_symbol,
             private_symbol=private_symbol,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.LongNameItem, set_name=set_name)
         )
 
         self._other_eflr.append(ln)
@@ -723,7 +744,7 @@ class DLISFile:
             radial_drift=radial_drift,
             angular_drift=angular_drift,
             text=text,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.MessageItem, set_name=set_name)
         )
 
         self._other_eflr.append(m)
@@ -752,7 +773,7 @@ class DLISFile:
             name=name,
             consumer_name=consumer_name,
             description=description,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.NoFormatItem, set_name=set_name)
         )
 
         self._other_eflr.append(nf)
@@ -810,7 +831,7 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ParameterItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -866,7 +887,7 @@ class DLISFile:
             depth_offset=depth_offset,
             measure_point_offset=measure_point_offset,
             tool_zero_offset=tool_zero_offset,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.PathItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -922,7 +943,7 @@ class DLISFile:
             output_computations=output_computations,
             parameters=parameters,
             comments=comments,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ProcessItem, set_name=set_name)
         )
 
         self._other_eflr.append(p)
@@ -954,8 +975,9 @@ class DLISFile:
             output_channel=output_channel,
             input_channels=input_channels,
             zones=zones,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.SpliceItem, set_name=set_name)
         )
+
         self._other_eflr.append(sp)
         return sp
 
@@ -997,7 +1019,7 @@ class DLISFile:
             status=status,
             channels=channels,
             parameters=parameters,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ToolItem, set_name=set_name)
         )
 
         self._other_eflr.append(t)
@@ -1053,7 +1075,7 @@ class DLISFile:
             coordinate_2_value=coordinate_2_value,
             coordinate_3_name=coordinate_3_name,
             coordinate_3_value=coordinate_3_value,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.WellReferencePointItem, set_name=set_name)
         )
 
         self._other_eflr.append(w)
@@ -1092,7 +1114,7 @@ class DLISFile:
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            set_name=set_name
+            parent=self.get_or_make_eflr_set(eflr_types.ZoneItem, set_name=set_name)
         )
 
         self._other_eflr.append(z)
