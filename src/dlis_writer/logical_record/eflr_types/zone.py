@@ -1,7 +1,7 @@
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType
+from dlis_writer.utils.enums import EFLRType, RepresentationCode
 from dlis_writer.logical_record.core.attribute import IdentAttribute, DTimeAttribute, TextAttribute
 
 
@@ -35,6 +35,31 @@ class ZoneItem(EFLRItem):
         if domain not in cls.domains:
             raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
         return domain
+
+    def _set_defaults(self) -> None:
+        """Check maximum and minimum vs domain before writing the object."""
+
+        domain = self.domain.value
+
+        if domain is None:
+            return
+
+        rcs = [self.maximum.representation_code, self.minimum.representation_code]
+        rcs = [rc for rc in rcs if rc is not None]
+        if not rcs:
+            return
+
+        codes_are_dtime = [rc is RepresentationCode.DTIME for rc in rcs]
+
+        if domain == 'TIME':
+            if any(codes_are_dtime) and not all(codes_are_dtime):
+                raise RuntimeError(f"{self}: either both or none of Zone's maximum and minimum should be of datetime "
+                                   f"type; got {self.minimum.value} and {self.maximum.value}")
+
+        else:
+            if any(codes_are_dtime):
+                raise RuntimeError(f"{self}: domain is '{domain}', so only float values for minimum and maximum "
+                                   f"are allowed")
 
 
 class ZoneSet(EFLRSet):

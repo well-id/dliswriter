@@ -120,7 +120,13 @@ class Attribute:
     def inferred_representation_code(self) -> Union[RepresentationCode, None]:
         """Representation code guessed from the attribute value (if possible)."""
 
-        return self._guess_repr_code()
+        rc = self._guess_repr_code()
+
+        if rc is not None and rc not in self._valid_repr_codes:
+            raise RuntimeError(f"Value {repr(self._value)} is not of valid type "
+                               f"for attribute type {self.__class__.__name__}")
+
+        return rc
 
     def _set_representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
         """Set representation code, having checked that no (other) representation code has previously been set.
