@@ -8,16 +8,8 @@ from typing import Generator
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
-from tests.common import clear_eflr_instance_registers, load_dlis
+from tests.common import load_dlis
 from tests.dlis_files_for_testing import write_short_dlis
-
-
-@pytest.fixture(autouse=True)
-def cleanup() -> Generator:
-    """Remove all defined EFLR instances from the internal dicts before each test."""
-
-    clear_eflr_instance_registers()
-    yield
 
 
 @pytest.fixture(scope='session')
@@ -62,8 +54,6 @@ def short_reference_data(short_reference_data_path: Path) -> Generator:
 @pytest.fixture(scope='session')
 def short_dlis(short_reference_data_path: Path, base_data_path: Path) -> Generator:
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
-
-    clear_eflr_instance_registers()
 
     dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
     write_short_dlis(dlis_path, data=short_reference_data_path)

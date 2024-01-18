@@ -5,7 +5,7 @@ from typing import Union, Optional, Any
 from typing_extensions import Self
 
 from .attribute import Attribute
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, EFLRSetMeta
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
 
@@ -24,7 +24,7 @@ class EFLRAttribute(Attribute):
     _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
     _default_repr_code = RepC.OBNAME
 
-    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None, **kwargs: Any) -> None:
+    def __init__(self, label: str, object_class: Optional[type[EFLRSet]] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
 
         Args:

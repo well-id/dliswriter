@@ -78,7 +78,7 @@ class EFLRItem:
     def _compute_copy_number(self) -> int:
         """Compute copy number of this ELFRItem, i.e. how many other objects of the same type and name there are."""
 
-        items_with_the_same_name = filter(lambda o: o.name == self.name, self.parent.get_all_eflr_items_from_all_sets())
+        items_with_the_same_name = filter(lambda o: o.name == self.name, self.parent.get_all_eflr_items())
         return len(list(items_with_the_same_name)) - 1
 
     @classmethod
