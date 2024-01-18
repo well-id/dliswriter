@@ -11,18 +11,13 @@ from dlis_writer import AttrSetup, OriginItem, DLISFile
 # colored logs output
 install_colored_logger(logging.getLogger('dlis_writer'))
 
-# set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginItem("DEFAULT ORIGIN", file_set_number=1, company="XXX")
+
+# create DLISFile instance, pass custom parameters for file header (as dict or as FileHeader instance)
+df = DLISFile(file_header={'sequence_number': 2})
+
+# add origin
+origin = df.add_origin("DEFAULT ORIGIN", file_set_number=1, company="XXX", order_number="352")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
-file_header = {'sequence_number': 2}
-
-
-# create DLISFile instance, pass the origin and file header
-df = DLISFile(origin=origin, file_header=file_header)
-
-
-# change parameters of already added objects
-df.origin.order_number.value = "352"
 
 
 # define axes - metadata objects for channels

@@ -4,7 +4,7 @@ from typing import Union
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
-from tests.dlis_files_for_testing.common import make_file_header, make_sul, make_origin
+from tests.dlis_files_for_testing.common import make_df
 
 
 def _add_channels(df: DLISFile, data_dict: dict, channel_kwargs: dict = None) -> tuple[eflr_types.ChannelItem, ...]:
@@ -23,11 +23,7 @@ def _add_channels(df: DLISFile, data_dict: dict, channel_kwargs: dict = None) ->
 
 
 def write_dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict, channel_kwargs: dict = None) -> None:
-    df = DLISFile(
-        origin=make_origin(),
-        file_header=make_file_header(),
-        storage_unit_label=make_sul()
-    )
+    df = make_df()
 
     channels = _add_channels(df, data_dict=data_dict, channel_kwargs=channel_kwargs)
     df.add_frame("MAIN", index_type="DEPTH", channels=channels)

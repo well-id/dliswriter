@@ -9,8 +9,8 @@ from dlis_writer.logical_record import eflr_types
 from tests.dlis_files_for_testing.common import make_file_header, make_sul
 
 
-def make_origin() -> eflr_types.OriginItem:
-    origin = eflr_types.OriginItem(
+def _add_origin(df: DLISFile) -> eflr_types.OriginItem:
+    origin = df.add_origin(
         "DEFAULT ORIGIN",
         creation_time="2050/03/02 15:30:00",
         file_id="WELL ID",
@@ -21,8 +21,7 @@ def make_origin() -> eflr_types.OriginItem:
         well_id=5,
         well_name="Test well name",
         field_name="Test field name",
-        company="Test company",
-        parent=eflr_types.OriginItem.make_parent()
+        company="Test company"
     )
 
     return origin
@@ -504,11 +503,8 @@ def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
 
 
 def create_dlis_file_object() -> DLISFile:
-    df = DLISFile(
-        origin=make_origin(),
-        file_header=make_file_header(),
-        storage_unit_label=make_sul()
-    )
+    df = DLISFile(storage_unit_label=make_sul(), file_header=make_file_header())
+    _add_origin(df)
 
     axes = _add_axes(df)
     channels = _add_channels(df, axes[0])
