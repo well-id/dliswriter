@@ -37,18 +37,13 @@ OptAttrSetupType = Optional[AttrSetupType]
 class DLISFile:
     """Define the structure and contents of a DLIS and create a file based on the provided information."""
 
-    def __init__(
-            self,
-            storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
-            file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None,
-            origin: Optional[Union[eflr_types.OriginItem, kwargs_type]] = None
-    ):
+    def __init__(self, storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
+                 file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None):
         """Initialise DLISFile.
 
         Args:
             storage_unit_label  :   An instance of StorageUnitLabel or keyword arguments to create one.
             file_header         :   An instance of FileHeaderObject or keyword arguments to create one.
-            origin              :   An instance of OriginObject or keyword arguments to create one.
         """
 
         if isinstance(storage_unit_label, StorageUnitLabel):
@@ -65,14 +60,7 @@ class DLISFile:
             fid = file_header.get('identifier', 'FILE HEADER')
             self._file_header = eflr_types.FileHeaderItem(fid, **file_header)
 
-        if isinstance(origin, eflr_types.OriginItem):
-            self._origin = origin
-        else:
-            origin = origin or {}
-            on = origin.get('name', 'ORIGIN')
-            fsn = origin.get('file_set_number', 1)
-            self._origin = eflr_types.OriginItem(on, file_set_number=fsn, **origin)
-
+        self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []
         self._frames: list[eflr_types.FrameItem] = []
         self._other_eflr: list[EFLRItem] = []
@@ -799,6 +787,92 @@ class DLISFile:
         self._no_format_frame_data.append(d)
         return d
 
+    def add_origin(
+            self,
+            name: str,
+            file_set_number: AttrSetupType[int],
+            file_set_name: OptAttrSetupType[str] = None,
+            file_id: OptAttrSetupType[str] = None,
+            file_number: OptAttrSetupType[int] = None,
+            file_type: OptAttrSetupType[str] = None,
+            product: OptAttrSetupType[str] = None,
+            version: OptAttrSetupType[str] = None,
+            programs: OptAttrSetupType[list[str]] = None,
+            creation_time: OptAttrSetupType[Union[datetime, str]] = None,
+            order_number: OptAttrSetupType[str] = None,
+            descent_number: OptAttrSetupType[int] = None,
+            run_number: OptAttrSetupType[int] = None,
+            well_id: OptAttrSetupType[int] = None,
+            well_name: OptAttrSetupType[str] = None,
+            field_name: OptAttrSetupType[str] = None,
+            producer_code: OptAttrSetupType[int] = None,
+            producer_name: OptAttrSetupType[str] = None,
+            company: OptAttrSetupType[str] = None,
+            name_space_name: OptAttrSetupType[str] = None,
+            name_space_version: OptAttrSetupType[int] = None,
+            set_name: Optional[str] = None
+    ) -> eflr_types.OriginItem:
+        """Create an origin.
+
+        Args:
+            name                :   Name of the parameter.
+            file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
+            file_set_name       :   File set name.
+            file_id             :   File ID.
+            file_number         :   File number.
+            file_type           :   File type.
+            product             :   Product description.
+            version             :   Version indicator.
+            programs            :   List of programs.
+            creation_time       :   Creation time.
+            order_number        :   Order number.
+            descent_number      :   Descent number.
+            run_number          :   Run number.
+            well_id             :   Well ID.
+            well_name           :   Well name.
+            field_name          :   Field name.
+            producer_code       :   Producer code.
+            producer_name       :   Producer name.
+            company             :   Company name.
+            name_space_name     :   Name space name.
+            name_space_version  :   Name space version.
+            set_name            :   Name of the OriginSet this origin should be added to.
+
+        Returns:
+            A configured OriginItem instance.
+        """
+
+        if self._origin:
+            raise RuntimeError("An OriginItem is already defined for the current DLISFile")
+
+        o = eflr_types.OriginItem(
+            name=name,
+            file_set_number=file_set_number,
+            file_set_name=file_set_name,
+            file_id=file_id,
+            file_number=file_number,
+            file_type=file_type,
+            product=product,
+            version=version,
+            programs=programs,
+            creation_time=creation_time,
+            order_number=order_number,
+            descent_number=descent_number,
+            run_number=run_number,
+            well_id=well_id,
+            well_name=well_name,
+            field_name=field_name,
+            producer_code=producer_code,
+            producer_name=producer_name,
+            company=company,
+            name_space_name=name_space_name,
+            name_space_version=name_space_version,
+            parent=self.get_or_make_eflr_set(eflr_types.OriginItem, set_name=set_name)
+        )
+
+        self._origin = o
+        return o
+
     def add_parameter(
             self,
             name: str,
@@ -1160,6 +1234,9 @@ class DLISFile:
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
+        if not self._origin:
+            raise RuntimeError("No OriginItem defined for this DLISFile")
+
         flr = FileLogicalRecords(
             sul=self._sul,
             fh=self._file_header.parent,
@@ -1207,18 +1284,3 @@ class DLISFile:
 
         exec_time = timeit(timed_func, number=1)
         logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
-
-
-if __name__ == '__main__':
-    # basic example for creating a DLIS file
-    # for a more advanced example, see dlis-writer/examples/create_synth_dlis.py
-
-    df = DLISFile()
-
-    n_rows = 100
-    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
-    ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10), cast_dtype=np.int32)
-    ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
-    main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
-
-    df.write('./tmp.DLIS', input_chunk_size=20)
