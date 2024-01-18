@@ -10,11 +10,12 @@ class MessageItem(EFLRItem):
 
     parent: "MessageSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "MessageSet", **kwargs: Any) -> None:
         """Initialise MessageItem.
 
         Args:
             name        :   Name of the MessageItem.
+            parent      :   Parent MessageSet of this MessageItem.
             **kwargs    :   Values of to be set as characteristics of the MessageItem Attributes.
         """
 
@@ -26,7 +27,7 @@ class MessageItem(EFLRItem):
         self.angular_drift = NumericAttribute('angular_drift')
         self.text = TextAttribute('text', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class MessageSet(EFLRSet):
@@ -42,17 +43,18 @@ class CommentItem(EFLRItem):
 
     parent: "CommentSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "CommentSet", **kwargs: Any) -> None:
         """Initialise CommentItem.
 
         Args:
             name        :   Name of the CommentItem.
+            parent      :   Parent CommentSet of this CommentItem.
             **kwargs    :   Values of to be set as characteristics of the CommentItem Attributes.
         """
 
         self.text = TextAttribute('text', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class CommentSet(EFLRSet):

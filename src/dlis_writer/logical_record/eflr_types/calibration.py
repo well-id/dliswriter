@@ -18,11 +18,12 @@ class CalibrationMeasurementItem(EFLRItem):
 
     parent: "CalibrationMeasurementSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "CalibrationMeasurementSet", **kwargs: Any) -> None:
         """Initialise CalibrationMeasurementItem.
 
         Args:
             name        :   Name of the CalibrationMeasurementItem.
+            parent      :   Parent CalibrationMeasurementSet of this CalibrationMeasurementItem.
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
@@ -43,7 +44,7 @@ class CalibrationMeasurementItem(EFLRItem):
         self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True)
         self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class CalibrationMeasurementSet(EFLRSet):
@@ -59,11 +60,12 @@ class CalibrationCoefficientItem(EFLRItem):
 
     parent: "CalibrationCoefficientSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "CalibrationCoefficientSet", **kwargs: Any) -> None:
         """Initialise CalibrationCoefficientItem.
 
         Args:
             name        :   Name of the CalibrationCoefficientItem.
+            parent      :   Parent CalibrationCoefficientSet of this CalibrationCoefficientItem.
             **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
@@ -73,7 +75,7 @@ class CalibrationCoefficientItem(EFLRItem):
         self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True)
         self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class CalibrationCoefficientSet(EFLRSet):
@@ -89,11 +91,12 @@ class CalibrationItem(EFLRItem):
 
     parent: "CalibrationSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "CalibrationSet", **kwargs: Any) -> None:
         """Initialise CalibrationItem.
 
         Args:
             name        :   Name of the CalibrationItem.
+            parent      :   Parent CalibrationSet of this CalibrationItem.
             **kwargs    :   Values of to be set as characteristics of the CalibrationItem Attributes.
         """
 
@@ -108,7 +111,7 @@ class CalibrationItem(EFLRItem):
         self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
         self.method = IdentAttribute('method')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class CalibrationSet(EFLRSet):

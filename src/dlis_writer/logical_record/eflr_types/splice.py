@@ -16,11 +16,12 @@ class SpliceItem(EFLRItem):
 
     parent: "SpliceSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "SpliceSet", **kwargs: Any) -> None:
         """Initialise SpliceItem.
 
         Args:
             name        :   Name of the SpliceItem.
+            parent      :   Parent SpliceSet of this SpliceItem.
             **kwargs    :   Values of to be set as characteristics of the SpliceItem Attributes.
         """
 
@@ -28,7 +29,7 @@ class SpliceItem(EFLRItem):
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class SpliceSet(EFLRSet):

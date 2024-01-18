@@ -15,11 +15,12 @@ class OriginItem(EFLRItem):
 
     parent: "OriginSet"
 
-    def __init__(self, name: str, file_set_number: int, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "OriginSet", file_set_number: int, **kwargs: Any) -> None:
         """Initialise OriginItem.
 
         Args:
             name            :   Name of the OriginItem.
+            parent          :   Parent OriginSet of this OriginItem.
             file_set_number :   ID by which other objects will refer to this origin.
             **kwargs        :   Values of to be set as characteristics of the OriginItem Attributes.
         """
@@ -49,7 +50,7 @@ class OriginItem(EFLRItem):
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             kwargs["creation_time"] = datetime.now()
 
-        super().__init__(name, file_set_number=file_set_number, **kwargs)
+        super().__init__(name, parent=parent, file_set_number=file_set_number, **kwargs)
 
 
 class OriginSet(EFLRSet):

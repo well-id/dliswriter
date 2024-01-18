@@ -19,11 +19,12 @@ class ProcessItem(EFLRItem):
 
     allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ProcessSet", **kwargs: Any) -> None:
         """Initialise ProcessItem.
 
         Args:
             name        :   Name of the ProcessItem.
+            parent      :   Parent ProcessSet of this ProcessItem.
             **kwargs    :   Values of to be set as characteristics of the ProcessItem Attributes.
         """
 
@@ -39,7 +40,7 @@ class ProcessItem(EFLRItem):
         self.parameters = EFLRAttribute('parameters', object_class=ParameterSet, multivalued=True)
         self.comments = TextAttribute('comments', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     @classmethod
     def check_status(cls, status: str) -> str:

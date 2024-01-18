@@ -16,11 +16,12 @@ class ParameterItem(EFLRItem):
 
     parent: "ParameterSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ParameterSet", **kwargs: Any) -> None:
         """Initialise ParameterItem.
 
         Args:
             name        :   Name of the ParameterItem.
+            parent      :   Parent ParameterSet of this ParameterItem.
             **kwargs    :   Values of to be set as characteristics of the ParameterItem Attributes.
         """
 
@@ -30,7 +31,7 @@ class ParameterItem(EFLRItem):
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
         self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     def _set_defaults(self) -> None:
         """Set default values of some attributes if no values have been set so far."""

@@ -36,14 +36,12 @@ class EFLRItem:
 
     parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None,
-                 **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "EFLRSet", **kwargs: Any) -> None:
         """Initialise an EFLRItem.
 
         Args:
             name        :   Name of the item. This will be the name it is stored with in the created DLIS file.
             parent      :   EFLRTable instance this item belongs to. If not provided, retrieved/made based on set_name.
-            set_name    :   Set name of the parent EFLRTable instance.
             **kwargs    :   Values to be set in attributes of this item.
 
         Note:
@@ -54,8 +52,10 @@ class EFLRItem:
         """
 
         self.name = name    #: name of the item
-        self.parent = self._get_parent(parent=parent, set_name=set_name)  #: EFLRTable instance this item belongs to
-        self.parent.register_item(self)
+
+        self._check_parent(parent)
+        self._parent = parent  #: EFLRSet instance this item belongs to
+        self._parent.register_item(self)
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
@@ -64,6 +64,10 @@ class EFLRItem:
             attribute.parent_eflr = self
 
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
+
+    @property
+    def parent(self) -> "EFLRSet":
+        return self._parent
 
     @property
     def copy_number(self) -> int:
@@ -78,29 +82,19 @@ class EFLRItem:
         return len(list(items_with_the_same_name)) - 1
 
     @classmethod
-    def _get_parent(cls, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None) -> "EFLRSet":
-        """Validate, retrieve, or create a parent EFLRTable instance.
+    def _check_parent(cls, parent: "EFLRSet") -> None:
+        """Validate a parent EFLRSet instance for this EFLRItem.
 
         Args:
-            parent      :   Parent EFLRTable instance. If not provided, set_name will be used to retrieve/make one.
-            set_name    :   Set name of the parent EFLRTable instance. If parent is provided, it is checked against its
-                            set_name.
+            parent      :   Parent EFLRSet instance.
 
         Returns:
-            The parent EFLRTable instance.
+            The parent EFLRSet instance.
         """
 
-        if parent is not None:
-            if not isinstance(parent, cls.parent_eflr_class):
-                raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
-                                f"got a {type(parent)}: {parent}")
-            if parent.set_name != set_name and set_name is not None:
-                raise ValueError(f"The provided set name: {set_name} does not match the set name of the "
-                                 f"provided parent EFLRTable: {parent.set_name}")
-
-            return parent
-
-        return cls.parent_eflr_class.get_or_make_set(set_name=set_name)
+        if not isinstance(parent, cls.parent_eflr_class):
+            raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
+                            f"got a {type(parent)}: {parent}")
 
     @property
     def attributes(self) -> dict[str, Attribute]:

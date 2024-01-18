@@ -10,11 +10,12 @@ class LongNameItem(EFLRItem):
 
     parent: "LongNameSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "LongNameSet", **kwargs: Any) -> None:
         """Initialise LongNameItem.
 
         Args:
             name        :   Name of the LongNameItem.
+            parent      :   Parent LongNameSet of this LongNameItem.
             **kwargs    :   Values of to be set as characteristics of the LongNameItem Attributes.
         """
 
@@ -34,7 +35,7 @@ class LongNameItem(EFLRItem):
         self.standard_symbol = TextAttribute('standard_symbol')
         self.private_symbol = TextAttribute('private_symbol')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class LongNameSet(EFLRSet):

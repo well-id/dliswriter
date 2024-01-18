@@ -12,11 +12,12 @@ class ZoneItem(EFLRItem):
 
     domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ZoneSet", **kwargs: Any) -> None:
         """Initialise ZoneItem.
 
         Args:
             name        :   Name of the ZoneItem.
+            parent      :   Parent ZoneSet of this ZoneItem.
             **kwargs    :   Values of to be set as characteristics of the ZoneItem Attributes.
         """
 
@@ -25,7 +26,7 @@ class ZoneItem(EFLRItem):
         self.maximum = DTimeAttribute('maximum', allow_float=True)
         self.minimum = DTimeAttribute('minimum', allow_float=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     @classmethod
     def check_domain(cls, domain: str) -> str:

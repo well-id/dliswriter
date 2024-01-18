@@ -10,11 +10,12 @@ class EquipmentItem(EFLRItem):
 
     parent: "EquipmentSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "EquipmentSet", **kwargs: Any) -> None:
         """Initialise EquipmentItem.
 
         Args:
             name        :   Name of the EquipmentItem.
+            parent      :   Parent EquipmentSet of this EquipmentItem.
             **kwargs    :   Values of to be set as characteristics of the EquipmentItem Attributes.
         """
 
@@ -36,7 +37,7 @@ class EquipmentItem(EFLRItem):
         self.radial_drift = NumericAttribute('radial_drift')
         self.angular_drift = NumericAttribute('angular_drift')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class EquipmentSet(EFLRSet):

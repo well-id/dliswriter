@@ -14,12 +14,12 @@ class GroupItem(EFLRItem):
 
     parent: "GroupSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "GroupSet", **kwargs: Any) -> None:
         """Initialise GroupItem.
 
         Args:
             name        :   Name of the GroupItem.
-            parent      :   Group EFLR instance this GroupItem belongs to.
+            parent      :   Group EFLRSet instance this GroupItem belongs to.
             **kwargs    :   Values of to be set as characteristics of the GroupItem Attributes.
         """
 
@@ -28,7 +28,7 @@ class GroupItem(EFLRItem):
         self.object_list = EFLRAttribute('object_list', multivalued=True)
         self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class GroupSet(EFLRSet):

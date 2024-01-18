@@ -27,11 +27,12 @@ class FrameItem(EFLRItem):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "FrameSet", **kwargs: Any) -> None:
         """Initialise FrameItem.
 
         Args:
             name        :   Name of the FrameItem.
+            parent      :   Parent FrameSet of this FrameItem.
             **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
@@ -44,7 +45,7 @@ class FrameItem(EFLRItem):
         self.index_min = NumericAttribute('index_min')
         self.index_max = NumericAttribute('index_max')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     @classmethod
     def parse_index_type(cls, value: str) -> str:

@@ -40,12 +40,13 @@ class ChannelItem(EFLRItem):
 
     parent: "ChannelSet"
 
-    def __init__(self, name: str, dataset_name: Optional[str] = None, cast_dtype: Optional[numpy_dtype_type] = None,
-                 **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ChannelSet", dataset_name: Optional[str] = None,
+                 cast_dtype: Optional[numpy_dtype_type] = None, **kwargs: Any) -> None:
         """Initialise ChannelItem.
 
         Args:
             name            :   Name of the ChannelItem.
+            parent          :   Parent ChannelSet of this ChannelItem.
             dataset_name    :   Name of the data corresponding to this channel in the SourceDataWrapper.
             cast_dtype      :   Numpy data type the channel data should be cast to.
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
@@ -64,7 +65,7 @@ class ChannelItem(EFLRItem):
         self.minimum_value = NumericAttribute('minimum_value', representation_code=RepC.FDOUBL, multivalued=True)
         self.maximum_value = NumericAttribute('maximum_value', representation_code=RepC.FDOUBL, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
         self._dataset_name: Union[str, None] = dataset_name
         self._set_cast_dtype(cast_dtype)

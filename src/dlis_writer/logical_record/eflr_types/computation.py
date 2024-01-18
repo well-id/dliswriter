@@ -17,11 +17,12 @@ class ComputationItem(EFLRItem):
 
     parent: "ComputationSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ComputationSet", **kwargs: Any) -> None:
         """Initialise ComputationItem.
 
         Args:
             name            :   Name of the ComputationItem.
+            parent          :   Parent ComputationSet of this ComputationItem.
             **kwargs        :   Values of to be set as characteristics of the ComputationItem Attributes.
         """
 
@@ -33,7 +34,7 @@ class ComputationItem(EFLRItem):
         self.values = NumericAttribute('values', multivalued=True)
         self.source = EFLRAttribute('source')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
         self.check_values_and_zones()
 

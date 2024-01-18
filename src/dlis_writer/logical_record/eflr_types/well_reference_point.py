@@ -10,11 +10,12 @@ class WellReferencePointItem(EFLRItem):
 
     parent: "WellReferencePointSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "WellReferencePointSet", **kwargs: Any) -> None:
         """Initialise WellReferencePointItem.
 
         Args:
             name        :   Name of the WellReferencePointItem.
+            parent      :   Parent WellReferencePointSet of this WellReferencePointItem.
             **kwargs    :   Values of to be set as characteristics of the WellReferencePointItem Attributes.
         """
 
@@ -30,7 +31,7 @@ class WellReferencePointItem(EFLRItem):
         self.coordinate_3_name = TextAttribute('coordinate_3_name')
         self.coordinate_3_value = NumericAttribute('coordinate_3_value', representation_code=RepC.FDOUBL)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class WellReferencePointSet(EFLRSet):

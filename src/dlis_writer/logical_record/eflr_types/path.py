@@ -17,11 +17,12 @@ class PathItem(EFLRItem):
 
     parent: "PathSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "PathSet", **kwargs: Any) -> None:
         """Initialise PathItem.
 
         Args:
             name        :   Name of the PathItem.
+            parent      :   Parent PathSet of this PathItem.
             **kwargs    :   Values of to be set as characteristics of the PathItem Attributes.
         """
 
@@ -37,7 +38,7 @@ class PathItem(EFLRItem):
         self.measure_point_offset = NumericAttribute('measure_point_offset')
         self.tool_zero_offset = NumericAttribute('tool_zero_offset')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class PathSet(EFLRSet):
