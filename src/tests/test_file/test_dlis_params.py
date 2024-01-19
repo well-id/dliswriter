@@ -2,6 +2,7 @@ import pytest
 from datetime import datetime
 from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
+from pytz import utc
 
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
@@ -60,7 +61,11 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
     origin = short_dlis.origins[0]
 
     assert origin.name == "DEFAULT ORIGIN"
-    assert origin.creation_time == datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S")
+
+    # dlisio doesn't add time zone info to the parsed datetime objects, so we use utc.localize here to put it in UTC
+    assert (utc.localize(origin.creation_time) ==
+            datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S").astimezone(utc))
+
     assert origin.file_id == "WELL ID"
     assert origin.file_set_name == "Test file set name"
     assert origin.file_set_nr == 1
@@ -109,7 +114,8 @@ def test_zones(short_dlis: dlis.file.LogicalFile) -> None:
 @pytest.mark.parametrize(("name", "description", "maximum", "minimum", "value_type"), (
         ("Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, float),
         ("Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
-        ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30), datetime(2050, 7, 12, 9), datetime),
+        ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30).astimezone(utc),
+         datetime(2050, 7, 12, 9).astimezone(utc), datetime),
         ("Zone-4", "ZONE-TIME-2", 90, 10, float),
         ("Zone-X", "Zone not added to any parameter", 10, 1, float)
 ))
@@ -122,10 +128,20 @@ def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: 
     z = zones[0]
 
     assert z.description == description
-    assert z.maximum == maximum
-    assert z.minimum == minimum
+
     assert isinstance(z.maximum, value_type)
     assert isinstance(z.minimum, value_type)
+
+    z_maximum = z.maximum
+    z_minimum = z.minimum
+
+    if value_type is datetime:
+        # dlisio doesn't add time zone info to the parsed datetime objects; utc.localize marks them as UTC
+        z_maximum = utc.localize(z_maximum)
+        z_minimum = utc.localize(z_minimum)
+
+    assert z_maximum == maximum
+    assert z_minimum == minimum
 
 
 def test_zone_not_in_param(short_dlis: dlis.file.LogicalFile) -> None:
@@ -309,7 +325,7 @@ def test_calibration_measurement_params(short_dlis: dlis.file.LogicalFile) -> No
     assert m.samples == [12.2323]
     assert m.samplecount == 12
     assert m.max_deviation == [2.2324]
-    assert m.begin_time == datetime(2050, 3, 12, 12, 30)
+    assert utc.localize(m.begin_time) == datetime(2050, 3, 12, 12, 30).astimezone(utc)
     assert m.duration == 15
     assert m.reference == [11]
     assert m.standard == [11.2]
@@ -369,7 +385,7 @@ def test_message_params(short_dlis: dlis.file.LogicalFile) -> None:
 
     assert m.name == "MESSAGE-1"
     assert m.message_type == 'Command'
-    assert m.time == datetime(2050, 3, 4, 11, 23, 11)
+    assert utc.localize(m.time) == datetime(2050, 3, 4, 11, 23, 11).astimezone(utc)
     assert m.borehole_drift == 123.34
     assert m.vertical_depth == 234.45
     assert m.radial_drift == 345.56
