@@ -109,7 +109,7 @@ class DLISFile:
             max_record_length=max_record_length
         )
 
-        self._file_header: eflr_types.FileHeaderItem = self._set_up_sul_or_fh(
+        file_header_item: eflr_types.FileHeaderItem = self._set_up_sul_or_fh(
             item_class=eflr_types.FileHeaderItem,
             item=file_header,
             identifier=fh_identifier,
@@ -118,7 +118,7 @@ class DLISFile:
         )
 
         self._eflr_sets = EFLRSetsDict()
-        self._eflr_sets.add_set(self._file_header.parent)
+        self._eflr_sets.add_set(file_header_item.parent)
 
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
@@ -151,7 +151,7 @@ class DLISFile:
     def file_header(self) -> eflr_types.FileHeaderItem:
         """File header of the DLIS."""
 
-        return self._file_header
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))[0]
 
     @property
     def origin(self) -> Union[eflr_types.OriginItem, None]:
@@ -1264,7 +1264,7 @@ class DLISFile:
 
         flr = FileLogicalRecords(
             sul=self._sul,
-            fh=self._file_header.parent,
+            fh=self.file_header.parent,
             orig=origin.parent
         )
 
