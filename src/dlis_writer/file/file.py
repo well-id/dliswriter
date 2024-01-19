@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, TypedDict
+from typing import Any, Union, Optional, TypeVar, TypedDict, Generator
 import numpy as np
 import os
 from timeit import timeit
@@ -62,6 +62,11 @@ class EFLRSetsDict(defaultdict):
 
         return eflr_set_instance
 
+    def get_all_items_for_set_type(self, eflr_set_type: type[EFLRSet]) -> Generator:
+        for value in self[eflr_set_type].values():
+            value: EFLRSet
+            yield from value.get_all_eflr_items()
+
 
 class DLISFile:
     """Define the structure and contents of a DLIS and create a file based on the provided information."""
@@ -114,10 +119,10 @@ class DLISFile:
 
         self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []
-        self._frames: list[eflr_types.FrameItem] = []
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
         self._eflr_sets = EFLRSetsDict()
+        self._eflr_sets.add_set(self._file_header.parent)
 
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
@@ -161,12 +166,6 @@ class DLISFile:
         """Channels defined for the DLIS."""
 
         return self._channels
-
-    @property
-    def frames(self) -> list[eflr_types.FrameItem]:
-        """Frames defined for the DLIS."""
-
-        return self._frames
 
     def add_axis(
             self,
@@ -630,7 +629,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.FrameItem, set_name=set_name)
         )
 
-        self._frames.append(fr)
         return fr
 
     def add_group(
@@ -1276,8 +1274,10 @@ class DLISFile:
 
         flr.add_channels(*self._eflr_sets[eflr_types.ChannelSet].values())
         flr.add_frames(*self._eflr_sets[eflr_types.FrameSet].values())
+
+        frame_items = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
         flr.add_frame_data_objects(
-            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in self._frames))
+            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items))
 
         for set_type, set_dict in self._eflr_sets.items():
             if set_type not in (
