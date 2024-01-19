@@ -46,11 +46,11 @@ class OriginItem(EFLRItem):
         self.name_space_name = IdentAttribute('name_space_name')
         self.name_space_version = NumericAttribute('name_space_version', representation_code=RepC.UVARI)
 
-        if "creation_time" not in kwargs:
-            logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
-            kwargs["creation_time"] = datetime.now()
-
         super().__init__(name, parent=parent, file_set_number=file_set_number, **kwargs)
+
+        if self.creation_time.value is None:
+            logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
+            self.creation_time.value = datetime.now()
 
 
 class OriginSet(EFLRSet):
