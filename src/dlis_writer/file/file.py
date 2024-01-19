@@ -118,7 +118,6 @@ class DLISFile:
         )
 
         self._origin: Union[eflr_types.OriginItem, None] = None
-        self._channels: list[eflr_types.ChannelItem] = []
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
         self._eflr_sets = EFLRSetsDict()
@@ -165,7 +164,7 @@ class DLISFile:
     def channels(self) -> list[eflr_types.ChannelItem]:
         """Channels defined for the DLIS."""
 
-        return self._channels
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
 
     def add_axis(
             self,
@@ -400,8 +399,6 @@ class DLISFile:
         )
         # skipping dimension and element limit because they will be determined from the data
 
-        self._channels.append(ch)
-
         if data is not None:
             self._data_dict[ch.dataset_name] = data
 
@@ -410,7 +407,7 @@ class DLISFile:
     def _get_unique_dataset_name(self, channel_name: str, dataset_name: Optional[str] = None) -> str:
         """Determine a unique name for channel's data in the internal data dict."""
 
-        current_dataset_names = [ch.dataset_name for ch in self._channels]
+        current_dataset_names = [ch.dataset_name for ch in self.channels]
 
         if dataset_name is not None:
             if dataset_name in current_dataset_names:
