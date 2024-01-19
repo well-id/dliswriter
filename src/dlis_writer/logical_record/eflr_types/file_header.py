@@ -1,3 +1,5 @@
+from typing import Any
+
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import RepresentationCode
@@ -34,6 +36,25 @@ class FileHeaderItem(EFLRItem):
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
 
         super().__init__(name='0', parent=parent)
+
+    def __repr__(self) -> str:
+        return (f"{self.__class__.__name__}(identifier={self.identifier}, sequence_number={self.sequence_number}, "
+                f"parent=FileHeaderSet(set_name={self.parent.set_name}))")
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        if not self.sequence_number == other.sequence_number:
+            return False
+
+        if not self.identifier == other.identifier:
+            return False
+
+        if not self.parent.set_name == other.parent.set_name:
+            return False
+
+        return True
 
     def _make_attrs_bytes(self) -> bytes:
         """Create bytes describing the values of attributes of FIleHeaderItem."""

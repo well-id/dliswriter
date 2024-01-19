@@ -1,3 +1,5 @@
+from typing import Any
+
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
 
@@ -41,6 +43,25 @@ class StorageUnitLabel:
 
         if max_record_length > self.max_record_length_limit:
             raise ValueError(f"Max record length cannot be larger than {self.max_record_length_limit}")
+
+    def __repr__(self) -> str:
+        return (f"{self.__class__.__name__}(sequence_number={self.sequence_number}, "
+                f"set_identifier={self.set_identifier}, max_record_length={self.max_record_length})")
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        if not self.sequence_number == other.sequence_number:
+            return False
+
+        if not self.set_identifier == other.set_identifier:
+            return False
+
+        if not self.max_record_length == other.max_record_length:
+            return False
+
+        return True
 
     def represent_as_bytes(self) -> LogicalRecordBytes:
         """Create bytes describing the storage unit label.

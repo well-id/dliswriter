@@ -21,7 +21,6 @@ from dlis_writer.file.writer import DLISWriter
 logger = logging.getLogger(__name__)
 
 
-kwargs_type = dict[str, Any]
 number_type = Union[int, float]
 dtime_or_number_type = Union[str, datetime.datetime, int, float]
 values_type = Union[list[str], list[int], list[float]]
@@ -37,8 +36,17 @@ OptAttrSetupType = Optional[AttrSetupType]
 class DLISFile:
     """Define the structure and contents of a DLIS and create a file based on the provided information."""
 
-    def __init__(self, storage_unit_label: Optional[Union[StorageUnitLabel, kwargs_type]] = None,
-                 file_header: Optional[Union[eflr_types.FileHeaderItem, kwargs_type]] = None):
+    def __init__(
+            self,
+            storage_unit_label: Optional[StorageUnitLabel] = None,
+            file_header: Optional[eflr_types.FileHeaderItem] = None,
+            set_identifier: str = "MAIN STORAGE UNIT",
+            sul_sequence_number: int = 1,
+            max_record_length: int = 8192,
+            fh_identifier: str = "FILE HEADER",
+            fh_sequence_number: int = 1,
+            fh_set_name: Optional[str] = None
+    ):
         """Initialise DLISFile.
 
         Args:
@@ -46,19 +54,21 @@ class DLISFile:
             file_header         :   An instance of FileHeaderObject or keyword arguments to create one.
         """
 
-        if isinstance(storage_unit_label, StorageUnitLabel):
-            self._sul = storage_unit_label
-        else:
-            storage_unit_label = storage_unit_label or {}
-            sid = storage_unit_label.get('set_identifier', 'MAIN STORAGE UNIT')
-            self._sul = StorageUnitLabel(sid, **storage_unit_label)
+        self._sul: StorageUnitLabel = self._set_up_sul_or_fh(
+            item_class=StorageUnitLabel,
+            item=storage_unit_label,
+            set_identifier=set_identifier,
+            sequence_number=sul_sequence_number,
+            max_record_length=max_record_length
+        )
 
-        if isinstance(file_header, eflr_types.FileHeaderItem):
-            self._file_header = file_header
-        else:
-            file_header = file_header or {}
-            fid = file_header.get('identifier', 'FILE HEADER')
-            self._file_header = eflr_types.FileHeaderItem(fid, **file_header, parent=eflr_types.FileHeaderSet())
+        self._file_header: eflr_types.FileHeaderItem = self._set_up_sul_or_fh(
+            item_class=eflr_types.FileHeaderItem,
+            item=file_header,
+            identifier=fh_identifier,
+            sequence_number=fh_sequence_number,
+            parent=eflr_types.FileHeaderSet(set_name=fh_set_name)
+        )
 
         self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []
@@ -66,10 +76,26 @@ class DLISFile:
         self._other_eflr: list[EFLRItem] = []
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
+        self._eflr_sets = defaultdict(lambda: {})
+
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
 
-        self._eflr_sets = defaultdict(lambda: {})
+    @staticmethod
+    def _set_up_sul_or_fh(item_class: type, item: Union[StorageUnitLabel, eflr_types.FileHeaderItem, None],
+                          **kwargs: Any) -> Union[StorageUnitLabel, eflr_types.FileHeaderItem]:
+
+        if item is not None:
+            if not isinstance(item, item_class):
+                raise TypeError(f"Expected a {item_class.__name__}, got {type(item)}: {item}")
+            logger.debug(f"Using the provided {item_class.__name__} instance")
+
+        else:
+            logger.debug(f"Creating a new {item_class.__name__} instance")
+            item = item_class(**kwargs)
+
+        logger.debug(f"{item_class.__name__} for the file: {repr(item)}")
+        return item
 
     @property
     def storage_unit_label(self) -> StorageUnitLabel:
