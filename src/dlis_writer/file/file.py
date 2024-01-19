@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, TypedDict, Generator
+from typing import Any, Union, Optional, TypeVar, TypedDict, Generator, Sequence
 import numpy as np
 import os
 from timeit import timeit
@@ -165,6 +165,12 @@ class DLISFile:
         """Channels defined for the DLIS."""
 
         return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
+
+    @property
+    def frames(self) -> list[eflr_types.FrameItem]:
+        """Frames defined for the DLIS."""
+
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet))
 
     def add_axis(
             self,
@@ -1219,6 +1225,49 @@ class DLISFile:
 
         return z
 
+    def check_objects(self) -> None:
+        """Check objects defined for the DLISFile. Called before writing the file."""
+
+        self._check_completeness()
+        self._check_channels_assigned_to_frames()
+
+    def _check_completeness(self) -> None:
+        """Check that the collection contains all required objects in the required (min/max) numbers.
+
+        Raises:
+            RuntimeError    :   If not enough or too many of any of the required object types are defined.
+        """
+
+        if not self.file_header:
+            raise RuntimeError("No file header defined for the file")
+
+        if len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))) > 1:
+            raise RuntimeError("Only one origin can be defined for the file")
+
+        if not self.origin:
+            raise RuntimeError("No origin defined for the file")
+
+        if not self.channels:
+            raise RuntimeError("No channels defined for the file")
+
+        if not self.frames:
+            raise RuntimeError("No frames defined for the file")
+
+    def _check_channels_assigned_to_frames(self) -> None:
+        """Check that all defined ChannelObject instances are assigned to at least one FrameObject.
+
+        Issues a warning in the logs if the condition is not fulfilled (possible issues with opening file in DeepView).
+        """
+
+        channels_in_frames = set()
+        for frame_item in self.frames:
+            channels_in_frames |= set(frame_item.channels.value)
+
+        for channel_item in self.channels:
+            if channel_item not in channels_in_frames:
+                logger.warning(f"{channel_item} has not been added to any frame; "
+                               f"this might cause issues with opening the produced DLIS file in some software")
+
     def _make_multi_frame_data(
             self,
             fr: eflr_types.FrameItem,
@@ -1307,8 +1356,11 @@ class DLISFile:
             """
 
             dlis_file = DLISWriter(visible_record_length=self.storage_unit_label.max_record_length)
+
+            self.check_objects()
             logical_records = self.make_file_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
+
             dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
 
         exec_time = timeit(timed_func, number=1)

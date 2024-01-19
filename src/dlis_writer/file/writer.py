@@ -248,8 +248,6 @@ class DLISWriter:
             output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
         """
 
-        logical_records.check_objects()  # check that all required objects are there
-
         self._assign_origin_reference(logical_records)
 
         # this is the bit where the file is actually created
