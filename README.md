@@ -46,6 +46,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 - Exposed most frequently needed objects for import from library root (`from dlis_writer import ...`).
 - Explicit init arguments and docstrings for most frequently used classes.
 - Saving date-time in GMT rather than 'local time'.
+- Passing file header and storage unit label initialisation arguments directly to `DLISFile`.
 
 ##### 0.0.7 Equivalent (_parallel_) frames
 Made it easier to add frames with the same set of channel (dataset) names, but separate data - e.g. 
