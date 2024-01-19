@@ -117,14 +117,13 @@ class DLISFile:
             parent=eflr_types.FileHeaderSet(set_name=fh_set_name)
         )
 
-        self._origin: Union[eflr_types.OriginItem, None] = None
-        self._no_format_frame_data: list[NoFormatFrameData] = []
-
         self._eflr_sets = EFLRSetsDict()
         self._eflr_sets.add_set(self._file_header.parent)
 
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
+
+        self._no_format_frame_data: list[NoFormatFrameData] = []
 
     @staticmethod
     def _set_up_sul_or_fh(item_class: type, item: Union[StorageUnitLabel, eflr_types.FileHeaderItem, None],
@@ -158,7 +157,8 @@ class DLISFile:
     def origin(self) -> Union[eflr_types.OriginItem, None]:
         """Origin of the DLIS. Note: currently only adding a single origin is supported."""
 
-        return self._origin
+        origins = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        return origins[0] if origins else None
 
     @property
     def channels(self) -> list[eflr_types.ChannelItem]:
@@ -875,7 +875,7 @@ class DLISFile:
             A configured OriginItem instance.
         """
 
-        if self._origin:
+        if self.origin:
             raise RuntimeError("An OriginItem is already defined for the current DLISFile")
 
         o = eflr_types.OriginItem(
@@ -903,7 +903,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.OriginItem, set_name=set_name)
         )
 
-        self._origin = o
         return o
 
     def add_parameter(
@@ -1260,13 +1259,13 @@ class DLISFile:
     ) -> FileLogicalRecords:
         """Create an iterable object of logical records to become part of the created DLIS file."""
 
-        if not self._origin:
+        if not (origin := self.origin):
             raise RuntimeError("No OriginItem defined for this DLISFile")
 
         flr = FileLogicalRecords(
             sul=self._sul,
             fh=self._file_header.parent,
-            orig=self._origin.parent
+            orig=origin.parent
         )
 
         flr.add_channels(*self._eflr_sets[eflr_types.ChannelSet].values())
