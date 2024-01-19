@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, Sequence, TypedDict
+from typing import Any, Union, Optional, TypeVar, TypedDict
 import numpy as np
 import os
 from timeit import timeit
@@ -115,7 +115,6 @@ class DLISFile:
         self._origin: Union[eflr_types.OriginItem, None] = None
         self._channels: list[eflr_types.ChannelItem] = []
         self._frames: list[eflr_types.FrameItem] = []
-        self._other_eflr: list[EFLRItem] = []
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
         self._eflr_sets = EFLRSetsDict()
@@ -195,7 +194,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.AxisItem, set_name=set_name)
         )
 
-        self._other_eflr.append(ax)
         return ax
 
     def add_calibration(
@@ -236,7 +234,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationItem, set_name=set_name)
         )
 
-        self._other_eflr.append(c)
         return c
 
     def add_calibration_coefficient(
@@ -274,7 +271,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientItem, set_name=set_name)
         )
 
-        self._other_eflr.append(c)
         return c
 
     def add_calibration_measurement(
@@ -343,7 +339,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementItem, set_name=set_name)
         )
 
-        self._other_eflr.append(m)
         return m
 
     def add_channel(
@@ -458,7 +453,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.CommentItem, set_name=set_name)
         )
 
-        self._other_eflr.append(c)
         return c
 
     def add_computation(
@@ -502,7 +496,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationItem, set_name=set_name)
         )
 
-        self._other_eflr.append(c)
         return c
 
     def add_equipment(
@@ -576,7 +569,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentItem, set_name=set_name)
         )
 
-        self._other_eflr.append(eq)
         return eq
 
     def add_frame(
@@ -673,7 +665,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.GroupItem, set_name=set_name)
         )
 
-        self._other_eflr.append(g)
         return g
 
     def add_long_name(
@@ -741,7 +732,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameItem, set_name=set_name)
         )
 
-        self._other_eflr.append(ln)
         return ln
 
     def add_message(
@@ -785,7 +775,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.MessageItem, set_name=set_name)
         )
 
-        self._other_eflr.append(m)
         return m
 
     def add_no_format(
@@ -814,7 +803,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatItem, set_name=set_name)
         )
 
-        self._other_eflr.append(nf)
         return nf
 
     def add_no_format_frame_data(
@@ -958,7 +946,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterItem, set_name=set_name)
         )
 
-        self._other_eflr.append(p)
         return p
 
     def add_path(
@@ -1014,7 +1001,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.PathItem, set_name=set_name)
         )
 
-        self._other_eflr.append(p)
         return p
 
     def add_process(
@@ -1070,7 +1056,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessItem, set_name=set_name)
         )
 
-        self._other_eflr.append(p)
         return p
 
     def add_splice(
@@ -1102,7 +1087,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceItem, set_name=set_name)
         )
 
-        self._other_eflr.append(sp)
         return sp
 
     def add_tool(
@@ -1146,7 +1130,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ToolItem, set_name=set_name)
         )
 
-        self._other_eflr.append(t)
         return t
 
     def add_well_reference_point(
@@ -1202,7 +1185,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointItem, set_name=set_name)
         )
 
-        self._other_eflr.append(w)
         return w
 
     def add_zone(
@@ -1241,7 +1223,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneItem, set_name=set_name)
         )
 
-        self._other_eflr.append(z)
         return z
 
     def _make_multi_frame_data(
@@ -1293,14 +1274,16 @@ class DLISFile:
             orig=self._origin.parent
         )
 
-        def get_parents(objects: Sequence[EFLRItem]) -> set:
-            return set(obj.parent for obj in objects)
-
-        flr.add_channels(*get_parents(self._channels))
-        flr.add_frames(*get_parents(self._frames))
+        flr.add_channels(*self._eflr_sets[eflr_types.ChannelSet].values())
+        flr.add_frames(*self._eflr_sets[eflr_types.FrameSet].values())
         flr.add_frame_data_objects(
             *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in self._frames))
-        flr.add_logical_records(*get_parents(self._other_eflr))
+
+        for set_type, set_dict in self._eflr_sets.items():
+            if set_type not in (
+                    eflr_types.FileHeaderSet, eflr_types.OriginSet, eflr_types.ChannelSet, eflr_types.FrameSet):
+                flr.add_logical_records(*set_dict.values())
+
         flr.add_logical_records(*self._no_format_frame_data)
 
         return flr
