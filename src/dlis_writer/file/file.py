@@ -50,8 +50,20 @@ class DLISFile:
         """Initialise DLISFile.
 
         Args:
-            storage_unit_label  :   An instance of StorageUnitLabel or keyword arguments to create one.
-            file_header         :   An instance of FileHeaderObject or keyword arguments to create one.
+            storage_unit_label  :   An instance of StorageUnitLabel. If not provided, a new instance will be created
+                                    based on other provided arguments and/or defaults.
+            file_header         :   An instance of FileHeaderItem. If not provided, a new instance will be created
+                                    based on other provided arguments and/or defaults.
+            set_identifier      :   Used to create a StorageUnitLabel. ID of the storage set.
+            sul_sequence_number :   Used to create a StorageUnitLabel. Indicates the order in which the current
+                                    Storage Unit appears in a Storage Set.
+            max_record_length   :   Used to create a StorageUnitLabel. Maximum length of each visible record.
+                                    Cannot exceed 16384.
+                                    See  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
+            fh_identifier       :   Used to create a FileHeaderItem. Name identifying the FH instance.
+            fh_sequence_number  :   Used to create a FileHeaderItem. Sequence number of the file.
+            fh_set_name         :   Used to create a FileHeaderSet which will act as parent to the FileHeaderItem.
+                                    Set name the FH shall belong to. Usually None.
         """
 
         self._sul: StorageUnitLabel = self._set_up_sul_or_fh(
@@ -110,7 +122,7 @@ class DLISFile:
         return self._file_header
 
     @property
-    def origin(self) -> eflr_types.OriginItem:
+    def origin(self) -> Union[eflr_types.OriginItem, None]:
         """Origin of the DLIS. Note: currently only adding a single origin is supported."""
 
         return self._origin
