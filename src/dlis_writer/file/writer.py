@@ -24,6 +24,10 @@ class ByteWriter:
         self._total_size = 0
 
     @property
+    def filename(self) -> Union[str, bytes, os.PathLike]:
+        return self._filename
+
+    @property
     def total_size(self) -> int:
         """Number of bytes which have been written into the file."""
 
@@ -114,13 +118,18 @@ class BufferedOutput:
 class DLISWriter:
     """Create a DLIS file given data and structure information (specification of logical records)."""
 
-    def __init__(self, visible_record_length: int = 8192):
+    def __init__(self, filename: Union[str, os.PathLike[str]], visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
         Args:
+            filename                :   Name of the file to be created. Note: at this point, no file name / directory
+                                        checks (file already exists / directory write access / etc.) are performed.
+
             visible_record_length   :   Maximum allowed length of visible records (physical file units) in the created
                                         file. Expressed in bytes.
         """
+
+        self._byte_writer = ByteWriter(filename)
 
         self._check_visible_record_length(visible_record_length)
         self._visible_record_length: int = visible_record_length  #: Maximum allowed visible record length, in bytes
@@ -181,20 +190,12 @@ class DLISWriter:
             raise ValueError(f"Output chunk size cannot be smaller than max visible record length "
                              f"(= {self._visible_record_length}); got {output_chunk_size}")
 
-    def _create_visible_records(self, logical_records: Sequence, writer: ByteWriter,
-                                output_chunk_size: Union[int, float, None] = None) -> None:
-        """Create visible records constituting the DLIS file. Write the created bytes to the file.
-
-        Bytes of each logical record are placed in a new visible record. If necessary, bytes of logical record are split
-        across several visible records.
-        The file is created in chunks. Consecutive visible records are added to a chunk until it reaches its maximum
-        size (defined by the output_chunk_size argument). The chunk is then saved to the file and a new output chunk
-        is created.
+    def write_logical_records(self, logical_records: Sequence, output_chunk_size: Union[int, float, None]) -> None:
+        """Create a DLIS file from logical records specification (found in the config) and numerical data.
 
         Args:
-            logical_records     :   FileLogicalRecords object containing logical records to be put in the DLIS file.
-            writer              :   DLISFileWriter object, taking care of writing output chunks into the file.
-            output_chunk_size   :   Size (in bytes) of chunks in which the output file will be created.
+            logical_records     :   Logical records to become part of the file.
+            output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
         """
 
         all_lrb_gen = (lr.represent_as_bytes() for lr in logical_records)  # generator yielding logical records' bytes
@@ -203,7 +204,7 @@ class DLISWriter:
         output_chunk_size = output_chunk_size or 2 ** 32
         self._check_output_chunk_size(output_chunk_size)
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
-        output = BufferedOutput(int(output_chunk_size), writer)
+        output = BufferedOutput(int(output_chunk_size), self._byte_writer)
 
         output.add_bytes(next(all_lrb_gen).bts)  # add SUL bytes (don't wrap in a visible record)
 
@@ -216,24 +217,5 @@ class DLISWriter:
                 output.add_bytes(self._make_visible_record(segment, segment_size))  # each segment in a separate VR
         output.pass_bytes_to_writer()  # pass the remaining bytes kept in the output buffer (not full atm) to the writer
 
-        logger.info(f"Final total file size is {writer.total_size} bytes")
-
-    def create_dlis(self, logical_records: Sequence, filename: Union[str, os.PathLike[str]],
-                    output_chunk_size: Union[int, float, None]) -> None:
-        """Create a DLIS file from logical records specification (found in the config) and numerical data.
-
-        Args:
-            logical_records     :   Logical records to become part of the file.
-            filename            :   Name of the file to be created. Note: at this point, no file name / directory checks
-                                    (file already exists / directory write access / etc.) are performed.
-            output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
-        """
-
-        # this is the bit where the file is actually created
-        self._create_visible_records(
-            logical_records,
-            writer=ByteWriter(filename),
-            output_chunk_size=output_chunk_size
-        )
-
-        logger.info(f'DLIS file created at {Path(filename).resolve()}')
+        logger.info(f'{len(logical_records)} written to DLIS file at {Path(self._byte_writer.filename).resolve()}')
+        logger.info(f"Total file size is {self._byte_writer.total_size} bytes")

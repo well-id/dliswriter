@@ -1357,7 +1357,7 @@ class DLISFile:
             This function is used in a timeit call to time the file creation.
             """
 
-            dlis_file = DLISWriter(visible_record_length=self.storage_unit_label.max_record_length)
+            dlis_file = DLISWriter(dlis_file_name, visible_record_length=self.storage_unit_label.max_record_length)
 
             self.check_objects()
             self.set_common_origin_reference()
@@ -1365,7 +1365,7 @@ class DLISFile:
             logical_records = self.generate_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
 
-            dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
+            dlis_file.write_logical_records(logical_records, output_chunk_size=output_chunk_size)
 
         exec_time = timeit(timed_func, number=1)
         logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
