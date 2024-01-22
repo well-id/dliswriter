@@ -20,12 +20,8 @@ from dlis_writer.utils.logging import install_colored_logger
 install_colored_logger(logging.getLogger('dlis_writer'))
 
 
-# set file header with custom parameters - by creating an instance or dict of kwargs
-file_header = {'sequence_number': 2}
-
-
-# create DLISFile instance, pass the origin and file header
-df = DLISFile(file_header=file_header)
+# create DLISFile instance; optionally, pass arguments for creating file header & storage unit label
+df = DLISFile(sul_sequence_number=2, fh_sequence_number=2, fh_identifier="MAIN FILE")
 
 # add origin - required item
 df.add_origin("DEFAULT ORIGIN", file_set_number=80, company="XXX")

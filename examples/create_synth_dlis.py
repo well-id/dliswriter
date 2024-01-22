@@ -12,8 +12,8 @@ from dlis_writer import AttrSetup, OriginItem, DLISFile
 install_colored_logger(logging.getLogger('dlis_writer'))
 
 
-# create DLISFile instance, pass custom parameters for file header (as dict or as FileHeader instance)
-df = DLISFile(file_header={'sequence_number': 2})
+# create DLISFile instance; optionally, pass custom parameters for file header and storage unit label
+df = DLISFile(fh_identifier="DEFAULT FILE HEADER")
 
 # add origin
 origin = df.add_origin("DEFAULT ORIGIN", file_set_number=1, company="XXX", order_number="352")
