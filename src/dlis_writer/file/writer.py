@@ -1,10 +1,10 @@
-import os
 import logging
 from progressbar import progressbar    # type: ignore  # untyped library
 from typing import Union, Optional, Sequence
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.types import file_name_type, number_type
 from dlis_writer.logical_record.misc import StorageUnitLabel
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class ByteWriter:
     """Write bytes to DLIS file."""
 
-    def __init__(self, filename: Union[str, bytes, os.PathLike]):
+    def __init__(self, filename: file_name_type):
         """Initialise DLISFileWriter.
 
         Args:
@@ -25,7 +25,7 @@ class ByteWriter:
         self._total_size = 0
 
     @property
-    def filename(self) -> Union[str, bytes, os.PathLike]:
+    def filename(self) -> file_name_type:
         return self._filename
 
     @property
@@ -119,7 +119,7 @@ class BufferedOutput:
 class DLISWriter:
     """Create a DLIS file given data and structure information (specification of logical records)."""
 
-    def __init__(self, filename: Union[str, os.PathLike[str]], visible_record_length: int = 8192):
+    def __init__(self, filename: file_name_type, visible_record_length: int = 8192):
         """Initialise DLISFile object.
 
         Args:
@@ -182,7 +182,7 @@ class DLISWriter:
 
         return RepresentationCode.UNORM.convert(size) + self._fmt_version + body
 
-    def _check_output_chunk_size(self, output_chunk_size: Union[int, float]) -> None:
+    def _check_output_chunk_size(self, output_chunk_size: number_type) -> None:
         """Check output chunk size type (integer or float with zero decimal part) and value (>= max VR length)."""
 
         if not isinstance(output_chunk_size, (int, float)):
@@ -206,7 +206,7 @@ class DLISWriter:
         self._byte_writer.write_bytes(sul.represent_as_bytes().bts)
         self._sul_written = True
 
-    def write_logical_records(self, logical_records: Sequence, output_chunk_size: Union[int, float, None]) -> None:
+    def write_logical_records(self, logical_records: Sequence, output_chunk_size: Optional[number_type]) -> None:
         """Write the provided logical records to the file.
 
         Note: write_storage_unit_label MUST be called BEFORE calling this method.

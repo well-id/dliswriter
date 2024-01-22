@@ -1,13 +1,13 @@
-import datetime
-from typing import Any, Union, Optional, TypeVar, TypedDict
+from typing import Any, Union, Optional, TypeVar
 import numpy as np
 import os
 from timeit import timeit
-from datetime import timedelta
+from datetime import timedelta, datetime
 import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
-from dlis_writer.utils.converters import numpy_dtype_type
+from dlis_writer.utils.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
+                                     file_name_type, data_form_type, ListOrTuple, AttrDict)
 from dlis_writer.utils.sized_generator import SizedGenerator
 from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
@@ -21,14 +21,7 @@ from dlis_writer.file.eflr_sets_dict import EFLRSetsDict
 logger = logging.getLogger(__name__)
 
 
-number_type = Union[int, float]
-dtime_or_number_type = Union[str, datetime.datetime, int, float]
-values_type = Union[list[str], list[int], list[float]]
-
 T = TypeVar('T')
-ListOrTuple = Union[list[T], tuple[T, ...]]
-
-AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str}, total=False)
 AttrSetupType = Union[T, AttrDict, AttrSetup]
 OptAttrSetupType = Optional[AttrSetupType]
 
@@ -141,7 +134,7 @@ class DLISFile:
             self,
             name: str,
             axis_id: OptAttrSetupType[str] = None,
-            coordinates: OptAttrSetupType[values_type] = None,
+            coordinates: OptAttrSetupType[list_of_values_type] = None,
             spacing: OptAttrSetupType[number_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.AxisItem:
@@ -883,7 +876,7 @@ class DLISFile:
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: OptAttrSetupType[values_type] = None,
+            values: OptAttrSetupType[list_of_values_type] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
@@ -1336,10 +1329,15 @@ class DLISFile:
 
         return SizedGenerator(generator(), size=n)
 
-    def write(self, dlis_file_name: Union[str, os.PathLike[str]],
-              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
-              data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-              from_idx: int = 0, to_idx: Optional[int] = None) -> None:
+    def write(
+            self,
+            dlis_file_name: file_name_type,
+            input_chunk_size: Optional[int] = None,
+            output_chunk_size: Optional[number_type] = 2**32,
+            data: Optional[data_form_type] = None,
+            from_idx: int = 0,
+            to_idx: Optional[int] = None
+    ) -> None:
         """Create a DLIS file form the current specifications.
 
         Args:

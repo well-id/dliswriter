@@ -1,17 +1,14 @@
 import numpy as np
 import h5py    # type: ignore  # untyped library
 from typing import Union, Optional, Any, Generator
-import os
 import logging
 from abc import ABC
 
 from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.types import data_form_type, data_source_type, file_name_type
 
 
 logger = logging.getLogger(__name__)
-
-
-data_source_type = Union[np.ndarray, dict[str, np.ndarray], h5py.File]
 
 
 class SourceDataWrapper(ABC):
@@ -212,9 +209,8 @@ class SourceDataWrapper(ABC):
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
     @classmethod
-    def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
-                     mapping: Optional[dict] = None, **kwargs: Any) \
-            -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
+    def make_wrapper(cls, source: data_form_type, mapping: Optional[dict] = None,
+                     **kwargs: Any) -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
         if isinstance(source, dict):
             return DictDataWrapper(source, mapping, **kwargs)
@@ -238,7 +234,7 @@ class HDF5DataWrapper(SourceDataWrapper):
 
     _data_source: h5py.File
 
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict,
+    def __init__(self, data_file_name: file_name_type, mapping: dict,
                  known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
                  to_idx: Optional[int] = None) -> None:
         """Initialise HDF5DataWrapper.

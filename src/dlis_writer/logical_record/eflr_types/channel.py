@@ -6,7 +6,8 @@ from h5py import Dataset    # type: ignore  # untyped library
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
-from dlis_writer.utils.converters import ReprCodeConverter, numpy_dtype_type
+from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
                                                        TextAttribute, IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper

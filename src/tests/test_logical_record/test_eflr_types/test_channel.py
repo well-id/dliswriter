@@ -7,7 +7,7 @@ from datetime import datetime
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.converters import numpy_dtype_type
+from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
 

@@ -3,9 +3,7 @@ import numpy as np
 from typing import Callable, Any, Iterable, Union, Optional
 
 from dlis_writer.utils.enums import RepresentationCode
-
-
-numpy_dtype_type = Union[np.dtype, type[np.generic]]
+from dlis_writer.utils.types import numpy_dtype_type
 
 
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:
