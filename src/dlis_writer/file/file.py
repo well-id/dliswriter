@@ -1,21 +1,21 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, TypedDict, Generator
-from collections.abc import Sequence
+from typing import Any, Union, Optional, TypeVar, TypedDict
 import numpy as np
 import os
 from timeit import timeit
 from datetime import timedelta
 import logging
-from collections import defaultdict
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.converters import numpy_dtype_type
-from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet, AttrSetup
+from dlis_writer.utils.sized_generator import SizedGenerator
+from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
 from dlis_writer.file.multi_frame_data import MultiFrameData
 from dlis_writer.file.writer import DLISWriter
+from dlis_writer.file.eflr_sets_dict import EFLRSetsDict
 
 
 logger = logging.getLogger(__name__)
@@ -31,56 +31,6 @@ ListOrTuple = Union[list[T], tuple[T, ...]]
 AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str}, total=False)
 AttrSetupType = Union[T, AttrDict, AttrSetup]
 OptAttrSetupType = Optional[AttrSetupType]
-
-
-class EFLRSetsDict(defaultdict):
-    def __init__(self):
-        super().__init__(lambda: {})
-
-    def add_set(self, eflr_set: EFLRSet) -> None:
-        if eflr_set.set_name in self[eflr_set.__class__]:
-            raise RuntimeError(f"{eflr_set.__class__.__name__} with set name '{eflr_set.set_name}' "
-                               f"already added to the file")
-
-        self[eflr_set.__class__][eflr_set.set_name] = eflr_set
-
-    def get_or_make_set(self, eflr_item_type: type[EFLRItem], set_name: str = None) -> EFLRSet:
-
-        # the relevant EFLRSet subclass
-        eflr_set_type = eflr_item_type.parent_eflr_class
-
-        # dict mapping set names on EFLRSet (subclass) instances
-        eflr_set_dict = self[eflr_set_type]
-
-        # instance of the EFLRSet with the given set name - if exists
-        eflr_set_instance = eflr_set_dict.get(set_name, None)
-
-        # (if not exists - create it)
-        if eflr_set_instance is None:
-            eflr_set_instance = eflr_set_type(set_name=set_name)
-            eflr_set_dict[set_name] = eflr_set_instance
-
-        return eflr_set_instance
-
-    def get_all_items_for_set_type(self, eflr_set_type: type[EFLRSet]) -> Generator:
-        for value in self[eflr_set_type].values():
-            value: EFLRSet
-            yield from value.get_all_eflr_items()
-
-
-class SizedGenerator(Sequence):
-    def __init__(self, generator: Generator, size: int):
-        self._generator = generator
-        self._size = size
-
-    def __len__(self) -> int:
-        return self._size
-
-    def __iter__(self) -> Generator:
-        yield from self._generator
-
-    def __getitem__(self, index: int) -> None:
-        raise NotImplementedError("SizedGenerator does not support item access")
 
 
 class DLISFile:
