@@ -1,12 +1,10 @@
 import os
 import logging
 from progressbar import progressbar    # type: ignore  # untyped library
-from typing import Union, Optional
+from typing import Union, Optional, Sequence
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.file import FileLogicalRecords
-from dlis_writer.logical_record.eflr_types.origin import OriginItem
 
 logger = logging.getLogger(__name__)
 
@@ -183,7 +181,7 @@ class DLISWriter:
             raise ValueError(f"Output chunk size cannot be smaller than max visible record length "
                              f"(= {self._visible_record_length}); got {output_chunk_size}")
 
-    def _create_visible_records(self, logical_records: FileLogicalRecords, writer: ByteWriter,
+    def _create_visible_records(self, logical_records: Sequence, writer: ByteWriter,
                                 output_chunk_size: Union[int, float, None] = None) -> None:
         """Create visible records constituting the DLIS file. Write the created bytes to the file.
 
@@ -220,7 +218,7 @@ class DLISWriter:
 
         logger.info(f"Final total file size is {writer.total_size} bytes")
 
-    def create_dlis(self, logical_records: FileLogicalRecords, filename: Union[str, os.PathLike[str]],
+    def create_dlis(self, logical_records: Sequence, filename: Union[str, os.PathLike[str]],
                     output_chunk_size: Union[int, float, None]) -> None:
         """Create a DLIS file from logical records specification (found in the config) and numerical data.
 

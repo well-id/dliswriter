@@ -1,5 +1,6 @@
 import datetime
-from typing import Any, Union, Optional, TypeVar, TypedDict, Generator, Sequence
+from typing import Any, Union, Optional, TypeVar, TypedDict, Generator
+from collections.abc import Sequence
 import numpy as np
 import os
 from timeit import timeit
@@ -13,7 +14,6 @@ from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
 from dlis_writer.logical_record import eflr_types
 from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatFrameData
-from dlis_writer.file.file_logical_records import FileLogicalRecords
 from dlis_writer.file.multi_frame_data import MultiFrameData
 from dlis_writer.file.writer import DLISWriter
 
@@ -66,6 +66,21 @@ class EFLRSetsDict(defaultdict):
         for value in self[eflr_set_type].values():
             value: EFLRSet
             yield from value.get_all_eflr_items()
+
+
+class SizedGenerator(Sequence):
+    def __init__(self, generator: Generator, size: int):
+        self._generator = generator
+        self._size = size
+
+    def __len__(self) -> int:
+        return self._size
+
+    def __iter__(self) -> Generator:
+        yield from self._generator
+
+    def __getitem__(self, index: int) -> None:
+        raise NotImplementedError("SizedGenerator does not support item access")
 
 
 class DLISFile:
@@ -1332,38 +1347,43 @@ class DLISFile:
             for eflr_set in eflr_set_dict.values():
                 eflr_set.origin_reference = value
 
-    def make_file_logical_records(
-            self,
-            chunk_size: Optional[int] = None,
-            data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
-            **kwargs: Any
-    ) -> FileLogicalRecords:
-        """Create an iterable object of logical records to become part of the created DLIS file."""
+    def generate_logical_records(self, chunk_size, data, **kwargs) -> SizedGenerator:
+        """Iterate over all logical records defined in the file.
 
-        if not (origin := self.origin):
-            raise RuntimeError("No OriginItem defined for this DLISFile")
-
-        flr = FileLogicalRecords(
-            sul=self._sul,
-            fh=self.file_header.parent,
-            orig=origin.parent
-        )
-
-        flr.add_channels(*self._eflr_sets[eflr_types.ChannelSet].values())
-        flr.add_frames(*self._eflr_sets[eflr_types.FrameSet].values())
+        Yields: StorageUnitLabel, EFLR, and IFLR objects.
+        """
 
         frame_items = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
-        flr.add_frame_data_objects(
-            *(self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items))
+        multi_frame_data_objects: list[MultiFrameData] = [
+            self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items
+        ]
 
-        for set_type, set_dict in self._eflr_sets.items():
-            if set_type not in (
-                    eflr_types.FileHeaderSet, eflr_types.OriginSet, eflr_types.ChannelSet, eflr_types.FrameSet):
-                flr.add_logical_records(*set_dict.values())
+        n = 1  # SUL
+        for eflr_set_type in self._eflr_sets:
+            n += len(list(self._eflr_sets.get_all_items_for_set_type(eflr_set_type)))
+        for mfd in multi_frame_data_objects:
+            n += len(mfd)
+        n += len(self._no_format_frame_data)
 
-        flr.add_logical_records(*self._no_format_frame_data)
+        def generator():
+            yield self.storage_unit_label
+            yield self.file_header.parent
+            yield self.origin.parent
 
-        return flr
+            yield from self._eflr_sets[eflr_types.ChannelSet].values()
+            yield from self._eflr_sets[eflr_types.FrameSet].values()
+
+            for multi_frame_data in multi_frame_data_objects:
+                yield from multi_frame_data
+
+            for set_type, set_dict in self._eflr_sets.items():
+                if set_type not in (
+                        eflr_types.FileHeaderSet, eflr_types.OriginSet, eflr_types.ChannelSet, eflr_types.FrameSet):
+                    yield from set_dict.values()
+
+            yield from self._no_format_frame_data
+
+        return SizedGenerator(generator(), size=n)
 
     def write(self, dlis_file_name: Union[str, os.PathLike[str]],
               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[number_type] = 2**32,
@@ -1392,7 +1412,7 @@ class DLISFile:
             self.check_objects()
             self.set_common_origin_reference()
 
-            logical_records = self.make_file_logical_records(
+            logical_records = self.generate_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
 
             dlis_file.create_dlis(logical_records, filename=dlis_file_name, output_chunk_size=output_chunk_size)
