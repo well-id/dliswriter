@@ -47,6 +47,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 - Explicit init arguments and docstrings for most frequently used classes.
 - Saving date-time in GMT rather than 'local time'.
 - Passing file header and storage unit label initialisation arguments directly to `DLISFile`.
+- General refactoring & typing fixes.
 
 ##### 0.0.7 Equivalent (_parallel_) frames
 Made it easier to add frames with the same set of channel (dataset) names, but separate data - e.g. 
@@ -114,8 +115,11 @@ import numpy as np  # for creating mock datasets
 from dlis_writer.file import DLISFile  # the main dlis-writer object you will interact with
 
 # create a DLISFile object
-# this also initialises StorageUnitLabel, FileHeader, and Origin with minimal default information
+# this also initialises Storage Unit Label and File Header with minimal default information
 df = DLISFile()
+
+# add Origin - a required item for the file; Origin name and file set number are both required
+df.add_origin("MY-ORIGIN", file_set_number=1)
 
 # number of rows for creating the datasets
 # all datasets (channels) belonging to the same frame must have the same number of rows
@@ -133,7 +137,7 @@ ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
 
 # define frame, referencing the above defined channels
-main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
 
 # when all the required objects have been added, write the data and metadata to a physical DLIS file
 df.write('./new_dlis_file.DLIS')
@@ -142,44 +146,41 @@ df.write('./new_dlis_file.DLIS')
 
 ### Extending basic metadata
 As mentioned above, initialising `DLISFile` object automatically constructs Storage Unit Label,
-File Header, and Origin objects. However, the definition of each of these can be further tuned.
-
-The relevant information can be passed either as a relevant pre-defined object or a dictionary
-of key-word arguments to create one.
+and File Header. However, the definition of each of these can be further tuned.
+The same applies to Origin, which is the container for key meta-data concerning the well, company, operation set-up etc.
 
 ```python
 from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel
-from dlis_writer.logical_record.eflr_types.origin import OriginItem
 
-# pre-defining Storage Unit Label as object
-sul = StorageUnitLabel(set_identifier='MY-SET', sequence_number=5, max_record_length=4096)
-
-# pre-defining File Header as dictionary
-file_header = {'identifier': 'MY-FILE-HEADER', 'sequence_number': 5}
-
-# pre-defining Origin as object
-origin = OriginItem(
-    'MY-ORIGIN',
-    file_id='MY-FILE-ID',
-    file_set_name='MY-FILE-SET-NAME',
-    file_set_number=11,  # you should always define a file set number when defining OriginItem separately
-    file_number=22,
-    well_id=55,
-    well_name='MY-WELL'
+# define DLISFile passing more information for creating Storage Unit Label and File Header
+df = DLISFile(
+  set_identifier="MY-SET",
+  sul_sequence_number=5,
+  max_record_length=4096,
+  fh_identifier="MY-FILE-HEADER",
+  fh_sequence_number=8 
 )
 
-# defining DLISFile using the pre-defined objects/dictionaries
-df = DLISFile(storage_unit_label=sul, file_header=file_header, origin=origin)
+# add Origin with more details
+# see more available keyword arguments in DLISFile.add_origin()
+origin = df.add_origin(
+  'MY-ORIGIN',
+  file_id='MY-FILE-ID',
+  file_set_name='MY-FILE-SET-NAME',
+  file_set_number=11,
+  file_number=22,
+  well_id=55,
+  well_name='MY-WELL'
+)
+
 ```
 
-The attributes can also be changed later by accessing the relevant objects.
+The attributes can also be changed later by accessing the relevant objects's attributes.
 Note: because most attributes are instances of [`Attribute` class](#the-attribute-class),
-you will need to use `.value` of the attribute you may want to change.
+you will need to use `.value` (or `.unit`) of the attribute you may want to change.
 
 ```python
-origin.company.value = "COMPANY X"  # directly through the pre-defined Origin object
-df.origin.producer_name.value = "PRODUCER Y"  # by accessing the Origin object through the DLISFile
+origin.company.value = "COMPANY X" 
 ```
 
 ### Adding more objects
@@ -925,7 +926,8 @@ classDiagram
 The characteristics of EFLR objects of the DLIS are defined using instances of `Attribute` class.
 An `Attribute` holds the value of a given parameter together with the associated unit (if any)
 and a representation code which guides how the contained information is transformed to bytes.
-Allowed units (not a strict set) and representation codes are defined [in the code](./src/dlis_writer/utils/enums.py).
+Allowed units (not a strict set) and representation codes are defined [in the code](./src/dlis_writer/utils/enums.py)
+(although explicit setting of representation codes is no longer possible).
 
 As a rule, `Attribute`s are defined for `EFLRItem`s, instances of which populate the `Attribute`s
 with relevant values. When an `EFLRItem` is converted to bytes, it includes information from all its
@@ -948,15 +950,8 @@ The main characteristics of `Attribute` are described below.
   a list of allowed units, but many DLIS readers accept any string value. For this reason, only a log warning is issued
   if the user specifies a unit other than those given by the standard. 
 - `representation_code`: indication of type of the value(s) of the `Attribute` and guidance on how they should be 
-  converted to bytes to be included in the file. The standard pre-defines representation codes for some 
-  of the `Attribute`s and leaves more-or-less free choice for others. For this reason, many `Attribute`s have the 
-  representation code specified at initialisation and once explicitly specified, the representation code 
-  cannot be changed. The `representation_code` is a `property` which returns either the explicitly passed code (if any)
-  or one inferred from the `Attribute`'s `value` (if possible); if none of these can be determined, 
-  the property returns `None`.
-- `assigned_representation_code`: The explicitly specified (at initialisation or later) representation code 
-  of the `Attribute`. 
-- `inferred_representation_code`: A representation code inferred from the `value` of the `Attribute`, if possible.
+  converted to bytes to be included in the file. Representation codes are either defined when the Attribute 
+  is initialised or are inferred from the provided value(s). They are not settable by the user.
 - `parent_eflr`: The `EFLRItem` or `EFLRSet` instance this attribute belongs to. Mainly used for string representation
   of the `Attribute` (e.g. `Attribute 'description' of ToolItem 'TOOL-1'`, where `TOOL-1` is the parent EFLR).
 - `converter`: A callable which is used to convert the value passed by the user (or each of the individual items 
@@ -964,9 +959,8 @@ The main characteristics of `Attribute` are described below.
   include type checks etc. (for example, checking that the objects passed to `calibrated_channels` of `CalibrationItem`)
   are all instances of `ChannelItem`.
 
-_Settable_ parts of `Attribute` instance include: `value`, `units`, `representation_code` 
-(stored as `assigned_representation_code`), and `converter`. Some subtypes of `Attribute` further restrict 
-what can be set.
+_Settable_ parts of `Attribute` instance include: `value`, `units`, and `converter`. 
+Some subtypes of `Attribute` further restrict what can be set.
 
 
 #### Attribute subtypes
@@ -993,8 +987,6 @@ classDiagram
         +str units
         +int count
         +RepresentationCode representation_code
-        +RepresentationCode assigned_representation_code
-        +RepresentationCode inferred_representation_code
         +[EFLRItem, EFLRSet] parent_eflr
         +Callable converter
         +bool multivalued
@@ -1002,7 +994,6 @@ classDiagram
         -bool _units_settable
         -RepresentationCode _default_repr_code
 
-        
         +convert_value()
         +get_as_bytes()
         +copy()
@@ -1051,7 +1042,7 @@ The value of an `EFLRAttribute` is an instance of (usually specific subtype of) 
 The representation code can be either `OBNAME` or `OBJREF`. The unit should not be defined (is meaningless).
 
 `DTimeAttribute` is meant for keeping time reference, either in the form of a `datetime.datetime` object
-or a number, indicating time since a specific event. The representation code should be adapted
+or a number, indicating time since a specific event. The representation code is adapted
 to the value: `DTIME` for `datetime` objects, otherwise any numeric code (e.g. `FDOUBl`, `USHORT`, etc.)
 The unit should be defined if the value is a number and should express the unit of time
 ('s' for seconds, 'min' for minutes, etc.).
@@ -1063,7 +1054,8 @@ to restrict the type of accepted values to ints only or floats only at initialis
 multivalued (always a list of integers). It is mainly used in [Channel](#channel) objects where it describes
 the shape of the data (only the width, i.e. the number of columns).
 
-`StatusAttribute` encodes the status of [Tool](#tool) and [Equipment](#equipment) objects. Its value can only be 0 or 1.
+`StatusAttribute` encodes the status of [Tool](#tool) and [Equipment](#equipment) objects. 
+Its value can only be 0 or 1.
 
 ### Writing the binary file
 The objects described above are Python representation of the information to be included in a DLIS file.
