@@ -5,7 +5,6 @@ from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.logical_record import LogicalRecord
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
-from dlis_writer.logical_record.core.attribute import Attribute
 
 
 logger = logging.getLogger(__name__)

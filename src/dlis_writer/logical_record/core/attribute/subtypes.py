@@ -7,6 +7,7 @@ from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.types import number_type, dtime_or_number_type
 
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ class DTimeAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_value
 
-    def _convert_value(self, value: Union[str, datetime, int, float]) -> Union[datetime, float]:
+    def _convert_value(self, value: Union[str, datetime, int, float]) -> dtime_or_number_type:
         """Default value converter: parse string as date time or (if so specified at init) as a float."""
 
         if isinstance(value, datetime):
@@ -190,7 +191,7 @@ class NumericAttribute(Attribute):
 
         return float(value)
 
-    def _convert_number(self, value: Number) -> Union[int, float]:
+    def _convert_number(self, value: Number) -> number_type:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         if self._int_only or self.representation_code in ReprCodeConverter.int_codes:

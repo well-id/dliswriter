@@ -1,6 +1,5 @@
 from typing import Any, Union, Optional, TypeVar
 import numpy as np
-import os
 from timeit import timeit
 from datetime import timedelta, datetime
 import logging
@@ -1229,7 +1228,7 @@ class DLISFile:
     def _make_multi_frame_data(
             self,
             fr: eflr_types.FrameItem,
-            data: Optional[Union[dict, os.PathLike[str], np.ndarray]] = None,
+            data: Optional[data_form_type] = None,
             from_idx: int = 0,
             to_idx: Optional[int] = None,
             **kwargs: Any

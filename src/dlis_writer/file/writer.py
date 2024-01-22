@@ -1,10 +1,10 @@
 import logging
 from progressbar import progressbar    # type: ignore  # untyped library
-from typing import Union, Optional, Sequence
+from typing import Optional, Sequence
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
-from dlis_writer.utils.types import file_name_type, number_type
+from dlis_writer.utils.types import file_name_type, number_type, bytes_type
 from dlis_writer.logical_record.misc import StorageUnitLabel
 
 logger = logging.getLogger(__name__)
@@ -34,7 +34,7 @@ class ByteWriter:
 
         return self._total_size
 
-    def write_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None) -> None:
+    def write_bytes(self, bts: bytes_type, size: Optional[int] = None) -> None:
         """Write (in 'wb' or 'ab' mode, as needed) the bytes into the file.
 
         Args:
@@ -81,7 +81,7 @@ class BufferedOutput:
 
         self._writer = writer  #: file writer object
 
-    def add_bytes(self, bts: Union[bytes, bytearray], size: Optional[int] = None) -> None:
+    def add_bytes(self, bts: bytes_type, size: Optional[int] = None) -> None:
         """Add bytes to the current output buffer.
 
         If the bytes would not fit in the current output buffer, send the currently kept bytes to the file writer,
@@ -158,7 +158,7 @@ class DLISWriter:
         if vrl % 2:
             raise ValueError("Visible record length must be an even number")
 
-    def _make_visible_record(self, body: Union[bytes, bytearray], size: Optional[int] = None) -> bytes:
+    def _make_visible_record(self, body: bytes_type, size: Optional[int] = None) -> bytes:
         """Create a visible record (physical DLIS unit) from the provided body bytes.
 
         Args:

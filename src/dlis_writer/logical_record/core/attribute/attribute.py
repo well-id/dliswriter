@@ -6,7 +6,7 @@ from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+    from dlis_writer.logical_record.core.eflr import EFLRItem
 
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class Attribute:
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
-                 parent_eflr: "Optional[Union[EFLRSet, EFLRItem]]" = None):
+                 parent_eflr: "Optional[EFLRItem]" = None):
         """Initialise an Attribute object.
 
         Args:
