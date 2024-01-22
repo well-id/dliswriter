@@ -1300,7 +1300,9 @@ class DLISFile:
     def generate_logical_records(self, chunk_size, data, **kwargs) -> SizedGenerator:
         """Iterate over all logical records defined in the file.
 
-        Yields: StorageUnitLabel, EFLR, and IFLR objects.
+        Yields: EFLR and IFLR objects defined for the file.
+
+        Note: Storage Unit Label should be added to the file separately before adding other records.
         """
 
         frame_items = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
@@ -1308,7 +1310,7 @@ class DLISFile:
             self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items
         ]
 
-        n = 1  # SUL
+        n = 0
         for eflr_set_type in self._eflr_sets:
             n += len(list(self._eflr_sets.get_all_items_for_set_type(eflr_set_type)))
         for mfd in multi_frame_data_objects:
@@ -1316,7 +1318,6 @@ class DLISFile:
         n += len(self._no_format_frame_data)
 
         def generator():
-            yield self.storage_unit_label
             yield self.file_header.parent
             yield self.origin.parent
 
@@ -1357,15 +1358,15 @@ class DLISFile:
             This function is used in a timeit call to time the file creation.
             """
 
-            dlis_file = DLISWriter(dlis_file_name, visible_record_length=self.storage_unit_label.max_record_length)
-
             self.check_objects()
             self.set_common_origin_reference()
 
             logical_records = self.generate_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
 
-            dlis_file.write_logical_records(logical_records, output_chunk_size=output_chunk_size)
+            writer = DLISWriter(dlis_file_name, visible_record_length=self.storage_unit_label.max_record_length)
+            writer.write_storage_unit_label(self.storage_unit_label)
+            writer.write_logical_records(logical_records, output_chunk_size=output_chunk_size)
 
         exec_time = timeit(timed_func, number=1)
         logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")

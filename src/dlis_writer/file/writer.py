@@ -5,6 +5,7 @@ from typing import Union, Optional, Sequence
 from pathlib import Path
 
 from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.logical_record.misc import StorageUnitLabel
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +138,10 @@ class DLISWriter:
         # format version is a required part of each visible record and is fixed for a given version of the standard
         self._fmt_version = RepresentationCode.USHORT.convert(255) + RepresentationCode.USHORT.convert(1)
 
+        # flag set to True as soon as a StorageUnitLabel is written to the file (through write_storage_unit_label);
+        # SUL must be the first element of the file
+        self._sul_written = False
+
     @staticmethod
     def _check_visible_record_length(vrl: int) -> None:
         """Check the type and value of visible record length against several criteria."""
@@ -190,15 +195,31 @@ class DLISWriter:
             raise ValueError(f"Output chunk size cannot be smaller than max visible record length "
                              f"(= {self._visible_record_length}); got {output_chunk_size}")
 
+    def write_storage_unit_label(self, sul: StorageUnitLabel) -> None:
+        """Convert a Storage Unit Label to bytes and write them into the file.
+
+        Unlike other, 'proper' logical records, SUL should not be wrapped in a visible record structure,
+        but instead written to the file as-is.
+        """
+
+        logger.info("Writing Storage Unit Label bytes to the file")
+        self._byte_writer.write_bytes(sul.represent_as_bytes().bts)
+        self._sul_written = True
+
     def write_logical_records(self, logical_records: Sequence, output_chunk_size: Union[int, float, None]) -> None:
-        """Create a DLIS file from logical records specification (found in the config) and numerical data.
+        """Write the provided logical records to the file.
+
+        Note: write_storage_unit_label MUST be called BEFORE calling this method.
+        Otherwise, a RuntimeError is raised.
 
         Args:
             logical_records     :   Logical records to become part of the file.
             output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
         """
 
-        all_lrb_gen = (lr.represent_as_bytes() for lr in logical_records)  # generator yielding logical records' bytes
+        if not self._sul_written:
+            raise RuntimeError("Storage Unit Label absent from the file; "
+                               "add it calling DLISWriter.write_storage_unit_label")
 
         # prepare BufferedOutput object - temporarily keep added bytes, store them in the file when buffer is full
         output_chunk_size = output_chunk_size or 2 ** 32
@@ -206,16 +227,18 @@ class DLISWriter:
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
         output = BufferedOutput(int(output_chunk_size), self._byte_writer)
 
-        output.add_bytes(next(all_lrb_gen).bts)  # add SUL bytes (don't wrap in a visible record)
+        # max allowed size of an LR segment body; 4 bytes reserved for VR header and another 4 for LR segment header
+        max_lr_segment_size = self._visible_record_length - 8
 
-        max_lr_segment_size = self._visible_record_length - 8  # max allowed size of an LR segment body
-        # ^ 4 bytes reserved for VR header and another 4 for LR segment header
-
-        logger.info("Creating visible records of the DLIS...")
-        for lrb in progressbar(all_lrb_gen, max_value=len(logical_records)-1):  # len(...)-1 because SUL already added
-            for segment, segment_size in lrb.make_segments(max_lr_segment_size):  # split LRs to segments as needed
-                output.add_bytes(self._make_visible_record(segment, segment_size))  # each segment in a separate VR
+        # loop through the logical records, transform them and write them to the file
+        logger.info("Creating & writing visible records of the DLIS...")
+        for lr in progressbar(logical_records, max_value=len(logical_records)):
+            # represent a logical record as bytes; split it segments as needed
+            for segment, segment_size in lr.represent_as_bytes().make_segments(max_lr_segment_size):
+                # wrap each segment's bytes in a separate visible record and write the VR to the file
+                output.add_bytes(self._make_visible_record(segment, segment_size))
         output.pass_bytes_to_writer()  # pass the remaining bytes kept in the output buffer (not full atm) to the writer
 
+        # summarise
         logger.info(f'{len(logical_records)} written to DLIS file at {Path(self._byte_writer.filename).resolve()}')
         logger.info(f"Total file size is {self._byte_writer.total_size} bytes")
