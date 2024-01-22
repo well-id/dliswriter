@@ -32,7 +32,6 @@ class EFLRSet(LogicalRecord):
         self.set_name = set_name
         self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
         self._eflr_item_list: list[EFLRItem] = []  # instances of EFLRItem registered with this EFLRSet instance
-        self._attributes: dict[str, Attribute] = {}   # attributes of this EFLRSet (cpd from an EFLRItem instance)
         self._origin_reference: Union[int, None] = None
 
     def __str__(self) -> str:
@@ -70,8 +69,10 @@ class EFLRSet(LogicalRecord):
         Note: if no EFLRItems are registered, this will return an empty bytes object."""
 
         _bytes = b''
-        for attr in self._attributes.values():
-            _bytes += attr.get_as_bytes(for_template=True)
+        if self._eflr_item_list:
+            child0 = self._eflr_item_list[0]
+            for attr in child0.attributes.values():
+                _bytes += attr.get_as_bytes(for_template=True)
 
         return _bytes
 
@@ -98,10 +99,6 @@ class EFLRSet(LogicalRecord):
             raise TypeError(f"Expected an instance of {self.item_type}; got {type(child)}: {child}")
 
         self._eflr_item_list.append(child)
-
-        if len(self._eflr_item_list) == 1:
-            for attr_name, attr in child.attributes.items():
-                self._attributes[attr_name] = attr.copy()
 
         child.origin_reference = self.origin_reference
 

@@ -1,5 +1,4 @@
 from typing import Union, Any, TYPE_CHECKING, Callable, Optional
-from typing_extensions import Self
 import logging
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
@@ -302,15 +301,3 @@ class Attribute:
             bts, characteristics = self._write_for_body(bts, characteristics)
 
         return RepresentationCode.USHORT.convert(int(characteristics, 2)) + bts
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance; do not include parent_eflr reference."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            units=self._units,
-            value=self._value,
-            converter=self._converter,
-        )

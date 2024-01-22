@@ -2,7 +2,6 @@ import logging
 from numbers import Number
 from datetime import datetime
 from typing import Union, Optional, Any
-from typing_extensions import Self
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
@@ -44,17 +43,6 @@ class EFLRAttribute(Attribute):
 
         self._object_class = object_class
         self._converter = self._convert_value
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            value=self._value,
-            object_class=self._object_class
-        )
 
     def _convert_value(self, v: type[EFLRItem]) -> type[EFLRItem]:
         """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
@@ -166,20 +154,6 @@ class NumericAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_number
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            units=self._units,
-            value=self._value,
-            converter=self._converter,
-            int_only=self._int_only,
-            float_only=self._float_only
-        )
-
     def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""
 
@@ -245,15 +219,6 @@ class DimensionAttribute(NumericAttribute):
 
         super().__init__(*args, int_only=True, multivalued=True, **kwargs)
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            units=self._units,
-            value=self._value,
-        )
-
 
 class StatusAttribute(Attribute):
     """Model an attribute which can only have value 1 or 0."""
@@ -288,15 +253,6 @@ class StatusAttribute(Attribute):
 
         return val
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            value=self._value
-        )
-
 
 class TextAttribute(Attribute):
     """Model an attribute representing text in ASCII format."""
@@ -321,15 +277,6 @@ class TextAttribute(Attribute):
             raise TypeError(f'Expected a str, got {type(v)}: {v}')
         return v
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            value=self._value
-        )
-
 
 class IdentAttribute(Attribute):
     """Model an attribute represented as IDENT."""
@@ -347,13 +294,3 @@ class IdentAttribute(Attribute):
         """
 
         super().__init__(*args, **kwargs)
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            value=self._value
-        )
-
