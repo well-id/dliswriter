@@ -146,23 +146,6 @@ class DLISWriter:
         if vrl % 2:
             raise ValueError("Visible record length must be an even number")
 
-    @staticmethod
-    def _assign_origin_reference(logical_records: FileLogicalRecords) -> None:
-        """Assign origin_reference attribute of all Logical Records to file set number of the Origin."""
-
-        origins: list[OriginItem] = logical_records.origin.get_all_eflr_items()  # type: ignore
-        # ^ it is going to be a list of OriginItem, but as it's specified in the superclass - no way of setting this
-        if not origins:
-            raise RuntimeError("No origin defined")
-
-        val = origins[0].file_set_number.value
-
-        if not val:
-            raise Exception('Origin object MUST have a file_set_number')
-
-        logger.info(f"Assigning origin reference: {val} to all logical records")
-        logical_records.set_origin_reference(val)
-
     def _make_visible_record(self, body: Union[bytes, bytearray], size: Optional[int] = None) -> bytes:
         """Create a visible record (physical DLIS unit) from the provided body bytes.
 
@@ -247,8 +230,6 @@ class DLISWriter:
                                     (file already exists / directory write access / etc.) are performed.
             output_chunk_size   :   Size of the buffers accumulating file bytes before file write action is called.
         """
-
-        self._assign_origin_reference(logical_records)
 
         # this is the bit where the file is actually created
         self._create_visible_records(

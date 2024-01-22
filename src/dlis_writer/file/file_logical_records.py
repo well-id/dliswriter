@@ -36,25 +36,6 @@ class FileLogicalRecords:
         self._frame_data_objects: list[MultiFrameData] = []
         self._other_logical_records: list[typing.Union[EFLRSet, NoFormatFrameData]] = []
 
-    def set_origin_reference(self, value: int) -> None:
-        """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
-
-        self._file_header.origin_reference = value
-        self._origin.origin_reference = value
-
-        for ch in self._channels:
-            ch.origin_reference = value
-
-        for fr in self._frames:
-            fr.origin_reference = value
-
-        for lr in self._other_logical_records:
-            if not isinstance(lr, NoFormatFrameData):
-                lr.origin_reference = value
-
-        for fdo in self._frame_data_objects:
-            fdo.set_origin_reference(value)
-
     @property
     def origin(self) -> eflr_types.OriginSet:
         """Origin EFLR of the collection."""

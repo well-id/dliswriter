@@ -1300,6 +1300,38 @@ class DLISFile:
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 
+    def determine_valid_origin_references(self) -> list[int]:
+        """Determine valid origin reference values for this file."""
+
+        origins = self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet)
+        if not origins:
+            raise RuntimeError("No origin defined")
+
+        refs = [o.file_set_number.value for o in origins]
+
+        if any(ref is None for ref in refs):
+            raise RuntimeError(f"Origin's file set number cannot be None; got {', '.join(str(ref) for ref in refs)}")
+
+        return refs
+
+    def set_common_origin_reference(self, value: Optional[int] = None) -> None:
+        """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
+
+        valid_values = self.determine_valid_origin_references()
+        if value is not None:
+            if value not in valid_values:
+                raise ValueError(f"{value} is not a valid origin reference; choose from {valid_values}")
+        else:
+            value = valid_values[0]
+            if len(valid_values) > 1:
+                logger.warning(f"Multiple origins defined; assuming the first origin's reference: {value}")
+
+        logger.info(f"Assigning origin reference {value} to all EFLR items defined for the file")
+
+        for eflr_set_dict in self._eflr_sets.values():
+            for eflr_set in eflr_set_dict.values():
+                eflr_set.origin_reference = value
+
     def make_file_logical_records(
             self,
             chunk_size: Optional[int] = None,
@@ -1358,6 +1390,8 @@ class DLISFile:
             dlis_file = DLISWriter(visible_record_length=self.storage_unit_label.max_record_length)
 
             self.check_objects()
+            self.set_common_origin_reference()
+
             logical_records = self.make_file_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
 

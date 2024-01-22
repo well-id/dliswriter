@@ -37,7 +37,7 @@ class MultiFrameData:
         self._data_source = data
         self._frame = frame
 
-        self._origin_reference: typing.Union[int, None] = None
+        self._origin_reference: typing.Union[int, None] = self._frame.origin_reference
 
         self._chunk_rows = chunk_size
         self._i = 0  # keep track of current frame number during iteration
@@ -56,11 +56,6 @@ class MultiFrameData:
         """FrameObject the data (and FrameData objects) belong to."""
 
         return self._frame
-
-    def set_origin_reference(self, value: int) -> None:
-        """Store origin reference so that it is assigned to every FrameData object at its creation later on."""
-
-        self._origin_reference = value
 
     def __len__(self) -> int:
         """Number of data rows (= number of FrameData objects that can be created from the provided data)."""
