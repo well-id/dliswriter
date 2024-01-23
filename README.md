@@ -36,7 +36,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
-##### 0.0.8 API improvements & fixes (pending)
+##### 0.0.8 API improvements & fixes
 - Removed representation code setters from `Attribute`.
 - More value type and representation code (repr code inferred from value) checks.
 - Setting up `Attribute`s' values and units together using `dict` or a new `AttrSetup` class.

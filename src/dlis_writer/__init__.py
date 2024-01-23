@@ -6,4 +6,4 @@ from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper, DictDataWrapper, NumpyDataWrapper, HDF5DataWrapper
 
 
-__version__ = '0.0.1'
+__version__ = '0.0.8'
