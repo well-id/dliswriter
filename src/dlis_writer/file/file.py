@@ -1313,18 +1313,14 @@ class DLISFile:
             yield self.file_header.parent
             yield self.origin.parent
 
-            yield from self._eflr_sets[eflr_types.ChannelSet].values()
-            yield from self._eflr_sets[eflr_types.FrameSet].values()
-
-            for multi_frame_data in multi_frame_data_objects:
-                yield from multi_frame_data
-
             for set_type, set_dict in self._eflr_sets.items():
-                if set_type not in (
-                        eflr_types.FileHeaderSet, eflr_types.OriginSet, eflr_types.ChannelSet, eflr_types.FrameSet):
+                if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
                     yield from set_dict.values()
 
             yield from self._no_format_frame_data
+
+            for multi_frame_data in multi_frame_data_objects:
+                yield from multi_frame_data
 
         return SizedGenerator(generator(), size=n)
 
