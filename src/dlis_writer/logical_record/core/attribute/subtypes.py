@@ -236,7 +236,10 @@ class StatusAttribute(Attribute):
             kwargs      :   Keyword arguments passed to Attribute.
         """
 
-        super().__init__(*args, **kwargs, converter=self.convert_status)
+        if kwargs.get('converter', None) is not None:
+            raise ValueError(f"{self.__class__.__name__} does not accept a 'converter' argument")
+
+        super().__init__(*args, **kwargs, converter=self.convert_status)  # type: ignore  # converter passed once
 
     @staticmethod
     def convert_status(val: Union[bool, int, float]) -> int:
@@ -270,7 +273,10 @@ class TextAttribute(Attribute):
             kwargs      :   Keyword arguments passed to Attribute.
         """
 
-        super().__init__(*args, **kwargs, converter=self._check_string)
+        if kwargs.get('converter', None) is not None:
+            raise ValueError(f"{self.__class__.__name__} does not accept a 'converter' argument")
+
+        super().__init__(*args, **kwargs, converter=self._check_string)  # type: ignore  # converter passed once
 
     @staticmethod
     def _check_string(v: str) -> str:
