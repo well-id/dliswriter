@@ -351,8 +351,8 @@ class DictDataWrapper(SourceDataWrapper):
         Args:
             data_dict       :   Source data - dict of numpy arrays.
             mapping         :   Mapping of target data type names on the keys found in the data dictionary.
-                                Optional; if not provided, it is assumed that all items of the data dict should be included
-                                in the target structured arrays.
+                                Optional; if not provided, it is assumed that all items of the data dict should be
+                                included in the target structured arrays.
             known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
                                 all dtypes. Can also be completely omitted. Missing data types are determined from
                                 the data.

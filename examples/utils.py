@@ -6,7 +6,6 @@ import logging
 
 from dlis_writer.misc.dlis_file_comparator import compare
 from dlis_writer.file import DLISFile
-from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.eflr_types import ChannelItem
 
 

@@ -1,9 +1,8 @@
 import pytest
 from datetime import datetime, timedelta
-from typing import Union, Any, Generator
+from typing import Any, Generator
 
 from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
-from dlis_writer.utils.enums import RepresentationCode
 
 
 @pytest.fixture

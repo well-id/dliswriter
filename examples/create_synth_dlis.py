@@ -5,7 +5,7 @@ import numpy as np
 import logging
 
 from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer import AttrSetup, OriginItem, DLISFile
+from dlis_writer import AttrSetup, DLISFile
 
 
 # colored logs output

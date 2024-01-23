@@ -1,8 +1,10 @@
 from datetime import datetime
 
-from dlis_writer import (AttrSetup, AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
-                         CalibrationCoefficientItem, CalibrationItem, EFLRAttribute, CalibrationSet,
-                         CalibrationCoefficientSet, CalibrationMeasurementSet)
+from dlis_writer import AttrSetup
+from dlis_writer.logical_record.core.attribute import EFLRAttribute
+from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
+                                                   CalibrationCoefficientItem, CalibrationItem, CalibrationSet,
+                                                   CalibrationCoefficientSet, CalibrationMeasurementSet)
 
 
 def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem) -> None:

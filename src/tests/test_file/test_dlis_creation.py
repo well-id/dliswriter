@@ -29,7 +29,8 @@ def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, b
     assert compare(reference_dlis_path, new_dlis_path, verbose=False)
 
 
-def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path) -> None:
+def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path)\
+        -> None:
     """Create a depth-based DLIS file and check its basic parameters."""
 
     write_depth_based_dlis(new_dlis_path, data=short_reference_data_path)

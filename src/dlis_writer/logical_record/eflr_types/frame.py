@@ -41,7 +41,8 @@ class FrameItem(EFLRItem):
         self.index_type = IdentAttribute('index_type', converter=self.parse_index_type)
         self.direction = IdentAttribute('direction')
         self.spacing = NumericAttribute('spacing')
-        self.encrypted = NumericAttribute('encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
+        self.encrypted = NumericAttribute(
+            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
         self.index_min = NumericAttribute('index_min')
         self.index_max = NumericAttribute('index_max')
 
