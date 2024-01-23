@@ -1,11 +1,11 @@
-from dlis_writer import DLISFile, StorageUnitLabel, FileHeaderItem
+from dlis_writer import DLISFile, StorageUnitLabel, FileHeaderItem, FileHeaderSet
 
 
 def make_file_header() -> FileHeaderItem:
     return FileHeaderItem(
         "DEFAULT FHLR",
         sequence_number=1,
-        parent=FileHeaderItem.make_parent()
+        parent=FileHeaderSet()
     )
 
 

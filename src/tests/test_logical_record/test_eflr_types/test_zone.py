@@ -21,7 +21,7 @@ def test_zone_creation(name: str, description: str, domain: str, maximum: Union[
         domain=domain,
         maximum=maximum,
         minimum=minimum,
-        parent=ZoneItem.make_parent()
+        parent=ZoneSet()
     )
 
     assert zone.name == name

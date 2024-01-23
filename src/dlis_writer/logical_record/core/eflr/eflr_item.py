@@ -96,12 +96,6 @@ class EFLRItem:
             raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
                             f"got a {type(parent)}: {parent}")
 
-    @classmethod
-    def make_parent(cls, set_name: Optional[str] = None) -> "EFLRSet":
-        """Create an EFLRSet (subclass) instance which can be a parent to an EFLRItem of this type."""
-
-        return cls.parent_eflr_class(set_name=set_name)
-
     @property
     def attributes(self) -> dict[str, Attribute]:
         """Attributes defined for this EFLRItem (sub)class with its values for the current instance."""

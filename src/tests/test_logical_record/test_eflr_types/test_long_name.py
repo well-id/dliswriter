@@ -23,7 +23,7 @@ def test_from_config() -> None:
         conditions=[t],
         standard_symbol=t,
         private_symbol=t,
-        parent=LongNameItem.make_parent()
+        parent=LongNameSet()
     )
 
     assert w.general_modifier.value == [t]

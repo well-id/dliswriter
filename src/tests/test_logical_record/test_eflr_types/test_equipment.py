@@ -47,7 +47,7 @@ def test_params_and_units() -> None:
             'radial_drift': AttrSetup(23.22, 'm'),
             'angular_drift': AttrSetup(32.5, 'm')
         },
-        parent=EquipmentItem.make_parent()
+        parent=EquipmentSet()
     )
 
     def check(name: str, val: Any, unit: str) -> None:

@@ -79,7 +79,7 @@ def new_dlis_path(base_data_path: Path) -> Generator:
 
 @pytest.fixture
 def channel_parent() -> eflr_types.ChannelSet:
-    return eflr_types.ChannelItem.make_parent()
+    return eflr_types.ChannelSet()
 
 
 @pytest.fixture
@@ -135,12 +135,12 @@ def cmeasure1() -> eflr_types.CalibrationMeasurementItem:
 
 @pytest.fixture
 def axis1() -> eflr_types.AxisItem:
-    return eflr_types.AxisItem("Axis-1", parent=eflr_types.AxisItem.make_parent())
+    return eflr_types.AxisItem("Axis-1", parent=eflr_types.AxisSet())
 
 
 @pytest.fixture
 def param_parent() -> eflr_types.ParameterSet:
-    return eflr_types.ParameterItem.make_parent()
+    return eflr_types.ParameterSet()
 
 
 @pytest.fixture
@@ -160,7 +160,7 @@ def param3(param_parent: eflr_types.ParameterSet) -> eflr_types.ParameterItem:
 
 @pytest.fixture
 def zone_parent() -> eflr_types.ZoneSet:
-    return eflr_types.ZoneItem.make_parent()
+    return eflr_types.ZoneSet()
 
 
 @pytest.fixture
@@ -218,4 +218,4 @@ def computation1() -> eflr_types.ComputationItem:
 
 @pytest.fixture
 def computation2() -> eflr_types.ComputationItem:
-    return eflr_types.ComputationItem("CMPT-2", parent=eflr_types.ComputationItem.make_parent())
+    return eflr_types.ComputationItem("CMPT-2", parent=eflr_types.ComputationSet())

@@ -1,7 +1,8 @@
 from datetime import datetime
 
 from dlis_writer import (AttrSetup, AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
-                         CalibrationCoefficientItem, CalibrationItem, EFLRAttribute)
+                         CalibrationCoefficientItem, CalibrationItem, EFLRAttribute, CalibrationSet,
+                         CalibrationCoefficientSet, CalibrationMeasurementSet)
 
 
 def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem) -> None:
@@ -22,7 +23,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
             'plus_tolerance': [2],
             'minus_tolerance': AttrSetup(value=1),
         },
-        parent=CalibrationMeasurementItem.make_parent()
+        parent=CalibrationMeasurementSet()
     )
 
     assert m.name == "CMEASURE-1"
@@ -55,7 +56,7 @@ def test_calibration_coefficient_creation() -> None:
         references=[89, 298],
         plus_tolerances=[100.2, 222.124],
         minus_tolerances=[87.23, 214],
-        parent=CalibrationCoefficientItem.make_parent()
+        parent=CalibrationCoefficientSet()
     )
 
     assert c.name == "COEF-1"
@@ -90,7 +91,7 @@ def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, chan
         coefficients=(ccoef1,),
         measurements=(cmeasure1,),
         parameters=(param1, param2, param3),
-        parent=CalibrationItem.make_parent()
+        parent=CalibrationSet()
     )
 
     assert c.name == "CALIB-MAIN"

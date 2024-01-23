@@ -19,7 +19,7 @@ def test_from_config(name: str, v_zero: str, m_decl: float, c1_name: str, c1_val
         coordinate_1_value=c1_value,
         coordinate_2_name=c2_name,
         coordinate_2_value=c2_value,
-        parent=WellReferencePointItem.make_parent()
+        parent=WellReferencePointSet()
     )
 
     assert w.name == name

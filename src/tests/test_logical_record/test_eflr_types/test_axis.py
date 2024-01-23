@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.axis import AxisItem
+from dlis_writer.logical_record.eflr_types.axis import AxisItem, AxisSet
 
 
 @pytest.mark.parametrize(('name', 'axis_id', 'units'), (
@@ -8,7 +8,7 @@ from dlis_writer.logical_record.eflr_types.axis import AxisItem
     ('Axis-X', 'Another axis', 's')
 ))
 def test_str_attributes(name: str, axis_id: str, units: str) -> None:
-    axis = AxisItem(name, axis_id=axis_id, spacing={'units': units}, parent=AxisItem.make_parent())
+    axis = AxisItem(name, axis_id=axis_id, spacing={'units': units}, parent=AxisSet())
 
     assert axis.name == name
     assert axis.axis_id.value == axis_id
@@ -21,12 +21,12 @@ def test_str_attributes(name: str, axis_id: str, units: str) -> None:
         ([8], [8])
 ))
 def test_coordinates(given: list, expected: list) -> None:
-    axis = AxisItem('some_name', coordinates=given, parent=AxisItem.make_parent())
+    axis = AxisItem('some_name', coordinates=given, parent=AxisSet())
     assert axis.coordinates.value == expected
 
 
 def test_copy_numbers() -> None:
-    parent = parent=AxisItem.make_parent()
+    parent = AxisSet()
 
     for i in range(5):
         ax = AxisItem('XYZ', parent=parent)

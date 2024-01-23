@@ -22,7 +22,7 @@ def test_group_params(name: str, description: str, object_type: str,
         object_type=object_type,
         object_list=[request.getfixturevalue(v) for v in object_names],
         group_list=[request.getfixturevalue(v) for v in group_names],
-        parent=GroupItem.make_parent()
+        parent=GroupSet()
     )
 
     assert g.name == name
