@@ -65,7 +65,8 @@ class ReprCodeConverter:
     }
 
     # mapping of numerical representation codes on corresponding numpy dtypes
-    repr_codes_to_numpy_dtypes = {v: getattr(np, k) for k, v in numpy_dtypes_to_repr_codes.items()}
+    repr_codes_to_numpy_dtypes: dict[RepresentationCode, numpy_dtype_type]\
+        = {v: getattr(np, k) for k, v in numpy_dtypes_to_repr_codes.items()}
 
     # mapping of different object types on corresponding representation codes
     generic_types: dict[type, RepresentationCode] = {
@@ -164,7 +165,7 @@ class ReprCodeConverter:
 
     @staticmethod
     def determine_numpy_dtype_from_repr_code(repr_code: Union[RepresentationCode, None],
-                                             default: Optional[RepresentationCode] = None) -> type[object]:
+                                             default: Optional[RepresentationCode] = None) -> numpy_dtype_type:
         """Determine a numpy dtype for a given representation code.
 
         Args:

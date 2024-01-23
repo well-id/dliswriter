@@ -1,14 +1,15 @@
 from collections import defaultdict
-from typing import Generator, Optional, TypeVar
+from typing import Generator, Optional, TypeVar, Union
 
-from dlis_writer.logical_record.core.eflr import EFLRSet
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 
 
 AnyEFLRSet = TypeVar("AnyEFLRSet", bound="EFLRSet")
+AnyEFLRItem = TypeVar("AnyEFLRItem", bound="EFLRItem")
 
 
 class EFLRSetsDict(defaultdict):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(lambda: {})
 
     def add_set(self, eflr_set: EFLRSet) -> None:
@@ -21,7 +22,7 @@ class EFLRSetsDict(defaultdict):
     def get_or_make_set(self, eflr_set_type: type[AnyEFLRSet], set_name: Optional[str] = None) -> AnyEFLRSet:
 
         # dict mapping set names on EFLRSet (subclass) instances
-        eflr_set_dict = self[eflr_set_type]
+        eflr_set_dict: dict[Union[str, None], AnyEFLRSet] = self[eflr_set_type]
 
         # instance of the EFLRSet with the given set name - if exists
         eflr_set_instance = eflr_set_dict.get(set_name, None)
@@ -33,6 +34,6 @@ class EFLRSetsDict(defaultdict):
 
         return eflr_set_instance
 
-    def get_all_items_for_set_type(self, eflr_set_type: type[EFLRSet]) -> Generator:
+    def get_all_items_for_set_type(self, eflr_set_type: type[EFLRSet]) -> Generator[AnyEFLRItem, None, None]:
         for value in self[eflr_set_type].values():
             yield from value.get_all_eflr_items()

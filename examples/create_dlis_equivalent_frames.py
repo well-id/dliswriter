@@ -48,7 +48,7 @@ df.write('./tmp.DLIS')
 
 
 # print the copy_number and dataset_name info of the objects for inspection
-def describe_item(o: EFLRItem):
+def describe_item(o: EFLRItem) -> None:
     s = f"{o}: \n\tcopy_number = {o.copy_number}"
 
     if isinstance(o, ChannelItem):

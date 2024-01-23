@@ -166,7 +166,7 @@ class EFLRItem:
         or maximum_value.value respectively) is set to the value of the keyword argument.
         """
 
-        def set_value(_attr: Attribute, _value: Any, _key: str = 'value'):
+        def set_value(_attr: Attribute, _value: Any, _key: str = 'value') -> None:
             logger.debug(f"Setting {_attr.label}.{_key} of {self} to {repr(_value)}")
             setattr(_attr, _key, _value)
 

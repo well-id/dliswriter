@@ -6,7 +6,7 @@ from dlis_writer.file import DLISFile
 from tests.dlis_files_for_testing.common import make_df
 
 
-def _define_frame_from_data(df: DLISFile, name: str, data: dict):
+def _define_frame_from_data(df: DLISFile, name: str, data: dict) -> None:
     ax = df.add_axis("AXIS")
 
     channels = []
@@ -19,7 +19,7 @@ def _define_frame_from_data(df: DLISFile, name: str, data: dict):
     df.add_frame(name, channels=channels, index_type='BOREHOLE-DEPTH')
 
 
-def create_dlis_file_object(*data_dicts) -> DLISFile:
+def create_dlis_file_object(*data_dicts: dict) -> DLISFile:
     df = make_df()
 
     for i, d in enumerate(data_dicts):

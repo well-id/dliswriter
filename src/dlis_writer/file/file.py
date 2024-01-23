@@ -1,4 +1,4 @@
-from typing import Any, Union, Optional, TypeVar
+from typing import Any, Union, Optional, TypeVar, Generator
 import numpy as np
 from timeit import timeit
 from datetime import timedelta, datetime
@@ -113,7 +113,7 @@ class DLISFile:
     def origin(self) -> Union[eflr_types.OriginItem, None]:
         """Origin of the DLIS. Note: currently only adding a single origin is supported."""
 
-        origins = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
         return origins[0] if origins else None
 
     @property
@@ -1259,7 +1259,7 @@ class DLISFile:
     def determine_valid_origin_references(self) -> list[int]:
         """Determine valid origin reference values for this file."""
 
-        origins = self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet)
+        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
         if not origins:
             raise RuntimeError("No origin defined")
 
@@ -1288,7 +1288,8 @@ class DLISFile:
             for eflr_set in eflr_set_dict.values():
                 eflr_set.origin_reference = value
 
-    def generate_logical_records(self, chunk_size, data, **kwargs) -> SizedGenerator:
+    def generate_logical_records(self, chunk_size: Optional[int], data: Optional[data_form_type] = None,
+                                 **kwargs: Any) -> SizedGenerator:
         """Iterate over all logical records defined in the file.
 
         Yields: EFLR and IFLR objects defined for the file.
@@ -1296,7 +1297,8 @@ class DLISFile:
         Note: Storage Unit Label should be added to the file separately before adding other records.
         """
 
-        frame_items = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
+        frame_items: Generator[eflr_types.FrameItem, None, None] \
+            = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
         multi_frame_data_objects: list[MultiFrameData] = [
             self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items
         ]
@@ -1308,9 +1310,12 @@ class DLISFile:
             n += len(mfd)
         n += len(self._no_format_frame_data)
 
-        def generator():
+        def generator() -> Generator:
+            if (origin := self.origin) is None:
+                raise RuntimeError("Origin not defined")
+
             yield self.file_header.parent
-            yield self.origin.parent
+            yield origin.parent
 
             for set_type, set_dict in self._eflr_sets.items():
                 if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):

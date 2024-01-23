@@ -19,15 +19,15 @@ class LRMeta(type):
     logical_record_type: Union[EFLRType, IFLRType]
     _lr_type_struct: bytes
 
-    def __new__(cls, *args: Any, **kwargs: Any):
+    def __new__(cls, *args: Any, **kwargs: Any) -> "LRMeta":
         """Create a new LogicalRecord (sub)class.
 
         Add a class-level attribute _lr_type_struct to be set when the value is first accessed through the corresponding
         property.
         """
 
-        obj = super().__new__(cls, *args, **kwargs)
-        obj._lr_type_struct = None
+        obj: LRMeta = super().__new__(cls, *args, **kwargs)
+        obj._lr_type_struct = b''
         return obj
 
     @property
