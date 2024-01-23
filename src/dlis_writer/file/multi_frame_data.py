@@ -1,4 +1,4 @@
-import typing
+from typing import Any, Union, Generator, Optional
 from typing_extensions import Self
 
 from dlis_writer.logical_record.eflr_types.frame import FrameItem
@@ -13,7 +13,7 @@ class MultiFrameData:
     SourceDataObject (specifying numerical data, channel names, data types etc.)
     """
 
-    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: typing.Optional[int] = None):
+    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: Optional[int] = None):
         """Initialise MultiFrameData object.
 
         Args:
@@ -37,14 +37,14 @@ class MultiFrameData:
         self._data_source = data
         self._frame = frame
 
-        self._origin_reference: typing.Union[int, None] = self._frame.origin_reference
+        self._origin_reference: Union[int, None] = self._frame.origin_reference
 
         self._chunk_rows = chunk_size
         self._i = 0  # keep track of current frame number during iteration
-        self._data_item_generator = None
+        self._data_item_generator: Union[Generator, None] = None
 
     @staticmethod
-    def _check_type(value: typing.Any, *expected_types: type) -> None:
+    def _check_type(value: Any, *expected_types: type) -> None:
         """Check that value is an instance of the expected type. If not, raise a TypeError."""
 
         if not isinstance(value, expected_types):

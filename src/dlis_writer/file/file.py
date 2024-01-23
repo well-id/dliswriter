@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar('T')
 AttrSetupType = Union[T, AttrDict, AttrSetup]
-OptAttrSetupType = Optional[AttrSetupType]
+OptAttrSetupType = Optional[AttrSetupType[T]]
 
 
 class DLISFile:
@@ -83,8 +83,7 @@ class DLISFile:
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
     @staticmethod
-    def _set_up_sul_or_fh(item_class: type, item: Union[StorageUnitLabel, eflr_types.FileHeaderItem, None],
-                          **kwargs: Any) -> Union[StorageUnitLabel, eflr_types.FileHeaderItem]:
+    def _set_up_sul_or_fh(item_class: type[T], item: Optional[T], **kwargs: Any) -> T:
 
         if item is not None:
             if not isinstance(item, item_class):
@@ -1150,7 +1149,7 @@ class DLISFile:
             description: OptAttrSetupType[str] = None,
             domain: OptAttrSetupType[str] = None,
             maximum: OptAttrSetupType[dtime_or_number_type] = None,
-            minimum: OptAttrSetupType[dtime_or_number_type] = None,
+            minimum: Optional[AttrSetupType[dtime_or_number_type]] = None,
             set_name: Optional[str] = None
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
