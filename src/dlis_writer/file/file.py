@@ -786,7 +786,7 @@ class DLISFile:
     def add_origin(
             self,
             name: str,
-            file_set_number: AttrSetupType[int],
+            file_set_number: int,
             file_set_name: OptAttrSetupType[str] = None,
             file_id: OptAttrSetupType[str] = None,
             file_number: OptAttrSetupType[int] = None,

@@ -1,5 +1,5 @@
 import os
-from typing import Union
+from typing import Union, Optional
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
@@ -7,7 +7,9 @@ from dlis_writer.logical_record import eflr_types
 from tests.dlis_files_for_testing.common import make_df
 
 
-def _add_channels(df: DLISFile, data_dict: dict, channel_kwargs: dict = None) -> tuple[eflr_types.ChannelItem, ...]:
+def _add_channels(df: DLISFile, data_dict: dict, channel_kwargs: Optional[dict] = None) \
+        -> tuple[eflr_types.ChannelItem, ...]:
+
     channel_kwargs = channel_kwargs or {}
 
     channels = []
@@ -22,7 +24,8 @@ def _add_channels(df: DLISFile, data_dict: dict, channel_kwargs: dict = None) ->
     return tuple(channels)
 
 
-def write_dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict, channel_kwargs: dict = None) -> None:
+def write_dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict,
+                         channel_kwargs: Optional[dict] = None) -> None:
     df = make_df()
 
     channels = _add_channels(df, data_dict=data_dict, channel_kwargs=channel_kwargs)

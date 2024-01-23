@@ -137,13 +137,13 @@ def test_clearing_cast_dtype(chan: ChannelItem) -> None:
 
 
 @pytest.mark.parametrize('dt', (np.float16, np.int64, np.bool_))
-def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: numpy_dtype_type) -> None:
+def test_setting_cast_dtype_dtype_not_supported(chan: ChannelItem, dt: numpy_dtype_type) -> None:
     with pytest.raises(ValueError, match="Dtype .* is not supported.*"):
         chan.cast_dtype = dt
 
 
 @pytest.mark.parametrize('dt', (float, bool, object, 4.2, datetime.now()))
-def test_setting_cast_dtype_without_matching_repr_code(chan: ChannelItem, dt: Any) -> None:
+def test_setting_cast_dtype_not_a_np_dtype(chan: ChannelItem, dt: Any) -> None:
     with pytest.raises(ValueError, match=".* is not a numpy dtype"):
         chan.cast_dtype = dt
 

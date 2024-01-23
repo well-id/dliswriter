@@ -137,8 +137,8 @@ def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: 
 
     if value_type is datetime:
         # dlisio doesn't add time zone info to the parsed datetime objects; utc.localize marks them as UTC
-        z_maximum = utc.localize(z_maximum)
-        z_minimum = utc.localize(z_minimum)
+        z_maximum = utc.localize(z_maximum)  # type: ignore
+        z_minimum = utc.localize(z_minimum)  # type: ignore
 
     assert z_maximum == maximum
     assert z_minimum == minimum

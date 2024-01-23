@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 import os
 from typing import Generator
-from dlisio import dlis
+from dlisio import dlis  # type: ignore  # untyped library
 import numpy as np
 
 from dlis_writer.file.file import DLISFile

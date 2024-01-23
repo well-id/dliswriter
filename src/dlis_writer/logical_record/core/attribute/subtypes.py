@@ -171,7 +171,7 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Number) -> int:
+    def _int_parser(value: number_type) -> int:
         """Parse a provided value as an integer."""
 
         if not isinstance(value, Number):
@@ -183,7 +183,7 @@ class NumericAttribute(Attribute):
         return int(value)
 
     @staticmethod
-    def _float_parser(value: Number) -> float:
+    def _float_parser(value: number_type) -> float:
         """Parse a provided value as a float."""
 
         if not isinstance(value, Number):
@@ -191,7 +191,7 @@ class NumericAttribute(Attribute):
 
         return float(value)
 
-    def _convert_number(self, value: Number) -> number_type:
+    def _convert_number(self, value: number_type) -> number_type:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
         if self._int_only or self.representation_code in ReprCodeConverter.int_codes:

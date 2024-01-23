@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Generator
+from typing import Generator, Optional
 
 from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 
@@ -15,7 +15,7 @@ class EFLRSetsDict(defaultdict):
 
         self[eflr_set.__class__][eflr_set.set_name] = eflr_set
 
-    def get_or_make_set(self, eflr_item_type: type[EFLRItem], set_name: str = None) -> EFLRSet:
+    def get_or_make_set(self, eflr_item_type: type[EFLRItem], set_name: Optional[str] = None) -> EFLRSet:
 
         # the relevant EFLRSet subclass
         eflr_set_type = eflr_item_type.parent_eflr_class
@@ -35,5 +35,4 @@ class EFLRSetsDict(defaultdict):
 
     def get_all_items_for_set_type(self, eflr_set_type: type[EFLRSet]) -> Generator:
         for value in self[eflr_set_type].values():
-            value: EFLRSet
             yield from value.get_all_eflr_items()
