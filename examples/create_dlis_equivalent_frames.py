@@ -12,22 +12,19 @@ import logging
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.core.eflr import EFLRItem
-from dlis_writer.logical_record.eflr_types import OriginItem, ChannelItem
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.logical_record.eflr_types import ChannelItem
+from dlis_writer.utils.logging import install_colored_logger
 
 
 # colored logs output
-logger = logging.getLogger(__name__)
-install_logger(logger)
+install_colored_logger(logging.getLogger('dlis_writer'))
 
 
-# set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginItem("DEFAULT ORIGIN", file_set_number=80, company="XXX")
-file_header = {'sequence_number': 2}
+# create DLISFile instance; optionally, pass arguments for creating file header & storage unit label
+df = DLISFile(sul_sequence_number=2, fh_sequence_number=2, fh_identifier="MAIN FILE")
 
-
-# create DLISFile instance, pass the origin and file header
-df = DLISFile(origin=origin, file_header=file_header)
+# add origin - required item
+df.add_origin("DEFAULT ORIGIN", file_set_number=80, company="XXX")
 
 
 # define frame 1
@@ -51,7 +48,7 @@ df.write('./tmp.DLIS')
 
 
 # print the copy_number and dataset_name info of the objects for inspection
-def describe_item(o: EFLRItem):
+def describe_item(o: EFLRItem) -> None:
     s = f"{o}: \n\tcopy_number = {o.copy_number}"
 
     if isinstance(o, ChannelItem):

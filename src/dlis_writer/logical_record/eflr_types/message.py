@@ -1,8 +1,8 @@
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute, NumericAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import IdentAttribute, DTimeAttribute, NumericAttribute, TextAttribute
 
 
 class MessageItem(EFLRItem):
@@ -10,23 +10,24 @@ class MessageItem(EFLRItem):
 
     parent: "MessageSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "MessageSet", **kwargs: Any) -> None:
         """Initialise MessageItem.
 
         Args:
             name        :   Name of the MessageItem.
+            parent      :   Parent MessageSet of this MessageItem.
             **kwargs    :   Values of to be set as characteristics of the MessageItem Attributes.
         """
 
-        self._type = Attribute('_type', representation_code=RepC.IDENT, parent_eflr=self)
-        self.time = DTimeAttribute('time', allow_float=True, parent_eflr=self)
-        self.borehole_drift = NumericAttribute('borehole_drift', parent_eflr=self)
-        self.vertical_depth = NumericAttribute('vertical_depth', parent_eflr=self)
-        self.radial_drift = NumericAttribute('radial_drift', parent_eflr=self)
-        self.angular_drift = NumericAttribute('angular_drift', parent_eflr=self)
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self._type = IdentAttribute('_type')
+        self.time = DTimeAttribute('time', allow_float=True)
+        self.borehole_drift = NumericAttribute('borehole_drift')
+        self.vertical_depth = NumericAttribute('vertical_depth')
+        self.radial_drift = NumericAttribute('radial_drift')
+        self.angular_drift = NumericAttribute('angular_drift')
+        self.text = TextAttribute('text', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class MessageSet(EFLRSet):
@@ -42,17 +43,18 @@ class CommentItem(EFLRItem):
 
     parent: "CommentSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "CommentSet", **kwargs: Any) -> None:
         """Initialise CommentItem.
 
         Args:
             name        :   Name of the CommentItem.
+            parent      :   Parent CommentSet of this CommentItem.
             **kwargs    :   Values of to be set as characteristics of the CommentItem Attributes.
         """
 
-        self.text = Attribute('text', representation_code=RepC.ASCII, multivalued=True, parent_eflr=self)
+        self.text = TextAttribute('text', multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class CommentSet(EFLRSet):

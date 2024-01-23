@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, TYPE_CHECKING
 from functools import lru_cache
+from pytz import utc
 
 from dlis_writer.utils.enums import RepresentationCode
 
@@ -15,6 +16,8 @@ ULONG_OFFSET = 3221225472   #: offset added to values packed as ULONG; 11 and 30
 
 def write_struct_dtime(date_time: datetime) -> bytes:
     """Convert a datetime object to bytes according to the RP66 V1 standard.
+
+    The date-time is converted to UTC, which is marked with the corresponding time zone code (2, "GMT").
 
     Args:
         date_time: The datetime object to be converted.
@@ -39,11 +42,19 @@ def write_struct_dtime(date_time: datetime) -> bytes:
             01010111 00010100 00010011 00010101
             00010100 00001111 00000010 01101100
 
+        Representation codes for the different parts:
+            - milliseconds: UNORM
+            - timezone & month: 4-bit unsigned integer (doesn't have a proper representation code in RP66)
+            - other parts: USHORT
+
     """
+
+    # bring the date-time to UTC
+    date_time = date_time.astimezone(utc)
 
     value = b''
 
-    time_zone = '{0:04b}'.format(0)  # Local Standard Time is set as default
+    time_zone = '{0:04b}'.format(2)  # date-time converted to UTC (previously called GMT), so we use the GMT code
     month = '{0:04b}'.format(date_time.month)
 
     value += RepresentationCode.USHORT.convert(date_time.year - 1900)
@@ -52,7 +63,7 @@ def write_struct_dtime(date_time: datetime) -> bytes:
     value += RepresentationCode.USHORT.convert(date_time.hour)
     value += RepresentationCode.USHORT.convert(date_time.minute)
     value += RepresentationCode.USHORT.convert(date_time.second)
-    value += RepresentationCode.UNORM.convert(date_time.microsecond // 1000)
+    value += RepresentationCode.UNORM.convert(min(round(date_time.microsecond / 1000), 999))
 
     return value
 

@@ -9,8 +9,8 @@ from dlis_writer.logical_record import eflr_types
 from tests.dlis_files_for_testing.common import make_file_header, make_sul
 
 
-def make_origin() -> eflr_types.OriginItem:
-    origin = eflr_types.OriginItem(
+def _add_origin(df: DLISFile) -> eflr_types.OriginItem:
+    origin = df.add_origin(
         "DEFAULT ORIGIN",
         creation_time="2050/03/02 15:30:00",
         file_id="WELL ID",
@@ -21,7 +21,7 @@ def make_origin() -> eflr_types.OriginItem:
         well_id=5,
         well_name="Test well name",
         field_name="Test field name",
-        company="Test company",
+        company="Test company"
     )
 
     return origin
@@ -128,12 +128,12 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
     z4.maximum.units = "min"
     z4.minimum.units = "min"
 
-    zx = eflr_types.ZoneItem(
+    zx = df.add_zone(
         name="Zone-X",
         description="Zone not added to any parameter",
         domain="TIME",
         maximum=10,
-        minimum=1
+        minimum=1,
     )
     zx.maximum.units = "s"
     zx.minimum.units = "s"
@@ -294,7 +294,6 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         values=[100, 200, 300],
         source=tools[0]
     )
-    c1.values.representation_code = "UNORM"     # type: ignore  # using converter associated with the property
 
     c2 = df.add_computation(
         name="COMPT2",
@@ -504,11 +503,8 @@ def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
 
 
 def create_dlis_file_object() -> DLISFile:
-    df = DLISFile(
-        origin=make_origin(),
-        file_header=make_file_header(),
-        storage_unit_label=make_sul()
-    )
+    df = DLISFile(storage_unit_label=make_sul(), file_header=make_file_header())
+    _add_origin(df)
 
     axes = _add_axes(df)
     channels = _add_channels(df, axes[0])

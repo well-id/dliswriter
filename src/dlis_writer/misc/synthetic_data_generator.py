@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 import logging
 from typing import Union, Any
 
-from dlis_writer.utils.logging import install_logger
+from dlis_writer.utils.logging import install_colored_logger
 
 
 logger = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols
 
     logger.debug("Creating two more linear datasets")
     h5_group.create_dataset('rpm', data=10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points)))
-    h5_group.create_dataset('col3', data=np.arange(n_points, dtype=np.float16))
+    h5_group.create_dataset('col3', data=np.arange(n_points, dtype=np.float32))
 
     for i in range(n_images):
         logger.debug(f"Creating image dataset {i+1}/{n_images}")
@@ -107,8 +107,6 @@ def create_data_file(n_points: int, fpath: Union[str, os.PathLike[str]], overwri
 def main() -> None:
     """Create a synthetic HDF5 data file based on information from command line arguments."""
 
-    install_logger(logger)
-
     parser = ArgumentParser("Creating HFD5 file with mock well data")
     parser.add_argument('-n', '--n-points', help='Number of data points', type=float, default=5e3)
     parser.add_argument('-fn', '--file-name', help='Output file name')
@@ -138,4 +136,6 @@ def main() -> None:
 
 
 if __name__ == '__main__':
+    install_colored_logger(logger)
+
     main()

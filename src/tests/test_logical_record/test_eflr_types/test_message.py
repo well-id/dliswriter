@@ -16,6 +16,7 @@ def test_creating_message() -> None:
         radial_drift=345.56,
         angular_drift=456.67,
         text=["Test message 11111"],
+        parent=MessageSet()
     )
 
     assert m.name == "MESSAGE-1"
@@ -40,7 +41,8 @@ def test_creating_comment(name: str, text: list[str]) -> None:
 
     c = CommentItem(
         name=name,
-        text=text
+        text=text,
+        parent=CommentSet()
     )
 
     assert c.name == name

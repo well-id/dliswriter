@@ -22,7 +22,8 @@ def test_from_config() -> None:
         source_part_number=[t],
         conditions=[t],
         standard_symbol=t,
-        private_symbol=t
+        private_symbol=t,
+        parent=LongNameSet()
     )
 
     assert w.general_modifier.value == [t]

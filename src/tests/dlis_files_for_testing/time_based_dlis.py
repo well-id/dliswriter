@@ -5,7 +5,7 @@ import numpy as np
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
 
-from tests.dlis_files_for_testing.common import make_file_header, make_sul, make_origin
+from tests.dlis_files_for_testing.common import make_df
 
 
 def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
@@ -56,19 +56,12 @@ def _add_frame(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...]) -> ef
     )
 
     fr.spacing.units = "s"
-    fr.spacing.representation_code = "FDOUBL"       # type: ignore  # using converter associated with the property
-    fr.index_max.representation_code = "FDOUBL"     # type: ignore  # using converter associated with the property
-    fr.index_min.representation_code = "FDOUBL"     # type: ignore  # using converter associated with the property
 
     return fr
 
 
 def create_dlis_file_object() -> DLISFile:
-    df = DLISFile(
-        origin=make_origin(),
-        file_header=make_file_header(),
-        storage_unit_label=make_sul()
-    )
+    df = make_df()
 
     channels = _add_channels(df)
     _add_frame(df, channels)

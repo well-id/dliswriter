@@ -14,14 +14,15 @@ from dlis_writer.logical_record.core.eflr import EFLRItem
 def test_group_params(name: str, description: str, object_type: str,
                       object_class: type[EFLRItem], object_names: list[str], group_names: list[str],
                       request: pytest.FixtureRequest) -> None:
-    """Test creating GroupObject."""
+    """Test creating GroupItem."""
 
     g = GroupItem(
         name,
         description=description,
         object_type=object_type,
         object_list=[request.getfixturevalue(v) for v in object_names],
-        group_list=[request.getfixturevalue(v) for v in group_names]
+        group_list=[request.getfixturevalue(v) for v in group_names],
+        parent=GroupSet()
     )
 
     assert g.name == name

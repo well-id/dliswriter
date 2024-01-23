@@ -1,30 +1,23 @@
+"""Create an exemplary DLIS file with synthetic data and all kinds of DLIS objects supported in this library."""
+
 from datetime import datetime, timedelta
 import numpy as np
 import logging
 
-from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.eflr_types.origin import OriginItem
-from dlis_writer.utils.logging import install_logger
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.logging import install_colored_logger
+from dlis_writer import AttrSetup, DLISFile
 
 
 # colored logs output
-logger = logging.getLogger(__name__)
-install_logger(logger)
+install_colored_logger(logging.getLogger('dlis_writer'))
 
 
-# set up origin & file header with custom parameters - by creating an instance or dict of kwargs
-origin = OriginItem("DEFAULT ORIGIN", file_set_number=1, company="XXX")
+# create DLISFile instance; optionally, pass custom parameters for file header and storage unit label
+df = DLISFile(fh_identifier="DEFAULT FILE HEADER")
+
+# add origin
+origin = df.add_origin("DEFAULT ORIGIN", file_set_number=1, company="XXX", order_number="352")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
-file_header = {'sequence_number': 2}
-
-
-# create DLISFile instance, pass the origin and file header
-df = DLISFile(origin=origin, file_header=file_header)
-
-
-# change parameters of already added objects
-df.origin.order_number.value = "352"
 
 
 # define axes - metadata objects for channels
@@ -66,21 +59,21 @@ splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zo
 
 
 # parameters - using zones and axes
-parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1, zones=(zone1,), values=[1, 2, 3.3])
-parameter1.values.units = 'in'
+parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1, zones=(zone1,),
+                              values={'value': [1, 2, 3.3], 'units': 'in'})
 parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3), values=["val1", "val2", "val3"], dimension=[3])
 
 
 # equipment
-equipment1 = df.add_equipment("EQ1", status=1, eq_type='Tool', serial_number='1239-12312', weight=123.2, length=2)
-equipment1.weight.units = 'kg'
-equipment1.length.units = 'm'
-equipment1.length.representation_code = RepresentationCode.UNORM
+# note how complex attribute values can be passed as a dict or an AttrSetup object;
+equipment1 = df.add_equipment("EQ1", status=1, eq_type='Tool', serial_number='1239-12312',
+                              weight={'value': 123.2, 'units': 'kg'},
+                              length=AttrSetup(2, 'm'))
 
+# 'value' and 'units' can also be added later to the created object.
 equipment2 = df.add_equipment("EQ2", location='Well', trademark_name='Some trademark TM')
 equipment2.hole_size.value = 23.5
 equipment2.hole_size.units = 'in'
-equipment2.hole_size.representation_code = 'FSINGL'  # type: ignore  # using converter associated with the property
 # ^ can use the enum member, name (str), or value (int)
 
 equipment3 = df.add_equipment('EQ3')

@@ -189,7 +189,7 @@ def test_load_chunk_start_larger_than_stop(data: source_data_type, start: int, s
 
     w = DictDataWrapper(data)
 
-    with pytest.raises(ValueError, match=f"Stop row cannot be smaller than start row.*"):
+    with pytest.raises(ValueError, match="Stop row cannot be smaller than start row.*"):
         w.load_chunk(start, stop)
 
 

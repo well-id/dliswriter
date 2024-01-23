@@ -1,5 +1,4 @@
 from typing import Union, Any, TYPE_CHECKING, Callable, Optional
-from typing_extensions import Self
 import logging
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
@@ -7,7 +6,7 @@ from dlis_writer.utils.enums import RepresentationCode, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
-    from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+    from dlis_writer.logical_record.core.eflr import EFLRItem
 
 
 logger = logging.getLogger(__name__)
@@ -16,11 +15,13 @@ logger = logging.getLogger(__name__)
 class Attribute:
     """Represent an RP66 V1 Attribute."""
 
-    settables = ('representation_code', 'units', 'value')  #: attributes of the object which can be set
+    _valid_repr_codes = tuple(RepresentationCode.__members__.values())
+    _default_repr_code: Union[RepresentationCode, None] = None
+    _units_settable: bool = True
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
-                 parent_eflr: "Optional[Union[EFLRSet, EFLRItem]]" = None):
+                 parent_eflr: "Optional[EFLRItem]" = None):
         """Initialise an Attribute object.
 
         Args:
@@ -33,7 +34,7 @@ class Attribute:
             value               :   Value(s) of the attribute.
             converter           :   Function used to convert/validate the provided value later, through the 'value'
                                     property setter.
-            parent_eflr         :   EFLR or EFLRObject instance this attribute belongs to.
+            parent_eflr         :   EFLRSet or EFLRItem instance this attribute belongs to.
 
         """
 
@@ -47,11 +48,11 @@ class Attribute:
 
         self._label = label.strip('_').upper().replace('_', '-')
         self._multivalued = multivalued
-        self._representation_code = representation_code
+        self._representation_code = representation_code if representation_code is not None else self._default_repr_code
         self._units = units
         self._value = value
         self._converter = converter  # to convert value
-        self._parent_eflr = parent_eflr
+        self.parent_eflr = parent_eflr
 
     @staticmethod
     def _check_type(value: Any, *expected_types: type, allow_none: bool = False) -> None:
@@ -67,7 +68,7 @@ class Attribute:
     def __str__(self) -> str:
         """String representation of the attribute."""
 
-        return f"{self.__class__.__name__} '{self._label}'" + (f' of {self._parent_eflr}' if self._parent_eflr else '')
+        return f"{self.__class__.__name__} '{self._label}'" + (f' of {self.parent_eflr}' if self.parent_eflr else '')
 
     @property
     def label(self) -> str:
@@ -91,13 +92,7 @@ class Attribute:
     def representation_code(self) -> Union[RepresentationCode, None]:
         """Representation code of the attribute; explicitly assigned if available, otherwise guessed from the value."""
 
-        return self.assigned_representation_code or self.inferred_representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
-        """Set a new representation code for the attribute."""
-
-        self._set_representation_code(rc)
+        return self._representation_code or self.inferred_representation_code
 
     def _guess_repr_code(self) -> Union[RepresentationCode, None]:
         """Attempt determining representation code of the attribute from the set value.
@@ -121,16 +116,16 @@ class Attribute:
             return None
 
     @property
-    def assigned_representation_code(self) -> Union[RepresentationCode, None]:
-        """Explicitly assigned representation code of the attribute."""
-
-        return self._representation_code
-
-    @property
     def inferred_representation_code(self) -> Union[RepresentationCode, None]:
         """Representation code guessed from the attribute value (if possible)."""
 
-        return self._guess_repr_code()
+        rc = self._guess_repr_code()
+
+        if rc is not None and rc not in self._valid_repr_codes:
+            raise RuntimeError(f"Value {repr(self._value)} is not of valid type "
+                               f"for attribute type {self.__class__.__name__}")
+
+        return rc
 
     def _set_representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
         """Set representation code, having checked that no (other) representation code has previously been set.
@@ -145,6 +140,10 @@ class Attribute:
 
         if self._representation_code is not None and self._representation_code is not rcm:
             raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
+
+        if rcm not in self._valid_repr_codes:
+            raise ValueError(f"Representation code {rcm} is not valid for {self.__class__}; "
+                             f"valid codes are: {', '.join(str(r) for r in self._valid_repr_codes)}")
         self._representation_code = rcm
 
     @property
@@ -156,6 +155,9 @@ class Attribute:
     @units.setter
     def units(self, units: str) -> None:
         """Set new units for the attribute."""
+
+        if not self._units_settable:
+            raise RuntimeError(f"Units of {self.__class__.__name__} cannot be set")
 
         if units is not None:
             self._check_type(units, str)
@@ -180,12 +182,6 @@ class Attribute:
         """True if multiple values (list of values) can be added; False otherwise."""
 
         return self._multivalued
-
-    @property
-    def parent_eflr(self) -> "Union[EFLRSet, EFLRItem, None]":
-        """EFLR or ELFRObject instance the attribute belongs to."""
-
-        return self._parent_eflr
 
     def convert_value(self, value: Any) -> Any:
         """Transform/validate the provided value according to the provided converter.
@@ -216,7 +212,7 @@ class Attribute:
             self._converter = conv
 
     def _write_for_template(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes and characteristics needed for an EFLR template."""
+        """Transform the attribute to bytes and characteristics needed for an EFLRSet template."""
 
         if self._label:
             bts += write_struct_ascii(self._label)
@@ -230,7 +226,7 @@ class Attribute:
         return bts, characteristics
 
     def _write_for_body(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes anf characteristics needed to describe this part of an EFLRObject."""
+        """Transform the attribute to bytes and characteristics needed to describe this part of an EFLRItem."""
 
         # label
         characteristics += '0'
@@ -270,7 +266,7 @@ class Attribute:
         return bts, characteristics
 
     def _write_values(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
-        """Transform the attribute to bytes and characteristics for template/describing its EFLRObject."""
+        """Transform the attribute to bytes and characteristics for template/describing its EFLRItem."""
 
         rc = self.representation_code
         value = self._value
@@ -293,7 +289,7 @@ class Attribute:
         """Convert attribute to bytes to be put in the DLIS file.
 
         Args:
-            for_template: If True, create the bytes for EFLR template; otherwise, for EFLRObject description.
+            for_template: If True, create the bytes for EFLRSet template; otherwise, for EFLRItem description.
         """
 
         bts = b''
@@ -305,15 +301,3 @@ class Attribute:
             bts, characteristics = self._write_for_body(bts, characteristics)
 
         return RepresentationCode.USHORT.convert(int(characteristics, 2)) + bts
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance; do not include parent_eflr reference."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            units=self._units,
-            value=self._value,
-            converter=self._converter,
-        )

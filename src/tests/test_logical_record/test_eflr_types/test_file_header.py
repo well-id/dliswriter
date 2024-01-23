@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.file_header import FileHeaderSet, Fil
 def test_creation(identifier: str, sequence_number: int) -> None:
     """Test creating a FileHeaderObject."""
 
-    fh = FileHeaderItem(identifier, sequence_number=sequence_number)
+    fh = FileHeaderItem(identifier, sequence_number=sequence_number, parent=FileHeaderSet())
 
     assert fh.identifier == identifier
     assert fh.sequence_number == sequence_number

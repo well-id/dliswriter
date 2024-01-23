@@ -13,14 +13,15 @@ from dlis_writer.utils.enums import RepresentationCode
 ))
 def test_zone_creation(name: str, description: str, domain: str, maximum: Union[int, float], minimum: Union[int, float],
                        m_type: type, rc: RepresentationCode) -> None:
-    """Test creating ZoneObject from config."""
+    """Test creating ZoneItem."""
 
     zone = ZoneItem(
         name,
         description=description,
         domain=domain,
         maximum=maximum,
-        minimum=minimum
+        minimum=minimum,
+        parent=ZoneSet()
     )
 
     assert zone.name == name

@@ -1,24 +1,22 @@
 import numpy as np
 import h5py    # type: ignore  # untyped library
 from typing import Union, Optional, Any, Generator
-import os
 import logging
+from abc import ABC
 
 from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.types import data_form_type, data_source_type, file_name_type, numpy_dtype_type
 
 
 logger = logging.getLogger(__name__)
 
 
-data_source_type = Union[np.ndarray, dict[str, np.ndarray], h5py.File]
-
-
-class SourceDataWrapper:
+class SourceDataWrapper(ABC):
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
-                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
-                 to_idx: Optional[int] = None, **kwargs: Any) -> None:
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None) -> None:
         """Initialise a SourceDataWrapper.
 
         Args:
@@ -30,8 +28,6 @@ class SourceDataWrapper:
                                 the data.
             from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
             to_idx          :   Index up to which data should be loaded.
-            **kwargs        :   The slot for additional keyword arguments has been added for signature consistency
-                                with all subclasses. No other keyword arguments should actually be passed.
 
             Note:
                 All data sets from 'mapping' should be found in the 'data_source'. On the other hand, 'data_source'
@@ -40,9 +36,6 @@ class SourceDataWrapper:
                 data chunks, passed to the DLIS file writer loop.
                 All datasets (of the ones mentioned in 'mapping') are required to have the same length.
         """
-
-        if kwargs:
-            raise ValueError(f"Unexpected keyword arguments passed to initialisation of SourceDataWrapper: {kwargs}")
 
         self._data_source = data_source
         self._mapping = mapping
@@ -83,7 +76,7 @@ class SourceDataWrapper:
 
     @staticmethod
     def determine_dtypes(data_object: data_source_type, mapping: dict[str, str],
-                         known_dtypes: Optional[dict[str, type[object]]] = None) -> np.dtype:
+                         known_dtypes: Optional[dict[str, numpy_dtype_type]] = None) -> np.dtype:
         """Determine the structured numpy dtype for the provided data, with given data names mapping.
 
         Args:
@@ -216,9 +209,8 @@ class SourceDataWrapper:
             yield from self.load_chunk(n_full_chunks * chunk_rows, None)
 
     @classmethod
-    def make_wrapper(cls, source: Union[os.PathLike[str], dict[str, np.ndarray], np.ndarray],
-                     mapping: Optional[dict] = None, **kwargs: Any) \
-            -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
+    def make_wrapper(cls, source: data_form_type, mapping: Optional[dict] = None,
+                     **kwargs: Any) -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
 
         if isinstance(source, dict):
             return DictDataWrapper(source, mapping, **kwargs)
@@ -242,14 +234,20 @@ class HDF5DataWrapper(SourceDataWrapper):
 
     _data_source: h5py.File
 
-    def __init__(self, data_file_name: Union[str, bytes, os.PathLike], mapping: dict, **kwargs: Any) -> None:
+    def __init__(self, data_file_name: file_name_type, mapping: dict,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None) -> None:
         """Initialise HDF5DataWrapper.
 
         Args:
             data_file_name  :   Name of/path to the HDF5 file containing the source data.
             mapping         :   Mapping of the names of data sets (data types) to be included on the corresponding
                                 data set paths in the file.
-            **kwargs        :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
+            known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
+                                all dtypes. Can also be completely omitted. Missing data types are determined from
+                                the data.
+            from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
+            to_idx          :   Index up to which data should be loaded.
         """
 
         # open the file
@@ -258,7 +256,7 @@ class HDF5DataWrapper(SourceDataWrapper):
         # add a forward slash at the beginning of each value in the mapping dict - if missing
         mapping = {k: (f'/{v}' if not v.startswith('/') else v) for k, v in mapping.items()}
 
-        super().__init__(h5_data, mapping, **kwargs)
+        super().__init__(h5_data, mapping, known_dtypes=known_dtypes, from_idx=from_idx, to_idx=to_idx)
 
     def close(self) -> None:
         """Close the HDF5 file (if open)."""
@@ -282,15 +280,22 @@ class NumpyDataWrapper(SourceDataWrapper):
 
     _data_source: np.ndarray
 
-    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None, **kwargs: Any) -> None:
+    def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None) -> None:
         """Initialise NumpyDataWrapper.
 
         Args:
-            arr         :   Source data - structured numpy array.
-            mapping     :   Mapping of target data type names on the data type names found in the source array.
-                            Optional; if not provided, it is assumed that the target data types (data sets)
-                            are the same as the source ones.
-            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
+            arr             :   Source data - structured numpy array.
+            mapping         :   Mapping of target data type names on the data type names found in the source array.
+                                Optional; if not provided, it is assumed that the target data types (data sets)
+                                are the same as the source ones.
+            known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
+                                all dtypes. Can also be completely omitted. Missing data types are determined from
+                                the data.
+            from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
+            to_idx          :   Index up to which data should be loaded.
+
         """
 
         self._check_source_arr(arr)
@@ -299,7 +304,7 @@ class NumpyDataWrapper(SourceDataWrapper):
             # default mapping: 1 to 1 for all existing data type names
             mapping = {k: k for k in arr.dtype.names}
 
-        super().__init__(arr, mapping, **kwargs)
+        super().__init__(arr, mapping, known_dtypes=known_dtypes, from_idx=from_idx, to_idx=to_idx)
 
     def load_chunk(self, start: int, stop: Union[int, None]) -> np.ndarray:
         """Load a chunk of the input data.
@@ -338,15 +343,22 @@ class NumpyDataWrapper(SourceDataWrapper):
 class DictDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
-    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None, **kwargs: Any) -> None:
+    def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
+                 to_idx: Optional[int] = None) -> None:
         """Initialise DictDataWrapper.
 
         Args:
-            data_dict   :   Source data - dict of numpy arrays.
-            mapping     :   Mapping of target data type names on the keys found in the data dictionary.
-                            Optional; if not provided, it is assumed that all items of the data dict should be included
-                            in the target structured arrays.
-            **kwargs    :   Additional keyword arguments passed to __init__ of SourceDataWrapper.
+            data_dict       :   Source data - dict of numpy arrays.
+            mapping         :   Mapping of target data type names on the keys found in the data dictionary.
+                                Optional; if not provided, it is assumed that all items of the data dict should be
+                                included in the target structured arrays.
+            known_dtypes    :   Mapping of data type names on data types (if any are known). Does not have to contain
+                                all dtypes. Can also be completely omitted. Missing data types are determined from
+                                the data.
+            from_idx        :   Index from which data should be loaded (or number of initial rows to ignore).
+            to_idx          :   Index up to which data should be loaded.
+
         """
 
         self._check_source_dict(data_dict)
@@ -355,7 +367,7 @@ class DictDataWrapper(SourceDataWrapper):
             # default mapping: 1 to 1 for all keys of the data dict
             mapping = {k: k for k in data_dict.keys()}
 
-        super().__init__(data_dict, mapping, **kwargs)
+        super().__init__(data_dict, mapping, known_dtypes=known_dtypes, from_idx=from_idx, to_idx=to_idx)
 
     @staticmethod
     def _check_source_dict(data_dict: dict[str, np.ndarray]) -> None:

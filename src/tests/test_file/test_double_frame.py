@@ -2,7 +2,7 @@ import pytest
 from pathlib import Path
 import os
 from typing import Generator
-from dlisio import dlis
+from dlisio import dlis  # type: ignore  # untyped library
 import numpy as np
 
 from dlis_writer.file.file import DLISFile
@@ -54,7 +54,7 @@ def double_frame_dlis_contents(double_frame_dlis_path: Path, double_frame_dlis: 
 
 @pytest.fixture(scope='session')
 def channels(double_frame_dlis_contents: dlis.LogicalFile) -> list[dlis.Channel]:
-    return double_frame_dlis_contents.channels
+    return double_frame_dlis_contents.channels  # type: ignore  # return type not recognised
 
 
 def test_channel_names(channels: list[dlis.Channel]) -> None:

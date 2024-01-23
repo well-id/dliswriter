@@ -4,9 +4,9 @@ from typing import Union, Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, NumericAttribute
+from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,
+                                                       IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 
@@ -27,26 +27,26 @@ class FrameItem(EFLRItem):
         'VERTICAL-DEPTH'
     )
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "FrameSet", **kwargs: Any) -> None:
         """Initialise FrameItem.
 
         Args:
             name        :   Name of the FrameItem.
+            parent      :   Parent FrameSet of this FrameItem.
             **kwargs    :   Values of to be set as characteristics of the FrameItem Attributes.
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True, parent_eflr=self)
-        self.index_type = Attribute(
-            'index_type', converter=self.parse_index_type, representation_code=RepC.IDENT, parent_eflr=self)
-        self.direction = Attribute('direction', representation_code=RepC.IDENT, parent_eflr=self)
-        self.spacing = NumericAttribute('spacing', parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True)
+        self.index_type = IdentAttribute('index_type', converter=self.parse_index_type)
+        self.direction = IdentAttribute('direction')
+        self.spacing = NumericAttribute('spacing')
         self.encrypted = NumericAttribute(
-            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT, parent_eflr=self)
-        self.index_min = NumericAttribute('index_min', parent_eflr=self)
-        self.index_max = NumericAttribute('index_max', parent_eflr=self)
+            'encrypted', converter=self.convert_encrypted, representation_code=RepC.USHORT)
+        self.index_min = NumericAttribute('index_min')
+        self.index_max = NumericAttribute('index_max')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
     @classmethod
     def parse_index_type(cls, value: str) -> str:
@@ -126,8 +126,6 @@ class FrameItem(EFLRItem):
 
         for at in (self.index_min, self.index_max, self.spacing):
             assign_if_none(at, key='units', value=unit)
-            if at.assigned_representation_code is None:
-                at.representation_code = repr_code
 
     @property
     def channel_name_mapping(self) -> dict:

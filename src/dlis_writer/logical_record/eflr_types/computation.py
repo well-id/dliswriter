@@ -4,8 +4,9 @@ from typing import Any
 from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import EFLRAttribute, NumericAttribute, DimensionAttribute, Attribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute,
+                                                       TextAttribute, IdentAttribute)
 
 
 logger = logging.getLogger(__name__)
@@ -16,25 +17,25 @@ class ComputationItem(EFLRItem):
 
     parent: "ComputationSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "ComputationSet", **kwargs: Any) -> None:
         """Initialise ComputationItem.
 
         Args:
             name            :   Name of the ComputationItem.
+            parent          :   Parent ComputationSet of this ComputationItem.
             **kwargs        :   Values of to be set as characteristics of the ComputationItem Attributes.
         """
 
-        self.long_name = Attribute('long_name', representation_code=RepC.ASCII, parent_eflr=self)
-        self.properties = Attribute('properties', representation_code=RepC.IDENT, multivalued=True, parent_eflr=self)
-        self.dimension = DimensionAttribute('dimension', parent_eflr=self)
-        self.axis = EFLRAttribute('axis', object_class=AxisSet, parent_eflr=self)
-        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True, parent_eflr=self)
-        self.values = NumericAttribute('values', multivalued=True, parent_eflr=self)
-        self.source = EFLRAttribute('source', parent_eflr=self)
+        self.long_name = TextAttribute('long_name')
+        self.properties = IdentAttribute('properties', multivalued=True)
+        self.dimension = DimensionAttribute('dimension')
+        self.axis = EFLRAttribute('axis', object_class=AxisSet)
+        self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
+        self.values = NumericAttribute('values', multivalued=True)
+        self.source = EFLRAttribute('source')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
-        self._set_defaults()
         self.check_values_and_zones()
 
     def _set_defaults(self) -> None:

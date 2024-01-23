@@ -1,8 +1,8 @@
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import IdentAttribute, TextAttribute
 
 
 class NoFormatItem(EFLRItem):
@@ -10,18 +10,19 @@ class NoFormatItem(EFLRItem):
 
     parent: "NoFormatSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "NoFormatSet", **kwargs: Any) -> None:
         """Initialise NoFormatItem.
 
         Args:
             name        :   Name of the NoFormatItem.
+            parent      :   Parent NoFormatSet of this NoFormatItem.
             **kwargs    :   Values of to be set as characteristics of the NoFormatItem Attributes.
         """
 
-        self.consumer_name = Attribute('consumer_name', representation_code=RepC.IDENT, parent_eflr=self)
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
+        self.consumer_name = IdentAttribute('consumer_name')
+        self.description = TextAttribute('description')
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class NoFormatSet(EFLRSet):

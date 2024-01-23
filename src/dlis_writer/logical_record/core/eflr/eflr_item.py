@@ -1,6 +1,6 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union, Optional
+from typing import TYPE_CHECKING, Any, Union, Optional, Generator
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
@@ -12,19 +12,36 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
+class AttrSetup:
+    """Convenience class to pass setup for an Attribute without creating a dictionary."""
+
+    # Note: the initial plan was to make it a dataclass, but this doesn't give the PyCharm IDE typing hints,
+    # which is one of the main points of this class
+
+    def __init__(self, value: Optional[Any] = None, units: Optional[str] = None) -> None:
+        """Initialise AttrSetup with any of the passed values."""
+
+        self.value = value
+        self.units = units
+        # Note: no checks done here, because they're done in EFLRItem/Attribute later anyway
+
+    def items(self) -> Generator:
+        for item_name in ('value', 'units'):
+            if (item_value := getattr(self, item_name)) is not None:
+                yield item_name, item_value
+
+
 class EFLRItem:
     """Model an item belonging to an Explicitly Formatted Logical Record - e.g. a particular channel."""
 
     parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None,
-                 **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "EFLRSet", **kwargs: Any) -> None:
         """Initialise an EFLRItem.
 
         Args:
             name        :   Name of the item. This will be the name it is stored with in the created DLIS file.
             parent      :   EFLRTable instance this item belongs to. If not provided, retrieved/made based on set_name.
-            set_name    :   Set name of the parent EFLRTable instance.
             **kwargs    :   Values to be set in attributes of this item.
 
         Note:
@@ -35,13 +52,22 @@ class EFLRItem:
         """
 
         self.name = name    #: name of the item
-        self.parent = self._get_parent(parent=parent, set_name=set_name)  #: EFLRTable instance this item belongs to
-        self.parent.register_item(self)
+
+        self._check_parent(parent)
+        self._parent = parent  #: EFLRSet instance this item belongs to
+        self._parent.register_item(self)
 
         self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
         self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
 
+        for attribute in self.attributes.values():
+            attribute.parent_eflr = self
+
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
+
+    @property
+    def parent(self) -> "EFLRSet":
+        return self._parent
 
     @property
     def copy_number(self) -> int:
@@ -52,33 +78,23 @@ class EFLRItem:
     def _compute_copy_number(self) -> int:
         """Compute copy number of this ELFRItem, i.e. how many other objects of the same type and name there are."""
 
-        items_with_the_same_name = filter(lambda o: o.name == self.name, self.parent.get_all_eflr_items_from_all_sets())
+        items_with_the_same_name = filter(lambda o: o.name == self.name, self.parent.get_all_eflr_items())
         return len(list(items_with_the_same_name)) - 1
 
     @classmethod
-    def _get_parent(cls, parent: Optional["EFLRSet"] = None, set_name: Optional[str] = None) -> "EFLRSet":
-        """Validate, retrieve, or create a parent EFLRTable instance.
+    def _check_parent(cls, parent: "EFLRSet") -> None:
+        """Validate a parent EFLRSet instance for this EFLRItem.
 
         Args:
-            parent      :   Parent EFLRTable instance. If not provided, set_name will be used to retrieve/make one.
-            set_name    :   Set name of the parent EFLRTable instance. If parent is provided, it is checked against its
-                            set_name.
+            parent      :   Parent EFLRSet instance.
 
         Returns:
-            The parent EFLRTable instance.
+            The parent EFLRSet instance.
         """
 
-        if parent is not None:
-            if not isinstance(parent, cls.parent_eflr_class):
-                raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
-                                f"got a {type(parent)}: {parent}")
-            if parent.set_name != set_name and set_name is not None:
-                raise ValueError(f"The provided set name: {set_name} does not match the set name of the "
-                                 f"provided parent EFLRTable: {parent.set_name}")
-
-            return parent
-
-        return cls.parent_eflr_class.get_or_make_set(set_name=set_name)
+        if not isinstance(parent, cls.parent_eflr_class):
+            raise TypeError(f"Expected an instance of {cls.parent_eflr_class.__name__}; "
+                            f"got a {type(parent)}: {parent}")
 
     @property
     def attributes(self) -> dict[str, Attribute]:
@@ -125,8 +141,15 @@ class EFLRItem:
 
         return _bytes
 
+    def _set_defaults(self) -> None:
+        """Called before writing the item's bytes. Set default values to some attributes if they were not set at all."""
+
+        pass
+
     def make_item_body_bytes(self) -> bytes:
         """Create bytes describing the item: its name and values of its attributes."""
+
+        self._set_defaults()
 
         return b'p' + self.obname + self._make_attrs_bytes()
 
@@ -143,18 +166,23 @@ class EFLRItem:
         or maximum_value.value respectively) is set to the value of the keyword argument.
         """
 
-        for attr_name, attr_value in kwargs.items():
-            attr_name_main, *attr_parts = attr_name.split('.')
-            attr_part = attr_parts[0] if attr_parts else 'value'
-            if attr_part not in Attribute.settables:
-                raise ValueError(f"Cannot set {attr_part} of an Attribute item")
+        def set_value(_attr: Attribute, _value: Any, _key: str = 'value') -> None:
+            logger.debug(f"Setting {_attr.label}.{_key} of {self} to {repr(_value)}")
+            setattr(_attr, _key, _value)
 
-            attr = getattr(self, attr_name_main, None)
+        for attr_name, attr_value in kwargs.items():
+            attr = getattr(self, attr_name, None)
             if not attr or not isinstance(attr, Attribute):
                 raise AttributeError(f"{self.__class__.__name__} does not have attribute '{attr_name}'")
 
-            logger.debug(f"Setting attribute '{attr_name}' of {self} to {repr(attr_value)}")
-            setattr(attr, attr_part, attr_value)
+            if isinstance(attr_value, (dict, AttrSetup)):
+                for key, value in attr_value.items():
+                    if key not in ('value', 'units'):
+                        raise ValueError(f"Cannot set {key} of a(n) {attr.__class__.__name__}")
+                    set_value(attr, value, key)
+
+            else:
+                set_value(attr, attr_value)
 
     @classmethod
     def convert_maybe_numeric(cls, val: Union[str, int, float]) -> Union[str, int, float]:

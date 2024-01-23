@@ -20,7 +20,7 @@ def _check_conversion(arr: np.ndarray, rc: RepresentationCode) -> None:
         np.random.rand(100),
         10 * np.random.rand(20) - 5
 ))
-def test_floats(data):
+def test_floats(data: np.ndarray) -> None:
     _check_conversion(data.astype(np.float64), RepresentationCode.FDOUBL)
     _check_conversion(data.astype(np.float32), RepresentationCode.FSINGL)
 
@@ -32,7 +32,7 @@ def test_floats(data):
         np.array([20, 21, 20, 2311, -1000]),
         np.random.randint(low=-20, high=412, size=100)
 ))
-def test_signed_ints(data):
+def test_signed_ints(data: np.ndarray) -> None:
     _check_conversion(data.astype(np.int32), RepresentationCode.SLONG)
     _check_conversion(data.astype(np.int16), RepresentationCode.SNORM)
     _check_conversion(data.astype(np.int8), RepresentationCode.SSHORT)
@@ -43,7 +43,7 @@ def test_signed_ints(data):
         np.array([0, 20, 21, 20, 2311]),
         np.random.randint(low=0, high=1412, size=100)
 ))
-def test_unsigned_ints(data):
+def test_unsigned_ints(data: np.ndarray) -> None:
     _check_conversion(data.astype(np.uint32), RepresentationCode.ULONG)
     _check_conversion(data.astype(np.uint16), RepresentationCode.UNORM)
     _check_conversion(data.astype(np.uint8), RepresentationCode.USHORT)

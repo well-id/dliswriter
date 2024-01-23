@@ -2,8 +2,8 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute
+from dlis_writer.utils.enums import EFLRType
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -14,21 +14,21 @@ class GroupItem(EFLRItem):
 
     parent: "GroupSet"
 
-    def __init__(self, name: str, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "GroupSet", **kwargs: Any) -> None:
         """Initialise GroupItem.
 
         Args:
             name        :   Name of the GroupItem.
-            parent      :   Group EFLR instance this GroupItem belongs to.
+            parent      :   Group EFLRSet instance this GroupItem belongs to.
             **kwargs    :   Values of to be set as characteristics of the GroupItem Attributes.
         """
 
-        self.description = Attribute('description', representation_code=RepC.ASCII, parent_eflr=self)
-        self.object_type = Attribute('object_type', representation_code=RepC.IDENT, parent_eflr=self)
-        self.object_list = EFLRAttribute('object_list', multivalued=True, parent_eflr=self)
-        self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True, parent_eflr=self)
+        self.description = TextAttribute('description')
+        self.object_type = IdentAttribute('object_type')
+        self.object_list = EFLRAttribute('object_list', multivalued=True)
+        self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True)
 
-        super().__init__(name, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
 
 
 class GroupSet(EFLRSet):

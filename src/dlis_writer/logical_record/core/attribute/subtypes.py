@@ -2,12 +2,12 @@ import logging
 from numbers import Number
 from datetime import datetime
 from typing import Union, Optional, Any
-from typing_extensions import Self
 
 from .attribute import Attribute
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, EFLRSetMeta
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import RepresentationCode as RepC
 from dlis_writer.utils.converters import ReprCodeConverter
+from dlis_writer.utils.types import number_type, dtime_or_number_type
 
 
 logger = logging.getLogger(__name__)
@@ -20,14 +20,16 @@ class EFLRAttribute(Attribute):
     or Channels of Frame.
     """
 
-    def __init__(self, label: str, object_class: Optional[EFLRSetMeta] = None,
-                 representation_code: Optional[RepC] = None, **kwargs: Any) -> None:
+    _units_settable = False
+    _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
+    _default_repr_code = RepC.OBNAME
+
+    def __init__(self, label: str, object_class: Optional[type[EFLRSet]] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
 
         Args:
             label               :   Attribute label.
             object_class        :   EFLR subclass corresponding to the class of the object(s) - value of the attribute.
-            representation_code :   Representation code to be used for the value. Can be OBNAME or OBJREF.
             kwargs              :   Keyword arguments passed to Attribute.
         """
 
@@ -35,29 +37,13 @@ class EFLRAttribute(Attribute):
             if kwargs.get(arg_name, None) is not None:
                 raise TypeError(f"{self.__class__.__name__} does not accept '{arg_name}' argument")
 
-        if representation_code is None:
-            representation_code = RepC.OBNAME
-        if representation_code not in (RepC.OBNAME, RepC.OBJREF):
-            raise ValueError(f"Representation code '{representation_code.name}' is not allowed for an EFLRAttribute")
-
         if object_class is not None and not issubclass(object_class, EFLRSet):
             raise TypeError(f"Expected an EFLR subclass; got {object_class}")
 
-        super().__init__(label=label, representation_code=representation_code, **kwargs)
+        super().__init__(label=label, **kwargs)
 
         self._object_class = object_class
         self._converter = self._convert_value
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            value=self._value,
-            object_class=self._object_class
-        )
 
     def _convert_value(self, v: type[EFLRItem]) -> type[EFLRItem]:
         """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
@@ -72,6 +58,7 @@ class DTimeAttribute(Attribute):
     """Model an attribute whose value is a datetime object."""
 
     dtime_formats = ["%Y/%m/%d %H:%M:%S", "%Y.%m.%d %H:%M:%S"]  #: accepted date-time formats
+    _valid_repr_codes = (RepC.DTIME, RepC.FDOUBL, RepC.FSINGL)
 
     class DTimeFormatError(ValueError):
         """Error raised if a provided string does not match any of the allowed formats."""
@@ -98,7 +85,7 @@ class DTimeAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_value
 
-    def _convert_value(self, value: Union[str, datetime, int, float]) -> Union[datetime, float]:
+    def _convert_value(self, value: Union[str, datetime, int, float]) -> dtime_or_number_type:
         """Default value converter: parse string as date time or (if so specified at init) as a float."""
 
         if isinstance(value, datetime):
@@ -143,6 +130,8 @@ class DTimeAttribute(Attribute):
 class NumericAttribute(Attribute):
     """Model an attribute which can only have numerical values."""
 
+    _valid_repr_codes = ReprCodeConverter.numeric_codes
+
     def __init__(self, *args: Any, int_only: bool = False, float_only: bool = False, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
 
@@ -166,38 +155,6 @@ class NumericAttribute(Attribute):
         if not self._converter:
             self._converter = self._convert_number
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            representation_code=self._representation_code,
-            units=self._units,
-            value=self._value,
-            converter=self._converter,
-            int_only=self._int_only,
-            float_only=self._float_only
-        )
-
-    @property
-    def representation_code(self) -> Union[RepC, None]:
-        """Representation code of the attribute."""
-
-        return super().representation_code
-
-    @representation_code.setter
-    def representation_code(self, rc: Union[RepC, str, int]) -> None:
-        """Set a new representation code for the attribute. Check that the code refers to numerical values."""
-
-        self._set_representation_code(rc)
-        self._check_repr_code_numeric(self._representation_code)
-        if self._value is not None:
-            if self._multivalued:
-                self._value = [self._convert_number(v) for v in self._value]
-            else:
-                self._value = self._convert_number(self._value)
-
     def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""
 
@@ -214,7 +171,7 @@ class NumericAttribute(Attribute):
             raise ValueError(f"Representation code {rc.name} is not numeric")
 
     @staticmethod
-    def _int_parser(value: Union[int, float]) -> int:
+    def _int_parser(value: number_type) -> int:
         """Parse a provided value as an integer."""
 
         if not isinstance(value, Number):
@@ -226,7 +183,7 @@ class NumericAttribute(Attribute):
         return int(value)
 
     @staticmethod
-    def _float_parser(value: Union[int, float]) -> float:
+    def _float_parser(value: number_type) -> float:
         """Parse a provided value as a float."""
 
         if not isinstance(value, Number):
@@ -234,55 +191,42 @@ class NumericAttribute(Attribute):
 
         return float(value)
 
-    def _convert_number(self, value: Union[int, float]) -> Union[int, float]:
+    def _convert_number(self, value: number_type) -> number_type:
         """Convert a provided value according to the attribute's representation code (or as a float)."""
 
-        rc = self._representation_code
-        if rc is None:
-            try:
-                value = self._int_parser(value)
-            except (ValueError, TypeError):
-                value = self._float_parser(value)
-            return value
-
-        if rc in ReprCodeConverter.int_codes:
+        if self._int_only or self.representation_code in ReprCodeConverter.int_codes:
             return self._int_parser(value)
 
-        if rc in ReprCodeConverter.float_codes:
-            return self._float_parser(value)
-
-        raise RuntimeError(f"Representation code {rc.name} is not numeric")
+        return self._float_parser(value)
 
 
 class DimensionAttribute(NumericAttribute):
     """Model an attribute expressing dimensions (e.g. dimension or element_limit of Channel)."""
 
-    def __init__(self, *args: Any, representation_code: RepC = RepC.UVARI, **kwargs: Any) -> None:
+    _units_settable = False
+    _valid_repr_codes = (RepC.UVARI,)
+    _default_repr_code = RepC.UVARI
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a NumericAttribute.
 
         Args:
             args                :   Positional arguments passed to NumericAttribute.
-            representation_code :   Representation code for the attribute value.
             kwargs              :   Keyword arguments passed to NumericAttribute.
         """
 
         if 'converter' in kwargs:
             raise TypeError(f"{self.__class__.__name__} does not accept 'converter' argument")
 
-        super().__init__(*args, representation_code=representation_code, int_only=True, multivalued=True, **kwargs)
-
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
-
-        return self.__class__(
-            label=self._label,
-            units=self._units,
-            value=self._value,
-        )
+        super().__init__(*args, int_only=True, multivalued=True, **kwargs)
 
 
 class StatusAttribute(Attribute):
     """Model an attribute which can only have value 1 or 0."""
+
+    _units_settable = False
+    _valid_repr_codes = (RepC.STATUS,)
+    _default_repr_code = RepC.STATUS
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         """Initialise a StatusAttribute.
@@ -292,13 +236,10 @@ class StatusAttribute(Attribute):
             kwargs      :   Keyword arguments passed to Attribute.
         """
 
-        for name in ('converter', 'representation_code'):
-            if name in kwargs:
-                raise TypeError(f"{self.__class__.__name__} does not accept '{name}' argument")
+        if kwargs.get('converter', None) is not None:
+            raise ValueError(f"{self.__class__.__name__} does not accept a 'converter' argument")
 
-        super().__init__(*args, **kwargs, representation_code=RepC.STATUS)  # type: ignore
-        # ^ no, representation_code is not passed multiple times
-        self._converter = self.convert_status
+        super().__init__(*args, **kwargs, converter=self.convert_status)  # type: ignore  # converter passed once
 
     @staticmethod
     def convert_status(val: Union[bool, int, float]) -> int:
@@ -316,12 +257,47 @@ class StatusAttribute(Attribute):
 
         return val
 
-    def copy(self) -> Self:
-        """Create a copy of the attribute instance."""
 
-        return self.__class__(
-            label=self._label,
-            multivalued=self._multivalued,
-            units=self._units,
-            value=self._value
-        )
+class TextAttribute(Attribute):
+    """Model an attribute representing text in ASCII format."""
+
+    _units_settable = False
+    _valid_repr_codes = (RepC.ASCII,)
+    _default_repr_code = RepC.ASCII
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialise an ASCIIAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        if kwargs.get('converter', None) is not None:
+            raise ValueError(f"{self.__class__.__name__} does not accept a 'converter' argument")
+
+        super().__init__(*args, **kwargs, converter=self._check_string)  # type: ignore  # converter passed once
+
+    @staticmethod
+    def _check_string(v: str) -> str:
+        if not isinstance(v, str):
+            raise TypeError(f'Expected a str, got {type(v)}: {v}')
+        return v
+
+
+class IdentAttribute(Attribute):
+    """Model an attribute represented as IDENT."""
+
+    _units_settable = False
+    _valid_repr_codes = (RepC.IDENT,)
+    _default_repr_code = RepC.IDENT
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        """Initialise an IDENTAttribute.
+
+        Args:
+            args        :   Positional arguments passed to Attribute.
+            kwargs      :   Keyword arguments passed to Attribute.
+        """
+
+        super().__init__(*args, **kwargs)

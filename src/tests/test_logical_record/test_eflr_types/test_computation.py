@@ -19,7 +19,8 @@ def test_computation_creation(name: str, properties: list[str], zone_names: list
         properties=properties,
         values=values,
         axis=axis1,
-        zones=[v for k, v in zones.items() if k in zone_names]
+        zones=[v for k, v in zones.items() if k in zone_names],
+        parent=ComputationSet()
     )
 
     assert comp.name == name

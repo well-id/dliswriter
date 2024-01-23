@@ -6,7 +6,6 @@ import logging
 
 from dlis_writer.misc.dlis_file_comparator import compare
 from dlis_writer.file import DLISFile
-from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.logical_record.eflr_types import ChannelItem
 
 
@@ -103,6 +102,8 @@ def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem
 
 def make_dlis_file_spec(data_file_path: Path) -> DLISFile:
     df = DLISFile()
+    df.add_origin("DEFAULT ORIGIN", file_set_number=1)
+
     with h5py.File(data_file_path, 'r') as h5f:
         channels = add_channels_from_h5_data(df, h5f)
     df.add_frame('MAIN', channels=channels)

@@ -18,13 +18,13 @@ class FileHeaderItem(EFLRItem):
 
     identifier_length_limit = 65    #: max length of the file header name
 
-    def __init__(self, identifier: str, sequence_number: int = 1, **kwargs: Any) -> None:
+    def __init__(self, identifier: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
         """Initialise FileHeaderItem.
 
         Args:
             identifier      :   Name of the FileHeaderItem.
+            parent          :   Parent FileHeaderSet of this FileHeaderItem.
             sequence_number :   Sequence number of the file.
-            **kwargs        :   Values of to be set as characteristics of the FileHeaderItem Attributes.
         """
 
         self.identifier = identifier
@@ -35,7 +35,26 @@ class FileHeaderItem(EFLRItem):
         if len(identifier) > self.identifier_length_limit:
             raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
 
-        super().__init__(name='0', **kwargs)
+        super().__init__(name='0', parent=parent)
+
+    def __repr__(self) -> str:
+        return (f"{self.__class__.__name__}(identifier={self.identifier}, sequence_number={self.sequence_number}, "
+                f"parent=FileHeaderSet(set_name={self.parent.set_name}))")
+
+    def __eq__(self, other: Any) -> bool:
+        if not isinstance(other, type(self)):
+            return False
+
+        if not self.sequence_number == other.sequence_number:
+            return False
+
+        if not self.identifier == other.identifier:
+            return False
+
+        if not self.parent.set_name == other.parent.set_name:
+            return False
+
+        return True
 
     def _make_attrs_bytes(self) -> bytes:
         """Create bytes describing the values of attributes of FIleHeaderItem."""
