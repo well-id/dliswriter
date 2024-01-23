@@ -152,7 +152,7 @@ class DLISFile:
             axis_id=axis_id,
             coordinates=coordinates,
             spacing=spacing,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.AxisItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.AxisSet, set_name=set_name)
         )
 
         return ax
@@ -192,7 +192,7 @@ class DLISFile:
             measurements=measurements,
             parameters=parameters,
             method=method,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationSet, set_name=set_name)
         )
 
         return c
@@ -229,7 +229,7 @@ class DLISFile:
             references=references,
             plus_tolerances=plus_tolerances,
             minus_tolerances=minus_tolerances,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientSet, set_name=set_name)
         )
 
         return c
@@ -297,7 +297,7 @@ class DLISFile:
             standard=standard,
             plus_tolerance=plus_tolerance,
             minus_tolerance=minus_tolerance,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementSet, set_name=set_name)
         )
 
         return m
@@ -358,7 +358,7 @@ class DLISFile:
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name)
         )
         # skipping dimension and element limit because they will be determined from the data
 
@@ -409,7 +409,7 @@ class DLISFile:
         c = eflr_types.CommentItem(
             name=name,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CommentItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CommentSet, set_name=set_name)
         )
 
         return c
@@ -452,7 +452,7 @@ class DLISFile:
             zones=zones,
             values=values,
             source=source,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationSet, set_name=set_name)
         )
 
         return c
@@ -525,7 +525,7 @@ class DLISFile:
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
             angular_drift=angular_drift,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentSet, set_name=set_name)
         )
 
         return eq
@@ -586,7 +586,7 @@ class DLISFile:
             encrypted=encrypted,
             index_min=index_min,
             index_max=index_max,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.FrameItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.FrameSet, set_name=set_name)
         )
 
         return fr
@@ -620,7 +620,7 @@ class DLISFile:
             object_type=object_type,
             object_list=object_list,
             group_list=group_list,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.GroupItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name)
         )
 
         return g
@@ -687,7 +687,7 @@ class DLISFile:
             conditions=conditions,
             standard_symbol=standard_symbol,
             private_symbol=private_symbol,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameSet, set_name=set_name)
         )
 
         return ln
@@ -730,7 +730,7 @@ class DLISFile:
             radial_drift=radial_drift,
             angular_drift=angular_drift,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.MessageItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.MessageSet, set_name=set_name)
         )
 
         return m
@@ -758,7 +758,7 @@ class DLISFile:
             name=name,
             consumer_name=consumer_name,
             description=description,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatSet, set_name=set_name)
         )
 
         return nf
@@ -863,7 +863,7 @@ class DLISFile:
             company=company,
             name_space_name=name_space_name,
             name_space_version=name_space_version,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.OriginItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.OriginSet, set_name=set_name)
         )
 
         return o
@@ -900,7 +900,7 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterSet, set_name=set_name)
         )
 
         return p
@@ -955,7 +955,7 @@ class DLISFile:
             depth_offset=depth_offset,
             measure_point_offset=measure_point_offset,
             tool_zero_offset=tool_zero_offset,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.PathItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.PathSet, set_name=set_name)
         )
 
         return p
@@ -1010,7 +1010,7 @@ class DLISFile:
             output_computations=output_computations,
             parameters=parameters,
             comments=comments,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessSet, set_name=set_name)
         )
 
         return p
@@ -1041,7 +1041,7 @@ class DLISFile:
             output_channel=output_channel,
             input_channels=input_channels,
             zones=zones,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceSet, set_name=set_name)
         )
 
         return sp
@@ -1084,7 +1084,7 @@ class DLISFile:
             status=status,
             channels=channels,
             parameters=parameters,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ToolItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ToolSet, set_name=set_name)
         )
 
         return t
@@ -1139,7 +1139,7 @@ class DLISFile:
             coordinate_2_value=coordinate_2_value,
             coordinate_3_name=coordinate_3_name,
             coordinate_3_value=coordinate_3_value,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointSet, set_name=set_name)
         )
 
         return w
@@ -1177,7 +1177,7 @@ class DLISFile:
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneItem, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneSet, set_name=set_name)
         )
 
         return z

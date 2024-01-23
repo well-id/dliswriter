@@ -1,7 +1,10 @@
 from collections import defaultdict
-from typing import Generator, Optional
+from typing import Generator, Optional, TypeVar
 
-from dlis_writer.logical_record.core.eflr import EFLRItem, EFLRSet
+from dlis_writer.logical_record.core.eflr import EFLRSet
+
+
+AnyEFLRSet = TypeVar("AnyEFLRSet", bound="EFLRSet")
 
 
 class EFLRSetsDict(defaultdict):
@@ -15,10 +18,7 @@ class EFLRSetsDict(defaultdict):
 
         self[eflr_set.__class__][eflr_set.set_name] = eflr_set
 
-    def get_or_make_set(self, eflr_item_type: type[EFLRItem], set_name: Optional[str] = None) -> EFLRSet:
-
-        # the relevant EFLRSet subclass
-        eflr_set_type = eflr_item_type.parent_eflr_class
+    def get_or_make_set(self, eflr_set_type: type[AnyEFLRSet], set_name: Optional[str] = None) -> AnyEFLRSet:
 
         # dict mapping set names on EFLRSet (subclass) instances
         eflr_set_dict = self[eflr_set_type]
