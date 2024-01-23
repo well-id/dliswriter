@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReprCodeAttribute(Attribute):
-    def __init__(self, parent_eflr: Optional[Union[EFLRSet, EFLRItem]] = None) -> None:
+    def __init__(self, parent_eflr: Optional[EFLRItem] = None) -> None:
         super().__init__('representation_code', converter=self.no_set, representation_code=RepC.USHORT,
                          parent_eflr=parent_eflr)
 
@@ -53,7 +53,8 @@ class ChannelItem(EFLRItem):
             **kwargs        :   Values of to be set as characteristics of the ChannelItem Attributes.
         """
 
-        self._cast_dtype = None  # need the attribute defined for representation code check
+        # need the attribute defined for representation code check
+        self._cast_dtype: Union[numpy_dtype_type, None] = None
 
         self.long_name = TextAttribute('long_name')
         self.properties = IdentAttribute('properties', multivalued=True)

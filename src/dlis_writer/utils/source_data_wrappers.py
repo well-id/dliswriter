@@ -5,7 +5,7 @@ import logging
 from abc import ABC
 
 from dlis_writer.utils.converters import ReprCodeConverter
-from dlis_writer.utils.types import data_form_type, data_source_type, file_name_type
+from dlis_writer.utils.types import data_form_type, data_source_type, file_name_type, numpy_dtype_type
 
 
 logger = logging.getLogger(__name__)
@@ -15,7 +15,7 @@ class SourceDataWrapper(ABC):
     """Keep reference to source data. Produce chunks of input data as asked, in the form of a structured numpy array."""
 
     def __init__(self, data_source: data_source_type, mapping: dict[str, str],
-                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
                  to_idx: Optional[int] = None) -> None:
         """Initialise a SourceDataWrapper.
 
@@ -76,7 +76,7 @@ class SourceDataWrapper(ABC):
 
     @staticmethod
     def determine_dtypes(data_object: data_source_type, mapping: dict[str, str],
-                         known_dtypes: Optional[dict[str, type[object]]] = None) -> np.dtype:
+                         known_dtypes: Optional[dict[str, numpy_dtype_type]] = None) -> np.dtype:
         """Determine the structured numpy dtype for the provided data, with given data names mapping.
 
         Args:
@@ -235,7 +235,7 @@ class HDF5DataWrapper(SourceDataWrapper):
     _data_source: h5py.File
 
     def __init__(self, data_file_name: file_name_type, mapping: dict,
-                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
                  to_idx: Optional[int] = None) -> None:
         """Initialise HDF5DataWrapper.
 
@@ -281,7 +281,7 @@ class NumpyDataWrapper(SourceDataWrapper):
     _data_source: np.ndarray
 
     def __init__(self, arr: np.ndarray, mapping: Optional[dict] = None,
-                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
                  to_idx: Optional[int] = None) -> None:
         """Initialise NumpyDataWrapper.
 
@@ -344,7 +344,7 @@ class DictDataWrapper(SourceDataWrapper):
     """Wrap source data provided in the form of a dictionary of numpy arrays."""
 
     def __init__(self, data_dict: dict[str, np.ndarray], mapping: Optional[dict] = None,
-                 known_dtypes: Optional[dict[str, type[object]]] = None, from_idx: int = 0,
+                 known_dtypes: Optional[dict[str, numpy_dtype_type]] = None, from_idx: int = 0,
                  to_idx: Optional[int] = None) -> None:
         """Initialise DictDataWrapper.
 

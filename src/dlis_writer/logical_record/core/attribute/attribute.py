@@ -16,8 +16,8 @@ class Attribute:
     """Represent an RP66 V1 Attribute."""
 
     _valid_repr_codes = tuple(RepresentationCode.__members__.values())
-    _default_repr_code = None
-    _units_settable = True
+    _default_repr_code: Union[RepresentationCode, None] = None
+    _units_settable: bool = True
 
     def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
                  units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,

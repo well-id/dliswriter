@@ -2,7 +2,7 @@ import os
 import numpy as np
 from typing import Union, TypeVar, TypedDict, Any
 from datetime import datetime
-import h5py
+import h5py  # type: ignore  # untyped library
 
 numpy_dtype_type = Union[np.dtype, type[np.generic]]
 

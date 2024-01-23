@@ -1,5 +1,5 @@
 from collections.abc import Sequence
-from typing import Generator
+from typing import Generator, Union, Any
 
 
 class SizedGenerator(Sequence):
@@ -13,5 +13,5 @@ class SizedGenerator(Sequence):
     def __iter__(self) -> Generator:
         yield from self._generator
 
-    def __getitem__(self, index: int) -> None:
+    def __getitem__(self, index: Union[int, slice]) -> Any:
         raise NotImplementedError("SizedGenerator does not support item access")
