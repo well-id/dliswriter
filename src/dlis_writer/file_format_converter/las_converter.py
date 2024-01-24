@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 def make_dlis_file_spec_from_las(data_file_path: file_name_type) -> tuple[DLISFile, None]:
+    """Create a DLISFile object according to the contents of the input data file."""
+
     data = lasio.read(data_file_path)
 
     df = DLISFile()

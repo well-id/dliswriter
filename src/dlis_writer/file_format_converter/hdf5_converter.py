@@ -29,6 +29,11 @@ def yield_h5_datasets(h5_object: Union[h5py.File, h5py.Group]) -> Generator:
 
 
 def get_cast_dtype(dtype: numpy_dtype_type) -> numpy_dtype_type:
+    """Determine whether data need to be cast to a different numpy dtype (not all types are supported).
+
+    Returns the dtype the data should be cast to or the provided data type if no casting is required.
+    """
+
     if dtype == np.int64:
         return np.int32
     if dtype == np.float16:
@@ -55,6 +60,8 @@ def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem
 
 
 def make_dlis_file_spec_from_hdf5(data_file_path: file_name_type) -> tuple[DLISFile, file_name_type]:
+    """Create a DLISFile object according to the contents of the input data file."""
+
     df = DLISFile()
     df.add_origin("ORIGIN", file_set_number=1)
 

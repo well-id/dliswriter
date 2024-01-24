@@ -12,6 +12,24 @@ logger = logging.getLogger(__name__)
 
 
 def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union[data_form_type, None]]:
+    """Create a DLISFile object, containing basic objects and data reference.
+
+    The configured DLISFile object contains:
+        - the required Storage Unit Label and File Header objects
+        - an Origin
+        - as many Channels as there were data sets found in the source data file,
+        - a Frame containing all the Channels.
+
+    Args:
+        data_file_path  :   Path to the input data file.
+
+    Returns:
+        - df: Configured DLIS file object,
+        - data_source: data source to be passed to df.write(). This is the file name for HDF5 files and None otherwise
+            (for csv, xls(x), and las files, the data are passed to the channel objects; For HDF5 this is not done
+            to avoid copying possibly large datasets).
+    """
+
     data_file_path = str(data_file_path)
     ext = data_file_path.split('.')[-1].lower()
     if ext in ('h5', 'hdf5'):
@@ -28,6 +46,14 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
 
 def write_dlis_from_data_file(data_file_path: file_name_type, output_file_path: file_name_type,
                               input_chunk_size: Optional[int] = None, output_chunk_size: Optional[int] = None) -> None:
+    """Create a DLIS file based on an input data file.
+
+    Args:
+        data_file_path      :   Path to the input data file.
+        output_file_path    :   Path to the output DLIS file.
+        input_chunk_size    :   Number of rows of the input data to be loaded and processed at a time.
+        output_chunk_size   :   Size (in bytes) of output DLIS file chunks written to the file at a time.
+    """
 
     dlis_file, data_source = make_dlis_file_spec(data_file_path)
 

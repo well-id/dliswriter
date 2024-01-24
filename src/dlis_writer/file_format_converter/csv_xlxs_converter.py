@@ -9,6 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 def read_data(data_file_path: file_name_type) -> pd.DataFrame:
+    """Read an input data file into a pandas DataFrame."""
+
     ext = str(data_file_path).split('.')[-1].lower()
     if ext == 'csv':
         data = pd.read_csv(data_file_path)
@@ -21,6 +23,8 @@ def read_data(data_file_path: file_name_type) -> pd.DataFrame:
 
 
 def make_dlis_file_spec_from_csv_or_xlsx(data_file_path: file_name_type) -> tuple[DLISFile, None]:
+    """Create a DLISFile object according to the contents of the input data file."""
+
     data = read_data(data_file_path)
 
     df = DLISFile()

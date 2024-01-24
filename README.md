@@ -36,6 +36,9 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
+##### 0.0.9 Processing input files (pending)
+- Scripts to create basic DLIS files from hdf5, csv, xls(x), and las files.
+
 ##### 0.0.8 API improvements & fixes
 - Removed representation code setters from `Attribute`.
 - More value type and representation code (repr code inferred from value) checks.
@@ -223,6 +226,11 @@ from any HDF5 data source.
 
 - [create_synth_dlis_variable_data.py](./examples/create_synth_dlis_variable_data.py) allows creating DLIS files
 with any number of 2D datasets with a user-defined shape, filled with randomised data. 
+
+
+Furthermore, scripts contained in the [file_format_converter](./src/dlis_writer/file_format_converter) 
+subpackage can be used to create DLIS files from a number of different input data formats 
+(including hdf5, csv, and las.)
 
 ---
 ## Developer guide
