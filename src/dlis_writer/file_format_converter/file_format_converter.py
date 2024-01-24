@@ -5,6 +5,7 @@ from dlis_writer.file import DLISFile
 from dlis_writer.utils.types import file_name_type, data_form_type
 from dlis_writer.file_format_converter.hdf5_converter import make_dlis_file_spec_from_hdf5
 from dlis_writer.file_format_converter.csv_xlxs_converter import make_dlis_file_spec_from_csv_or_xlsx
+from dlis_writer.file_format_converter.las_converter import make_dlis_file_spec_from_las
 
 
 logger = logging.getLogger(__name__)
@@ -17,8 +18,10 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
         df, data_source = make_dlis_file_spec_from_hdf5(data_file_path=data_file_path)
     elif ext in ('csv', 'xls', 'xlsx'):
         df, data_source = make_dlis_file_spec_from_csv_or_xlsx(data_file_path=data_file_path)
+    elif ext == 'las':
+        df, data_source = make_dlis_file_spec_from_las(data_file_path=data_file_path)
     else:
-        raise ValueError(f"Could not determine converter from file extension '{ext}'")
+        raise ValueError(f"Could not determine converter from file extension '{ext}' ({data_file_path})")
 
     return df, data_source
 
