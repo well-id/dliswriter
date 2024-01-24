@@ -1,10 +1,11 @@
 from typing import Union, Generator
 import h5py  # type: ignore  # untyped library
 import logging
+import numpy as np
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record.eflr_types import ChannelItem
-from dlis_writer.utils.types import file_name_type
+from dlis_writer.utils.types import file_name_type, numpy_dtype_type
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,14 @@ def yield_h5_datasets(h5_object: Union[h5py.File, h5py.Group]) -> Generator:
             yield from yield_h5_datasets(value)
 
 
+def get_cast_dtype(dtype: numpy_dtype_type) -> numpy_dtype_type:
+    if dtype == np.int64:
+        return np.int32
+    if dtype == np.float16:
+        return np.float32
+    return dtype
+
+
 def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem]:
     """Add channels specifications to the file object, taking all datasets found in the provided HDF5 file."""
 
@@ -37,7 +46,8 @@ def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem
         channel_name = dataset_name.split('/')[-1]
         ch = df.add_channel(
             channel_name,
-            dataset_name=dataset_name
+            dataset_name=dataset_name,
+            cast_dtype=get_cast_dtype(dataset.dtype)
         )
         channels.append(ch)
 
