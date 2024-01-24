@@ -32,6 +32,10 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
 
     data_file_path = str(data_file_path)
     ext = data_file_path.split('.')[-1].lower()
+
+    df: DLISFile
+    data_source: Union[data_form_type, None]
+
     if ext in ('h5', 'hdf5'):
         df, data_source = make_dlis_file_spec_from_hdf5(data_file_path=data_file_path)
     elif ext in ('csv', 'xls', 'xlsx'):
