@@ -15,9 +15,8 @@ def make_dlis_file_spec_from_las(data_file_path: file_name_type) -> tuple[DLISFi
     df.add_origin("ORIGIN", file_set_number=1)
 
     channels = []
-    for col_name in data.keys():
-        channel_data = data[col_name]
-        ch = df.add_channel(col_name, data=channel_data)
+    for curve in data.curves:
+        ch = df.add_channel(curve.mnemonic, data=curve.data, units=curve.unit, long_name=curve.descr)
         channels.append(ch)
 
     df.add_frame('MAIN', channels=channels)
