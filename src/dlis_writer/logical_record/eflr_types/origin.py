@@ -6,6 +6,7 @@ import numpy as np
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
+from dlis_writer.utils.types import number_type
 from dlis_writer.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
 
 
@@ -29,7 +30,8 @@ class OriginItem(EFLRItem):
 
         self.file_id = TextAttribute('file_id')
         self.file_set_name = IdentAttribute('file_set_name')
-        self.file_set_number = NumericAttribute('file_set_number', representation_code=RepC.UVARI)
+        self.file_set_number = NumericAttribute(
+            'file_set_number', representation_code=RepC.UVARI, converter=self._no_reassign_file_set_number)
         self.file_number = NumericAttribute('file_number', representation_code=RepC.UVARI)
         self.file_type = IdentAttribute('file_type')
         self.product = TextAttribute('product')
@@ -60,6 +62,12 @@ class OriginItem(EFLRItem):
         if self.creation_time.value is None:
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             self.creation_time.value = datetime.now()
+
+    def _no_reassign_file_set_number(self, v: number_type) -> number_type:
+        if self.file_set_number.value is not None:
+            raise RuntimeError("File set number should not be reassigned; to have an alternative file set number, "
+                               "please pass it to the OriginItem constructor")
+        return v
 
 
 class OriginSet(EFLRSet):

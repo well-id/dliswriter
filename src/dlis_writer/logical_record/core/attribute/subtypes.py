@@ -152,8 +152,18 @@ class NumericAttribute(Attribute):
             self._check_repr_code_numeric(rc)
 
         super().__init__(*args, **kwargs)
+
         if not self._converter:
             self._converter = self._convert_number
+        else:
+            custom_converter = self._converter
+
+            def converter(number: number_type) -> number_type:
+                number = self._convert_number(number)
+                number = custom_converter(number)
+                return number
+
+            self._converter = converter
 
     def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""

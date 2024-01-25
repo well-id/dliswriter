@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 import numpy as np
+import pytest
 
 from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
@@ -61,3 +62,10 @@ def test_origin_creation_no_attributes() -> None:
     assert 1 <= origin.file_set_number.value <= np.iinfo(np.uint32).max - ULONG_OFFSET
 
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
+
+
+def test_no_reassign_file_set_number() -> None:
+    origin = OriginItem("Some origin name", parent=OriginSet())
+
+    with pytest.raises(RuntimeError, match="File set number should not be reassigned.*"):
+        origin.file_set_number.value = 15
