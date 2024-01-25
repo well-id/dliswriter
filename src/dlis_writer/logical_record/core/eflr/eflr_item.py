@@ -36,13 +36,15 @@ class EFLRItem:
 
     parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: "EFLRSet", **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "EFLRSet", origin_reference: Optional[int] = None, **kwargs: Any) -> None:
         """Initialise an EFLRItem.
 
         Args:
-            name        :   Name of the item. This will be the name it is stored with in the created DLIS file.
-            parent      :   EFLRTable instance this item belongs to. If not provided, retrieved/made based on set_name.
-            **kwargs    :   Values to be set in attributes of this item.
+            name                :   Name of the item. This will be the name it is stored with in the created DLIS file.
+            parent              :   EFLRTable instance this item belongs to. If not provided,
+                                        retrieved/made based on set_name.
+            origin_reference    :   'file_set_number' of the Origin; common for EFLRItems sharing the same Origin.
+            **kwargs            :   Values to be set in attributes of this item.
 
         Note:
             When a subclass of EFLRItem is defined, all the attributes should be defined before calling
@@ -57,8 +59,11 @@ class EFLRItem:
         self._parent = parent  #: EFLRSet instance this item belongs to
         self._parent.register_item(self)
 
-        self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
-        self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
+        #: origin reference value, common for records sharing origin
+        self._origin_reference: Union[int, None] = self._validate_origin_reference(origin_reference, allow_none=True)
+
+        #: copy number of the item - ith EFLRItem of the same name and type
+        self._copy_number = self._compute_copy_number()
 
         for attribute in self.attributes.values():
             attribute.parent_eflr = self
@@ -74,6 +79,24 @@ class EFLRItem:
         """Copy number of this EFLRItem."""
 
         return self._copy_number
+
+    @property
+    def origin_reference(self) -> Union[int, None]:
+        return self._origin_reference
+
+    @origin_reference.setter
+    def origin_reference(self, v: int) -> None:
+        self._origin_reference = self._validate_origin_reference(v)
+
+    @staticmethod
+    def _validate_origin_reference(v: int, allow_none: bool = False) -> Union[int, None]:
+        if v is None and allow_none:
+            return
+
+        if not isinstance(v, int):
+            raise TypeError(f"Origin reference must be an integer; got {type(v)}: {v}")
+
+        return v
 
     def _compute_copy_number(self) -> int:
         """Compute copy number of this ELFRItem, i.e. how many other objects of the same type and name there are."""
