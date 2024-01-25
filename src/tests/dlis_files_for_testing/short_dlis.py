@@ -408,6 +408,25 @@ def _add_well_reference_points(df: DLISFile) -> tuple[eflr_types.WellReferencePo
     return w1, w2
 
 
+def _add_paths(df: DLISFile, frame: eflr_types.FrameItem, wrp: eflr_types.WellReferencePointItem,
+               channels: tuple[eflr_types.ChannelItem, ...]) -> tuple[eflr_types.PathItem, ...]:
+    path1 = df.add_path(
+        'PATH-1',
+        frame_type=frame,
+        well_reference_point=wrp,
+        value=(channels[0], channels[1], channels[2]),
+        borehole_depth=122.12,
+        vertical_depth=211.1,
+        radial_drift=12,
+        angular_drift=1.11,
+        time=13
+    )
+
+    path2 = df.add_path('PATH-2', value=(channels[4],), tool_zero_offset=1231.1, time=11.1)
+
+    return path1, path2
+
+
 def _add_messages(df: DLISFile) -> tuple[eflr_types.MessageItem]:
     m = df.add_message(
         name="MESSAGE-1",
@@ -508,7 +527,7 @@ def create_dlis_file_object() -> DLISFile:
 
     axes = _add_axes(df)
     channels = _add_channels(df, axes[0])
-    _add_frame(df, *channels[4:9])
+    frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
     params = _add_parameters(df, zones)
     equipment = _add_equipment(df)
@@ -517,7 +536,8 @@ def create_dlis_file_object() -> DLISFile:
     processes = _add_processes(df, params, channels, computations)
     _add_splices(df, channels, zones)
     _add_calibrations(df, axes, channels, params)
-    _add_well_reference_points(df)
+    wrp = _add_well_reference_points(df)
+    _add_paths(df, frame, wrp[0], channels)
     _add_messages(df)
     _add_comments(df)
     _add_no_formats(df)
