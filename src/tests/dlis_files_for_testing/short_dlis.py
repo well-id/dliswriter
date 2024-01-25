@@ -15,7 +15,7 @@ def _add_origin(df: DLISFile) -> eflr_types.OriginItem:
         creation_time="2050/03/02 15:30:00",
         file_id="WELL ID",
         file_set_name="Test file set name",
-        file_set_number=1,
+        file_set_number=42,
         file_number=8,
         run_number=13,
         well_id=5,

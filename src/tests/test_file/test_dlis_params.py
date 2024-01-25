@@ -25,12 +25,14 @@ def test_channel_properties(short_dlis: dlis.file.LogicalFile) -> None:
         assert chan.name == name
         assert chan.element_limit == [1]
         assert chan.dimension == [1]
+        assert chan.origin == 42
 
     for name in ('amplitude', 'radius', 'radius_pooh'):
         chan = select_channel(short_dlis, name)
         assert chan.name == name
         assert chan.element_limit == [N_COLS]
         assert chan.dimension == [N_COLS]
+        assert chan.origin == 42
 
     assert short_dlis.object("CHANNEL", 'amplitude').units is None
     assert short_dlis.object("CHANNEL", 'radius').units == "in"
@@ -51,6 +53,7 @@ def test_file_header(short_dlis: dlis.file.LogicalFile) -> None:
     header = short_dlis.fileheader
     assert header.id == "DEFAULT FHLR"
     assert header.sequencenr == "1"
+    assert header.origin == 42
 
 
 def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
@@ -68,7 +71,8 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
 
     assert origin.file_id == "WELL ID"
     assert origin.file_set_name == "Test file set name"
-    assert origin.file_set_nr == 1
+    assert origin.file_set_nr == 42
+    assert origin.origin == 42
     assert origin.file_nr == 8
     assert origin.run_nr == [13]
     assert origin.well_id == 5
@@ -93,6 +97,7 @@ def test_frame(short_dlis: dlis.file.LogicalFile) -> None:
 
     assert frame.name == "MAIN FRAME"
     assert frame.index_type == "TIME"
+    assert frame.origin == 42
 
 
 def test_storage_unit_label(short_dlis: dlis.file.LogicalFile) -> None:
@@ -143,6 +148,8 @@ def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: 
     assert z_maximum == maximum
     assert z_minimum == minimum
 
+    assert z.origin == 42
+
 
 def test_zone_not_in_param(short_dlis: dlis.file.LogicalFile) -> None:
     """Check that a zone which has not been added to any parameter or other object is still in the file."""
@@ -175,6 +182,7 @@ def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: st
     assert param.name == name
     assert param.long_name == long_name
     assert param.values.tolist() == values
+    assert param.origin == 42
 
     _check_list(param.zones, zones)
 
@@ -198,6 +206,7 @@ def test_axes_parameters(short_dlis: dlis.file.LogicalFile, idx: int, name: str,
     assert axis.name == name
     assert axis.axis_id == axis_id
     assert axis.coordinates == coordinates
+    assert axis.origin == 42
 
 
 def test_equipment(short_dlis: dlis.file.LogicalFile) -> None:
@@ -219,6 +228,7 @@ def test_equipment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str
     assert eq.name == name
     assert eq.status == status
     assert eq.serial_number == serial_number
+    assert eq.origin == 42
 
 
 def test_tool(short_dlis: dlis.file.LogicalFile) -> None:
@@ -236,6 +246,7 @@ def test_tool_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, des
     assert tool.name == name
     assert tool.description == description
     assert tool.status == status
+    assert tool.origin == 42
 
     _check_list(tool.parameters, param_names)
     _check_list(tool.channels, channel_names)
@@ -263,6 +274,7 @@ def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: s
     assert comp.properties == properties
     assert comp.axis[0].name == axis_name
     assert comp.values.tolist() == values
+    assert comp.origin == 42
 
     _check_list(comp.zones, zone_names)
 
@@ -285,6 +297,7 @@ def test_process_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, 
     proc = short_dlis.processes[idx]
 
     assert proc.name == name
+    assert proc.origin == 42
 
     _check_list(proc.input_channels, input_channels)
     _check_list(proc.output_channels, output_channels)
@@ -305,6 +318,7 @@ def test_splice_params(short_dlis: dlis.file.LogicalFile) -> None:
     splice = short_dlis.splices[0]
 
     assert splice.name == "splc1"
+    assert splice.origin == 42
 
     _check_list(splice.zones, ("Zone-1", "Zone-2"))
     _check_list(splice.input_channels, ("Channel 1", "Channel 2"))
@@ -331,6 +345,7 @@ def test_calibration_measurement_params(short_dlis: dlis.file.LogicalFile) -> No
     assert m.standard == [11.2]
     assert m.plus_tolerance == [2]
     assert m.minus_tolerance == [1]
+    assert m.origin == 42
 
 
 def test_calibration_coefficient_params(short_dlis: dlis.file.LogicalFile) -> None:
@@ -344,6 +359,7 @@ def test_calibration_coefficient_params(short_dlis: dlis.file.LogicalFile) -> No
     assert c.references == [89, 298]
     assert c.plus_tolerance == [100.2, 222.124]
     assert c.minus_tolerance == [87.23, 214]
+    assert c.origin == 42
 
 
 def test_calibration_params(short_dlis: dlis.file.LogicalFile) -> None:
@@ -352,6 +368,7 @@ def test_calibration_params(short_dlis: dlis.file.LogicalFile) -> None:
     c = short_dlis.calibrations[0]
 
     assert c.name == 'CALIB-MAIN'
+    assert c.origin == 42
 
     _check_list(c.calibrated, ("Channel 1", "Channel 2"))
     _check_list(c.uncalibrated, ("amplitude", "radius", "radius_pooh"))
@@ -376,6 +393,7 @@ def test_well_reference_point_params(short_dlis: dlis.file.LogicalFile, idx: int
     assert w.magnetic_declination == m_decl
     assert w.coordinates[c1_name] == c1_value
     assert w.coordinates[c2_name] == c2_value
+    assert w.origin == 42
 
 
 def test_message_params(short_dlis: dlis.file.LogicalFile) -> None:
@@ -391,6 +409,7 @@ def test_message_params(short_dlis: dlis.file.LogicalFile) -> None:
     assert m.radial_drift == 345.56
     assert m.angular_drift == 456.67
     assert m.text == ["Test message 11111"]
+    assert m.origin == 42
 
 
 @pytest.mark.parametrize(("idx", "name", "text"), (
@@ -404,6 +423,7 @@ def test_comment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, 
 
     assert c.name == name
     assert c.text == text
+    assert c.origin == 42
 
 
 @pytest.mark.parametrize(("idx", "name", "consumer_name", "description"), (
@@ -419,6 +439,7 @@ def test_no_format_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str
     assert w.name == name
     assert w.consumer_name == consumer_name
     assert w.description == description
+    assert w.origin == 42
 
 
 def test_long_name_params(short_dlis: dlis.file.LogicalFile) -> None:
@@ -442,6 +463,7 @@ def test_long_name_params(short_dlis: dlis.file.LogicalFile) -> None:
     assert w.conditions == [t]
     assert w.standard_symbol == t
     assert w.private_symbol == t
+    assert w.origin == 42
 
 
 @pytest.mark.parametrize(("idx", "name", "description", "object_type", "object_names", "group_names"), (
@@ -457,5 +479,6 @@ def test_group_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, de
     assert g.name == name
     assert g.description == description
     assert g.objecttype == object_type
+    assert g.origin == 42
     _check_list(g.objects, object_names)
     _check_list(g.groups, group_names)

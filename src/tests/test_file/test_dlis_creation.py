@@ -40,9 +40,11 @@ def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_
         assert chan.name == 'depth'
         assert chan.units == 'm'
         assert chan.reprc == 7
+        assert chan.origin == 1
 
         frame = f.frames[0]
         assert frame.index_type == 'DEPTH'
+        assert frame.origin == 1
 
         index = short_reference_data['/contents/depth'][:]
         assert frame.index_min == index.min()
@@ -59,9 +61,12 @@ def test_dlis_time_based(short_reference_data: h5py.File, short_reference_data_p
         assert chan.name == 'posix time'
         assert chan.units == 's'
         assert chan.reprc == 7
+        assert chan.origin == 1
 
         frame = f.frames[0]
         assert frame.index_type == 'TIME'
+        assert frame.origin == 1
+
         index = short_reference_data['/contents/time'][:]
         assert frame.index_min == index.min()
         assert frame.index_max == index.max()
