@@ -89,9 +89,9 @@ class EFLRItem:
         self._origin_reference = self._validate_origin_reference(v)
 
     @staticmethod
-    def _validate_origin_reference(v: int, allow_none: bool = False) -> Union[int, None]:
+    def _validate_origin_reference(v: Union[int, None], allow_none: bool = False) -> Union[int, None]:
         if v is None and allow_none:
-            return
+            return None
 
         if not isinstance(v, int):
             raise TypeError(f"Origin reference must be an integer; got {type(v)}: {v}")

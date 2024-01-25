@@ -114,6 +114,12 @@ class DLISFile:
         return origins[0] if origins else None
 
     @property
+    def default_origin_reference(self) -> Union[int, None]:
+        if origin := self.defining_origin:
+            return origin.file_set_number.value  # type: ignore  # this is an int or None, but mypy doesn't know
+        return None
+
+    @property
     def channels(self) -> list[eflr_types.ChannelItem]:
         """Channels defined for the DLIS."""
 
@@ -131,16 +137,18 @@ class DLISFile:
             axis_id: OptAttrSetupType[str] = None,
             coordinates: OptAttrSetupType[list_of_values_type] = None,
             spacing: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.AxisItem:
         """Define an axis (AxisObject) and add it to the DLIS.
 
         Args:
-            name        :   Name of the axis.
-            axis_id     :   ID of the axis.
-            coordinates :   List of coordinates of the axis.
-            spacing     :   Spacing of the axis.
-            set_name    :   Name of the AxisSet this axis should be added to.
+            name                :   Name of the axis.
+            axis_id             :   ID of the axis.
+            coordinates         :   List of coordinates of the axis.
+            spacing             :   Spacing of the axis.
+            set_name            :   Name of the AxisSet this axis should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
         """
 
         ax = eflr_types.AxisItem(
@@ -148,7 +156,8 @@ class DLISFile:
             axis_id=axis_id,
             coordinates=coordinates,
             spacing=spacing,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.AxisSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.AxisSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return ax
@@ -162,7 +171,8 @@ class DLISFile:
             measurements: OptAttrSetupType[ListOrTuple[eflr_types.CalibrationMeasurementItem]] = None,
             parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
             method: OptAttrSetupType[str] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.CalibrationItem:
         """Define a calibration item and add it to the DLIS.
 
@@ -175,6 +185,7 @@ class DLISFile:
             parameters              :   Parameters of the calibration.
             method                  :   Calibration method.
             set_name                :   Name of the CalibrationSet this calibration should be added to.
+            origin_reference        :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured calibration object.
@@ -188,7 +199,8 @@ class DLISFile:
             measurements=measurements,
             parameters=parameters,
             method=method,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return c
@@ -202,6 +214,7 @@ class DLISFile:
             plus_tolerances: OptAttrSetupType[list[number_type]] = None,
             minus_tolerances: OptAttrSetupType[list[number_type]] = None,
             set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
 
@@ -213,6 +226,7 @@ class DLISFile:
             plus_tolerances     :   Plus tolerances of the item.
             minus_tolerances    :   Minus tolerances of the item.
             set_name            :   Name of the CorrelationCoefficientSet this item should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured calibration coefficient item.
@@ -225,7 +239,8 @@ class DLISFile:
             references=references,
             plus_tolerances=plus_tolerances,
             minus_tolerances=minus_tolerances,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return c
@@ -248,7 +263,8 @@ class DLISFile:
             standard: OptAttrSetupType[list[number_type]] = None,
             plus_tolerance: OptAttrSetupType[list[number_type]] = None,
             minus_tolerance: OptAttrSetupType[list[number_type]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
 
@@ -271,6 +287,7 @@ class DLISFile:
             plus_tolerance      :   Plus tolerance of the measurement.
             minus_tolerance     :   Minus tolerance of the measurement.
             set_name            :   Name of the CorrelationMeasurementSet this measurement should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured CalibrationMeasurementItem instance.
@@ -293,7 +310,8 @@ class DLISFile:
             standard=standard,
             plus_tolerance=plus_tolerance,
             minus_tolerance=minus_tolerance,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return m
@@ -312,7 +330,8 @@ class DLISFile:
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             minimum_value: OptAttrSetupType[float] = None,
             maximum_value: OptAttrSetupType[float] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
 
@@ -332,6 +351,7 @@ class DLISFile:
             minimum_value       :   Minimum value of the channel data.
             maximum_value       :   Maximum value of the channel data.
             set_name            :   Name of the ChannelSet this channel should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
@@ -354,7 +374,8 @@ class DLISFile:
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
         # skipping dimension and element limit because they will be determined from the data
 
@@ -389,14 +410,16 @@ class DLISFile:
     def add_comment(
             self, name: str,
             text: OptAttrSetupType[list[str]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.CommentItem:
         """Create a comment item and add it to the DLIS.
 
         Args:
-            name        :   Name of the comment.
-            text        :   Content of the comment.
-            set_name    :   Name of the CommentSet this comment should be added to.
+            name                :   Name of the comment.
+            text                :   Content of the comment.
+            set_name            :   Name of the CommentSet this comment should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured comment item.
@@ -405,7 +428,8 @@ class DLISFile:
         c = eflr_types.CommentItem(
             name=name,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CommentSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.CommentSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return c
@@ -420,20 +444,22 @@ class DLISFile:
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
             values: OptAttrSetupType[list[number_type]] = None,
             source: OptAttrSetupType[EFLRItem] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ComputationItem:
         """Create a computation item and add it to the DLIS.
 
         Args:
-            name        :   Name of the computation.
-            long_name   :   Description of the computation.
-            properties  :   Properties of the computation.
-            dimension   :   Dimension of the computation.
-            axis        :   Axis associated with the computation.
-            zones       :   Zones associated with the computation.
-            values      :   Values of the computation.
-            source      :   Source of the computation.
-            set_name    :   Name of the ComputationSet this computation should be added to.
+            name                :   Name of the computation.
+            long_name           :   Description of the computation.
+            properties          :   Properties of the computation.
+            dimension           :   Dimension of the computation.
+            axis                :   Axis associated with the computation.
+            zones               :   Zones associated with the computation.
+            values              :   Values of the computation.
+            source              :   Source of the computation.
+            set_name            :   Name of the ComputationSet this computation should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured computation item.
@@ -448,7 +474,8 @@ class DLISFile:
             zones=zones,
             values=values,
             source=source,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return c
@@ -473,7 +500,8 @@ class DLISFile:
             vertical_depth: OptAttrSetupType[number_type] = None,
             radial_drift: OptAttrSetupType[number_type] = None,
             angular_drift: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.EquipmentItem:
         """Define an equipment object.
 
@@ -497,6 +525,7 @@ class DLISFile:
             radial_drift        :   Radial drift.
             angular_drift       :   Angular drift.
             set_name            :   Name of the EquipmentSet this equipment should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured EquipmentObject instance.
@@ -521,7 +550,8 @@ class DLISFile:
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
             angular_drift=angular_drift,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return eq
@@ -537,22 +567,24 @@ class DLISFile:
             encrypted: OptAttrSetupType[int] = None,
             index_min: OptAttrSetupType[number_type] = None,
             index_max: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.FrameItem:
         """Define a frame (FrameObject) and add it to the DLIS.
 
         Args:
-            name        :   Name of the frame.
-            channels    :   Channels associated with the frame.
-            description :   Description of the frame.
-            index_type  :   Description of the type of data defining the frame index.
-            direction   :   Indication of whether the index has increasing or decreasing values. Allowed values:
-                            'INCREASING', 'DECREASING'.
-            spacing     :   Spacing between consecutive values in the frame index.
-            encrypted   :   Indication whether the frame is encrypted (0 if not, 1 if yes).
-            index_min   :   Minimum value of the frame index.
-            index_max   :   Maximum value of the frame index.
-            set_name    :   Name of the FrameSet this frame should be added to.
+            name                :   Name of the frame.
+            channels            :   Channels associated with the frame.
+            description         :   Description of the frame.
+            index_type          :   Description of the type of data defining the frame index.
+            direction           :   Indication of whether the index has increasing or decreasing values. Allowed values:
+                                    'INCREASING', 'DECREASING'.
+            spacing             :   Spacing between consecutive values in the frame index.
+            encrypted           :   Indication whether the frame is encrypted (0 if not, 1 if yes).
+            index_min           :   Minimum value of the frame index.
+            index_max           :   Maximum value of the frame index.
+            set_name            :   Name of the FrameSet this frame should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Note:
             Values: direction, spacing, index_min, and index_max are automatically determined if not provided.
@@ -582,7 +614,8 @@ class DLISFile:
             encrypted=encrypted,
             index_min=index_min,
             index_max=index_max,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.FrameSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.FrameSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return fr
@@ -594,17 +627,19 @@ class DLISFile:
             object_type: OptAttrSetupType[str] = None,
             object_list: OptAttrSetupType[ListOrTuple[EFLRItem]] = None,
             group_list: OptAttrSetupType[ListOrTuple[eflr_types.GroupItem]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.GroupItem:
         """Create a group of EFLR items and add it to the DLIS.
 
         Args:
-            name        :   Name of the group.
-            description :   Description of the group.
-            object_type :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
-            object_list :   List of the EFLR items to be added to this group.
-            group_list  :   List of group items to be added to this group.
-            set_name    :   Name of the FrameSet this frame should be added to.
+            name                :   Name of the group.
+            description         :   Description of the group.
+            object_type         :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
+            object_list         :   List of the EFLR items to be added to this group.
+            group_list          :   List of group items to be added to this group.
+            set_name            :   Name of the FrameSet this frame should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured group item.
@@ -616,7 +651,8 @@ class DLISFile:
             object_type=object_type,
             object_list=object_list,
             group_list=group_list,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return g
@@ -639,7 +675,8 @@ class DLISFile:
             conditions: OptAttrSetupType[list[str]] = None,
             standard_symbol: OptAttrSetupType[str] = None,
             private_symbol: Optional[str] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.LongNameItem:
         """Create a long name item and add it to the DLIS.
 
@@ -661,6 +698,7 @@ class DLISFile:
             standard_symbol     :   Standard symbol.
             private_symbol      :   Private symbol.
             set_name            :   Name of the LongNameSet this long name item should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured long name item.
@@ -683,7 +721,8 @@ class DLISFile:
             conditions=conditions,
             standard_symbol=standard_symbol,
             private_symbol=private_symbol,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return ln
@@ -699,19 +738,21 @@ class DLISFile:
             angular_drift: OptAttrSetupType[number_type] = None,
             text: OptAttrSetupType[list[str]] = None,
             set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.MessageItem:
         """Create a message and add it to DLIS.
 
         Args:
-            name            :   Name of the message.
-            message_type    :   Type of the message.
-            time            :   Time of the message.
-            borehole_drift  :   Borehole drift.
-            vertical_depth  :   Vertical depth.
-            radial_drift    :   Radial drift.
-            angular_drift   :   Angular drift.
-            text            :   Text of the message.
-            set_name        :   Name of the MessageSet this message should be added to.
+            name                :   Name of the message.
+            message_type        :   Type of the message.
+            time                :   Time of the message.
+            borehole_drift      :   Borehole drift.
+            vertical_depth      :   Vertical depth.
+            radial_drift        :   Radial drift.
+            angular_drift       :   Angular drift.
+            text                :   Text of the message.
+            set_name            :   Name of the MessageSet this message should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured message.
@@ -726,7 +767,8 @@ class DLISFile:
             radial_drift=radial_drift,
             angular_drift=angular_drift,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.MessageSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.MessageSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return m
@@ -736,15 +778,17 @@ class DLISFile:
             name: str,
             consumer_name: OptAttrSetupType[str] = None,
             description: OptAttrSetupType[str] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.NoFormatItem:
         """Create a no-format item and add it to the DLIS.
 
         Args:
-            name            :   Name of the no-format item.
-            consumer_name   :   Consumer name.
-            description     :   Description.
-            set_name        :   Name of the NoFormatSet this item should be added to.
+            name                :   Name of the no-format item.
+            consumer_name       :   Consumer name.
+            description         :   Description.
+            set_name            :   Name of the NoFormatSet this item should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured no-format item.
@@ -754,7 +798,8 @@ class DLISFile:
             name=name,
             consumer_name=consumer_name,
             description=description,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return nf
@@ -863,6 +908,16 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.OriginSet, set_name=set_name)
         )
 
+        if len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))) == 1:
+            ref = o.file_set_number.value
+            logger.info(f"Assigning origin reference {ref} to all EFLR items without origin reference defined")
+
+            for eflr_set_dict in self._eflr_sets.values():
+                for eflr_set in eflr_set_dict.values():
+                    for eflr_item in eflr_set.get_all_eflr_items():
+                        if eflr_item.origin_reference is None:
+                            eflr_item.origin_reference = ref
+
         return o
 
     def add_parameter(
@@ -873,18 +928,20 @@ class DLISFile:
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
             values: OptAttrSetupType[list_of_values_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
 
         Args:
-            name        :   Name of the parameter.
-            long_name   :   Description of the parameter.
-            dimension   :   Dimension of the parameter.
-            axis        :   Axis associated with the parameter.
-            zones       :   Zones the parameter is defined for.
-            values      :   Values of the parameter - numerical or textual.
-            set_name    :   Name of the ParameterSet this parameter should be added to.
+            name                :   Name of the parameter.
+            long_name           :   Description of the parameter.
+            dimension           :   Dimension of the parameter.
+            axis                :   Axis associated with the parameter.
+            zones               :   Zones the parameter is defined for.
+            values              :   Values of the parameter - numerical or textual.
+            set_name            :   Name of the ParameterSet this parameter should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured ParameterObject instance.
@@ -897,7 +954,8 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return p
@@ -916,7 +974,8 @@ class DLISFile:
             depth_offset: OptAttrSetupType[number_type] = None,
             measure_point_offset: OptAttrSetupType[number_type] = None,
             tool_zero_offset: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
 
@@ -934,6 +993,7 @@ class DLISFile:
             measure_point_offset    :   Measure point offset.
             tool_zero_offset        :   Tool zero offset.
             set_name                :   Name of the PathSet this path should be added to.
+            origin_reference        :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured Path instance.
@@ -952,7 +1012,8 @@ class DLISFile:
             depth_offset=depth_offset,
             measure_point_offset=measure_point_offset,
             tool_zero_offset=tool_zero_offset,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.PathSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.PathSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return p
@@ -971,7 +1032,8 @@ class DLISFile:
             output_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
             parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
             comments: OptAttrSetupType[list[str]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ProcessItem:
         """Define a process item and add it to DLIS.
 
@@ -989,6 +1051,7 @@ class DLISFile:
             parameters          :   Parameters of the process.
             comments            :   Comments.
             set_name            :   Name of the ProcessSet this process should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured ProcessItem instance.
@@ -1007,7 +1070,8 @@ class DLISFile:
             output_computations=output_computations,
             parameters=parameters,
             comments=comments,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return p
@@ -1018,16 +1082,18 @@ class DLISFile:
             output_channel: OptAttrSetupType[eflr_types.ChannelItem] = None,
             input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.SpliceItem:
         """Create a splice object.
 
         Args:
-            name            :   Name of the splice.
-            output_channel  :   Output of the splice.
-            input_channels  :   Input of the splice.
-            zones           :   Zones the splice is defined for.
-            set_name        :   Name of the SpliceSet this splice should be added to.
+            name                :   Name of the splice.
+            output_channel      :   Output of the splice.
+            input_channels      :   Input of the splice.
+            zones               :   Zones the splice is defined for.
+            set_name            :   Name of the SpliceSet this splice should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured splice.
@@ -1038,7 +1104,8 @@ class DLISFile:
             output_channel=output_channel,
             input_channels=input_channels,
             zones=zones,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return sp
@@ -1053,20 +1120,22 @@ class DLISFile:
             status: OptAttrSetupType[int] = None,
             channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
             parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ToolItem:
         """Create a tool object.
 
         Args:
-            name            :   Name of the tool.
-            description     :   Description of the tool.
-            trademark_name  :   Trademark name.
-            generic_name    :   Generic name.
-            parts           :   Equipment this tool consists of.
-            status          :   Status of the tool: 1 or 0.
-            channels        :   Channels associated with this tool.
-            parameters      :   Parameters associated with this tool.
-            set_name        :   Name of the ToolSet this tool should be added to.
+            name                :   Name of the tool.
+            description         :   Description of the tool.
+            trademark_name      :   Trademark name.
+            generic_name        :   Generic name.
+            parts               :   Equipment this tool consists of.
+            status              :   Status of the tool: 1 or 0.
+            channels            :   Channels associated with this tool.
+            parameters          :   Parameters associated with this tool.
+            set_name            :   Name of the ToolSet this tool should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured tool.
@@ -1081,7 +1150,8 @@ class DLISFile:
             status=status,
             channels=channels,
             parameters=parameters,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ToolSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ToolSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return t
@@ -1100,7 +1170,8 @@ class DLISFile:
             coordinate_2_value: OptAttrSetupType[number_type] = None,
             coordinate_3_name: OptAttrSetupType[str] = None,
             coordinate_3_value: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
 
@@ -1118,6 +1189,7 @@ class DLISFile:
             coordinate_3_name           :   Name of coordinate 3.
             coordinate_3_value          :   Value of coordinate 3.
             set_name                    :   Name of the WellReferencePointSet this item should be added to.
+            origin_reference            :   file_set_number of the Origin this record belongs to.
 
         Returns:
             A configured WellReferencePointItem instance.
@@ -1136,7 +1208,8 @@ class DLISFile:
             coordinate_2_value=coordinate_2_value,
             coordinate_3_name=coordinate_3_name,
             coordinate_3_value=coordinate_3_value,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return w
@@ -1148,17 +1221,19 @@ class DLISFile:
             domain: OptAttrSetupType[str] = None,
             maximum: OptAttrSetupType[dtime_or_number_type] = None,
             minimum: Optional[AttrSetupType[dtime_or_number_type]] = None,
-            set_name: Optional[str] = None
+            set_name: Optional[str] = None,
+            origin_reference: Optional[int] = None
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneObject) and add it to the DLIS.
 
         Args:
-            name        :   Name of the zone.
-            description :   Description of the zone.
-            domain      :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
-            maximum     :   Maximum of the zone.
-            minimum     :   Minimum of the zone.
-            set_name    :   Name of the ZoneSet this zone should be added to.
+            name                :   Name of the zone.
+            description         :   Description of the zone.
+            domain              :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+            maximum             :   Maximum of the zone.
+            minimum             :   Minimum of the zone.
+            set_name            :   Name of the ZoneSet this zone should be added to.
+            origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Note:
             Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,
@@ -1174,7 +1249,8 @@ class DLISFile:
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneSet, set_name=set_name)
+            parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneSet, set_name=set_name),
+            origin_reference=origin_reference or self.default_origin_reference
         )
 
         return z
@@ -1255,39 +1331,6 @@ class DLISFile:
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
 
-    def determine_valid_origin_references(self) -> list[int]:
-        """Determine valid origin reference values for this file."""
-
-        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
-        if not origins:
-            raise RuntimeError("No origin defined")
-
-        refs = [o.file_set_number.value for o in origins]
-
-        if any(ref is None for ref in refs):
-            raise RuntimeError(f"Origin's file set number cannot be None; got {', '.join(str(ref) for ref in refs)}")
-
-        return refs
-
-    def set_common_origin_reference(self, value: Optional[int] = None) -> None:
-        """Set 'origin_reference' of all logical records in the collection (except SUL) to the provided value."""
-
-        valid_values = self.determine_valid_origin_references()
-        if value is not None:
-            if value not in valid_values:
-                raise ValueError(f"{value} is not a valid origin reference; choose from {valid_values}")
-        else:
-            value = valid_values[0]
-            if len(valid_values) > 1:
-                logger.warning(f"Multiple origins defined; assuming the first origin's reference: {value}")
-
-        logger.info(f"Assigning origin reference {value} to all EFLR items defined for the file")
-
-        for eflr_set_dict in self._eflr_sets.values():
-            for eflr_set in eflr_set_dict.values():
-                for eflr_item in eflr_set.get_all_eflr_items():
-                    eflr_item.origin_reference = value
-
     def generate_logical_records(self, chunk_size: Optional[int], data: Optional[data_form_type] = None,
                                  **kwargs: Any) -> SizedGenerator:
         """Iterate over all logical records defined in the file.
@@ -1356,7 +1399,6 @@ class DLISFile:
             """
 
             self.check_objects()
-            self.set_common_origin_reference()
 
             logical_records = self.generate_logical_records(
                 chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
