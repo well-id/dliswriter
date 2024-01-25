@@ -19,12 +19,21 @@ df = DLISFile(fh_identifier="DEFAULT FILE HEADER")
 origin = df.add_origin("DEFAULT ORIGIN", company="XXX", order_number="352")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
 
+# multiple origins can be added;
+# the file_set_number of the first origin will be used as origin_reference in all objects automatically
+# but you can also choose to pass other origins' file_set_number as the reference
+# to indicate that a given object belongs to one of the other origins
+origin2 = df.add_origin("ADDITIONAL ORIGIN", well_name="XYZ", company="ABC")
+origin3 = df.add_origin("ANOTHER ORIGIN", well_name="XYZ", company="another company",
+                        file_set_number=35)  # file set number is used as origin reference; can be passed explicitly
+
 
 # define axes - metadata objects for channels
 ax1 = df.add_axis('AXIS1', coordinates=["40 23' 42.8676'' N", "27 47' 32.8956'' E"], axis_id='AXIS 1')
 ax1.spacing.value = 0.2
 ax1.spacing.units = 'm'
-ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5])
+ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5], origin_reference=origin2.file_set_number.value)
+# ^ mark ax2 as belonging to origin2
 
 
 # define frame 1: depth-based with 4 channels, 100 rows each
@@ -49,8 +58,10 @@ second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NON-S
 # zones
 zone1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
 dt = datetime.now()
-zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt - timedelta(hours=3), maximum=dt - timedelta(minutes=30))
-zone3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20)
+zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt - timedelta(hours=3), maximum=dt - timedelta(minutes=30),
+                    origin_reference=origin3.file_set_number.value)
+zone3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20,
+                    origin_reference=origin2.file_set_number.value)
 
 
 # splices - using zones & channels
