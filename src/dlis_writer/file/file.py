@@ -36,8 +36,7 @@ class DLISFile:
             sul_sequence_number: int = 1,
             max_record_length: int = 8192,
             fh_identifier: str = "FILE HEADER",
-            fh_sequence_number: int = 1,
-            fh_set_name: Optional[str] = None
+            fh_sequence_number: int = 1
     ):
         """Initialise DLISFile.
 
@@ -54,8 +53,6 @@ class DLISFile:
                                     See  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
             fh_identifier       :   Used to create a FileHeaderItem. Name identifying the FH instance.
             fh_sequence_number  :   Used to create a FileHeaderItem. Sequence number of the file.
-            fh_set_name         :   Used to create a FileHeaderSet which will act as parent to the FileHeaderItem.
-                                    Set name the FH shall belong to. Usually None.
         """
 
         self._sul: StorageUnitLabel = self._set_up_sul_or_fh(
@@ -71,7 +68,7 @@ class DLISFile:
             item=file_header,
             identifier=fh_identifier,
             sequence_number=fh_sequence_number,
-            parent=eflr_types.FileHeaderSet(set_name=fh_set_name)
+            parent=eflr_types.FileHeaderSet()
         )
 
         self._eflr_sets = EFLRSetsDict()

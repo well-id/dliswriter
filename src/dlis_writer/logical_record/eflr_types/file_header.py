@@ -78,6 +78,9 @@ class FileHeaderSet(EFLRSet):
     logical_record_type = EFLRType.FHLR
     item_type = FileHeaderItem
 
+    def __init__(self) -> None:
+        super().__init__(set_name=None)
+
     def _make_template_bytes(self) -> bytes:
         """Create bytes describing the template - kinds of attributes to be found in the FileHeader EFLR."""
 
