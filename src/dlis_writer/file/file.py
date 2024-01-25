@@ -107,8 +107,8 @@ class DLISFile:
         return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))[0]
 
     @property
-    def origin(self) -> Union[eflr_types.OriginItem, None]:
-        """Origin of the DLIS. Note: currently only adding a single origin is supported."""
+    def defining_origin(self) -> Union[eflr_types.OriginItem, None]:
+        """First Origin of the DLIS, describing the circumstances under which the file was created."""
 
         origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
         return origins[0] if origins else None
@@ -835,7 +835,7 @@ class DLISFile:
             A configured OriginItem instance.
         """
 
-        if self.origin:
+        if self.defining_origin:
             raise RuntimeError("An OriginItem is already defined for the current DLISFile")
 
         o = eflr_types.OriginItem(
@@ -1198,7 +1198,7 @@ class DLISFile:
         if len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))) > 1:
             raise RuntimeError("Only one origin can be defined for the file")
 
-        if not self.origin:
+        if not self.defining_origin:
             raise RuntimeError("No origin defined for the file")
 
         if not self.channels:
@@ -1310,11 +1310,11 @@ class DLISFile:
         n += len(self._no_format_frame_data)
 
         def generator() -> Generator:
-            if (origin := self.origin) is None:
-                raise RuntimeError("Origin not defined")
+            if self.defining_origin is None:
+                raise RuntimeError("No Origin defined for the file")
 
             yield self.file_header.parent
-            yield origin.parent
+            yield from self._eflr_sets[eflr_types.OriginSet].values()
 
             for set_type, set_dict in self._eflr_sets.items():
                 if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
