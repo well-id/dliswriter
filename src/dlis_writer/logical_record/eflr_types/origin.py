@@ -59,6 +59,13 @@ class OriginItem(EFLRItem):
             logger.info(f"File set number for {self} not specified; setting it to a randomly generated number: {v}")
             self.file_set_number.value = v
 
+        if self._origin_reference is not None:
+            if self._origin_reference != self.file_set_number.value:
+                raise ValueError("Origin reference of an Origin should be the same as it's own file set number; "
+                                 f"got {self._origin_reference} and {self.file_set_number.value}")
+        else:
+            self._origin_reference = self.file_set_number.value
+
         if self.creation_time.value is None:
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             self.creation_time.value = datetime.now()
