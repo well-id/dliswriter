@@ -880,9 +880,6 @@ class DLISFile:
             A configured OriginItem instance.
         """
 
-        if self.defining_origin:
-            raise RuntimeError("An OriginItem is already defined for the current DLISFile")
-
         o = eflr_types.OriginItem(
             name=name,
             file_set_number=file_set_number,
