@@ -1285,7 +1285,8 @@ class DLISFile:
 
         for eflr_set_dict in self._eflr_sets.values():
             for eflr_set in eflr_set_dict.values():
-                eflr_set.origin_reference = value
+                for eflr_item in eflr_set.get_all_eflr_items():
+                    eflr_item.origin_reference = value
 
     def generate_logical_records(self, chunk_size: Optional[int], data: Optional[data_form_type] = None,
                                  **kwargs: Any) -> SizedGenerator:

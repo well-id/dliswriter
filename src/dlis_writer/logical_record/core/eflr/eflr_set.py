@@ -1,5 +1,5 @@
 import logging
-from typing import Union, Optional
+from typing import Optional
 
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.enums import EFLRType
@@ -31,26 +31,11 @@ class EFLRSet(LogicalRecord):
         self.set_name = set_name
         self._set_type_struct = write_struct_ascii(self.set_type)  # used in the header
         self._eflr_item_list: list[EFLRItem] = []  # instances of EFLRItem registered with this EFLRSet instance
-        self._origin_reference: Union[int, None] = None
 
     def __str__(self) -> str:
         """Represent the EFLRSet instance as str."""
 
         return f"{self.__class__.__name__} {repr(self.set_name)}"
-
-    @property
-    def origin_reference(self) -> Union[int, None]:
-        """Currently set origin reference of the EFLRSet instance."""
-
-        return self._origin_reference
-
-    @origin_reference.setter
-    def origin_reference(self, val: int) -> None:
-        """Set a new origin reference of the EFLRSet instance and all EFLRItem instances registered with it."""
-
-        self._origin_reference = val
-        for obj in self._eflr_item_list:
-            obj.origin_reference = val
 
     def _make_set_component_bytes(self) -> bytes:
         """Create bytes describing the set of this EFLR, using set type (class attr) and name (specified at init)."""
@@ -98,8 +83,6 @@ class EFLRSet(LogicalRecord):
             raise TypeError(f"Expected an instance of {self.item_type}; got {type(child)}: {child}")
 
         self._eflr_item_list.append(child)
-
-        child.origin_reference = self.origin_reference
 
     def get_all_eflr_items(self) -> list[EFLRItem]:
         """Return a list of all EFLRItem instances registered with this EFLRSet instance."""
