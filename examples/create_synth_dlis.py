@@ -16,7 +16,7 @@ install_colored_logger(logging.getLogger('dlis_writer'))
 df = DLISFile(fh_identifier="DEFAULT FILE HEADER")
 
 # add origin
-origin = df.add_origin("DEFAULT ORIGIN", file_set_number=1, company="XXX", order_number="352")
+origin = df.add_origin("DEFAULT ORIGIN", company="XXX", order_number="352")
 origin.creation_time.value = datetime(year=2023, month=12, day=6, hour=12, minute=30, second=5)
 
 

@@ -782,7 +782,7 @@ class DLISFile:
     def add_origin(
             self,
             name: str,
-            file_set_number: int,
+            file_set_number: OptAttrSetupType[int] = None,
             file_set_name: OptAttrSetupType[str] = None,
             file_id: OptAttrSetupType[str] = None,
             file_number: OptAttrSetupType[int] = None,
@@ -809,6 +809,7 @@ class DLISFile:
         Args:
             name                :   Name of the parameter.
             file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
+                                    If not specified, it is assigned randomly (in accordance with the RP66 specs).
             file_set_name       :   File set name.
             file_id             :   File ID.
             file_number         :   File number.

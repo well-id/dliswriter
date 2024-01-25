@@ -63,7 +63,7 @@ def make_dlis_file_spec_from_hdf5(data_file_path: file_name_type) -> tuple[DLISF
     """Create a DLISFile object according to the contents of the input data file."""
 
     df = DLISFile()
-    df.add_origin("ORIGIN", file_set_number=1)
+    df.add_origin("ORIGIN")
 
     with h5py.File(data_file_path, 'r') as h5f:
         channels = add_channels_from_h5_data(df, h5f)

@@ -1,9 +1,11 @@
 from datetime import datetime
 import logging
 from typing import Any
+import numpy as np
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.struct_writer import ULONG_OFFSET
 from dlis_writer.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
 
 
@@ -15,7 +17,7 @@ class OriginItem(EFLRItem):
 
     parent: "OriginSet"
 
-    def __init__(self, name: str, parent: "OriginSet", file_set_number: int, **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "OriginSet", **kwargs: Any) -> None:
         """Initialise OriginItem.
 
         Args:
@@ -46,7 +48,14 @@ class OriginItem(EFLRItem):
         self.name_space_name = IdentAttribute('name_space_name')
         self.name_space_version = NumericAttribute('name_space_version', representation_code=RepC.UVARI)
 
-        super().__init__(name, parent=parent, file_set_number=file_set_number, **kwargs)
+        super().__init__(name, parent=parent, **kwargs)
+
+        if self.file_set_number.value is None:
+            # repr code for file set number is UVARI, so USHORT/UNORM/ULONG; ULONG is the largest
+            max_val = np.iinfo(np.uint32).max - ULONG_OFFSET
+            v = np.random.randint(1, max_val)
+            logger.info(f"File set number for {self} not specified; setting it to a randomly generated number: {v}")
+            self.file_set_number.value = v
 
         if self.creation_time.value is None:
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")

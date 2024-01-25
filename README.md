@@ -121,8 +121,8 @@ from dlis_writer.file import DLISFile  # the main dlis-writer object you will in
 # this also initialises Storage Unit Label and File Header with minimal default information
 df = DLISFile()
 
-# add Origin - a required item for the file; Origin name and file set number are both required
-df.add_origin("MY-ORIGIN", file_set_number=1)
+# add Origin
+df.add_origin("MY-ORIGIN")
 
 # number of rows for creating the datasets
 # all datasets (channels) belonging to the same frame must have the same number of rows

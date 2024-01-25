@@ -14,7 +14,7 @@ def make_dlis_file_spec_from_las(data_file_path: file_name_type) -> tuple[DLISFi
     data = lasio.read(data_file_path)
 
     df = DLISFile()
-    df.add_origin("ORIGIN", file_set_number=1)
+    df.add_origin("ORIGIN")
 
     channels = []
     for curve in data.curves:
