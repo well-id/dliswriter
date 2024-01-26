@@ -1,3 +1,9 @@
+"""From RP66 v1:
+'Each Logical File begins with a File Header Logical Record that serves as an identifying label for the Logical File.'
+
+Unless otherwise specified, all quotes in this file come from the RP66 v1 standard specification.
+"""
+
 from typing import Any
 
 from dlis_writer.utils.converters import get_ascii_bytes
@@ -24,11 +30,12 @@ class FileHeaderItem(EFLRItem):
         """Initialise FileHeaderItem.
 
         Args:
-            header_id       :   Name of the FileHeaderItem.
+            header_id       :   '[A] descriptive identification of the Logical File'.
             parent          :   Parent FileHeaderSet of this FileHeaderItem.
-            sequence_number :   Sequence number of the file. Must be a positive integer whose ASCII representation
-                                does not exceed 10 characters.
-            identifier      :   From RP66: 'a single arbitrary character', identifying the File Header.
+            sequence_number :   'The ASCII representation of a positive integer that indicates the sequential position
+                                of the Logical File in a Storage Set'.
+                                Must be a positive integer whose ASCII representation does not exceed 10 characters.
+            identifier      :   '[A] single arbitrary character', identifying the File Header.
         """
 
         if not isinstance(header_id, str):

@@ -1,3 +1,8 @@
+"""Define DLISFile: the interface to building a DLIS file structure.
+
+Note: unless otherwise specified, all quotes come from teh RP66 v1 standard specification.
+"""
+
 from typing import Any, Union, Optional, TypeVar, Generator
 import numpy as np
 from timeit import timeit
@@ -52,10 +57,14 @@ class DLISFile:
             max_record_length   :   Used to create a StorageUnitLabel. Maximum length of each visible record.
                                     Cannot exceed 16384.
                                     See  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
-            fh_id               :   Used to create a FileHeaderItem. A descriptive name for the File Header,
-                                    max 65 characters long.
-            fh_identifier       :   Used to create a FileHeaderItem. A single character identifying the File Header.
-            fh_sequence_number  :   Used to create a FileHeaderItem. Sequence number of the file.
+            fh_id               :   Used to create a FileHeaderItem.
+                                    '[A] descriptive identification of the Logical File', max 65 characters long.
+            fh_identifier       :   Used to create a FileHeaderItem.
+                                    '[A] single arbitrary character', identifying the File Header.
+            fh_sequence_number  :   Used to create a FileHeaderItem.
+                                    'The ASCII representation of a positive integer that indicates
+                                    the sequential position of the Logical File in a Storage Set'.
+                                    A positive integer of max 10 digits.
         """
 
         self._sul: StorageUnitLabel = self._set_up_sul_or_fh(
