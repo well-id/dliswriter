@@ -171,8 +171,8 @@ df = DLISFile(
   set_identifier="MY-SET",
   sul_sequence_number=5,
   max_record_length=4096,
-  fh_identifier="MY-FILE-HEADER",
-  fh_sequence_number=8 
+  fh_id="MY-FILE-HEADER",
+  fh_sequence_number=8
 )
 
 # add Origin with more details

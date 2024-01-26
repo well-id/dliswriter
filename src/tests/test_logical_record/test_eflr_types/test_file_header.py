@@ -3,13 +3,13 @@ import pytest
 from dlis_writer.logical_record.eflr_types.file_header import FileHeaderSet, FileHeaderItem
 
 
-@pytest.mark.parametrize(("identifier", "sequence_number"), (("a", 9), ("123ert", 3)))
-def test_creation(identifier: str, sequence_number: int) -> None:
+@pytest.mark.parametrize(("header_id", "sequence_number"), (("a", 9), ("123ert", 3)))
+def test_creation(header_id: str, sequence_number: int) -> None:
     """Test creating a FileHeaderObject."""
 
-    fh = FileHeaderItem(identifier, sequence_number=sequence_number, parent=FileHeaderSet())
+    fh = FileHeaderItem(header_id, sequence_number=sequence_number, parent=FileHeaderSet())
 
-    assert fh.identifier == identifier
+    assert fh.header_id == header_id
     assert fh.sequence_number == sequence_number
 
     assert isinstance(fh.parent, FileHeaderSet)

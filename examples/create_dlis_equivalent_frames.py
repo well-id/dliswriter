@@ -21,7 +21,7 @@ install_colored_logger(logging.getLogger('dlis_writer'))
 
 
 # create DLISFile instance; optionally, pass arguments for creating file header & storage unit label
-df = DLISFile(sul_sequence_number=2, fh_sequence_number=2, fh_identifier="MAIN FILE")
+df = DLISFile(sul_sequence_number=2, fh_sequence_number=2, fh_id="MAIN FILE")
 
 # add origin - required item
 df.add_origin("DEFAULT ORIGIN", file_set_number=80, company="XXX")

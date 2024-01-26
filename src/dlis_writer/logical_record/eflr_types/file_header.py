@@ -16,30 +16,30 @@ class FileHeaderItem(EFLRItem):
 
     parent: "FileHeaderSet"
 
-    identifier_length_limit = 65    #: max length of the file header name
+    header_id_length_limit = 65    #: max length of the file header name
 
-    def __init__(self, identifier: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
+    def __init__(self, header_id: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
         """Initialise FileHeaderItem.
 
         Args:
-            identifier      :   Name of the FileHeaderItem.
+            header_id       :   Name of the FileHeaderItem.
             parent          :   Parent FileHeaderSet of this FileHeaderItem.
             sequence_number :   Sequence number of the file.
         """
 
-        self.identifier = identifier
+        self.header_id = header_id
         self.sequence_number = int(sequence_number)
 
-        if not isinstance(identifier, str):
-            raise TypeError(f"'identifier' should be a str; got {type(identifier)}")
-        if len(identifier) > self.identifier_length_limit:
-            raise ValueError(f"'identifier' length should not exceed {self.identifier_length_limit} characters")
+        if not isinstance(header_id, str):
+            raise TypeError(f"'header_id' should be a str; got {type(header_id)}")
+        if len(header_id) > self.header_id_length_limit:
+            raise ValueError(f"'header_id' length should not exceed {self.header_id_length_limit} characters")
 
         super().__init__(name='0', parent=parent)
 
     def __repr__(self) -> str:
-        return (f"{self.__class__.__name__}(identifier={self.identifier}, sequence_number={self.sequence_number}, "
-                f"parent=FileHeaderSet(set_name={self.parent.set_name}))")
+        return (f"{self.__class__.__name__}(header_id={self.header_id}, sequence_number={self.sequence_number}, "
+                f"parent=FileHeaderSet())")
 
     def __eq__(self, other: Any) -> bool:
         if not isinstance(other, type(self)):
@@ -48,7 +48,7 @@ class FileHeaderItem(EFLRItem):
         if not self.sequence_number == other.sequence_number:
             return False
 
-        if not self.identifier == other.identifier:
+        if not self.header_id == other.header_id:
             return False
 
         if not self.parent.set_name == other.parent.set_name:
@@ -66,7 +66,7 @@ class FileHeaderItem(EFLRItem):
         bts += get_ascii_bytes(str(self.sequence_number), 10, justify_left=False)
         bts += pack_ushort(int('00100001', 2))
         bts += pack_ushort(65)
-        bts += get_ascii_bytes(self.identifier, 65, justify_left=True)
+        bts += get_ascii_bytes(self.header_id, 65, justify_left=True)
 
         return bts
 
