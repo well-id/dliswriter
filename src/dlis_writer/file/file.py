@@ -702,30 +702,47 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.LongNameItem:
-        """Create a long name item and add it to the DLIS.
+        """Create a Long Name item and add it to the DLIS.
 
         Args:
-            name                :   Name of the long name item.
-            general_modifier    :   General modifier(s).
-            quantity            :   Quantity.
-            quantity_modifier   :   Quantity modifier(s).
-            altered_form        :   Altered form.
-            entity              :   Entity.
-            entity_modifier     :   Entity modifier(s).
-            entity_number       :   Entity number.
-            entity_part         :   Entity part.
-            entity_part_number  :   Entity part number.
-            generic_source      :   Generic source.
-            source_part         :   Source part(s).
-            source_part_number  :   Source part number(s).
-            conditions          :   Conditions.
-            standard_symbol     :   Standard symbol.
-            private_symbol      :   Private symbol.
+            name                :   Name of the Long Name item.
+            general_modifier    :   '[Q]ualifies the Long Name otherwise specified by all the remaining Attributes
+                                    of the Long-Name Object.'
+            quantity            :   '[S]pecifies something that is measurable, for example physical dimensionality,
+                                    or some classifiable feature of an entity, for example a name or color or shape'
+            quantity_modifier   :   '[I]dentifies a specialization of a quantity; that is, it acts as an adjective
+                                    applied to the Quantity Attribute Value.'
+            altered_form        :   '[A] relationship to the Quantity Attribute Value. For example,
+                                    "Standard Deviation" is an altered form of the quantity "Pressure".'
+            entity              :   '[S]pecifies that thing of which the quantity is measured.
+                                    For example, "Diameter" is a quantity of the entity "Borehole".'
+            entity_modifier     :   '[I]dentifies a specialization of an entity; that is, it acts as an adjective
+                                    applied to the Entity Attribute Value.'
+            entity_number       :   '[D]istinguishes multiple instances of the same entity.'
+            entity_part         :   '[I]dentifies a specific part of an entity.'
+            entity_part_number  :   '[D]istinguishes multiple instances of the same entity part, for example,
+                                    "Button 1", "Arm 2".'
+            generic_source      :   '[S]pecifies briefly and generally the source of the information.
+                                    The generic source of a borehole diameter measurement might be either
+                                    "2-Arm Caliper" or "4–Arm Caliper".'
+            source_part         :   '[I]dentifies a specific part of the source of the information specified
+                                    by the Generic-Source Attribute, for example, "Receiver" or "Transmitter".'
+            source_part_number  :   '[D]istinguishes multiple instances of the same source part.'
+            conditions          :   '[C]onditions applicable at the time the information was acquired or generated.
+                                    A condition of resistivity, for example, is "At Standard Temperature."'
+            standard_symbol     :   '[A]n industry-standardized symbolic name by which the information is known.
+                                    The possible values of this Attribute are specified by POSC. Consequently, this
+                                    Attribute is optional and is used only when an applicable standardized name exists.'
+            private_symbol      :   '[P]rovides an association between the recorded information and corresponding
+                                    records or objects of the Producer’s internal or corporate database.
+                                    The value used in this Attribute and the way in which the value is assigned
+                                    are completely at the discretion of the Producer that is identified
+                                    in the Origin Object associated with the Long Name Object.'
             set_name            :   Name of the LongNameSet this long name item should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
-            A configured long name item.
+            A configured Long Name item.
         """
 
         ln = eflr_types.LongNameItem(
