@@ -36,6 +36,17 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
+##### 0.0.10 Multiple Origins
+- Added the possibility to have multiple Origin objects in the created file.
+  The first added Origin is automatically used as the _defining Origin_ of the file, but an alternative Origin reference
+  can be set for each created DLIS object. See [the example](./examples/create_synth_dlis.py).
+- Made `file_set_number` an optional argument for creating Origin; 
+  instead, it's generated randomly in accordance with the RP66 standard.
+- Added scripts to write data from .xls/.xlsx, .csv, and .las files to a basic DLIS
+  (in addition to the preexisting .h5/.hdf5 converter).
+  See [the `file_format_converter` subpackage](./src/dlis_writer/file_format_converter)
+  and [the related example](./examples/create_dlis_from_data.py).
+
 ##### 0.0.9 Processing input files (pending)
 - Scripts to create basic DLIS files from hdf5, csv, xls(x), and las files.
 
