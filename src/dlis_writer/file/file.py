@@ -610,19 +610,37 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.FrameItem:
-        """Define a frame (FrameObject) and add it to the DLIS.
+        """Define a frame (FrameItem) and add it to the DLIS.
 
         Args:
             name                :   Name of the frame.
-            channels            :   Channels associated with the frame.
-            description         :   Description of the frame.
-            index_type          :   Description of the type of data defining the frame index.
-            direction           :   Indication of whether the index has increasing or decreasing values. Allowed values:
-                                    'INCREASING', 'DECREASING'.
+            channels            :   Channels associated with the Frame.
+                                    Note: a channel must not be referred to by more than one Frame.
+                                    If two Frames are to contain the same data, then 'copies' of the relevant channels
+                                    must be created.
+            description         :   Description of the Frame.
+            index_type          :   Description of the type of data defining the Frame's index.
+                                    This is the data contained in the first Channel added to the Frame.
+                                    Note: if index_type is not specified, then the Frame is assumed to have no index
+                                    Channel. In this case, 'direction' and 'spacing' attributes of the Frame
+                                    are ignored (according to the standard; they are still passed to the saved file).
+            direction           :   Indication of whether the Frame index has increasing or decreasing values.
+                                    Allowed values: 'INCREASING', 'DECREASING'.
             spacing             :   Spacing between consecutive values in the frame index.
+                                    If 'direction' is 'DECREASING', then the spacing value should be negative.
+                                    If 'spacing' is defined, 'direction' is not required.
+                                    'Presence of this Attribute guarantees to the Consumer that Index spacing
+                                    will be constant for the current Frame Type throughout the Logical File.
+                                    If the Index spacing is allowed to change, then this Attribute must be absent.'
             encrypted           :   Indication whether the frame is encrypted (0 if not, 1 if yes).
-            index_min           :   Minimum value of the frame index.
-            index_max           :   Maximum value of the frame index.
+                                    'Encrypted Frames typically contain information considered proprietary
+                                    by the Producer.'
+            index_min           :   Minimum value of the Frame index (the index Channel of the Frame).
+                                    'If there is no Index Channel, then this is the minimum Frame Number, namely 1.'
+            index_max           :   Maximum value of the Frame index (the index Channel of the Frame).
+                                    'If there is no Index Channel, then this is the number of Frames in the Frame Type'
+                                    (i.e. 'the number of rows' in the data table in which Channels are
+                                    the (sets of) columns).
             set_name            :   Name of the FrameSet this frame should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
@@ -631,7 +649,7 @@ class DLISFile:
             However, in some cases it might be beneficial - and more accurate - to explicitly specify these values.
 
         Returns:
-            A configured FrameObject instance, added to the DLIS.
+            A configured FrameItem instance, added to the DLIS.
         """
 
         if not isinstance(channels, (list, tuple)):
