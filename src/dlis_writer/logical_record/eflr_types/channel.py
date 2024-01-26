@@ -1,3 +1,9 @@
+"""From RP66:
+'Channel Objects are dictionary-controlled Objects that identify Channels and specify their properties
+and their representation in Frames. The actual Channel sample values are recorded in Indirectly Formatted
+Logical Records, when present. '
+"""
+
 import logging
 from typing import Union, Optional, Any, Self
 import numpy as np

@@ -354,31 +354,45 @@ class DLISFile:
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             minimum_value: OptAttrSetupType[float] = None,
             maximum_value: OptAttrSetupType[float] = None,
+            source: OptAttrSetupType[EFLRItem] = None,
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
 
         Args:
-            name                :   Name of the channel.
-            data                :   Data associated with the channel.
-            dataset_name        :   Name of the data array associated with the channel in the data source provided
+            name                :   Name of the Channel.
+            data                :   Data associated with the Channel.
+            dataset_name        :   Name of the data array associated with the Channel in the data source provided
                                     at init of DLISFile.
-            cast_dtype          :   Numpy data type the channel data should be cast to - e.g. np.float64, np.int32.
-            long_name           :   Description of the channel.
-            properties          :   List of properties of the channel.
-            dimension           :   Dimension of the channel data. Determined automatically if not provided.
-            element_limit       :   Element limit of the channel data. Determined automatically if not provided.
+            cast_dtype          :   Numpy data type the Channel data should be cast to - e.g. np.float64, np.int32.
+            long_name           :   Description of the Channel.
+            properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize the
+                                    characteristics of the Channel and the processing that has occurred to produce it.'
+            dimension           :   Dimension of the Channel data. Determined automatically if not provided.
+                                    '[T]he array structure of a sample value for the Channel'
+            element_limit       :   Element limit of the Channel data. Determined automatically if not provided.
                                     Should be the same as dimension (in the current implementation of dlis_writer).
-            units               :   Unit of the channel data.
-            axis                :   Axis associated with the channel.
-            minimum_value       :   Minimum value of the channel data.
-            maximum_value       :   Maximum value of the channel data.
-            set_name            :   Name of the ChannelSet this channel should be added to.
+                                    '[S]pecifies limits on the dimensionality and size of a Channel sample.
+                                    The Count of this Attribute specifies the maximum allowable number of dimensions,
+                                    and each Element of this Attribute specifies the maximum allowable size
+                                    of the corresponding dimension in array elements.
+                                    For example, if Element-Limit = {5 10 50}, then a Channel sample may have
+                                    0, 1, 2, or 3 dimensions. The first dimension size may be no larger than 5 elements,
+                                    the second no larger than 10 elements, and the last no larger than 50 elements.
+                                    Within these limits, the Channel sample may be of arbitrary size
+                                    as specified by the Dimension Attribute (...).'
+            units               :   Unit of the Channel data.
+            axis                :   Axis associated with the Channel.
+            minimum_value       :   Minimum value of the Channel data.
+            maximum_value       :   Maximum value of the Channel data.
+            source              :   '[A] reference to another Object that describes the immediate source of the Channel,
+                                    for example, a TOOL, PROCESS, SPLICE, or CALIBRATION Object.'
+            set_name            :   Name of the ChannelSet this Channel should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
-            A configured ChannelObject instance, which is already added to the DLIS (but not to any frame).
+            A configured ChannelItem instance, which is already added to the DLIS (but not to any frame).
         """
 
         if data is not None and not isinstance(data, np.ndarray):
@@ -398,6 +412,7 @@ class DLISFile:
             axis=axis,
             minimum_value=minimum_value,
             maximum_value=maximum_value,
+            source=source,
             parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name),
             origin_reference=origin_reference or self.default_origin_reference
         )
