@@ -1,3 +1,13 @@
+"""From RP66 v1:
+'Each well has a Well Reference Point (WRP) that defines the origin of the well’s spatial coordinate system.
+The Well Reference Point is a fixed point in space defined for each Origin. This point is defined relative
+to some permanent structure, such as ground level or mean sea level. It need not coincide with the permanent structure,
+but its vertical distance from the permanent structure must be stated. This information is recorded in an Object of
+Type Well-Reference-Point (see Chapter 5).
+Spatial coordinates of a well are depth, Radial Drift, and Angular Drift. Depth is defined in terms of
+Borehole Depth or Vertical Depth.'
+"""
+
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem

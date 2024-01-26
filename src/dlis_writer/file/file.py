@@ -1233,19 +1233,39 @@ class DLISFile:
 
         Args:
             name                        :   Name of the well reference point.
-            permanent_datum             :   Permanent datum (name).
-            vertical_zero               :   Vertical zero (name).
-            permanent_datum_elevation   :   Elevation of the permanent datum.
-            above_permanent_datum       :   Value above permanent datum.
-            magnetic_declination        :   Magnetic declination.
-            coordinate_1_name           :   Name of coordinate 1.
-            coordinate_1_value          :   Value of coordinate 1.
-            coordinate_2_name           :   Name of coordinate 2.
-            coordinate_2_value          :   Value of coordinate 2.
-            coordinate_3_name           :   Name of coordinate 3.
-            coordinate_3_value          :   Value of coordinate 3.
+            permanent_datum             :   '[S]pecifies a Permanent Datum, an entity or structure (e.g., Ground Level)
+                                            from which vertical distance can be measured.'
+            vertical_zero               :   '[S]pecifies Vertical Zero, a particular entity (e.g., Kelly Bushing)
+                                            that corresponds to zero depth.'
+            permanent_datum_elevation   :   '[T]he distance of the Permanent Datum above mean sea level. A negative
+                                            value indicates that the Permanent Datum is below mean sea level.'
+            above_permanent_datum       :   '[T]he distance of Vertical Zero above the Permanent Datum.
+                                            The distance can be negative, which indicates that Vertical Zero is below
+                                            the Permanent Datum.'
+            magnetic_declination        :   '[T]he angle with vertex at the Well Reference Point determined by the line
+                                            of direction to geographic north and the line of direction to magnetic
+                                            north. A positive value indicates that magnetic north is east
+                                            of geographic north. A negative value indicates that magnetic north is
+                                            west of geographic north.'
+            coordinate_1_name           :   '[T]he name of the first of three independent spatial coordinates, such as
+                                            longitude or latitude or elevation, that can be used to locate
+                                            the Well Reference Point.'
+            coordinate_1_value          :   '[T]he numerical value of the [first] coordinate'.
+            coordinate_2_name           :   '[T]he name of the second of three independent spatial coordinates
+                                            that can be used to locate the Well Reference Point.'
+            coordinate_2_value          :   '[T]he numerical value of the [second] coordinate'.
+            coordinate_3_name           :   '[T]he name of a third independent spatial coordinate that can be used
+                                            to locate the Well Reference Point.'
+            coordinate_3_value          :   '[T]he numerical value of the [third] coordinate'.
             set_name                    :   Name of the WellReferencePointSet this item should be added to.
             origin_reference            :   file_set_number of the Origin this record belongs to.
+
+        Note:
+            'Traditionally the coordinates of a well are described by latitude, longitude, and elevation.
+            This information can be represented in the Well-Reference-Point Object without using Coordinate-3-Name
+            and Coordinate-3-Value. There are other coordinate systems in use, however, that do not use elevation
+            and for which the third general coordinate is needed.'
+
 
         Returns:
             A configured WellReferencePointItem instance.
