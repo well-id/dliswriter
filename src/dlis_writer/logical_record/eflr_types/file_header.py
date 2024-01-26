@@ -19,7 +19,8 @@ class FileHeaderItem(EFLRItem):
     header_id_length_limit = 65             #: max length of the file header name
     max_sequence_number = int(1e10 - 1)     #: max value for sequence number; largest 10-digit integer
 
-    def __init__(self, header_id: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
+    def __init__(self, header_id: str, parent: "FileHeaderSet", sequence_number: int = 1,
+                 identifier: str = '0') -> None:
         """Initialise FileHeaderItem.
 
         Args:
@@ -27,6 +28,7 @@ class FileHeaderItem(EFLRItem):
             parent          :   Parent FileHeaderSet of this FileHeaderItem.
             sequence_number :   Sequence number of the file. Must be a positive integer whose ASCII representation
                                 does not exceed 10 characters.
+            identifier      :   From RP66: 'a single arbitrary character', identifying the File Header.
         """
 
         if not isinstance(header_id, str):
@@ -35,15 +37,20 @@ class FileHeaderItem(EFLRItem):
             raise ValueError(f"'header_id' length should not exceed {self.header_id_length_limit} characters")
 
         if not isinstance(sequence_number, int):
-            raise TypeError(f"Expected an integer; got {type(sequence_number)}: {sequence_number}")
+            raise TypeError(f"'sequence_number' should be an integer; got {type(sequence_number)}: {sequence_number}")
         if not 0 < sequence_number <= self.max_sequence_number:
             raise ValueError(f"Sequence number must be a positive integer not larger than {self.max_sequence_number}; "
                              f"got {sequence_number}")
 
+        if not isinstance(identifier, str):
+            raise TypeError(f"'identifier' should be a str; got {type(identifier)}: {identifier}")
+        if len(identifier) != 1:
+            raise ValueError(f"'identifier' should be a single character; got '{identifier}'")
+
         self.header_id = header_id
         self.sequence_number = sequence_number
 
-        super().__init__(name='0', parent=parent)
+        super().__init__(name=identifier, parent=parent)
 
     def __repr__(self) -> str:
         return (f"{self.__class__.__name__}(header_id={self.header_id}, sequence_number={self.sequence_number}, "

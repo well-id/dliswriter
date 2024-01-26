@@ -36,6 +36,7 @@ class DLISFile:
             sul_sequence_number: int = 1,
             max_record_length: int = 8192,
             fh_id: str = "FILE HEADER",
+            fh_identifier: str = "0",
             fh_sequence_number: int = 1
     ):
         """Initialise DLISFile.
@@ -51,7 +52,9 @@ class DLISFile:
             max_record_length   :   Used to create a StorageUnitLabel. Maximum length of each visible record.
                                     Cannot exceed 16384.
                                     See  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
-            fh_id               :   Used to create a FileHeaderItem. Name identifying the FH instance.
+            fh_id               :   Used to create a FileHeaderItem. A descriptive name for the File Header,
+                                    max 65 characters long.
+            fh_identifier       :   Used to create a FileHeaderItem. A single character identifying the File Header.
             fh_sequence_number  :   Used to create a FileHeaderItem. Sequence number of the file.
         """
 
@@ -67,6 +70,7 @@ class DLISFile:
             item_class=eflr_types.FileHeaderItem,
             item=file_header,
             header_id=fh_id,
+            identifier=fh_identifier,
             sequence_number=fh_sequence_number,
             parent=eflr_types.FileHeaderSet()
         )
