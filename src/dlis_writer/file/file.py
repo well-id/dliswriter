@@ -865,28 +865,69 @@ class DLISFile:
         """Create an origin.
 
         Args:
-            name                :   Name of the parameter.
+            name                :   Name of the Origin.
             file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
                                     If not specified, it is assigned randomly (in accordance with the RP66 specs).
-            file_set_name       :   File set name.
-            file_id             :   File ID.
-            file_number         :   File number.
-            file_type           :   File type.
-            product             :   Product description.
-            version             :   Version indicator.
-            programs            :   List of programs.
-            creation_time       :   Creation time.
-            order_number        :   Order number.
-            descent_number      :   Descent number.
-            run_number          :   Run number.
-            well_id             :   Well ID.
-            well_name           :   Well name.
-            field_name          :   Field name.
-            producer_code       :   Producer code.
-            producer_name       :   Producer name.
-            company             :   Company name.
-            name_space_name     :   Name space name.
-            name_space_version  :   Name space version.
+                                    '[A] random number, called the File Set Number, that is used to distinguish
+                                    the Logical Files of one File Set from the Logical Files of another File Set.
+                                    This number should be such that there is a high probability that it uniquely
+                                    identifies the File Set. This number should be the same for all Logical Files
+                                    of a given File Set. This Attribute must be present, even when the File-Set-Name
+                                    Attribute is absent. In that case, it is considered to apply to the File Set
+                                    consisting of the single current Logical File.'
+            file_set_name       :   '[T]he name of a File Set, a group of Logical Files related according to
+                                    Producer-defined criteria to which the Parent File belongs.
+                                    The File Set is an arbitrary grouping of a set of Logical Files
+                                    and has no DLIS semantic meaning. The File-Set-Name Attribute is not expected
+                                    to be unique for all File Sets.'
+            file_id             :   '[A]n exact copy of the ID Attribute of the File-Header Object of the Parent File,
+                                    i.e., the Logical File for which this Origin Object is the Defining Origin.'
+            file_number         :   '[T]he File Number of the Parent File relative to the File Set specified by the
+                                    File-Set-Name Attribute. File Numbers for a File Set are positive and increase
+                                    in the order in which the Logical Files of the File Set are created.
+                                    File Numbers for a File Set need not increase sequentially. It should be true,
+                                    with a high probability, that no two Logical Files will ever have the same
+                                    File Set Number and File Number combination. Notice that there is no specific
+                                    relationship defined for File Numbers of Logical Files in the same Storage Set.
+                                    In particular, a File Set may or may not coincide with the Logical Files
+                                    of a Storage Set.'
+            file_type           :   '[A] Producer-specified File Type and signifies the general contents of
+                                    the Parent File or the circumstances under which the Parent File was created.'
+            product             :   '[T]he name of the software product (e.g., the wellsite "operating" system)
+                                    that produced the Parent File.'
+            version             :   '[T]he version of the product specified by the Product Attribute.'
+            programs            :   '[A] List of the names of a specific programs or services, operating as part
+                                    of the software specified by the Product Attribute, that were used to generate
+                                    the data contained in the Parent File.'
+            creation_time       :   '[T]he date and time at which the Parent File was created.'
+                                    If not specified, it is set to the current date and time.
+            order_number        :   '[A] unique accounting number associated with the acquisition or creation
+                                    of the data in the Parent File. It is typically known as the Service Order Number.'
+            descent_number      :   '[M]eaningful to the Producer. The meaning of this number is specified
+                                    by the Producer to the Consumer by means external to the DLIS.'
+            run_number          :   '[M]eaningful to the company specified in the Company Attribute.
+                                    Its use is specified to the Producer by this company by means external to the DLIS.'
+            well_id             :   '[A] codified identifier of the well in or about which measurements were taken.
+                                    Whenever applicable, the API Well Number should be used. This is a unique,
+                                    permanent, numeric identifier assigned to a well in accordance with
+                                    the American Petroleum Institute Bulletin D12A, January, 1979.'
+            well_name           :   '[T]he name of the well.'
+            field_name          :   '[T]he name of the Field to which the well belongs. If there is no Field,
+                                    then the value of this Attribute should be WILDCAT.'
+            producer_code       :   '[T]he Producer’s identifying code. The Producer is the company whose authorized
+                                    agent generated the Logical File using software programs developed under
+                                    the sponsorship of the company. This code is assigned on request by POSC.
+                                    A list of current Company Codes for Producers may be obtained from the same source.'
+            producer_name       :   '[T]he Producer’s business or organization name'.
+            company             :   '[T]he name of the client company for which the data was acquired or computed,
+                                    typically the operator of the well.'
+            name_space_name     :   '[S]pecifies the name of the dictionary in which dictionary-controlled Object Names
+                                    are administered for this Origin. Each Producer is expected to administer
+                                    or subscribe to a dictionary of Object Names from which meaningful definitions
+                                    can be derived.'
+            name_space_version  :   '[S]pecifies the version of the dictionary in which dictionary-controlled
+                                    Object Names are administered for this Origin. Dictionary version N is a superset
+                                    of dictionary version M whenever N > M.'
             set_name            :   Name of the OriginSet this origin should be added to.
 
         Returns:
