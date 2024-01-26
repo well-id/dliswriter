@@ -1,3 +1,8 @@
+"""From RP66:
+'An Axis Logical Record is an Explicitly Formatted Logical Record that contains information describing
+the coordinate axes of arrays.'
+"""
+
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem

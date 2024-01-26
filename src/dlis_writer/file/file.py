@@ -157,9 +157,20 @@ class DLISFile:
 
         Args:
             name                :   Name of the axis.
-            axis_id             :   ID of the axis.
-            coordinates         :   List of coordinates of the axis.
-            spacing             :   Spacing of the axis.
+            axis_id             :   '[A] dictionary-controlled identifier for the coordinate axis described
+                                    by this Object.'
+            coordinates         :   '[E]xplicit coordinate values along a coordinate axis. These values may be numeric
+                                    (i.e., for non-uniform coordinate spacing), or they may be textual identifiers,
+                                    for example "Near" and "Far". If the Coordinates Value has numeric Elements,
+                                    then they must occur in order of increasing or decreasing value.
+                                    The Count of the Coordinates Attribute need not agree with the number
+                                    of array elements along this axis specified by a related Dimension Attribute.'
+            spacing             :   'The Spacing Attribute specifies a constant, signed spacing along the axis between
+                                    successive coordinates, beginning at the last coordinate value specified
+                                    by the Coordinates Attribute. If the Coordinates Attribute is non-numeric or absent,
+                                    then the specified spacing is assumed to exist between every pair
+                                    of successive coordinate values along the axis, and the first coordinate value
+                                    is assumed to be zero (0).'
             set_name            :   Name of the AxisSet this axis should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
         """
