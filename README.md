@@ -714,6 +714,7 @@ classDiagram
     }
     
     class ChannelItem{
+        +tuple~str~ allowed_property_indicators
         +str long_name
         +list~str~ properties
         +RepresentationCode representation_code

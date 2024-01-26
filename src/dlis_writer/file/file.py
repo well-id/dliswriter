@@ -369,6 +369,7 @@ class DLISFile:
             long_name           :   Description of the Channel.
             properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize the
                                     characteristics of the Channel and the processing that has occurred to produce it.'
+                                    See ChannelItem.allowed_property_indicators for allowed values.
             dimension           :   Dimension of the Channel data. Determined automatically if not provided.
                                     '[T]he array structure of a sample value for the Channel'
             element_limit       :   Element limit of the Channel data. Determined automatically if not provided.

@@ -45,7 +45,7 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.Ch
         name="Some Channel",
         dataset_name="image1",
         long_name="Some not so very long channel name",
-        properties=["property1", "property 2 with multiple words"],
+        properties=["AVERAGED", "locally-defined", "Speed corrected"],
         cast_dtype=np.float32,
         units="acre",
         dimension=12,

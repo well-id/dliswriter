@@ -7,7 +7,7 @@ Logical Records, when present. '
 import logging
 from typing import Union, Optional, Any, Self
 import numpy as np
-from h5py import Dataset    # type: ignore  # untyped library
+from h5py import Dataset  # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
@@ -17,7 +17,6 @@ from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
                                                        TextAttribute, IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
-
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +46,40 @@ class ChannelItem(EFLRItem):
 
     parent: "ChannelSet"
 
+    #: allowed values for elements of the 'properties' attribute of Channel
+    allowed_property_indicators = (
+        'AVERAGED'
+        'CALIBRATED'
+        'CHANGED-INDEX'
+        'COMPUTED'
+        'DEPTH-MATCHED'
+        'DERIVED'
+        'FILTERED'
+        'HOLE-SIZE-CORRECTED'
+        'INCLINOMETRY-CORRECTED'
+        'LITHOLOGY-CORRECTED'
+        'LOCAL-COMPUTATION'
+        'LOCALLY-DEFINED'
+        'MODELLED'
+        'MUDCAKE-CORRECTED'
+        'NORMALIZED'
+        'OVER-SAMPLED'
+        'PATCHED'
+        'PRESSURE-CORRECTED'
+        'RE-SAMPLED'
+        'SALINITY-CORRECTED'
+        'SAMPLED-DOWNWARD'
+        'SAMPLED-UPWARD'
+        'SPEED-CORRECTED'
+        'SPLICED'
+        'SQUARED'
+        'STACKED'
+        'STANDARD-DEVIATION'
+        'STANDOFF-CORRECTED'
+        'TEMPERATURE-CORRECTED'
+        'UNDER-SAMPLED'
+    )
+
     def __init__(self, name: str, parent: "ChannelSet", dataset_name: Optional[str] = None,
                  cast_dtype: Optional[numpy_dtype_type] = None, **kwargs: Any) -> None:
         """Initialise ChannelItem.
@@ -63,7 +96,7 @@ class ChannelItem(EFLRItem):
         self._cast_dtype: Union[numpy_dtype_type, None] = None
 
         self.long_name = TextAttribute('long_name')
-        self.properties = IdentAttribute('properties', multivalued=True)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self._convert_property)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = IdentAttribute('units', converter=self.convert_unit)
         self.dimension = DimensionAttribute('dimension')
@@ -179,6 +212,21 @@ class ChannelItem(EFLRItem):
             logger.warning(f"'{unit}' is not one of the allowed units")
 
         return unit
+
+    @classmethod
+    def _convert_property(cls, v: str) -> str:
+        """Check that the provided property indicator is one of the accepted ones."""
+
+        if not isinstance(v, str):
+            raise TypeError(f"Expected a str, got {type(v)}: {v}")
+
+        v_corrected = v.upper().replace(' ', '-').replace('_', '-')
+        if v_corrected not in cls.allowed_property_indicators:
+            raise ValueError(f"{repr(v)} is not one of the allowed property indicators: "
+                             f"{', '.join(cls.allowed_property_indicators)}")
+
+        return v_corrected
+
 
 
 class ChannelSet(EFLRSet):

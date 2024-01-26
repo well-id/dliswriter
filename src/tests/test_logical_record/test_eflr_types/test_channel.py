@@ -18,7 +18,7 @@ def test_channel_creation(axis1: AxisItem) -> None:
         'Channel',
         dataset_name='amplitude',
         long_name='Amplitude channel',
-        properties=["property1", "property 2 with multiple words"],
+        properties=["NORMALIZED", "spliced", "local computation", "over_sampled"],
         cast_dtype=np.float32,
         units='acre',
         dimension=12,
@@ -33,7 +33,7 @@ def test_channel_creation(axis1: AxisItem) -> None:
     assert channel.name == 'Channel'
     assert channel.dataset_name == 'amplitude'
     assert channel.long_name.value == 'Amplitude channel'
-    assert channel.properties.value == ["property1", "property 2 with multiple words"]
+    assert channel.properties.value == ["NORMALIZED", "SPLICED", "LOCAL-COMPUTATION", "OVER-SAMPLED"]
     assert channel.representation_code.value is RepresentationCode.FSINGL
     assert channel.units.value == 'acre'
     assert channel.dimension.value == [12]
