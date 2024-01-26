@@ -69,7 +69,7 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
     assert (utc.localize(origin.creation_time) ==
             datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S").astimezone(utc))
 
-    assert origin.file_id == "WELL ID"
+    assert origin.file_id == short_dlis.fileheader.id
     assert origin.file_set_name == "Test file set name"
     assert origin.file_set_nr == 42
     assert origin.origin == 42

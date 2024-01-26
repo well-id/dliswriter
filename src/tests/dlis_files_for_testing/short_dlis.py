@@ -13,7 +13,6 @@ def _add_origin(df: DLISFile) -> eflr_types.OriginItem:
     origin = df.add_origin(
         "DEFAULT ORIGIN",
         creation_time="2050/03/02 15:30:00",
-        file_id="WELL ID",
         file_set_name="Test file set name",
         file_set_number=42,
         file_number=8,

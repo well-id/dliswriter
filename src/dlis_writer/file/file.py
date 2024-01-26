@@ -882,6 +882,9 @@ class DLISFile:
                                     to be unique for all File Sets.'
             file_id             :   '[A]n exact copy of the ID Attribute of the File-Header Object of the Parent File,
                                     i.e., the Logical File for which this Origin Object is the Defining Origin.'
+                                    For defining origin (the first origin in the file) this will be set automatically,
+                                    so it does not have to be specified here. For other origins - origins defining other
+                                    DLIS files - the file_id should be specified manually.
             file_number         :   '[T]he File Number of the Parent File relative to the File Set specified by the
                                     File-Set-Name Attribute. File Numbers for a File Set are positive and increase
                                     in the order in which the Logical Files of the File Set are created.
@@ -1313,6 +1316,20 @@ class DLISFile:
 
         self._check_completeness()
         self._check_channels_assigned_to_frames()
+        self._check_defining_origin_params()
+
+    def _check_defining_origin_params(self) -> None:
+        """Check that the file_id of the defining origin is the same as the ID of the header."""
+
+        do = self.defining_origin
+        fh_id = self.file_header.header_id
+
+        if do.file_id.value is None:
+            do.file_id.value = fh_id
+        else:
+            if do.file_id.value != fh_id:
+                raise ValueError("'file_id' of the Defining Origin should be the same as the ID (header_id) "
+                                 f"of the file header; got {repr(do.file_id.value)} and {repr(fh_id)}")
 
     def _check_completeness(self) -> None:
         """Check that the collection contains all required objects in the required (min/max) numbers.
