@@ -63,6 +63,9 @@ def test_origin_creation_no_attributes() -> None:
 
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
 
+    origin.make_item_body_bytes()  # this is where defaults are set
+    assert origin.field_name.value == 'WILDCAT'  # default according to RP66
+
 
 def test_no_reassign_file_set_number() -> None:
     origin = OriginItem("Some origin name", parent=OriginSet())

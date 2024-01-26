@@ -914,6 +914,8 @@ class DLISFile:
             well_name           :   '[T]he name of the well.'
             field_name          :   '[T]he name of the Field to which the well belongs. If there is no Field,
                                     then the value of this Attribute should be WILDCAT.'
+                                    That default is set automatically before writing the Origin if no value has been
+                                    specified (i.e. the value is None).
             producer_code       :   '[T]he Producer’s identifying code. The Producer is the company whose authorized
                                     agent generated the Logical File using software programs developed under
                                     the sponsorship of the company. This code is assigned on request by POSC.
