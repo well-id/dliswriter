@@ -16,7 +16,8 @@ class FileHeaderItem(EFLRItem):
 
     parent: "FileHeaderSet"
 
-    header_id_length_limit = 65    #: max length of the file header name
+    header_id_length_limit = 65             #: max length of the file header name
+    max_sequence_number = int(1e10 - 1)     #: max value for sequence number; largest 10-digit integer
 
     def __init__(self, header_id: str, parent: "FileHeaderSet", sequence_number: int = 1) -> None:
         """Initialise FileHeaderItem.
@@ -24,16 +25,23 @@ class FileHeaderItem(EFLRItem):
         Args:
             header_id       :   Name of the FileHeaderItem.
             parent          :   Parent FileHeaderSet of this FileHeaderItem.
-            sequence_number :   Sequence number of the file.
+            sequence_number :   Sequence number of the file. Must be a positive integer whose ASCII representation
+                                does not exceed 10 characters.
         """
-
-        self.header_id = header_id
-        self.sequence_number = int(sequence_number)
 
         if not isinstance(header_id, str):
             raise TypeError(f"'header_id' should be a str; got {type(header_id)}")
         if len(header_id) > self.header_id_length_limit:
             raise ValueError(f"'header_id' length should not exceed {self.header_id_length_limit} characters")
+
+        if not isinstance(sequence_number, int):
+            raise TypeError(f"Expected an integer; got {type(sequence_number)}: {sequence_number}")
+        if not 0 < sequence_number <= self.max_sequence_number:
+            raise ValueError(f"Sequence number must be a positive integer not larger than {self.max_sequence_number}; "
+                             f"got {sequence_number}")
+
+        self.header_id = header_id
+        self.sequence_number = sequence_number
 
         super().__init__(name='0', parent=parent)
 
