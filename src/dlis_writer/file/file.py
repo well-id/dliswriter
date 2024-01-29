@@ -1394,15 +1394,25 @@ class DLISFile:
     ) -> eflr_types.ToolItem:
         """Create a tool object.
 
+        'Tool Objects (...) specify ensembles of equipment that work together to provide specific measurements
+        or services. Such combinations are more recognizable to the Consumer than are their individual pieces.
+        A typical tool consists of a sonde and a cartridge and possibly some appendages such as centralizers
+        and spacers. It is also possible to identify certain pieces or combinations of surface measuring equipment
+        as tools.'
+
         Args:
             name                :   Name of the tool.
             description         :   Description of the tool.
-            trademark_name      :   Trademark name.
-            generic_name        :   Generic name.
-            parts               :   Equipment this tool consists of.
+            trademark_name      :   '[T]he name used by the Producer to refer to the Tool.'
+            generic_name        :   '[T]he name generally used within the industry to refer to tools of this type.'
+            parts               :   A list of EquipmentItem objects, describing parts of the tool.
             status              :   Status of the tool: 1 or 0.
-            channels            :   Channels associated with this tool.
-            parameters          :   Parameters associated with this tool.
+                                    '[I]ndicates whether the tool is enabled to provide information to the acquisition
+                                    system or whether it has been disabled and is simply occupying space.'
+            channels            :   A list of ChannelItem objects, describing data channels `produced directly
+                                    by this Tool`. A Channel should not be used in more than one Tool.
+            parameters          :   A list of ParameterItem objects `corresponding to Parameters that directly affect
+                                    or reflect the operation of this Tool`.
             set_name            :   Name of the ToolSet this tool should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
