@@ -1099,17 +1099,67 @@ class DLISFile:
 
         Args:
             name                    :   Name of the path.
-            frame_type              :   Frame associated with the path.
-            well_reference_point    :   Well reference of the path.
-            value                   :   Channels associated with the path.
-            borehole_depth          :   Borehole depth.
-            vertical_depth          :   Vertical depth.
-            radial_drift            :   Radial drift.
-            angular_drift           :   Angular drift.
-            time                    :   Time.
-            depth_offset            :   Depth offset.
-            measure_point_offset    :   Measure point offset.
-            tool_zero_offset        :   Tool zero offset.
+            frame_type              :   '[R]eferences a Frame Object in the current Logical File and indicates the
+                                        Frame Type in which the Channels of the current Path are recorded.'
+            well_reference_point    :   '[R]eferences the Well-Reference-Point Object in the current Logical File
+                                        that specifies the Well Reference Point for entities specified by the remaining
+                                        Attributes of the Path Object.'
+            value                   :   '[R]eferences a Channel Object that defines the Value Channel for the current
+                                        Path. This may also be a List of references in case multiple Channels share
+                                        exactly the same Path features described by the remaining recorded Attributes
+                                        of the Path Object. It is permissible for the Value Channel also to be
+                                        one of the Locus coordinates.'
+            borehole_depth          :   '[S]pecifies the constant Borehole Depth coordinate for the current Path,
+                                        or it references the Channel Object (...) that defines a Borehole Depth Channel
+                                        for the current Path. This Attribute should not be present if the Frame Type
+                                        for the current Path has an Index-Type Value of borehole-depth.'
+            vertical_depth          :   '[S]pecifies the constant Vertical Depth coordinate for the current Path,
+                                        or it references the Channel Object (...) that defines a Vertical Depth Channel
+                                        for the current Path. This Attribute should not be present if the Frame Type
+                                        for the current Path has an Index-Type Value of vertical-depth.'
+            radial_drift            :   `[S]pecifies the constant Radial Drift coordinate for the current Path,
+                                        or it references the Channel Object (...) that defines a Radial Drift Channel
+                                        for the current Path. This Attribute should not be present if the Frame Type
+                                        for the current Path has an Index-Type Value of radial-drift.`
+            angular_drift           :   '[S]pecifies the constant Angular Drift coordinate for the current Path,
+                                        or it references the Channel Object (...) that defines an Angular Drift Channel
+                                        for the current Path. This Attribute should not be present if the Frame Type
+                                        for the current Path has an Index-Type Value of angular-drift.'
+            time                    :   '[S]pecifies the constant Time coordinate for the current Path,
+                                        or it references the Channel Object (...) that defines a Time Channel
+                                        for the current Path. This Attribute should not be present if the Frame Type
+                                        for the current Path has an Index-Type Value of TIME.
+                                        The Time coordinate represents an absolute date and time [or] elapsed time
+                                        from the date and time specified in the Creation-Time Attribute
+                                        of the Origin Object.'
+            depth_offset            :   '[S]pecifies a Depth Offset, which indicates how much the Value Channel is
+                                        "off depth". This is a special case and applies only when there is a recorded
+                                        Borehole Depth Channel for the current Path. Specifically, if the recorded
+                                        Borehole Depth for the current Path in a Frame is D and the known Borehole Depth
+                                        is D' , then D = D' + Depth-Offset.'
+            measure_point_offset    :   '[S]pecifies a Measure Point Offset, which indicates a fixed distance along
+                                        Borehole Depth from the Value Channel’s Measure Point to a Data Reference Point
+                                        (...). This is a special case that depends on the data acquisition model
+                                        and applies only when there is a recorded Borehole Depth Channel
+                                        for the current Path.
+                                        If the Measure-Point-Offset Attribute is zero or absent, then the Time Channel
+                                        for the current Path is explicitly related to the Value Channel.
+                                        That is, in each Frame, Vi is sampled at Ti.
+                                        If the Measure-Point-Offset Attribute is present and non-zero, then the Time
+                                        Channel is instead explicitly related to the Data Reference Point,
+                                        and is implicitly related to the Value Channel. In each Frame, Ti is the time
+                                        that the Data Reference Point was at Di, which is the Frame’s Borehole Depth.
+                                        The Value Channel sample Vi is still considered to be sampled at Di,
+                                        but at a time different from Ti. The explicit Time for the Value Channel
+                                        can be recovered using the knowledge that at time Ti when the Data Reference
+                                        Point was at depth Di, the Value Channel Measure Point was at depth Di
+                                        - Measure-Point-Offset.
+                                        Typically, only a single Time Channel per Origin will be recorded in a Frame
+                                        Type, the one explicitly associated with the Data Reference Point.'
+            tool_zero_offset        :   '[T]he distance of the Data Reference Point for the current Path above
+                                        the tool string’s Tool Zero Point. It may be positive or negative;
+                                        it is frequently zero.
+                                        Specifically, Data Reference Point = Tool Zero Point + Tool-Zero-Offset.'
             set_name                :   Name of the PathSet this path should be added to.
             origin_reference        :   file_set_number of the Origin this record belongs to.
 
