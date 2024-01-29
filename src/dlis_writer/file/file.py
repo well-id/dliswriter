@@ -1094,18 +1094,32 @@ class DLISFile:
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
 
+        'Parameter Objects (...) specify Parameters (constant or zoned) used in the acquisition and processing of data.
+        Parameters may be scalar-valued or array-valued. When they are array-valued, the semantic meaning
+        of the array dimensions is defined by the application.'
+
         Args:
             name                :   Name of the parameter.
             long_name           :   Description of the parameter.
-            dimension           :   Dimension of the parameter.
+            dimension           :   '[S]pecifies the array structure of a single value of the current Parameter'.
             axis                :   Axis associated with the parameter.
-            zones               :   Zones the parameter is defined for.
-            values              :   Values of the parameter - numerical or textual.
+            zones               :   '[A] List of references to Zone Objects that specify mutually disjoint intervals
+                                    over which the value of the current Parameter is constant. A Parameter may have
+                                    different values in different zones. When this Attribute is present, the Parameter
+                                    is said to be Zoned, and it is considered to be defined only in the zones
+                                    specified by the Zones Attribute. It is considered to be undefined elsewhere.
+                                    The Zone Objects referenced in this List must all have the same Domain Attribute
+                                    Value. That is, a Parameter Object may only be zoned over a single domain.'
+            values              :   '[A] List of Parameter values corresponding to the zones listed in the Zones
+                                    Attribute. When the Parameter is Zoned, the number of Parameter values is the same
+                                    as the number of zones referenced, and the kth Parameter value applies
+                                    to the kth zone. When the Parameter is Unzoned, there is a single Parameter value
+                                    in the Values Attribute.'
             set_name            :   Name of the ParameterSet this parameter should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
         Returns:
-            A configured ParameterObject instance.
+            A configured ParameterItem instance.
         """
 
         p = eflr_types.ParameterItem(
