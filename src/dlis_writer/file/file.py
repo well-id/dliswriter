@@ -549,32 +549,66 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.EquipmentItem:
-        """Define an equipment object.
+        """Define an equipment item.
+
+        Equipment Objects (...) specify the presence and characteristics of surface and downhole equipment
+        used in the acquisition of data. The purpose of this Object is to record information about individual pieces
+        of equipment of any sort that is used during a job. The Tool Object (...) provides a way to collect equipment
+        together in ensembles that are more readily recognizable to the Consumer.'
 
         Args:
-            name                :   Name of the equipment.
-            trademark_name      :   Trademark name.
-            status              :   Status of the equipment: integer, 1 or 0.
-            eq_type             :   Type of the equipment.
+            name                :   Name of the equipment item.
+            trademark_name      :   '[T]he name used by the Producer to refer to the Equipment.'
+            status              :   '[I]ndicates the operational status of the equipment'. Integer, 1 or 0.
+            eq_type             :   '[T]he generic type of the equipment'
             serial_number       :   Serial number of the equipment.
-            location            :   Location of the equipment.
-            height              :   Height.
-            length              :   Length.
-            minimum_diameter    :   Maximum diameter.
-            maximum_diameter    :   Minimum diameter.
-            volume              :   Volume.
-            weight              :   Weight of the equipment.
-            hole_size           :   Hole size.
-            pressure            :   Pressure.
-            temperature         :   Temperature.
-            vertical_depth      :   Vertical depth.
-            radial_drift        :   Radial drift.
-            angular_drift       :   Angular drift.
+            location            :   '[T]he general location of the equipment during acquisition.'
+            height              :   '[A]pplies only to equipment located in the borehole. It specifies the height of the
+                                    bottom of the equipment above the Tool Zero Point when the tool string containing
+                                    the equipment is vertical. This value is positive when the equipment bottom is above
+                                    the Tool Zero Point and is negative when the equipment bottom is below the Tool
+                                    Zero Point. There is normally one piece of equipment for which the height is zero.'
+            length              :   '[S]pecifies the length of the equipment and is typically measured from bottom
+                                    make up point to top make up point. It may not apply to surface equipment.
+                                    The total length of the tool string may not equal the sum of the lengths
+                                    of all the equipment that make up the tool string, since some equipment may slip
+                                    over other equipment. Such "slip-on" equipment includes, for example, standoffs,
+                                    centralizers, and excentralizers. Similarly, the height of a piece of equipment
+                                    may be independent of the lengths of the equipment below it.'
+            minimum_diameter    :   '[A]pplies to equipment used in the borehole. It specifies a minimum outer diameter
+                                    of the equipment. This is defined to be the minimum horizontal cross-sectional
+                                    diameter measured when the equipment is in a vertical configuration. For extendible
+                                    or compressible equipment (e.g., caliper arms and centralizers), this measurement
+                                    indicates the smallest operational diameter possible.'
+            maximum_diameter    :   '[A]pplies to equipment used in the borehole. It specifies a maximum outer diameter
+                                    of the equipment. This is defined to be the maximum horizontal cross-sectional
+                                    diameter measured when the equipment is in a vertical configuration. For extendible
+                                    or compressible equipment (e.g., caliper arms and centralizers), this measurement
+                                    indicates the largest operational diameter possible.'
+            volume              :   '[S]Specifies the volume of the equipment and is typically used to determine
+                                    bouyant weight of the equipment. It may not apply to surface equipment.'
+            weight              :   '[S]pecifies the weight of the equipment in air. It may not apply to surface
+                                    equipment.'
+            hole_size           :   '[A]pplies to equipment in the borehole. It specifies the minimum borehole diameter
+                                    for which the equipment may reasonably be used.'
+            pressure            :   '[I]ndicates the maximum operational pressure rating of the equipment,
+                                    when applicable.'
+            temperature         :   '[I]ndicates the maximum operational temperature rating of the equipment,
+                                    when applicable.'
+            vertical_depth      :   Vertical depth; see Notes below.
+            radial_drift        :   Radial drift; see Notes below.
+            angular_drift       :   Angular drift; see Notes below.
             set_name            :   Name of the EquipmentSet this equipment should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
+        Notes:
+            'The Vertical-Depth, Radial-Drift, and Angular-Drift Attributes specify the corresponding position
+            coordinates, relative to the Well Reference Point (see §4.1.8), of the equipment represented
+            by the current Object. These Attributes are intended to be used for surface equipment — for example,
+            a geophone — that is stationary over a period of time.'
+
         Returns:
-            A configured EquipmentObject instance.
+            A configured EquipmentItem instance.
         """
 
         eq = eflr_types.EquipmentItem(
