@@ -1412,12 +1412,16 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.ZoneItem:
-        """Create a zone (ZoneObject) and add it to the DLIS.
+        """Create a zone (ZoneItem) and add it to the DLIS.
 
         Args:
             name                :   Name of the zone.
-            description         :   Description of the zone.
-            domain              :   Domain of the zone. One of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+            description         :   Description of the zone; arbitrary.
+            domain              :   Domain of the zone.
+                                    '[I]ndicates the type of interval'. One of:
+                                        - 'BOREHOLE-DEPTH': 'along the borehole'
+                                        - 'TIME': 'elapsed time'
+                                        - 'VERTICAL-DEPTH': 'along the Vertical Generatrix'.
             maximum             :   Maximum of the zone.
             minimum             :   Minimum of the zone.
             set_name            :   Name of the ZoneSet this zone should be added to.
