@@ -31,3 +31,9 @@ dependencies = [
 ]
 [project.urls]
 "Homepage" = "https://github.com/well-id/dlis-writer"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]
