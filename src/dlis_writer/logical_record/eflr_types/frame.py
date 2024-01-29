@@ -1,26 +1,3 @@
-"""From RP66:
-'A Frame constitutes the Indirectly Formatted Data of a Type FDATA Indirectly Formatted Logical Record (IFLR).
-The Data Descriptor Reference of the FDATA Logical Record refers to a Frame Object (...)
-and defines the Frame Type of the Frame.
-Frames of a given Frame Type occur in sequences within a single Logical File.
-A Frame is segmented into a Frame Number, followed by a fixed number of Slots that contain Channel samples,
-one sample per Slot. The Frame Number is an integer (Representation Code UVARI) specifying the numerical order
-of the Frame in the Frame Type, counting sequentially from one. All Frames of a given Frame Type record the same
-Channels in the same order. The IFLRs containing Frames of a given Type need not be contiguous.
-
-A Frame Type may or may not have an Index Channel. If there is an Index Channel, then it must appear first in the Frame
-and it must be scalar. When an Index Channel is present, then all Channels in the Frame are assumed to be "sampled at"
-the Index value. For example, if the Index is depth, then Channels are sampled at the given depth; if time, then they
-are sampled at the given time, etc. (...)
-
-The truth of the assumption just stated is relative to the measuring and recording system used and does not imply
-absolute accuracy. For example, depth may be measured by a device that monitors cable movement at the surface,
-which may differ from actual tool movement in the borehole. Corrections that are applied to Channels to improve
-the accuracy of measurements or alignments to indices are left to the higher-level semantics of applications.
-
-When there is no Index Channel, then Frames are implicitly indexed by Frame Number.'
-"""
-
 import logging
 import numpy as np
 from typing import Union, Any

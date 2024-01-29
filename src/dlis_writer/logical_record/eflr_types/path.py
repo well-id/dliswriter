@@ -1,12 +1,3 @@
-"""From RP66 v1:
-
-`Path Objects specify which Channels in the Data Frames of a given Frame Type are combined to define part or all
-of a Data Path, and what variations in alignment exist.
-The Index of a Frame Type automatically and explicitly serves as a Locus component of any Data Path represented
-in the Frame Type whenever Frame Attribute INDEX-TYPE has one of the values angular-drift, borehole-depth, radial-drift,
-time, or vertical-depth.`
-"""
-
 import logging
 from typing import Any
 

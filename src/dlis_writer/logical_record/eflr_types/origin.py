@@ -1,13 +1,3 @@
-"""
-From RP66:
-'ORIGIN Objects uniquely identify Logical Files and describe the basic circumstances under which Logical Files
-are created. ORIGIN Objects also provide a means for distinguishing different instances of a given entity.
-Each Logical File must contain at least one ORIGIN Set, which may contain one or more ORIGIN Objects.
-The first Object in the first ORIGIN Set is the Defining Origin for the Logical File in which it is contained,
-and the corresponding Logical File is called the Origin'’s Parent File.
-It is intended that no two Logical Files will ever have Defining Origins with all Attribute Values identical.'
-"""
-
 from datetime import datetime
 import logging
 from typing import Any

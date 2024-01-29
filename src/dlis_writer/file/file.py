@@ -153,7 +153,10 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.AxisItem:
-        """Define an axis (AxisObject) and add it to the DLIS.
+        """Define an axis (AxisItem) and add it to the DLIS.
+
+        'An Axis Logical Record is an Explicitly Formatted Logical Record that contains information
+        describing the coordinate axes of arrays.'
 
         Args:
             name                :   Name of the axis.
@@ -359,6 +362,9 @@ class DLISFile:
             origin_reference: Optional[int] = None
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
+
+        'Channel Objects (...) identify Channels and specify their properties and their representation in Frames.
+        The actual Channel sample values are recorded in Indirectly Formatted Logical Records, when present.'
 
         Args:
             name                :   Name of the Channel.
@@ -612,6 +618,28 @@ class DLISFile:
     ) -> eflr_types.FrameItem:
         """Define a frame (FrameItem) and add it to the DLIS.
 
+        'A Frame constitutes the Indirectly Formatted Data of a Type FDATA Indirectly Formatted Logical Record (IFLR).
+        The Data Descriptor Reference of the FDATA Logical Record refers to a Frame Object (...)
+        and defines the Frame Type of the Frame.
+        Frames of a given Frame Type occur in sequences within a single Logical File.
+        A Frame is segmented into a Frame Number, followed by a fixed number of Slots that contain Channel samples,
+        one sample per Slot. The Frame Number is an integer (Representation Code UVARI) specifying the numerical order
+        of the Frame in the Frame Type, counting sequentially from one. All Frames of a given Frame Type record the same
+        Channels in the same order. The IFLRs containing Frames of a given Type need not be contiguous.
+
+        A Frame Type may or may not have an Index Channel. If there is an Index Channel, then it must appear first
+        in the Frame and it must be scalar. When an Index Channel is present, then all Channels in the Frame are assumed
+        to be "sampled at" the Index value. For example, if the Index is depth, then Channels are sampled at the given
+        depth; if time, then they are sampled at the given time, etc. (...)
+
+        The truth of the assumption just stated is relative to the measuring and recording system used and does not
+        imply absolute accuracy. For example, depth may be measured by a device that monitors cable movement
+        at the surface, which may differ from actual tool movement in the borehole. Corrections that are applied
+        to Channels to improve the accuracy of measurements or alignments to indices are left to the higher-level
+        semantics of applications.
+
+        When there is no Index Channel, then Frames are implicitly indexed by Frame Number.'
+
         Args:
             name                :   Name of the frame.
             channels            :   Channels associated with the Frame.
@@ -737,6 +765,14 @@ class DLISFile:
             origin_reference: Optional[int] = None
     ) -> eflr_types.LongNameItem:
         """Create a Long Name item and add it to the DLIS.
+
+        'Long-Name Objects represent structured names of other Objects.
+        A Long–Name Object is referenced by (an Attribute of) the Object of which it is the structured name.
+        There are standardized Name Part Types corresponding to the Labels of the Attributes of the Long-Name Object.
+        For each Name Part Type there is a dictionary-controlled Lexicon of Name Part Values.
+        A Name Part Value is a word or phrase. The Long Name is built by selecting those Name Part Types
+        that are applicable to an Object and then selecting for each Name Part Type one or more Name Part Values
+        from the corresponding Lexicons.'
 
         Args:
             name                :   Name of the Long Name item.
@@ -926,6 +962,13 @@ class DLISFile:
     ) -> eflr_types.OriginItem:
         """Create an origin.
 
+        'ORIGIN Objects uniquely identify Logical Files and describe the basic circumstances under which Logical Files
+        are created. ORIGIN Objects also provide a means for distinguishing different instances of a given entity.
+        Each Logical File must contain at least one ORIGIN Set, which may contain one or more ORIGIN Objects.
+        The first Object in the first ORIGIN Set is the Defining Origin for the Logical File in which it is contained,
+        and the corresponding Logical File is called the Origin'’s Parent File.
+        It is intended that no two Logical Files will ever have Defining Origins with all Attribute Values identical.'
+
         Args:
             name                :   Name of the Origin.
             file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
@@ -1096,6 +1139,14 @@ class DLISFile:
             origin_reference: Optional[int] = None
     ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
+
+        `Path Objects specify which Channels in the Data Frames of a given Frame Type are combined to define part or all
+        of a Data Path, and what variations in alignment exist.
+        The Index of a Frame Type automatically and explicitly serves as a Locus component of any Data Path represented
+        in the Frame Type whenever Frame Attribute INDEX-TYPE has one of the values angular-drift, borehole-depth,
+        radial-drift, time, or vertical-depth.`
+        (Note: the above-mentioned index-type values - 'angular-drift' etc. - are spelled in all-uppercase
+        ('ANGULAR-DRIFT').)
 
         Args:
             name                    :   Name of the path.
@@ -1342,6 +1393,13 @@ class DLISFile:
             origin_reference: Optional[int] = None
     ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
+
+        'Each well has a Well Reference Point (WRP) that defines the origin of the well’s spatial coordinate system.
+        The Well Reference Point is a fixed point in space defined for each Origin. This point is defined relative
+        to some permanent structure, such as ground level or mean sea level. It need not coincide with the permanent
+        structure, but its vertical distance from the permanent structure must be stated. (...)
+        Spatial coordinates of a well are depth, Radial Drift, and Angular Drift. Depth is defined in terms of
+        Borehole Depth or Vertical Depth.'
 
         Args:
             name                        :   Name of the well reference point.

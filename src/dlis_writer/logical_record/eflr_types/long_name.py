@@ -1,12 +1,3 @@
-"""From RP66:
-'Long-Name Objects represent structured names of other Objects. A Long–Name Object is referenced by (an Attribute of)
-the Object of which it is the structured name. There are standardized Name Part Types corresponding to the Labels
-of the Attributes of the Long-Name Object. For each Name Part Type there is a dictionary-controlled Lexicon
-of Name Part Values. A Name Part Value is a word or phrase. The Long Name is built by selecting those Name Part Types
-that are applicable to an Object and then selecting for each Name Part Type one or more Name Part Values
-from the corresponding Lexicons.'
-"""
-
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
