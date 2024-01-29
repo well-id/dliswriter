@@ -139,16 +139,58 @@ class FrameItem(EFLRItem):
         index_data = data[index_channel.name][:]
         unit = index_channel.units.value
         repr_code = index_channel.representation_code.value or RepC.FDOUBL
-        spacing = np.median(np.diff(index_data))
+        spacing, direction = self._compute_spacing_and_direction(index_data)
 
         assign_if_none(index_channel.representation_code, repr_code)
         assign_if_none(self.index_min, index_data.min())
         assign_if_none(self.index_max, index_data.max())
-        assign_if_none(self.spacing, spacing)
-        assign_if_none(self.direction, 'INCREASING' if spacing > 0 else 'DECREASING')
+
+        if spacing is not None:
+            assign_if_none(self.spacing, spacing)
+            # no need to define direction if spacing is defined
+        elif direction is not None:
+            # spacing cannot be used because it is not uniform enough; using only direction
+            assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
 
         for at in (self.index_min, self.index_max, self.spacing):
             assign_if_none(at, key='units', value=unit)
+
+    @staticmethod
+    def _compute_spacing_and_direction(index_data: np.ndarray) -> tuple[Union[int, float, None], Union[bool, None]]:
+        """Compute spacing and direction of the data.
+
+        Note:
+            If spacing is not uniform enough, it is assigned to None.
+            If direction cannot be determined, it is assigned to None.
+        """
+
+        diff = np.diff(index_data)
+        diff_unique = np.unique(diff)
+
+        if (diff_unique == 0).all():
+            direction = None  # all zeros ->not determined
+        elif (diff_unique >= 0).all():
+            direction = True  # all non-negative, at least one positive -> increasing
+        elif (diff_unique <= 0).all():
+            direction = False  # all non-positive, at least one negative -> decreasing
+        else:
+            direction = None  # some increasing, some decreasing -> not determined
+
+        if len(diff_unique) == 1:
+            # if spacing between each sample is the same, this is it
+            return diff_unique[0], direction
+
+        # if not, check if these are minor deviations (can be attributed to numerical accuracy) or not
+        median_diff = np.median(diff).item()  # mypy complains that median_diff is a numpy array...
+        if median_diff == 0:
+            return None, direction  # need the median for denominator later; if it's 0, cannot determine uniformity
+
+        deviations = (1 - diff_unique / median_diff) ** 2
+        if (deviations < 0.001).all():  # if differences are small enough, median is representative for spacing
+            return median_diff, direction
+
+        # differences too big for spacing to be assumed uniform; set spacing to None
+        return None, direction
 
     @property
     def channel_name_mapping(self) -> dict:
