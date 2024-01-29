@@ -142,18 +142,25 @@ class FrameItem(EFLRItem):
         spacing, direction = self._compute_spacing_and_direction(index_data)
 
         assign_if_none(index_channel.representation_code, repr_code)
-        assign_if_none(self.index_min, index_data.min())
-        assign_if_none(self.index_max, index_data.max())
 
-        if spacing is not None:
-            assign_if_none(self.spacing, spacing)
-            # no need to define direction if spacing is defined
-        elif direction is not None:
-            # spacing cannot be used because it is not uniform enough; using only direction
-            assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
+        if self.index_type.value is not None:
+            assign_if_none(self.index_min, index_data.min())
+            assign_if_none(self.index_max, index_data.max())
+            if spacing is not None:
+                assign_if_none(self.spacing, spacing)
+                # no need to define direction if spacing is defined
+            elif direction is not None:
+                # spacing cannot be used because it is not uniform enough; using only direction
+                assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
 
-        for at in (self.index_min, self.index_max, self.spacing):
-            assign_if_none(at, key='units', value=unit)
+            for at in (self.index_min, self.index_max, self.spacing):
+                assign_if_none(at, key='units', value=unit)
+        else:
+            # according to RP66, if index_type is None:
+            #   - spacing and direction are meaningless
+            #   - there is no index channel, so index_min and index_max should be frame-data numbers
+            assign_if_none(self.index_min, 1)
+            assign_if_none(self.index_max, index_data.shape[0])
 
     @staticmethod
     def _compute_spacing_and_direction(index_data: np.ndarray) -> tuple[Union[int, float, None], Union[bool, None]]:
