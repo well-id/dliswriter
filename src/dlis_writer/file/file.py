@@ -1306,19 +1306,27 @@ class DLISFile:
     ) -> eflr_types.ProcessItem:
         """Define a process item and add it to DLIS.
 
+        '[Each Process] describes a specific process or computation applied to input Objects to get output Objects.'
+
         Args:
             name                :   Name of the process.
             description         :   Description of the process.
-            trademark_name      :   Trademark name of the process.
-            version             :   Version of the process.
-            properties          :   Properties of the process.
+            trademark_name      :   '[T]he name used by the Producer to refer to the process and its products.'
+            version             :   '[T]he Producer’s software version of the process.'
+            properties          :   '[P]roperties that apply to the output of the process as a result of the process.'
             status              :   Status of the process; 1 or 0.
-            input_channels      :   Channels serving as input for the process.
-            output_channels     :   Channels serving as output for the process.
-            input_computations  :   Input computations of the process.
-            output_computations :   Output computations of the process.
-            parameters          :   Parameters of the process.
-            comments            :   Comments.
+                                    '[T]he state of the process at the time that the Status Attribute was recorded'
+            input_channels      :   'Channels that are used directly by this Process.'
+            output_channels     :   'Channels that are produced directly by this Process. The same CHANNEL Object
+                                    should not appear in the OUTPUT-CHANNELS Attribute of more than one PROCESS Object.'
+            input_computations  :   'Computations that are used directly by this Process.'
+            output_computations :   'Computations that are produced directly by this Process. The same COMPUTATION
+                                    Object should not appear in the OUTPUT-COMPUTATIONS Attribute of more than one
+                                    PROCESS Object.'
+            parameters          :   'Parameters that are used by the Process or that directly affect the operation
+                                    of the Process'
+            comments            :   '[I]nformation specific to the particular execution of the process
+                                    (generally provided by the user).'
             set_name            :   Name of the ProcessSet this process should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
