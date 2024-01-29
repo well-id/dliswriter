@@ -1414,6 +1414,9 @@ class DLISFile:
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneItem) and add it to the DLIS.
 
+        `Zone Objects specify single intervals in depth or time. Zone Objects are useful for associating other Objects
+        or values with specific regions of a well or with specific time intervals.`
+
         Args:
             name                :   Name of the zone.
             description         :   Description of the zone; arbitrary.
@@ -1422,8 +1425,14 @@ class DLISFile:
                                         - 'BOREHOLE-DEPTH': 'along the borehole'
                                         - 'TIME': 'elapsed time'
                                         - 'VERTICAL-DEPTH': 'along the Vertical Generatrix'.
-            maximum             :   Maximum of the zone.
-            minimum             :   Minimum of the zone.
+            maximum             :   '[T]he depth of the bottom (deepest part) of the zone or the latest time.
+                                    This value is not considered to be part of the zone.
+                                    When this Attribute is absent, the zone is considered to extend indefinitely
+                                    in the direction corresponding to deepest or latest.'
+            minimum             :   ' the depth of the top (shallowest part) of the zone or the earliest time.
+                                    This value is considered to be part of the zone.
+                                    When this Attribute is absent, the zone is considered to extend indefinitely
+                                    in the direction corresponding to shallowest or earliest.'
             set_name            :   Name of the ZoneSet this zone should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
