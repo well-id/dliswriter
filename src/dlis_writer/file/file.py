@@ -560,9 +560,11 @@ class DLISFile:
             name                :   Name of the equipment item.
             trademark_name      :   '[T]he name used by the Producer to refer to the Equipment.'
             status              :   '[I]ndicates the operational status of the equipment'. Integer, 1 or 0.
-            eq_type             :   '[T]he generic type of the equipment'
+            eq_type             :   '[T]he generic type of the equipment'.
+                                    See EquipmentItem.TYPE_OPTIONS for values allowed by RP66.
             serial_number       :   Serial number of the equipment.
             location            :   '[T]he general location of the equipment during acquisition.'
+                                    See EquipmentItem.LOCATION_OPTIONS for values allowed by RP66.
             height              :   '[A]pplies only to equipment located in the borehole. It specifies the height of the
                                     bottom of the equipment above the Tool Zero Point when the tool string containing
                                     the equipment is vertical. This value is positive when the equipment bottom is above
