@@ -70,9 +70,10 @@ splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zo
 
 
 # parameters - using zones and axes
-parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1, zones=(zone1,),
-                              values={'value': [1, 2, 3.3], 'units': 'in'})
-parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3), values=["val1", "val2", "val3"], dimension=[3])
+parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1,
+                              values={'value': [1], 'units': 'in'})
+parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3, zone1),
+                              values=["val1", "val2", "val3"], dimension=[3])
 
 
 # equipment

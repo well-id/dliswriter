@@ -36,6 +36,16 @@ class ParameterItem(EFLRItem):
     def _run_checks_and_set_defaults(self) -> None:
         """Set default values of some attributes if no values have been set so far."""
 
+        if self.values.value is not None:
+            if self.zones.value is not None:
+                if (nv := self.values.count) != (nz := self.zones.count):
+                    raise RuntimeError("A Parameter must have the same number of values and zones if both are "
+                                       f"defined; got {nv} channels and {nz} zones in {self}")
+            else:
+                if (nv := self.values.count) > 1:
+                    raise ValueError(f"{self} does not have any zones defined, so only a single value is permitted; "
+                                     f"got {nv}: {self.values.value}")
+
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
             self.dimension.value = [1]
