@@ -18,6 +18,8 @@ class CalibrationMeasurementItem(EFLRItem):
 
     parent: "CalibrationMeasurementSet"
 
+    allowed_phases = ('AFTER', 'BEFORE', 'MASTER')
+
     def __init__(self, name: str, parent: "CalibrationMeasurementSet", **kwargs: Any) -> None:
         """Initialise CalibrationMeasurementItem.
 
@@ -27,9 +29,10 @@ class CalibrationMeasurementItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
-        self.phase = IdentAttribute('phase')
+        self.phase = IdentAttribute('phase', converter=self.make_converter_for_allowed_str_values(
+            self.allowed_phases, 'phases', allow_none=True, make_uppercase=True))
         self.measurement_source = EFLRAttribute(
-            'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelSet)
+            'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)
         self._type = IdentAttribute('_type')
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)

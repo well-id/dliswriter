@@ -276,7 +276,7 @@ class DLISFile:
             self,
             name: str,
             phase: OptAttrSetupType[str] = None,
-            measurement_source: OptAttrSetupType[eflr_types.ChannelItem] = None,
+            measurement_source: OptAttrSetupType[EFLRItem] = None,
             measurement_type: OptAttrSetupType[str] = None,
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
@@ -295,24 +295,90 @@ class DLISFile:
     ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
 
+        'Calibration-Measurement Objects record measurements, references, and tolerances used to compute
+        calibration coefficients'
+
         Args:
             name                :   Name of the calibration measurement.
-            phase               :   Phase of the measurement.
-            measurement_source  :   Source of the measurement.
-            measurement_type    :   Type of the measurement.
-            dimension           :   Dimension of the measurement.
+            phase               :   '[A] (...) code indicating what phase in the overall job sequence is represented
+                                    by the current measurement.'
+                                    Allowed values:
+                                        - 'AFTER': 'After survey calibration',
+                                        - 'BEFORE': 'Before survey calibration',
+                                        - 'MASTER': 'Master calibration'.
+            measurement_source  :   '[R]eferences an Object that specifies the source of the data recorded in
+                                    the Measurement Attribute.' This can be e.g. a Channel object.
+            measurement_type    :   '[T]he type of measurement taken. (...) For the simple model described earlier
+                                    [measurement of gain and offset], the Type is "Zero" [for gain] or "Plus"
+                                    [for offset].'
+            dimension           :   '[S]pecifies the array structure of samples recorded in the Measurement Attribute,
+                                    of the Reference Attribute, of the Maximum-Deviation Attribute,
+                                    of the Standard-Deviation Attribute, of the Standard Attribute,
+                                    of the Plus-Tolerance Attribute, and of the Minus-Tolerance Attribute (...).'
             axis                :   Axis of the measurement.
-            measurement         :   Measured values.
-            sample_count        :   Number of samples.
-            maximum_deviation   :   Maximum deviation of the measurement.
-            standard_deviation  :   Standard deviation of the measurement.
-            begin_time          :   Start time of the measurement; date-time or number of seconds/minutes/etc.
-                                    from a certain event.
-            duration            :   Duration of the measurement.
-            reference           :   Reference of the measurement.
-            standard            :   Standard of the measurement.
-            plus_tolerance      :   Plus tolerance of the measurement.
-            minus_tolerance     :   Minus tolerance of the measurement.
+            measurement         :   '[A] measurement, possibly containing many samples, related to the uncalibrated data
+                                    and described by the Type Attribute. The measurement may represent values of,
+                                    an average of, or some other function of the uncalibrated data.'
+            sample_count        :   '[T]he number of samples used to compute the Maximum-Deviation
+                                    and Standard-Deviation.'
+            maximum_deviation   :   '[M]eaningful only when the Measurement Attribute contains a single sample.
+                                    In this case, the measurement is considered to be a mean, and Maximum-Deviation
+                                    represents the maximum deviation from this mean of any sample used to compute
+                                    the mean. For array samples, the mean and maximum deviation are computed
+                                    independently for each sample Element. The deviation for any Element from the mean
+                                    is computed as an absolute value.'
+            standard_deviation  :   '[M]eaningful only when the Measurement Attribute contains a single sample.
+                                    In this case, the measurement is considered to be a mean, and Standard-Deviation
+                                    represents the statistical standard deviation of the samples used to compute
+                                    the mean. For array samples, the mean and standard deviation are computed
+                                    independently for each sample Element.'
+            begin_time          :   '[T]he time at which acquisition of the measurement in the Measurement Attribute
+                                    began. The Value of this Attribute represents either an absolute date and time
+                                    (...) or an elapsed time from the file creation time specified by the Creation-Time
+                                    Attribute of the Origin Object.'
+            duration            :   '[A] time interval representing the acquisition duration of the measurement
+                                    in the Measurement Attribute.'
+            reference           :   '[T]he expected nominal value of a single sample of the measurement represented
+                                    in the Measurement Attribute.'
+            standard            :   '[T]he measurable quantity of the calibration standard used to produce the Value
+                                    of the Measurement Attribute. For example, a standard used to calibrate a caliper
+                                    is a steel ring. Its measurable quantity is its inside diameter, say 8 inches.
+                                    The Measurement and Reference Attributes may represent the same physical quantity
+                                    as the calibration standard, e.g., length. In this case, the Standard provides
+                                    the same information as the Reference and is normally absent to avoid redundancy.
+                                    It is possible, however, for the Measurement and Reference Attributes to represent
+                                    a different physical quantity, say voltage. In this case, the Standard Attribute
+                                    is required to describe the transformation from the physical quantity represented
+                                    by the Measurement and Reference Attributes to the physical quantity
+                                    of the calibration standard, e.g., from millivolts to inches. Deriving this
+                                    transformation may require the Values of the Standard Attributes from more than one
+                                    Calibration-Measurement Object.'
+            plus_tolerance      :   '[I]ndicates by how much each measurement sample may exceed a reference and still
+                                    be "within tolerance". Elements of this Attribute are all non-negative numbers.
+                                    If a measurement sample is an array, then so is its reference and plus tolerance.
+                                    The convention that a measurement sample be within tolerance is that each element
+                                    of the measurement sample array be less than or equal to the sum of the
+                                    corresponding reference and plus tolerance array elements.
+                                    The plus tolerance represents in some sense the maximum acceptable drift of each
+                                    recorded measurement sample above the value of the recorded reference.
+                                    If the Plus-Tolerance Attribute is absent, then the plus tolerance
+                                    is implicitly infinite.
+                                    For the common simple case when a measurement sample is scalar, the sample value 352
+                                    is within tolerance when its reference is 350 and its plus tolerance is 5.
+                                    It is out of tolerance when its reference is 300 and its plus tolerance is 50.'
+            minus_tolerance     :   '[I]ndicates by how much each measurement sample may fall below a reference
+                                    and still be "within tolerance". Elements of this Attribute are all
+                                    non-negative numbers. If a measurement sample is an array, then so is its reference
+                                    and minus tolerance. The convention that a measurement sample be within tolerance
+                                    is that each element of the measurement sample array be greater than or equal
+                                    to the difference of the corresponding reference and minus tolerance array elements.
+                                    The minus tolerance represents in some sense the maximum acceptable drift of each
+                                    recorded measurement sample below the value of the recorded reference.
+                                    If the Minus-Tolerance Attribute is absent, then the minus tolerance
+                                    is implicitly infinite.
+                                    For the common simple case when a measurement sample is scalar, the sample value 348
+                                    is within tolerance when its reference is 350 and its minus tolerance is 5.
+                                    It is out of tolerance when its reference is 400 and its minus tolerance is 50.'
             set_name            :   Name of the CorrelationMeasurementSet this measurement should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
