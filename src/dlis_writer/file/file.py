@@ -1507,11 +1507,24 @@ class DLISFile:
     ) -> eflr_types.SpliceItem:
         """Create a splice object.
 
+        'Splice Objects describe the process of concatenating two or more instances of a Channel
+        (e.g., from different runs) to get a resultant spliced Channel.'
+
         Args:
             name                :   Name of the object.
-            output_channel      :   Output of the splice.
-            input_channels      :   Input of the splice.
-            zones               :   Zones the splice is defined for.
+            output_channel      :   '[R]eferences the Channel Object that represents the spliced Channel,
+                                    i.e., the resultant of the splice operation. The spliced Channel may be implied
+                                    by the Splice Object and need not actually exist. When the spliced Channel does
+                                    exist, its Properties Attribute must include the "Spliced" flag.'
+            input_channels      :   '[A] List of references to Channel Objects that represent the input Channels
+                                    of the splice operation.'
+            zones               :   '[A] List of references to Zone Objects. When not Absent, this Attribute must have
+                                    the same number of Elements (...) as the Input-Channels Attribute.
+                                    The k-th referenced Zone Object defines a zone in which the spliced Channel
+                                    matches the values of the k-th referenced input Channel (allowing for possible
+                                    differences in Representation Code and Units). The referenced Zone Objects
+                                    must specify mutually-disjoint zones in the same domain, but the ordering
+                                    of the zones is arbitrary.'
             set_name            :   Name of the SpliceSet this splice should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
