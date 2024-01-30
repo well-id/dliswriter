@@ -1,2 +1,2 @@
 from .eflr_set import EFLRSet
-from .eflr_item import EFLRItem, AttrSetup
+from .eflr_item import EFLRItem, AttrSetup, DimensionedItem

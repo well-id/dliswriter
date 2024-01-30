@@ -72,8 +72,8 @@ def _add_axes(df: DLISFile) -> tuple[eflr_types.AxisItem, ...]:
     ax1 = df.add_axis(
         name="Axis-1",
         axis_id="First axis",
-        coordinates=[40.395241, 27.792471],
-        spacing=0.33
+        coordinates=list(range(12)),
+        spacing=1
     )
     ax1.spacing.units = "m"
 
@@ -85,7 +85,19 @@ def _add_axes(df: DLISFile) -> tuple[eflr_types.AxisItem, ...]:
     )
     ax2.spacing.units = "m"
 
-    return ax1, ax2
+    ax3 = df.add_axis(
+        name="Axis-3",
+        axis_id="Whatever axis",
+        coordinates=[1, 5.5, 8]
+    )
+
+    ax4 = df.add_axis(
+        name="Axis-4",
+        axis_id="Whatever axis nr 2",
+        coordinates=[-1, 0]
+    )
+
+    return ax1, ax2, ax3, ax4
 
 
 def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
@@ -287,8 +299,8 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         name="COMPT-1",
         long_name="COMPT1",
         properties=["locally defined", "AVERAGED"],
-        dimension=[1],
-        axis=axes[0],
+        dimension=[3],
+        axis=[axes[2]],
         zones=zones[:3],
         values=[100, 200, 300],
         source=tools[0]
@@ -298,7 +310,8 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         name="COMPT2",
         long_name="COMPT 2",
         properties=["under-sampled", "AVERAGED"],
-        axis=axes[0],
+        dimension=[1],
+        axis=[axes[3]],
         zones=[zones[0], zones[2]],
         values=[1.5, 2.5]
     )
@@ -307,9 +320,9 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         name="COMPT-X",
         long_name="Computation not added to process",
         properties=["over_sampled"],
-        axis=axes[0],
-        zones=[zones[2]],
-        values=[12],
+        axis=[axes[0]],
+        dimension=[12],
+        values=list(range(12, 24)),
     )
 
     return c1, c2, cx

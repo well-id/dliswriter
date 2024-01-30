@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
@@ -13,7 +13,7 @@ from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAtt
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurementItem(EFLRItem):
+class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
     """Model an object being part of CalibrationMeasurement EFLR."""
 
     parent: "CalibrationMeasurementSet"
@@ -48,6 +48,9 @@ class CalibrationMeasurementItem(EFLRItem):
         self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
 
         super().__init__(name, parent=parent, **kwargs)
+
+    def _run_checks_and_set_defaults(self) -> None:
+        self._check_axis_vs_dimension()
 
 
 class CalibrationMeasurementSet(EFLRSet):

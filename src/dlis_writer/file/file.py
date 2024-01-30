@@ -603,7 +603,7 @@ class DLISFile:
             long_name: OptAttrSetupType[str] = None,
             properties: OptAttrSetupType[list[str]] = None,
             dimension: OptAttrSetupType[list[int]] = None,
-            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+            axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
             values: OptAttrSetupType[list[number_type]] = None,
             source: OptAttrSetupType[EFLRItem] = None,

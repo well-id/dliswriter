@@ -8,6 +8,7 @@ from dlis_writer.utils.enums import PROPERTIES
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
+    from dlis_writer.logical_record.core.attribute.subtypes import DimensionAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -281,3 +282,28 @@ class EFLRItem:
         return converter(v)
 
 
+class DimensionedItem:
+    """Mixin to be used with EFLRItem subclasses which define 'axis' and 'dimension' Attributes."""
+
+    axis: Attribute
+    dimension: "DimensionAttribute"
+
+    def _check_axis_vs_dimension(self):
+        axs = self.axis.value
+        dims = self.dimension.value
+
+        if axs is None:
+            return
+        if dims is None:
+            return
+
+        if (na := len(axs)) != (nd := len(dims)):
+            raise RuntimeError(f"{self}: number of axes ({na}) does not match the number of dimensions ({nd})")
+
+        for i in range(na):
+            ac = axs[i].coordinates.value
+            if ac is None:
+                continue
+            if (nc := len(ac)) != dims[i]:
+                raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
+                                   f"dimension {i+1} ({dims[i]})")

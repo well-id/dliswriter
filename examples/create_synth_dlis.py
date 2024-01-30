@@ -98,7 +98,7 @@ tool2 = df.add_tool('TOOL2', parameters=(parameter1, parameter2), channels=(ch1,
 
 
 # computation - using axis, zones, and tool
-computation1 = df.add_computation('CMPT1', axis=ax1, source=tool2, zones=(zone1, zone2, zone3), dimension=[3])
+computation1 = df.add_computation('CMPT1', axis=[ax1], source=tool2, zones=(zone1, zone2, zone3), dimension=[3])
 computation1.values.value = [1, 2, 3]
 computation2 = df.add_computation('CMPT2', values=[2.3, 11.12312, 2231213.22])
 computation3 = df.add_computation('CMPT3', values=[3.14])

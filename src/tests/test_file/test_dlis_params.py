@@ -191,11 +191,11 @@ def test_axes(short_dlis: dlis.file.LogicalFile) -> None:
     """Check that the number of axes in the DLIS file matches the expected one."""
 
     axes = short_dlis.axes
-    assert len(axes) == 2
+    assert len(axes) == 4
 
 
 @pytest.mark.parametrize(("idx", "name", "axis_id", "coordinates"), (
-        (0, "Axis-1", "First axis", [40.395241, 27.792471]),
+        (0, "Axis-1", "First axis", list(range(12))),
         (1, "Axis-X", "Axis not added to computation", [8])
 ))
 def test_axes_parameters(short_dlis: dlis.file.LogicalFile, idx: int, name: str, axis_id: str,
@@ -260,9 +260,9 @@ def test_computation(short_dlis: dlis.file.LogicalFile) -> None:
 
 
 @pytest.mark.parametrize(("idx", "name", "properties", "zone_names", "axis_name", "values"), (
-        (0, "COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-1", [100, 200, 300]),
-        (1, "COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-1", [1.5, 2.5]),
-        (2, "COMPT-X", ["OVER-SAMPLED"], ["Zone-3"], "Axis-1", [12]),
+        (0, "COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-3", [[100, 200, 300]]),
+        (1, "COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-4", [1.5, 2.5]),
+        (2, "COMPT-X", ["OVER-SAMPLED"], [], "Axis-1", [list(range(12, 24))]),
 ))
 def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, properties: list[str],
                             zone_names: list[str], axis_name: str, values: list[Union[int, float]]) -> None:

@@ -3,7 +3,7 @@ from typing import Union, Optional, Any, Self
 import numpy as np
 from h5py import Dataset  # type: ignore  # untyped library
 
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
@@ -35,7 +35,7 @@ class ReprCodeAttribute(Attribute):
         return self.__class__()
 
 
-class ChannelItem(EFLRItem):
+class ChannelItem(EFLRItem, DimensionedItem):
     """Model an object being part of Channel EFLR."""
 
     parent: "ChannelSet"
@@ -186,6 +186,8 @@ class ChannelItem(EFLRItem):
                 # difference is not acceptable according to RP66 rules
                 raise RuntimeError(f"For channel '{self.name}', dimension is {self.dimension.value} "
                                    f"and element limit is {self.element_limit.value}")
+
+        self._check_axis_vs_dimension()
 
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")

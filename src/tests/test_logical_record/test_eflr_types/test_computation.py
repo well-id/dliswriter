@@ -25,7 +25,7 @@ def test_computation_creation(name: str, properties: list[str], zone_names: list
 
     assert comp.name == name
     assert comp.properties.value == properties
-    assert comp.axis.value.name == axis1.name
+    assert comp.axis.value[0].name == axis1.name
     assert comp.values.value == values
 
     for i, n in enumerate(zone_names):

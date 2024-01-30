@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
@@ -11,7 +11,7 @@ from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, 
 logger = logging.getLogger(__name__)
 
 
-class ParameterItem(EFLRItem):
+class ParameterItem(EFLRItem, DimensionedItem):
     """Model an object being part of Parameter EFLR."""
 
     parent: "ParameterSet"
@@ -49,6 +49,8 @@ class ParameterItem(EFLRItem):
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
             self.dimension.value = [1]
+
+        self._check_axis_vs_dimension()
 
 
 class ParameterSet(EFLRSet):
