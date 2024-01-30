@@ -390,7 +390,7 @@ class DLISFile:
             name=name,
             phase=phase,
             measurement_source=measurement_source,
-            _type=measurement_type,
+            type=measurement_type,
             dimension=dimension,
             axis=axis,
             measurement=measurement,

@@ -33,7 +33,7 @@ class CalibrationMeasurementItem(EFLRItem):
             self.allowed_phases, 'phases', allow_none=True, make_uppercase=True))
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)
-        self._type = IdentAttribute('_type')
+        self.type = IdentAttribute('type')
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.measurement = NumericAttribute('measurement', multivalued=True)

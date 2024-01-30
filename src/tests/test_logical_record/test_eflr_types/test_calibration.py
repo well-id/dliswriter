@@ -13,7 +13,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
         **{
             'phase': 'BEFORE',
             'measurement_source': channel1,
-            '_type': 'Plus',
+            'type': 'Plus',
             'axis': axis1,
             'measurement': AttrSetup(12.2323),
             'sample_count': {'value': 12},
@@ -32,7 +32,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
     assert m.phase.value == 'BEFORE'
     assert isinstance(m.measurement_source.value, ChannelItem)
     assert m.measurement_source.value.name == "Channel 1"
-    assert m._type.value == 'Plus'
+    assert m.type.value == 'Plus'
     assert isinstance(m.axis.value[0], AxisItem)
     assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
