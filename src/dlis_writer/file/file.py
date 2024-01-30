@@ -245,15 +245,49 @@ class DLISFile:
     ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
 
+        'Calibration-Coefficient Objects record coefficients, their references, and tolerances
+        used in the calibration of Channels.'
+
         Args:
             name                :   Name of the calibration coefficient.
-            label               :   Label of the calibration coefficient.
-            coefficients        :   Coefficients of the item.
-            references          :   References of the item.
-            plus_tolerances     :   Plus tolerances of the item.
-            minus_tolerances    :   Minus tolerances of the item.
+            label               :   '[A] label for the coefficients that identifying their role in the calibration
+                                    process. Values of this Attribute are dictionary-controlled terms. For the simple
+                                    model described earlier [gain and offset calibration], the Label is "Gain"
+                                    or "Offset".'
+            coefficients        :   '[C]oefficients corresponding to the label in the Label Attribute.'
+            references          :   '[R]eferences corresponding to the coefficients in the CoefficientS Attribute.
+                                    Each recorded reference represents in some sense the nominal value
+                                    of the corresponding recorded coefficient.'
+            plus_tolerances     :   '[V]alues that indicate by how much a coefficient may exceed a reference
+                                    and still be "within tolerance". Elements of this Attribute are all
+                                    non-negative numbers. The convention that a coefficient be within tolerance
+                                    is that it be less than or equal to the sum of the corresponding reference
+                                    and plus tolerance.
+                                    The recorded plus tolerance represents in some sense the maximum acceptable range
+                                    of the recorded coefficient above the value of the recorded reference.
+                                    If the Plus-Tolerances Attribute is absent, then plus tolerance
+                                    is implicitly infinite.
+                                    For the simple case [of nominal gain = 1 and nominal offset = 0], a Gain of 1.05
+                                    is within tolerance when its reference is 1.0 and its plus tolerance is 0.1.
+                                    It is out of tolerance when its reference is 1.0 and its plus tolerance is 0.01.'
+            minus_tolerances    :   '[V]alues that indicate by how much a coefficient may fall short of a reference
+                                    and still be "within tolerance". Elements of this Attribute are all
+                                    non-negative numbers. The convention that a coefficient be within tolerance
+                                    is that it be greater than or equal to the difference of the corresponding reference
+                                     and minus tolerance.
+                                    The recorded minus tolerance represents in some sense the maximum acceptable range
+                                    of the recorded coefficient below the value of the recorded reference.
+                                    If the Minus-Tolerances Attribute is absent, then minus tolerance
+                                    is implicitly infinite.
+                                    For the simple case illustrated earlier, a Gain of .95 is within tolerance
+                                    when its reference is 1.0 and its minus tolerance is 0.1.
+                                    It is out of tolerance when its reference is 1.0 and its minus tolerance is 0.01.'
             set_name            :   Name of the CorrelationCoefficientSet this item should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
+
+        Notes:
+            Attributes 'coefficients', 'references', 'plus_tolerances', and 'minus_tolerances' must have the same number
+            of values.
 
         Returns:
             A configured calibration coefficient item.
