@@ -5,7 +5,7 @@ from h5py import Dataset  # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
+from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS, PROPERTIES
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
@@ -39,40 +39,6 @@ class ChannelItem(EFLRItem):
     """Model an object being part of Channel EFLR."""
 
     parent: "ChannelSet"
-
-    #: allowed values for elements of the 'properties' attribute of Channel
-    allowed_property_indicators = (
-        'AVERAGED'
-        'CALIBRATED'
-        'CHANGED-INDEX'
-        'COMPUTED'
-        'DEPTH-MATCHED'
-        'DERIVED'
-        'FILTERED'
-        'HOLE-SIZE-CORRECTED'
-        'INCLINOMETRY-CORRECTED'
-        'LITHOLOGY-CORRECTED'
-        'LOCAL-COMPUTATION'
-        'LOCALLY-DEFINED'
-        'MODELLED'
-        'MUDCAKE-CORRECTED'
-        'NORMALIZED'
-        'OVER-SAMPLED'
-        'PATCHED'
-        'PRESSURE-CORRECTED'
-        'RE-SAMPLED'
-        'SALINITY-CORRECTED'
-        'SAMPLED-DOWNWARD'
-        'SAMPLED-UPWARD'
-        'SPEED-CORRECTED'
-        'SPLICED'
-        'SQUARED'
-        'STACKED'
-        'STANDARD-DEVIATION'
-        'STANDOFF-CORRECTED'
-        'TEMPERATURE-CORRECTED'
-        'UNDER-SAMPLED'
-    )
 
     def __init__(self, name: str, parent: "ChannelSet", dataset_name: Optional[str] = None,
                  cast_dtype: Optional[numpy_dtype_type] = None, **kwargs: Any) -> None:
@@ -215,12 +181,11 @@ class ChannelItem(EFLRItem):
             raise TypeError(f"Expected a str, got {type(v)}: {v}")
 
         v_corrected = v.upper().replace(' ', '-').replace('_', '-')
-        if v_corrected not in cls.allowed_property_indicators:
+        if v_corrected not in PROPERTIES:
             raise ValueError(f"{repr(v)} is not one of the allowed property indicators: "
-                             f"{', '.join(cls.allowed_property_indicators)}")
+                             f"{', '.join(PROPERTIES)}")
 
         return v_corrected
-
 
 
 class ChannelSet(EFLRSet):

@@ -105,7 +105,8 @@ computation3 = df.add_computation('CMPT3', values=[3.14])
 
 # process - using channels, computations, and parameters
 process1 = df.add_process("PROC", input_channels=(ch1, ch2), output_channels=(ch4,), input_computations=(computation1,),
-                          output_computations=(computation2, computation3), properties=['a', 'b', 'c'])
+                          output_computations=(computation2, computation3),
+                          properties=['AVERAGED', 'LOCALLY-DEFINED', 'SAMPLED-UPWARD'])
 
 
 # calibration coefficient

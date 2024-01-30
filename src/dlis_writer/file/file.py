@@ -1314,8 +1314,8 @@ class DLISFile:
             trademark_name      :   '[T]he name used by the Producer to refer to the process and its products.'
             version             :   '[T]he Producer’s software version of the process.'
             properties          :   '[P]roperties that apply to the output of the process as a result of the process.'
-            status              :   Status of the process; 1 or 0.
-                                    '[T]he state of the process at the time that the Status Attribute was recorded'
+            status              :   Status of the process; 'ABORTED', 'COMPLETE' or 'IN-PROGRESS'.
+                                    '[T]he state of the process at the time that the Status Attribute was recorded.'
             input_channels      :   'Channels that are used directly by this Process.'
             output_channels     :   'Channels that are produced directly by this Process. The same CHANNEL Object
                                     should not appear in the OUTPUT-CHANNELS Attribute of more than one PROCESS Object.'
