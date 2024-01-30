@@ -117,17 +117,44 @@ class ChannelItem(EFLRItem):
 
         if self.dimension.value != dim:
             if self.dimension.value:
-                logger.warning(f"Previously defined dimension of {self}: {self.dimension.value} "
-                               f"does not match the dimension from data: {dim}")
+                raise RuntimeError(f"Previously defined dimension of {self}: {self.dimension.value} "
+                                   f"does not match the dimension from data: {dim}")
             logger.debug(f"Setting dimension of {self} to {dim}")
             self.dimension.value = dim
 
         if self.element_limit.value != dim:
-            if self.element_limit.value:
-                logger.warning(f"Previously defined element limit of {self}: {self.element_limit.value} "
-                               f"does not match the dimension from data: {dim}")
-            logger.debug(f"Setting element limit of {self} to {dim}")
+            if self.element_limit.value:  # was specified and is not exactly equal to dim
+                if not self._compare_element_limit_vs_dimension(self.element_limit.value, dim):
+                    # the difference is and not acceptable according to RP66 rules
+                    raise RuntimeError(f"Previously defined element limit of {self}: {self.element_limit.value} "
+                                       f"does not match the dimension from data: {dim}")
+            else:
+                # only set the element limit if it was None before
+                logger.debug(f"Setting element limit of {self} to {dim}")
             self.element_limit.value = dim
+
+    @staticmethod
+    def _compare_element_limit_vs_dimension(el: list[int], dim: list[int]) -> bool:
+        """Return True if the provided element limit is valid for the specified dimension, False otherwise.
+
+        From RP66:
+        'The ELEMENT-LIMIT Attribute specifies limits on the dimensionality and size of a Channel sample.
+        The Count of this Attribute specifies the maximum allowable number of dimensions, and each Element of this
+        Attribute specifies the maximum allowable size of the corresponding dimension in array elements.
+        For example, if Element-Limit = {5 10 50}, then a Channel sample may have 0, 1, 2, or 3 dimensions.
+        The first dimension size may be no larger than 5 elements, the second no larger than 10 elements, and the last
+        no larger than 50 elements. Within these limits, the Channel sample may be of arbitrary size as specified
+        by the Dimension Attribute (...).'
+        """
+
+        if len(el) < len(dim):
+            return False
+
+        for i in range(len(dim)):
+            if el[i] < dim[i]:
+                return False
+
+        return True
 
     def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
@@ -148,13 +175,17 @@ class ChannelItem(EFLRItem):
             logger.debug(f"Setting element limit of channel '{self.name}' to the same value "
                          f"as dimension: {self.dimension.value}")
             self.element_limit.value = self.dimension.value
+
         elif not self.dimension.value and self.element_limit.value:
             logger.debug(f"Setting dimension of channel '{self.name}' to the same value "
                          f"as element limit: {self.element_limit.value}")
             self.dimension.value = self.element_limit.value
+
         elif self.element_limit.value != self.dimension.value:
-            logger.warning(f"For channel '{self.name}', dimension is {self.dimension.value} "
-                           f"and element limit is {self.element_limit.value}")
+            if not self._compare_element_limit_vs_dimension(self.element_limit.value, self.dimension.value):
+                # difference is not acceptable according to RP66 rules
+                raise RuntimeError(f"For channel '{self.name}', dimension is {self.dimension.value} "
+                                   f"and element limit is {self.element_limit.value}")
 
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")

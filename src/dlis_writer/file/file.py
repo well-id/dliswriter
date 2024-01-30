@@ -498,7 +498,6 @@ class DLISFile:
             dimension           :   Dimension of the Channel data. Determined automatically if not provided.
                                     '[T]he array structure of a sample value for the Channel'
             element_limit       :   Element limit of the Channel data. Determined automatically if not provided.
-                                    Should be the same as dimension (in the current implementation of dlis_writer).
                                     '[S]pecifies limits on the dimensionality and size of a Channel sample.
                                     The Count of this Attribute specifies the maximum allowable number of dimensions,
                                     and each Element of this Attribute specifies the maximum allowable size
@@ -542,7 +541,6 @@ class DLISFile:
             parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name),
             origin_reference=origin_reference or self.default_origin_reference
         )
-        # skipping dimension and element limit because they will be determined from the data
 
         if data is not None:
             self._data_dict[ch.dataset_name] = data

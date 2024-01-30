@@ -86,13 +86,39 @@ def test_dimension_and_element_limit_not_specified() -> None:
     assert channel.element_limit.value is None
 
 
-def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture) -> None:
-    """Test that if dimension and element limit do not match, this fact is included as a warning in log messages."""
+@pytest.mark.parametrize(("dim", "el"), (
+        ([12, 10], [12]),
+        ([2], [1]),
+        ([12, 10], [12, 9]),
+        ([1, 1], [1]),
+        ([2, 3, 4], [2, 3, 3])
 
-    ch = ChannelItem('some channel', dimension=12, element_limit=(12, 10), parent=ChannelSet())
+))
+def test_dimension_and_element_limit_mismatch(caplog: LogCaptureFixture, dim: list[int],
+                                              el: list[int]) -> None:
+    """Test that if dimension and element limit do not match, an error is raised."""
+
+    ch = ChannelItem('some channel', dimension=dim, element_limit=el, parent=ChannelSet())
+    ch.origin_reference = 1
+
+    with pytest.raises(RuntimeError, match=".*dimension is .* and element limit is .*"):
+        ch.make_item_body_bytes()  # check for the dimension and element limit mismatch is done here
+
+
+@pytest.mark.parametrize(("dim", "el"), (
+        ([12], [12, 10]),
+        ([12], [13]),
+        ([2, 3], [4, 4]),
+        ([1], [3, 4, 5])
+))
+def test_dimension_and_element_limit_mismatch_acceptable(caplog: LogCaptureFixture, dim: list[int],
+                                                         el: list[int]) -> None:
+    """Test dimension and element limit not exactly matching, but still acceptable."""
+
+    ch = ChannelItem('some channel', dimension=dim, element_limit=el, parent=ChannelSet())
     ch.origin_reference = 1
     ch.make_item_body_bytes()  # check for the dimension and element limit mismatch is done here
-    assert "For channel 'some channel', dimension is [12] and element limit is [12, 10]" in caplog.text
+    # no error = test passed
 
 
 @pytest.mark.parametrize(("val", "unit"), (("s", 's'), ("T", 'T')))
@@ -225,22 +251,24 @@ def test_setting_dimension_from_data_mismatched_dimension(chan: ChannelItem, moc
 
     chan.name = name
     chan.dimension.value = prev_dim
-    chan.set_dimension_and_repr_code_from_data(mock_data)
-    assert chan.dimension.value == dim
-    assert "Previously defined dimension" in caplog.text
+
+    with pytest.raises(RuntimeError,
+                       match="Previously defined dimension.* does not match the dimension from data.*"):
+        chan.set_dimension_and_repr_code_from_data(mock_data)
 
 
 @pytest.mark.parametrize(("name", "dim", "prev_dim"), (("time", [1], [0]), ("radius", [12], [10])))
 def test_setting_dimension_from_data_mismatched_element_limit(chan: ChannelItem, mock_data: NumpyDataWrapper, name: str,
                                                               dim: list[int], prev_dim: list[int],
                                                               caplog: LogCaptureFixture) -> None:
-    """Test that if element limit from data does not match the previously set one, a warning is included in logs."""
+    """Test that if element limit from data does not match the previously set one, an error is raised."""
 
     chan.name = name
     chan.element_limit.value = prev_dim
-    chan.set_dimension_and_repr_code_from_data(mock_data)
-    assert chan.element_limit.value == dim
-    assert "Previously defined element limit" in caplog.text
+
+    with pytest.raises(RuntimeError,
+                       match="Previously defined element limit.* does not match the dimension from data.*"):
+        chan.set_dimension_and_repr_code_from_data(mock_data)
 
 
 def test_copy_numbers(chan: ChannelItem) -> None:
