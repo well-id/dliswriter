@@ -1070,12 +1070,25 @@ class DLISFile:
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.NoFormatItem:
-        """Create a no-format item and add it to the DLIS.
+        """Create a no-format (a subtype of unformatted data logical record) item and add it to the DLIS.
+
+        'Unformatted Data Logical Records are Indirectly Formatted Logical Records of Type NOFORM that contain
+        "packets" of unformatted (in the DLIS sense) binary data. The Data Descriptor reference of the NOFORM
+        Logical Record refers to a NO-FORMAT Object (...). The purpose of Unformatted Data Logical Records is
+        to transport arbitrary data that is of value to the Consumer, the format of which is known by the Consumer,
+        but which has no DLIS Semantic meaning.
+
+        NO-FORMAT Objects identify packet sequences of unformatted binary data. The Indirectly Formatted Data field
+        of each NOFORM IFLR that references a given No-Format Object contains a segment of the source stream
+        of unformatted data. This source stream is recovered by concatenating these segments in the same order
+        in which they occur in the NOFORM IFLRs. Each segment of the source stream is considered under the DLIS
+        to be a sequence of bytes, and no conversion is applied to the bytes as they are placed into the IFLRs
+        nor as they are removed from the IFLRs.'
 
         Args:
             name                :   Name of the object.
-            consumer_name       :   Consumer name.
-            description         :   Description.
+            consumer_name       :   '[A] client-provided name for the data, for example an external file specification.'
+            description         :   Description of the data item.
             set_name            :   Name of the NoFormatSet this item should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
@@ -1099,6 +1112,9 @@ class DLISFile:
             data: str
     ) -> NoFormatFrameData:
         """Create a no-format frame data object.
+
+        A no-format frame data object forms a data item, multiple of which can be collected under a NoFormatItem
+        descriptor (see add_no_format method).
 
         Args:
             no_format_object    :   No-format item this data belongs to.
