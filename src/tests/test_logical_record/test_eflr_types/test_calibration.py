@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from dlis_writer import AttrSetup
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
 from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
@@ -67,6 +69,23 @@ def test_calibration_coefficient_creation() -> None:
     assert c.references.value == [89, 298]
     assert c.plus_tolerances.value == [100.2, 222.124]
     assert c.minus_tolerances.value == [87.23, 214]
+
+
+def test_calibration_coefficient_unequal_counts() -> None:
+
+    c = CalibrationCoefficientItem(
+        'CX',
+        label='Offset',
+        coefficients=[100.2, 201.3],
+        references=[89, 298, 21],
+        plus_tolerances=[100.2, 222.124],
+        parent=CalibrationCoefficientSet()
+    )
+
+    with pytest.raises(RuntimeError,
+                       match="Number of values all numeric attributes of Calibration Coefficient should be equal; "
+                             "got 2 for COEFFICIENTS, 3 for REFERENCES, 2 for PLUS-TOLERANCES"):
+        c.make_item_body_bytes()
 
 
 def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type) -> None:

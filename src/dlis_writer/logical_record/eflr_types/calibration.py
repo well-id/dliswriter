@@ -80,6 +80,18 @@ class CalibrationCoefficientItem(EFLRItem):
 
         super().__init__(name, parent=parent, **kwargs)
 
+    def _set_defaults(self) -> None:
+
+        # check that the multivalued attributes of the object all have the same number of values - if defined at all
+        value_counts = {}
+        for attr in (self.coefficients, self.references, self.plus_tolerances, self.minus_tolerances):
+            if attr.value is not None:
+                value_counts[attr.label] = len(attr.value)
+
+        if len(set(value_counts.values())) > 1:
+            raise RuntimeError(f"Number of values all numeric attributes of Calibration Coefficient should be equal; "
+                               f"got {', '.join('{} for {}'.format(v, k) for k, v in value_counts.items())}")
+
 
 class CalibrationCoefficientSet(EFLRSet):
     """Model CalibrationCoefficient EFLR."""
