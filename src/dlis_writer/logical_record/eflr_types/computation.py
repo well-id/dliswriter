@@ -38,7 +38,7 @@ class ComputationItem(EFLRItem):
 
         self.check_values_and_zones()
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Set up default values of ComputationItem parameters if not explicitly set previously."""
 
         if not self.dimension.value:

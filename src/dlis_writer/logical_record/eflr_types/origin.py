@@ -69,7 +69,7 @@ class OriginItem(EFLRItem):
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")
             self.creation_time.value = datetime.now()
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         if self.field_name.value is None:
             self.field_name.value = 'WILDCAT'  # according to RP66
 

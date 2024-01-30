@@ -141,7 +141,7 @@ class ChannelItem(EFLRItem):
 
         self._set_cast_dtype(dt)
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:

@@ -33,7 +33,7 @@ class ParameterItem(EFLRItem):
 
         super().__init__(name, parent=parent, **kwargs)
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Set default values of some attributes if no values have been set so far."""
 
         if not self.dimension.value:

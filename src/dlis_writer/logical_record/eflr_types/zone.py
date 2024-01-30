@@ -48,7 +48,7 @@ class ZoneItem(EFLRItem):
             raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
         return domain
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Check maximum and minimum vs domain before writing the object."""
 
         domain = self.domain.value
