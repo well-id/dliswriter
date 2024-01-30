@@ -36,21 +36,17 @@ class ComputationItem(EFLRItem):
 
         super().__init__(name, parent=parent, **kwargs)
 
-        self.check_values_and_zones()
-
     def _run_checks_and_set_defaults(self) -> None:
         """Set up default values of ComputationItem parameters if not explicitly set previously."""
+
+        if self.values.value is not None and self.zones.value is not None:
+            if (nv := self.values.count) != (nz := self.zones.count):
+                raise RuntimeError("A Computation must have the same number of values and zones if both are "
+                                   f"defined; got {nv} channels and {nz} zones in {self}")
 
         if not self.dimension.value:
             logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
             self.dimension.value = [1]
-
-    def check_values_and_zones(self) -> None:
-        """Check that the currently set values and zones attributes match in sizes."""
-
-        if self.values.value is not None and self.zones.value is not None:
-            if (nv := len(self.values.value)) != (nz := len(self.zones.value)):
-                raise ValueError(f"Number od values in {self} ({nv}) does not match the number of zones ({nz})")
 
 
 class ComputationSet(EFLRSet):
