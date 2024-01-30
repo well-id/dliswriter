@@ -159,9 +159,8 @@ class DLISFile:
         describing the coordinate axes of arrays.'
 
         Args:
-            name                :   Name of the axis.
-            axis_id             :   '[A] dictionary-controlled identifier for the coordinate axis described
-                                    by this Object.'
+            name                :   Name of the object.
+            axis_id             :   '[An] (...) identifier for the coordinate axis described by this Object.'
             coordinates         :   '[E]xplicit coordinate values along a coordinate axis. These values may be numeric
                                     (i.e., for non-uniform coordinate spacing), or they may be textual identifiers,
                                     for example "Near" and "Far". If the Coordinates Value has numeric Elements,
@@ -203,14 +202,34 @@ class DLISFile:
     ) -> eflr_types.CalibrationItem:
         """Define a calibration item and add it to the DLIS.
 
+        'Calibration Objects identify the collection of measurements and coefficients that participate
+        in the calibration of a Channel.'
+
         Args:
-            name                    :   Name of the calibration.
-            calibrated_channels     :   Calibrated channels.
-            uncalibrated_channels   :   Uncalibrated channels.
-            coefficients            :   Coefficients of the calibration.
-            measurements            :   Measurements made for the calibration.
-            parameters              :   Parameters of the calibration.
-            method                  :   Calibration method.
+            name                    :   Name of the object.
+            calibrated_channels     :   '[A] List of references to Channel Objects. The corresponding Channels
+                                        (typically just one) are declared to be calibrated using the coefficients
+                                        and measurements identified by the Coefficients and Measurements Attributes
+                                        described below.'
+            uncalibrated_channels   :   '[A] List of references to Channel Objects. The corresponding Channels
+                                        (typically just one) are used, along with coefficients and according
+                                        to the computational method, to compute the Channels identified
+                                        by the Calibrated-Channels Attribute.'
+            coefficients            :   '[A] List of references to Calibration-Coefficient Objects. The coefficients,
+                                        references, and tolerances collectively defined by these Objects are used
+                                        to compute the Channels identified by the Calibrated-Channels Attribute.'
+            measurements            :   '[A] List of references to Calibration-Measurement Objects. The measurements
+                                        collectively defined by these Objects are used to derive the coefficients
+                                        that are used to calibrate the Channels identified by the Calibrated-Channels
+                                        Attribute.'
+            parameters              :   '[A] List of references to Parameter Objects. The referenced Objects provide
+                                        information directly associated with the calibration process, for example
+                                        statistics, quality control indicators, parameters entered by the operator,
+                                        vendor-supplied coefficients, and other information (numeric or textual)
+                                        that is potentially of interest to the Consumer.'
+            method                  :   '[D]efines the computational method used to calibrate the Channels identified
+                                        by the Calibrated-Channels Attribute. (...) For the simple model described
+                                        earlier [gain and offset calibration], the Method might be "Two-Point-Linear".'
             set_name                :   Name of the CalibrationSet this calibration should be added to.
             origin_reference        :   file_set_number of the Origin this record belongs to.
 
@@ -249,7 +268,7 @@ class DLISFile:
         used in the calibration of Channels.'
 
         Args:
-            name                :   Name of the calibration coefficient.
+            name                :   Name of the object.
             label               :   '[A] label for the coefficients that identifying their role in the calibration
                                     process. Values of this Attribute are dictionary-controlled terms. For the simple
                                     model described earlier [gain and offset calibration], the Label is "Gain"
@@ -333,7 +352,7 @@ class DLISFile:
         calibration coefficients'
 
         Args:
-            name                :   Name of the calibration measurement.
+            name                :   Name of the object.
             phase               :   '[A] (...) code indicating what phase in the overall job sequence is represented
                                     by the current measurement.'
                                     Allowed values:
@@ -467,7 +486,7 @@ class DLISFile:
         The actual Channel sample values are recorded in Indirectly Formatted Logical Records, when present.'
 
         Args:
-            name                :   Name of the Channel.
+            name                :   Name of the object.
             data                :   Data associated with the Channel.
             dataset_name        :   Name of the data array associated with the Channel in the data source provided
                                     at init of DLISFile.
@@ -562,7 +581,7 @@ class DLISFile:
         """Create a comment item and add it to the DLIS.
 
         Args:
-            name                :   Name of the comment.
+            name                :   Name of the object.
             text                :   Content of the comment.
             set_name            :   Name of the CommentSet this comment should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
@@ -601,7 +620,7 @@ class DLISFile:
         of PROCESS Objects (...).'
 
         Args:
-            name                :   Name of the computation.
+            name                :   Name of the object.
             long_name           :   Description of the computation.
             properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize
                                     the characteristics of the Computation and the processing that has occurred
@@ -678,7 +697,7 @@ class DLISFile:
         together in ensembles that are more readily recognizable to the Consumer.'
 
         Args:
-            name                :   Name of the equipment item.
+            name                :   Name of the object.
             trademark_name      :   '[T]he name used by the Producer to refer to the Equipment.'
             status              :   '[I]ndicates the operational status of the equipment'. Integer, 1 or 0.
             eq_type             :   '[T]he generic type of the equipment'.
@@ -798,7 +817,7 @@ class DLISFile:
         When there is no Index Channel, then Frames are implicitly indexed by Frame Number.'
 
         Args:
-            name                :   Name of the frame.
+            name                :   Name of the object.
             channels            :   Channels associated with the Frame.
                                     Note: a channel must not be referred to by more than one Frame.
                                     If two Frames are to contain the same data, then 'copies' of the relevant channels
@@ -876,7 +895,7 @@ class DLISFile:
         """Create a group of EFLR items and add it to the DLIS.
 
         Args:
-            name                :   Name of the group.
+            name                :   Name of the object.
             description         :   Description of the group.
             object_type         :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
             object_list         :   List of the EFLR items to be added to this group.
@@ -932,7 +951,7 @@ class DLISFile:
         from the corresponding Lexicons.'
 
         Args:
-            name                :   Name of the Long Name item.
+            name                :   Name of the object.
             general_modifier    :   '[Q]ualifies the Long Name otherwise specified by all the remaining Attributes
                                     of the Long-Name Object.'
             quantity            :   '[S]pecifies something that is measurable, for example physical dimensionality,
@@ -1011,7 +1030,7 @@ class DLISFile:
         """Create a message and add it to DLIS.
 
         Args:
-            name                :   Name of the message.
+            name                :   Name of the object.
             message_type        :   Type of the message.
             time                :   Time of the message.
             borehole_drift      :   Borehole drift.
@@ -1052,7 +1071,7 @@ class DLISFile:
         """Create a no-format item and add it to the DLIS.
 
         Args:
-            name                :   Name of the no-format item.
+            name                :   Name of the object.
             consumer_name       :   Consumer name.
             description         :   Description.
             set_name            :   Name of the NoFormatSet this item should be added to.
@@ -1127,7 +1146,7 @@ class DLISFile:
         It is intended that no two Logical Files will ever have Defining Origins with all Attribute Values identical.'
 
         Args:
-            name                :   Name of the Origin.
+            name                :   Name of the object.
             file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
                                     If not specified, it is assigned randomly (in accordance with the RP66 specs).
                                     '[A] random number, called the File Set Number, that is used to distinguish
@@ -1256,7 +1275,7 @@ class DLISFile:
         of the array dimensions is defined by the application.'
 
         Args:
-            name                :   Name of the parameter.
+            name                :   Name of the object.
             long_name           :   Description of the parameter.
             dimension           :   '[S]pecifies the array structure of a single value of the current Parameter'.
             axis                :   Axis associated with the parameter.
@@ -1320,7 +1339,7 @@ class DLISFile:
         ('ANGULAR-DRIFT').)
 
         Args:
-            name                    :   Name of the path.
+            name                    :   Name of the object.
             frame_type              :   '[R]eferences a Frame Object in the current Logical File and indicates the
                                         Frame Type in which the Channels of the current Path are recorded.'
             well_reference_point    :   '[R]eferences the Well-Reference-Point Object in the current Logical File
@@ -1430,7 +1449,7 @@ class DLISFile:
         '[Each Process] describes a specific process or computation applied to input Objects to get output Objects.'
 
         Args:
-            name                :   Name of the process.
+            name                :   Name of the object.
             description         :   Description of the process.
             trademark_name      :   '[T]he name used by the Producer to refer to the process and its products.'
             version             :   '[T]he Producer’s software version of the process.'
@@ -1487,7 +1506,7 @@ class DLISFile:
         """Create a splice object.
 
         Args:
-            name                :   Name of the splice.
+            name                :   Name of the object.
             output_channel      :   Output of the splice.
             input_channels      :   Input of the splice.
             zones               :   Zones the splice is defined for.
@@ -1531,7 +1550,7 @@ class DLISFile:
         as tools.'
 
         Args:
-            name                :   Name of the tool.
+            name                :   Name of the object.
             description         :   Description of the tool.
             trademark_name      :   '[T]he name used by the Producer to refer to the Tool.'
             generic_name        :   '[T]he name generally used within the industry to refer to tools of this type.'
@@ -1592,7 +1611,7 @@ class DLISFile:
         Borehole Depth or Vertical Depth.'
 
         Args:
-            name                        :   Name of the well reference point.
+            name                        :   Name of the object.
             permanent_datum             :   '[S]pecifies a Permanent Datum, an entity or structure (e.g., Ground Level)
                                             from which vertical distance can be measured.'
             vertical_zero               :   '[S]pecifies Vertical Zero, a particular entity (e.g., Kelly Bushing)
@@ -1666,7 +1685,7 @@ class DLISFile:
         or values with specific regions of a well or with specific time intervals.`
 
         Args:
-            name                :   Name of the zone.
+            name                :   Name of the object.
             description         :   Description of the zone; arbitrary.
             domain              :   Domain of the zone.
                                     '[I]ndicates the type of interval'. One of:
