@@ -375,7 +375,7 @@ class DLISFile:
             long_name           :   Description of the Channel.
             properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize the
                                     characteristics of the Channel and the processing that has occurred to produce it.'
-                                    See ChannelItem.allowed_property_indicators for allowed values.
+                                    See dlis_writer.utils.enums.PROPERTIES for allowed values.
             dimension           :   Dimension of the Channel data. Determined automatically if not provided.
                                     '[T]he array structure of a sample value for the Channel'
             element_limit       :   Element limit of the Channel data. Determined automatically if not provided.
@@ -495,15 +495,36 @@ class DLISFile:
     ) -> eflr_types.ComputationItem:
         """Create a computation item and add it to the DLIS.
 
+        'Computation Objects (...) contain results of computations that are more appropriately expressed as Static
+        Information rather than as Channels. Computation Objects are similar to Parameter Objects, except that
+        Computation Objects may be associated with Property Indicators, and Computation Objects may be the output
+        of PROCESS Objects (...).'
+
         Args:
             name                :   Name of the computation.
             long_name           :   Description of the computation.
-            properties          :   Properties of the computation.
-            dimension           :   Dimension of the computation.
-            axis                :   Axis associated with the computation.
-            zones               :   Zones associated with the computation.
-            values              :   Values of the computation.
-            source              :   Source of the computation.
+            properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize
+                                    the characteristics of the Computation and the processing that has occurred
+                                    to produce it.'
+                                    See dlis_writer.utils.enums.PROPERTIES for allowed values.
+            dimension           :   '[S]pecifies the array structure of a single value of the current Computation'
+            axis                :   An Axis Object (AxisItem) associated with the computation.
+            zones               :   '[A] List of Zone Objects that specify mutually disjoint intervals over which
+                                    the value of the current Computation is constant. A Computation may have different
+                                    values in different zones. When this Attribute is present, the Computation is said
+                                    to be Zoned, and it is considered to be defined only in the zones specified
+                                    by the Zones Attribute. It is considered to be undefined elsewhere.
+                                    The Zone Objects referenced in this List must all have the same Domain Attribute
+                                    Value. That is, a Computation Object may only be zoned over a single domain.
+                                    The Zones Attribute may be absent, in which case the Computation is said to be
+                                    Unzoned. In this case, the Computation is considered to be defined everywhere.'
+            values              :   '[A] List of Computation values corresponding to the zones listed in the Zones
+                                    Attribute. When the Computation is Zoned, the number of Computation values is
+                                    the same as the number of zones referenced, and the k-th Computation value applies
+                                    to the k-th zone. When the Computation is Unzoned, there is a single Computation
+                                    value in the Values Attribute.'
+            source              :   '[A] reference to another Object that describes the immediate source of the
+                                    Computation, for example, a PROCESS Object.'
             set_name            :   Name of the ComputationSet this computation should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
@@ -1314,6 +1335,7 @@ class DLISFile:
             trademark_name      :   '[T]he name used by the Producer to refer to the process and its products.'
             version             :   '[T]he Producer’s software version of the process.'
             properties          :   '[P]roperties that apply to the output of the process as a result of the process.'
+                                    See dlis_writer.utils.enums.PROPERTIES for allowed values.
             status              :   Status of the process; 'ABORTED', 'COMPLETE' or 'IN-PROGRESS'.
                                     '[T]he state of the process at the time that the Status Attribute was recorded.'
             input_channels      :   'Channels that are used directly by this Process.'
