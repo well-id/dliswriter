@@ -165,11 +165,10 @@ nfd2_1 = df.add_no_format_frame_data(no_format2, data="Lorem ipsum")
 
 
 # groups
-group1 = df.add_group("DEPTH ZONES", description='Zones describing depth', object_type='ZONE',
-                      object_list=(zone1, zone3))
-group2 = df.add_group("MESSAGES", object_type="MESSAGE", object_list=(message1, message2, message3))
-group3 = df.add_group("INDEX CHANNELS", object_type="CHANNEL", object_list=(ch1, ch5))
-df.add_group("ALL CHANNELS", object_type="CHANNEL", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
+group1 = df.add_group("DEPTH ZONES", description='Zones describing depth', object_list=(zone1, zone3))
+group2 = df.add_group("MESSAGES", object_list=(message1, message2, message3))
+group3 = df.add_group("INDEX CHANNELS", object_list=(ch1, ch5))
+df.add_group("ALL CHANNELS", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
 group5 = df.add_group("GROUPS", group_list=(group1, group2, group3))
 
 

@@ -499,25 +499,29 @@ def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
     g1 = df.add_group(
         name="ChannelGroup",
         description="Group of channels",
-        object_type="CHANNEL",
         object_list=[channels[1], channels[2]]
     )
 
     g2 = df.add_group(
         name="ProcessGroup",
         description="Group of processes",
-        object_type="PROCESS",
         object_list=[processes[0], processes[1]]
     )
 
     g3 = df.add_group(
         name="MultiGroup",
         description="Group of groups",
-        object_type="GROUP",
         group_list=[g1, g2]
     )
 
-    return g1, g2, g3
+    g4 = df.add_group(
+        name="Mixed-group",
+        description="Mixed objects",
+        object_list=[channels[4], channels[5], processes[1]],
+        group_list=[g1, g3]
+    )
+
+    return g1, g2, g3, g4
 
 
 def create_dlis_file_object() -> DLISFile:

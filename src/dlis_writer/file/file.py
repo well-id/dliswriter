@@ -886,7 +886,6 @@ class DLISFile:
             self,
             name: str,
             description: OptAttrSetupType[str] = None,
-            object_type: OptAttrSetupType[str] = None,
             object_list: OptAttrSetupType[ListOrTuple[EFLRItem]] = None,
             group_list: OptAttrSetupType[ListOrTuple[eflr_types.GroupItem]] = None,
             set_name: Optional[str] = None,
@@ -897,9 +896,13 @@ class DLISFile:
         Args:
             name                :   Name of the object.
             description         :   Description of the group.
-            object_type         :   Type of the objects contained in the group, e.g. CHANNEL, FRAME, PATH, etc.
-            object_list         :   List of the EFLR items to be added to this group.
-            group_list          :   List of group items to be added to this group.
+            object_list         :   '[A] List of references to arbitrary Objects (...). These Objects are considered
+                                    to be related in some fashion known to the Producer.' The objects do not have to
+                                    all be of the same type - e.g. a group containing a mix of Axis, Parameter, and
+                                    Channel objects can be defined.
+            group_list          :   '[A] List of references to other Group Objects. The Group Objects referenced
+                                    are completely arbitrary.' The types of objects referenced by these groups might
+                                    be different from other objects referenced by the current group.
             set_name            :   Name of the FrameSet this frame should be added to.
             origin_reference    :   file_set_number of the Origin this record belongs to.
 
@@ -910,7 +913,6 @@ class DLISFile:
         g = eflr_types.GroupItem(
             name=name,
             description=description,
-            object_type=object_type,
             object_list=object_list,
             group_list=group_list,
             parent=self._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name),

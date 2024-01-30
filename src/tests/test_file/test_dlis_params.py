@@ -466,19 +466,19 @@ def test_long_name_params(short_dlis: dlis.file.LogicalFile) -> None:
     assert w.origin == 42
 
 
-@pytest.mark.parametrize(("idx", "name", "description", "object_type", "object_names", "group_names"), (
-        (0, "ChannelGroup", "Group of channels", "CHANNEL", ["Channel 1", "Channel 2"], []),
-        (1, "ProcessGroup", "Group of processes", "PROCESS", ["Process 1", "Prc2"], []),
-        (2, "MultiGroup", "Group of groups", "GROUP", [], ["ChannelGroup", "ProcessGroup"])
+@pytest.mark.parametrize(("idx", "name", "description", "object_names", "group_names"), (
+        (0, "ChannelGroup", "Group of channels", ["Channel 1", "Channel 2"], []),
+        (1, "ProcessGroup", "Group of processes", ["Process 1", "Prc2"], []),
+        (2, "MultiGroup", "Group of groups", [], ["ChannelGroup", "ProcessGroup"]),
+        (3, "Mixed-group", "Mixed objects", ["posix time", "surface rpm", "Prc2"], ["ChannelGroup", "MultiGroup"])
 ))
-def test_group_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, description: str, object_type: str,
+def test_group_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, description: str,
                       object_names: list[str], group_names: list[str]) -> None:
     """Test attributes of Group objects in the DLIS file."""
 
     g = short_dlis.groups[idx]
     assert g.name == name
     assert g.description == description
-    assert g.objecttype == object_type
     assert g.origin == 42
     _check_list(g.objects, object_names)
     _check_list(g.groups, group_names)
