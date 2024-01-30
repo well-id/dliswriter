@@ -27,7 +27,7 @@ class ComputationItem(EFLRItem):
         """
 
         self.long_name = TextAttribute('long_name')
-        self.properties = IdentAttribute('properties', multivalued=True)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)

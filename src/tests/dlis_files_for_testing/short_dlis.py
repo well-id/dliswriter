@@ -286,7 +286,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     c1 = df.add_computation(
         name="COMPT-1",
         long_name="COMPT1",
-        properties=["PROP 1", "AVERAGED"],
+        properties=["locally defined", "AVERAGED"],
         dimension=[1],
         axis=axes[0],
         zones=zones[:3],
@@ -297,7 +297,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     c2 = df.add_computation(
         name="COMPT2",
         long_name="COMPT 2",
-        properties=["PROP 2", "AVERAGED"],
+        properties=["under-sampled", "AVERAGED"],
         axis=axes[0],
         zones=[zones[0], zones[2]],
         values=[1.5, 2.5]
@@ -306,7 +306,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     cx = df.add_computation(
         name="COMPT-X",
         long_name="Computation not added to process",
-        properties=["XYZ"],
+        properties=["over_sampled"],
         axis=axes[0],
         zones=[zones[2]],
         values=[12],

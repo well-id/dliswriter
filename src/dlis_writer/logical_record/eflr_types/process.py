@@ -5,7 +5,7 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
-from dlis_writer.utils.enums import EFLRType, PROPERTIES
+from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 
@@ -31,8 +31,9 @@ class ProcessItem(EFLRItem):
         self.description = TextAttribute('description')
         self.trademark_name = TextAttribute('trademark_name')
         self.version = TextAttribute('version')
-        self.properties = IdentAttribute('properties', multivalued=True, converter=self._convert_property)
-        self.status = IdentAttribute('status', converter=self.check_status)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
+        self.status = IdentAttribute('status', converter=self.make_converter_for_allowed_str_values(
+            self.allowed_status, "status values", make_uppercase=True))
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
         self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
         self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)
@@ -47,20 +48,6 @@ class ProcessItem(EFLRItem):
         if status not in cls.allowed_status:
             raise ValueError(f"'status' should be one of: {', '.join(cls.allowed_status)}; got {status}")
         return status
-
-    @classmethod
-    def _convert_property(cls, v: str) -> str:
-        """Check that the provided property indicator is one of the accepted ones."""
-
-        if not isinstance(v, str):
-            raise TypeError(f"Expected a str, got {type(v)}: {v}")
-
-        v_corrected = v.upper().replace(' ', '-').replace('_', '-')
-        if v_corrected not in PROPERTIES:
-            raise ValueError(f"{repr(v)} is not one of the allowed property indicators: "
-                             f"{', '.join(PROPERTIES)}")
-
-        return v_corrected
 
 
 class ProcessSet(EFLRSet):

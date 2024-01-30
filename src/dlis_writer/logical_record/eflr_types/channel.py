@@ -5,7 +5,7 @@ from h5py import Dataset  # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS, PROPERTIES
+from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
@@ -56,9 +56,10 @@ class ChannelItem(EFLRItem):
         self._cast_dtype: Union[numpy_dtype_type, None] = None
 
         self.long_name = TextAttribute('long_name')
-        self.properties = IdentAttribute('properties', multivalued=True, converter=self._convert_property)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = IdentAttribute('units', converter=self.convert_unit)
+        self.units = IdentAttribute(
+            'units', converter=self.make_converter_for_allowed_str_values(UNITS, 'units', allow_none=True))
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')
@@ -158,34 +159,6 @@ class ChannelItem(EFLRItem):
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")
             self.long_name.value = self.name
-
-    @staticmethod
-    def convert_unit(unit: Union[str, None]) -> Union[str, None]:
-        """Check that unit is one of the values allowed by the standard (or None)."""
-
-        if unit is None:
-            return None
-
-        if not isinstance(unit, str):
-            raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
-        if unit not in UNITS:
-            logger.warning(f"'{unit}' is not one of the allowed units")
-
-        return unit
-
-    @classmethod
-    def _convert_property(cls, v: str) -> str:
-        """Check that the provided property indicator is one of the accepted ones."""
-
-        if not isinstance(v, str):
-            raise TypeError(f"Expected a str, got {type(v)}: {v}")
-
-        v_corrected = v.upper().replace(' ', '-').replace('_', '-')
-        if v_corrected not in PROPERTIES:
-            raise ValueError(f"{repr(v)} is not one of the allowed property indicators: "
-                             f"{', '.join(PROPERTIES)}")
-
-        return v_corrected
 
 
 class ChannelSet(EFLRSet):

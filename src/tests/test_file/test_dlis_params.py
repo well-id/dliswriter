@@ -260,9 +260,9 @@ def test_computation(short_dlis: dlis.file.LogicalFile) -> None:
 
 
 @pytest.mark.parametrize(("idx", "name", "properties", "zone_names", "axis_name", "values"), (
-        (0, "COMPT-1", ["PROP 1", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-1", [100, 200, 300]),
-        (1, "COMPT2", ["PROP 2", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-1", [1.5, 2.5]),
-        (2, "COMPT-X", ["XYZ"], ["Zone-3"], "Axis-1", [12]),
+        (0, "COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-1", [100, 200, 300]),
+        (1, "COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-1", [1.5, 2.5]),
+        (2, "COMPT-X", ["OVER-SAMPLED"], ["Zone-3"], "Axis-1", [12]),
 ))
 def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, properties: list[str],
                             zone_names: list[str], axis_name: str, values: list[Union[int, float]]) -> None:

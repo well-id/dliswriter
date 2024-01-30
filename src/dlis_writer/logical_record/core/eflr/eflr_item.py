@@ -1,9 +1,10 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union, Optional, Generator
+from typing import TYPE_CHECKING, Any, Union, Optional, Generator, Iterable, Callable
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
+from dlis_writer.utils.enums import PROPERTIES
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
@@ -233,3 +234,50 @@ class EFLRItem:
         except ValueError:
             raise ValueError(f"Value '{value}' could not be converted to a numeric type")
         return value
+
+    @staticmethod
+    def make_converter_for_allowed_values(allowed_values: Iterable[Any], return_type: type,
+                                          label: str = None) -> Callable:
+        def converter(v: Any) -> return_type:
+            """Check that the provided value is one of the accepted ones."""
+
+            if v not in allowed_values:
+                raise ValueError(f"{repr(v)} is not one of the allowed {label or 'values'}: "
+                                 f"{', '.join(str(av) for av in allowed_values)}")
+
+            return v
+
+        return converter
+
+    @staticmethod
+    def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: str = None,
+                                              make_uppercase: bool = False, allow_none: bool = False) -> Callable:
+        top_converter = EFLRItem.make_converter_for_allowed_values(allowed_values, str, label)
+
+        def converter(v: str) -> Union[str, None]:
+            """Check that the provided value is one of the accepted ones."""
+
+            if allow_none and v is None:
+                return None
+
+            if not isinstance(v, str):
+                raise TypeError(f"Expected a str, got {type(v)}: {v}")
+
+            if make_uppercase:
+                v = v.upper().replace(' ', '-').replace('_', '-')
+
+            return top_converter(v)
+
+        return converter
+
+    @staticmethod
+    def convert_property(v: str) -> str:
+        converter = EFLRItem.make_converter_for_allowed_str_values(
+            PROPERTIES,
+            'property indicators',
+            make_uppercase=True
+        )
+
+        return converter(v)
+
+
