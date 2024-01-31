@@ -47,11 +47,12 @@ class ParameterItem(EFLRItem, DimensionedItem):
                     raise ValueError(f"{self} does not have any zones defined, so only a single value is permitted; "
                                      f"got {nv}: {self.values.value}")
 
-        if not self.dimension.value:
-            logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
-            self.dimension.value = [1]
-
         self._check_axis_vs_dimension()
+        self._check_or_set_value_dimensionality(self.values.value)
+
+        if self.values.value and not self.dimension.value:
+            logger.debug(f"Setting dimension of '{self}' to [1]")
+            self.dimension.value = [1]
 
 
 class ParameterSet(EFLRSet):

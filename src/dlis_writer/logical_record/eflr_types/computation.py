@@ -44,11 +44,12 @@ class ComputationItem(EFLRItem, DimensionedItem):
                 raise RuntimeError("A Computation must have the same number of values and zones if both are "
                                    f"defined; got {nv} values and {nz} zones in {self}")
 
-        if not self.dimension.value:
-            logger.debug(f"Setting dimension of '{self}' to the default value: [1]")
-            self.dimension.value = [1]
-
         self._check_axis_vs_dimension()
+        self._check_or_set_value_dimensionality(self.values.value)
+
+        if self.values.value and not self.dimension.value:
+            logger.debug(f"Setting dimension of '{self}' to [1]")
+            self.dimension.value = [1]
 
 
 class ComputationSet(EFLRSet):

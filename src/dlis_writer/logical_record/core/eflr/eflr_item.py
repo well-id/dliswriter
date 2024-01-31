@@ -1,6 +1,7 @@
 import logging
 from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional, Generator, Iterable, Callable
+import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
@@ -307,3 +308,20 @@ class DimensionedItem:
             if (nc := len(ac)) != dims[i]:
                 raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
                                    f"dimension {i+1} ({dims[i]})")
+
+    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None]):
+        if value is None:
+            return
+
+        try:
+            arr = np.array(value)
+        except ValueError:
+            raise RuntimeError(f"{self}: value {value} does not have a regular dimensionality structure")
+
+        dim_from_value = list(arr.shape[1:])
+        if self.dimension.value is not None:
+            if dim_from_value != self.dimension.value:
+                raise RuntimeError(f"{self}: shape of value {value} (shape {arr.shape}) does not match the specified "
+                                   f"dimensionality: {self.dimension.value}")
+        else:
+            self.dimension.value = dim_from_value
