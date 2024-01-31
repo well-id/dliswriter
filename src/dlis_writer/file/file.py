@@ -11,7 +11,7 @@ import logging
 
 from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 from dlis_writer.utils.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
-                                     file_name_type, data_form_type, ListOrTuple, AttrDict)
+                                     file_name_type, data_form_type, ListOrTuple, NestedList, AttrDict)
 from dlis_writer.utils.sized_generator import SizedGenerator
 from dlis_writer.logical_record.core.eflr import EFLRItem, AttrSetup
 from dlis_writer.logical_record.misc import StorageUnitLabel
@@ -605,7 +605,7 @@ class DLISFile:
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: OptAttrSetupType[list[number_type]] = None,
+            values: OptAttrSetupType[NestedList[number_type]] = None,
             source: OptAttrSetupType[EFLRItem] = None,
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
@@ -1280,7 +1280,7 @@ class DLISFile:
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: OptAttrSetupType[list_of_values_type] = None,
+            values: OptAttrSetupType[NestedList[Union[str, int, float]]] = None,
             set_name: Optional[str] = None,
             origin_reference: Optional[int] = None
     ) -> eflr_types.ParameterItem:
