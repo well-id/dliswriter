@@ -333,19 +333,20 @@ def test_calibration_measurement_params(short_dlis: dlis.file.LogicalFile) -> No
 
     assert m.name == "CMEASURE-1"
     assert m.phase == 'BEFORE'
-    assert m.axis[0].name == 'Axis-1'
+    assert m.axis[0].name == 'Axis-4'
     assert m.source.name == "Channel 1"
     assert m.mtype == 'Plus'
-    assert m.samples == [12.2323]
+    assert m.samples.tolist() == [[12.2323, 12.2131]]
     assert m.samplecount == 12
-    assert m.max_deviation == [2.2324]
+    assert m.max_deviation.tolist() == [2.2324, 3.121]
     assert utc.localize(m.begin_time) == datetime(2050, 3, 12, 12, 30).astimezone(utc)
     assert m.duration == 15
-    assert m.reference == [11]
-    assert m.standard == [11.2]
-    assert m.plus_tolerance == [2]
-    assert m.minus_tolerance == [1]
+    assert m.reference.tolist() == [11, 12]
+    assert m.standard == [11.2, 12.2]
+    assert m.plus_tolerance.tolist() == [2, 2]
+    assert m.minus_tolerance.tolist() == [1, 2]
     assert m.origin == 42
+    assert m.dimension == [2]
 
 
 def test_calibration_coefficient_params(short_dlis: dlis.file.LogicalFile) -> None:

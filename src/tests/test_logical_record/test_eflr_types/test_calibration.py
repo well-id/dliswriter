@@ -39,7 +39,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
     assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == 12
-    assert m.maximum_deviation.value == 2.2324
+    assert m.maximum_deviation.value == [2.2324]
     assert isinstance(m.begin_time.value, datetime)
     assert m.begin_time.value == datetime(2050, 3, 12, 12, 30)
     assert m.duration.value == 15

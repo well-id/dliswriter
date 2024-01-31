@@ -309,19 +309,21 @@ class DimensionedItem:
                 raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
                                    f"dimension {i+1} ({dims[i]})")
 
-    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None]) -> None:
+    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None], value_label: str = None) -> None:
         if value is None:
             return
+
+        value_label = value_label or 'value'
 
         try:
             arr = np.array(value)
         except ValueError:
-            raise RuntimeError(f"{self}: value {value} does not have a regular dimensionality structure")
+            raise RuntimeError(f"{self}: {value_label} {value} does not have a regular dimensionality structure")
 
         dim_from_value = list(arr.shape[1:])
         if self.dimension.value is not None:
             if dim_from_value != self.dimension.value:
-                raise RuntimeError(f"{self}: shape of value {value} (shape {arr.shape}) does not match the specified "
-                                   f"dimensionality: {self.dimension.value}")
+                raise RuntimeError(f"{self}: shape of {value_label} {value} (shape {arr.shape}) does not match "
+                                   f"the specified dimensionality: {self.dimension.value}")
         else:
             self.dimension.value = dim_from_value
