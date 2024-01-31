@@ -239,7 +239,7 @@ class EFLRItem:
 
     @staticmethod
     def make_converter_for_allowed_values(allowed_values: Iterable[Any], return_type: type,
-                                          label: str = None) -> Callable:
+                                          label: Optional[str] = None) -> Callable:
         def converter(v: Any) -> return_type:
             """Check that the provided value is one of the accepted ones."""
 
@@ -252,11 +252,11 @@ class EFLRItem:
         return converter
 
     @staticmethod
-    def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: str = None,
+    def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
                                               make_uppercase: bool = False, allow_none: bool = False) -> Callable:
         top_converter = EFLRItem.make_converter_for_allowed_values(allowed_values, str, label)
 
-        def converter(v: str) -> Union[str, None]:
+        def converter(v: Union[str, None]) -> Union[str, None]:
             """Check that the provided value is one of the accepted ones."""
 
             if allow_none and v is None:
@@ -289,7 +289,7 @@ class DimensionedItem:
     axis: Attribute
     dimension: "DimensionAttribute"
 
-    def _check_axis_vs_dimension(self):
+    def _check_axis_vs_dimension(self) -> None:
         axs = self.axis.value
         dims = self.dimension.value
 
@@ -309,7 +309,7 @@ class DimensionedItem:
                 raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
                                    f"dimension {i+1} ({dims[i]})")
 
-    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None]):
+    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None]) -> None:
         if value is None:
             return
 

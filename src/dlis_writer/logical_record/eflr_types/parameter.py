@@ -43,9 +43,10 @@ class ParameterItem(EFLRItem, DimensionedItem):
                     raise RuntimeError("A Parameter must have the same number of values and zones if both are "
                                        f"defined; got {nv} channels and {nz} zones in {self}")
             else:
-                if (nv := self.values.count) > 1:
+                cv = self.values.count
+                if cv is not None and cv > 1:
                     raise ValueError(f"{self} does not have any zones defined, so only a single value is permitted; "
-                                     f"got {nv}: {self.values.value}")
+                                     f"got {cv}: {self.values.value}")
 
         self._check_axis_vs_dimension()
         self._check_or_set_value_dimensionality(self.values.value)

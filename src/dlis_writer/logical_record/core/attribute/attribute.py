@@ -196,7 +196,7 @@ class Attribute:
 
         conv = self._converter or (lambda v: v)
 
-        def wrapper(value):
+        def wrapper(value: Any) -> Any:
             if self._multidimensional and isinstance(value, (list, tuple)):
                 return [wrapper(value_element) for value_element in value]
             return conv(value)
@@ -269,7 +269,7 @@ class Attribute:
         return bts, characteristics
 
     @staticmethod
-    def flatten_list(v: list, res: Optional[list] = None) -> list:
+    def flatten_list(v: Union[list, tuple], res: Optional[list] = None) -> list:
         if res is None:
             res = []
 

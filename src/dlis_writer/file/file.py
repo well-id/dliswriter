@@ -1763,6 +1763,9 @@ class DLISFile:
         """Check that the file_id of the defining origin is the same as the ID of the header."""
 
         do = self.defining_origin
+        if not do:
+            raise RuntimeError("Origin not defined")
+
         fh_id = self.file_header.header_id
 
         if do.file_id.value is None:
