@@ -29,7 +29,8 @@ class ParameterItem(EFLRItem, DimensionedItem):
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
-        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True)
+        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True,
+                                multidimensional=True)
 
         super().__init__(name, parent=parent, **kwargs)
 
@@ -38,7 +39,7 @@ class ParameterItem(EFLRItem, DimensionedItem):
 
         if self.values.value is not None:
             if self.zones.value is not None:
-                if (nv := self.values.count) != (nz := self.zones.count):
+                if (nv := len(self.values.value)) != (nz := self.zones.count):
                     raise RuntimeError("A Parameter must have the same number of values and zones if both are "
                                        f"defined; got {nv} channels and {nz} zones in {self}")
             else:

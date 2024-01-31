@@ -171,7 +171,7 @@ def test_parameters(short_dlis: dlis.file.LogicalFile) -> None:
 
 @pytest.mark.parametrize(("idx", "name", "long_name", "values", "zones"), (
         (0, "Param-1", "LATLONG-GPS", ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"], ["Zone-1", "Zone-3"]),
-        (1, "Param-2", "LATLONG", [40.395241, 27.792471], ["Zone-2", "Zone-4"]),
+        (1, "Param-2", "LATLONG", [[40.395241, 27.792471, 21.23131213], [21, 23, 24]], ["Zone-2", "Zone-4"]),
         (2, "Param-3", "SOME-FLOAT-PARAM", [12.5], [])
 ))
 def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: str, values: list,
@@ -260,8 +260,8 @@ def test_computation(short_dlis: dlis.file.LogicalFile) -> None:
 
 
 @pytest.mark.parametrize(("idx", "name", "properties", "zone_names", "axis_name", "values"), (
-        (0, "COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], "Axis-3", [[100, 200, 300]]),
-        (1, "COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-4", [1.5, 2.5]),
+        (0, "COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2"], "Axis-3", [[100, 200, 300], [1, 2, 3]]),
+        (1, "COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], "Axis-4", [[1.5, 2.5], [4.5, 3.2]]),
         (2, "COMPT-X", ["OVER-SAMPLED"], [], "Axis-1", [list(range(12, 24))]),
 ))
 def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, properties: list[str],

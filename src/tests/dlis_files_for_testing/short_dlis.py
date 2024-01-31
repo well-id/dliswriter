@@ -164,7 +164,8 @@ def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...]) -> tup
         name="Param-2",
         long_name="LATLONG",
         zones=[zones[1], zones[3]],
-        values=[40.395241, 27.792471],
+        dimension=[3],
+        values=[[40.395241, 27.792471, 21.23131213], [21, 23, 24]],
     )
 
     p3 = df.add_parameter(
@@ -301,8 +302,8 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         properties=["locally defined", "AVERAGED"],
         dimension=[3],
         axis=[axes[2]],
-        zones=zones[:3],
-        values=[100, 200, 300],
+        zones=zones[:2],
+        values=[[100, 200, 300], [1, 2, 3]],
         source=tools[0]
     )
 
@@ -310,10 +311,10 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         name="COMPT2",
         long_name="COMPT 2",
         properties=["under-sampled", "AVERAGED"],
-        dimension=[1],
+        dimension=[2],
         axis=[axes[3]],
         zones=[zones[0], zones[2]],
-        values=[1.5, 2.5]
+        values=[[1.5, 2.5], [4.5, 3.2]]
     )
 
     cx = df.add_computation(
@@ -322,7 +323,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
         properties=["over_sampled"],
         axis=[axes[0]],
         dimension=[12],
-        values=list(range(12, 24)),
+        values=[list(range(12, 24))],
     )
 
     return c1, c2, cx

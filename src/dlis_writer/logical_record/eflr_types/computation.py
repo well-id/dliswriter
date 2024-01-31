@@ -31,7 +31,7 @@ class ComputationItem(EFLRItem, DimensionedItem):
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
-        self.values = NumericAttribute('values', multivalued=True)
+        self.values = NumericAttribute('values', multivalued=True, multidimensional=True)
         self.source = EFLRAttribute('source')
 
         super().__init__(name, parent=parent, **kwargs)
@@ -40,7 +40,7 @@ class ComputationItem(EFLRItem, DimensionedItem):
         """Set up default values of ComputationItem parameters if not explicitly set previously."""
 
         if self.values.value is not None and self.zones.value is not None:
-            if (nv := self.values.count) != (nz := self.zones.count):
+            if (nv := len(self.values.value)) != (nz := self.zones.count):
                 raise RuntimeError("A Computation must have the same number of values and zones if both are "
                                    f"defined; got {nv} values and {nz} zones in {self}")
 

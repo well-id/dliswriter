@@ -19,15 +19,17 @@ class Attribute:
     _default_repr_code: Union[RepresentationCode, None] = None
     _units_settable: bool = True
 
-    def __init__(self, label: str, multivalued: bool = False, representation_code: Optional[RepresentationCode] = None,
-                 units: Optional[str] = None, value: Any = None, converter: Optional[Callable] = None,
-                 parent_eflr: "Optional[EFLRItem]" = None):
+    def __init__(self, label: str, multivalued: bool = False, multidimensional: bool = False,
+                 representation_code: Optional[RepresentationCode] = None, units: Optional[str] = None,
+                 value: Any = None, converter: Optional[Callable] = None, parent_eflr: "Optional[EFLRItem]" = None):
         """Initialise an Attribute object.
 
         Args:
             label               :   Name of the attribute. Leading underscores are removed, other underscores
                                     are swapped for dashes. The letters are transformed to uppercase.
             multivalued         :   True if the attribute is allowed to have multiple values.
+            multidimensional    :   True if the attribute is allowed to have multiple dimensions - e.g. nested lists
+                                    - as values.
             representation_code :   Representation code for the attribute value (or each of its values
                                     in 'multivalued' case).
             units               :   Unit the value(s) is/are expressed in.
@@ -40,14 +42,19 @@ class Attribute:
 
         self._check_type(label, str)
         self._check_type(multivalued, bool)
+        self._check_type(multidimensional, bool)
         self._check_type(representation_code, RepresentationCode, allow_none=True)
         self._check_type(units, str, allow_none=True)
+
+        if multidimensional and not multivalued:
+            raise ValueError("An Attribute cannot be multidimensional without being multivalued")
 
         if converter and not callable(converter):
             raise TypeError(f"Converter must be a callable; got {type(converter)}: {converter}")
 
         self._label = label.strip('_').upper().replace('_', '-')
         self._multivalued = multivalued
+        self._multidimensional = multidimensional
         self._representation_code = representation_code if representation_code is not None else self._default_repr_code
         self._units = units
         self._value = value
@@ -109,8 +116,10 @@ class Attribute:
             if not self._value:
                 return None
 
+        value_flat = self.flatten_list(self._value) if self._multidimensional else self._value
+
         try:
-            return ReprCodeConverter.determine_repr_code_from_value(self._value)
+            return ReprCodeConverter.determine_repr_code_from_value(value_flat)
         except ReprCodeConverter.ReprCodeError as exc:
             logger.warning(exc.args[0])
             return None
@@ -126,25 +135,6 @@ class Attribute:
                                f"for attribute type {self.__class__.__name__}")
 
         return rc
-
-    def _set_representation_code(self, rc: Union[RepresentationCode, str, int]) -> None:
-        """Set representation code, having checked that no (other) representation code has previously been set.
-
-        This check is implemented because it is assumed that if a representation code is assigned at init, it is the
-        only allowed representation code for this attribute and should not be changed. If multiple options for a
-        representation code of a given attribute exist, the value is not set at init and can be changed later.
-        """
-
-        self._check_type(rc, RepresentationCode, str, int)
-        rcm = RepresentationCode.get_member(rc, allow_none=False)
-
-        if self._representation_code is not None and self._representation_code is not rcm:
-            raise RuntimeError(f"representation code of {self} is already set to {self._representation_code.name}")
-
-        if rcm not in self._valid_repr_codes:
-            raise ValueError(f"Representation code {rcm} is not valid for {self.__class__}; "
-                             f"valid codes are: {', '.join(str(r) for r in self._valid_repr_codes)}")
-        self._representation_code = rcm
 
     @property
     def units(self) -> Union[str, None]:
@@ -174,7 +164,7 @@ class Attribute:
         if self._value is None:
             return None
         if isinstance(self._value, (list, tuple)):
-            return len(self._value)
+            return len(self.flatten_list(self._value))
         return 1
 
     @property
@@ -182,6 +172,12 @@ class Attribute:
         """True if multiple values (list of values) can be added; False otherwise."""
 
         return self._multivalued
+
+    @property
+    def multidimensional(self) -> bool:
+        """True if attribute's value can have multiple dimensions (e.g. nested lists). False otherwise."""
+
+        return self._multidimensional
 
     def convert_value(self, value: Any) -> Any:
         """Transform/validate the provided value according to the provided converter.
@@ -198,7 +194,14 @@ class Attribute:
     def converter(self) -> Callable:
         """Converter used to transform/validate values set through the setter of property 'value'."""
 
-        return self._converter or (lambda v: v)
+        conv = self._converter or (lambda v: v)
+
+        def wrapper(value):
+            if self._multidimensional and isinstance(value, (list, tuple)):
+                return [wrapper(value_element) for value_element in value]
+            return conv(value)
+
+        return wrapper
 
     @converter.setter
     def converter(self, conv: Union[Callable, None]) -> None:
@@ -265,6 +268,19 @@ class Attribute:
 
         return bts, characteristics
 
+    @staticmethod
+    def flatten_list(v: list, res: Optional[list] = None) -> list:
+        if res is None:
+            res = []
+
+        for vv in v:
+            if isinstance(vv, (list, tuple)):
+                res = Attribute.flatten_list(vv, res)
+            else:
+                res.append(vv)
+
+        return res
+
     def _write_values(self, bts: bytes, characteristics: str) -> tuple[bytes, str]:
         """Transform the attribute to bytes and characteristics for template/describing its EFLRItem."""
 
@@ -273,7 +289,7 @@ class Attribute:
 
         if value is not None:
             if isinstance(value, (list, tuple)):
-                for val in value:
+                for val in self.flatten_list(value):
                     bts += write_struct(rc, val)
             else:
                 bts += write_struct(rc, value)
