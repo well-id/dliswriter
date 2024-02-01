@@ -190,11 +190,14 @@ def test_parameters(short_dlis: dlis.file.LogicalFile) -> None:
 @pytest.mark.parametrize(("idx", "name", "long_name", "values", "zones"), (
         (0, "Param-1", "LATLONG-GPS", ["40deg 23' 42.8676'' N", "40deg 23' 42.8676'' N"], ["Zone-1", "Zone-3"]),
         (1, "Param-2", "LATLONG", [[40.395241, 27.792471, 21.23131213], [21, 23, 24]], ["Zone-2", "Zone-4"]),
-        (2, "Param-3", "SOME-FLOAT-PARAM", [12.5], [])
+        (2, "Param-3", None, [12.5], [])
 ))
-def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: str, values: list,
-                           zones: list[str]) -> None:
+def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, long_name: Union[str, None],
+                           values: list, zones: list[str]) -> None:
     """Check attributes of DLIS Parameter objects."""
+
+    if long_name is None:
+        long_name = short_dlis.longnames[0]
 
     param = short_dlis.parameters[idx]
     assert param.name == name

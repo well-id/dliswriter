@@ -5,7 +5,8 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedI
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute, TextAttribute
+from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
+from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute, EFLROrTextAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -25,7 +26,7 @@ class ParameterItem(EFLRItem, DimensionedItem):
             **kwargs    :   Values of to be set as characteristics of the ParameterItem Attributes.
         """
 
-        self.long_name = TextAttribute('long_name')
+        self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)

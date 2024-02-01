@@ -1276,7 +1276,7 @@ class DLISFile:
     def add_parameter(
             self,
             name: str,
-            long_name: OptAttrSetupType[str] = None,
+            long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,

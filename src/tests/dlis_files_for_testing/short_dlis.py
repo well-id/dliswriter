@@ -153,7 +153,8 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
     return z1, z2, z3, z4, zx
 
 
-def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...]) -> tuple[eflr_types.ParameterItem, ...]:
+def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...],
+                    ln: eflr_types.LongNameItem) -> tuple[eflr_types.ParameterItem, ...]:
     p1 = df.add_parameter(
         name="Param-1",
         long_name="LATLONG-GPS",
@@ -171,7 +172,7 @@ def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...]) -> tup
 
     p3 = df.add_parameter(
         name="Param-3",
-        long_name="SOME-FLOAT-PARAM",
+        long_name=ln,
         values=[12.5]
     )
     p3.values.units = "m"
@@ -548,7 +549,7 @@ def create_dlis_file_object() -> DLISFile:
     channels = _add_channels(df, axes[0], ln)
     frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
-    params = _add_parameters(df, zones)
+    params = _add_parameters(df, zones, ln)
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
     computations = _add_computation(df, axes, zones, tools)
