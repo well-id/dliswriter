@@ -4,17 +4,8 @@ from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any, Union
 from pytz import utc
 
-from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
 
-from tests.common import N_COLS, select_channel
-
-
-def _check_list(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]], names: Union[list[str], tuple[str, ...]]) -> None:
-    """Check that names of the provided objects match the expected names (in the same order)."""
-
-    assert len(objects) == len(names)
-    for i, n in enumerate(names):
-        assert objects[i].name == n
+from tests.common import N_COLS, select_channel, check_list_of_objects
 
 
 def test_channel_properties(short_dlis: dlis.file.LogicalFile) -> None:
@@ -205,7 +196,7 @@ def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: st
     assert param.values.tolist() == values
     assert param.origin == 42
 
-    _check_list(param.zones, zones)
+    check_list_of_objects(param.zones, zones)
 
 
 def test_axes(short_dlis: dlis.file.LogicalFile) -> None:
@@ -269,8 +260,8 @@ def test_tool_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, des
     assert tool.status == status
     assert tool.origin == 42
 
-    _check_list(tool.parameters, param_names)
-    _check_list(tool.channels, channel_names)
+    check_list_of_objects(tool.parameters, param_names)
+    check_list_of_objects(tool.channels, channel_names)
 
 
 def test_computation(short_dlis: dlis.file.LogicalFile) -> None:
@@ -297,7 +288,7 @@ def test_computation_params(short_dlis: dlis.file.LogicalFile, idx: int, name: s
     assert comp.values.tolist() == values
     assert comp.origin == 42
 
-    _check_list(comp.zones, zone_names)
+    check_list_of_objects(comp.zones, zone_names)
 
 
 def test_computation_long_name(short_dlis: dlis.file.LogicalFile) -> None:
@@ -326,10 +317,10 @@ def test_process_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, 
     assert proc.name == name
     assert proc.origin == 42
 
-    _check_list(proc.input_channels, input_channels)
-    _check_list(proc.output_channels, output_channels)
-    _check_list(proc.input_computations, input_compts)
-    _check_list(proc.output_computations, output_compts)
+    check_list_of_objects(proc.input_channels, input_channels)
+    check_list_of_objects(proc.output_channels, output_channels)
+    check_list_of_objects(proc.input_computations, input_compts)
+    check_list_of_objects(proc.output_computations, output_compts)
 
 
 def test_splices(short_dlis: dlis.file.LogicalFile) -> None:
@@ -347,8 +338,8 @@ def test_splice_params(short_dlis: dlis.file.LogicalFile) -> None:
     assert splice.name == "splc1"
     assert splice.origin == 42
 
-    _check_list(splice.zones, ("Zone-1", "Zone-2"))
-    _check_list(splice.input_channels, ("Channel 1", "Channel 2"))
+    check_list_of_objects(splice.zones, ("Zone-1", "Zone-2"))
+    check_list_of_objects(splice.input_channels, ("Channel 1", "Channel 2"))
 
     assert splice.output_channel.name == 'amplitude'
 
@@ -398,11 +389,11 @@ def test_calibration_params(short_dlis: dlis.file.LogicalFile) -> None:
     assert c.name == 'CALIB-MAIN'
     assert c.origin == 42
 
-    _check_list(c.calibrated, ("Channel 1", "Channel 2"))
-    _check_list(c.uncalibrated, ("amplitude", "radius", "radius_pooh"))
-    _check_list(c.coefficients, ("COEF-1",))
-    _check_list(c.measurements, ("CMEASURE-1",))
-    _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"))
+    check_list_of_objects(c.calibrated, ("Channel 1", "Channel 2"))
+    check_list_of_objects(c.uncalibrated, ("amplitude", "radius", "radius_pooh"))
+    check_list_of_objects(c.coefficients, ("COEF-1",))
+    check_list_of_objects(c.measurements, ("CMEASURE-1",))
+    check_list_of_objects(c.parameters, ("Param-1", "Param-2", "Param-3"))
 
 
 @pytest.mark.parametrize(("idx", "name", "v_zero", "m_decl", "c1_name", "c1_value", "c2_name", "c2_value"), (
@@ -508,5 +499,5 @@ def test_group_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, de
     assert g.name == name
     assert g.description == description
     assert g.origin == 42
-    _check_list(g.objects, object_names)
-    _check_list(g.groups, group_names)
+    check_list_of_objects(g.objects, object_names)
+    check_list_of_objects(g.groups, group_names)
