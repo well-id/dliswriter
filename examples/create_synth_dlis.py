@@ -36,12 +36,20 @@ ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5], origin_reference=
 # ^ mark ax2 as belonging to origin2
 
 
+# define long_names - descriptions for channels, parameters, and computations
+long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
+long_name2 = df.add_long_name("LONG-NAME-2", entity_part="X", source_part_number=["121.111"])
+long_name3 = df.add_long_name("ANOTHER LONG NAME", conditions=["At Standard Temperature"])
+
+
 # define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
 ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10 - 3, units='m')   # index channel - always scalar
 ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32) - 2, axis=ax1)  # 1D data
-ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5), cast_dtype=np.float32)  # 2D data
-ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.randint(0, 100, dtype=np.uint8, size=n_rows_depth))
+ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5), cast_dtype=np.float32,
+                     long_name=long_name3)  # 2D data
+ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.randint(0, 100, dtype=np.uint8, size=n_rows_depth),
+                     long_name=long_name1)
 main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_type='BOREHOLE-DEPTH')
 
 
@@ -69,10 +77,10 @@ splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch4
 splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zones=(zone2, zone3))
 
 
-# parameters - using zones and axes
+# parameters - using zones, axes, and long name
 parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1,
                               values={'value': [1], 'units': 'in'})
-parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3, zone1),
+parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3, zone1), long_name=long_name2,
                               values=["val1", "val2", "val3"], dimension=[3])
 
 
@@ -97,11 +105,11 @@ tool1 = df.add_tool('TOOL1', status=1, parts=(equipment1, equipment2), channels=
 tool2 = df.add_tool('TOOL2', parameters=(parameter1, parameter2), channels=(ch1, ch2, ch3), parts=(equipment1,))
 
 
-# computation - using axis, zones, and tool
+# computation - using axis, zones, tool, and long name
 computation1 = df.add_computation('CMPT1', axis=[ax1], source=tool2, zones=(zone1, zone2, zone3), dimension=[3])
 computation1.values.value = [1, 2, 3]
 computation2 = df.add_computation('CMPT2', values=[2.3, 11.12312, 2231213.22])
-computation3 = df.add_computation('CMPT3', values=[3.14])
+computation3 = df.add_computation('CMPT3', values=[3.14], long_name=long_name3)
 
 
 # process - using channels, computations, and parameters
@@ -151,10 +159,6 @@ message3 = df.add_message("MSG3", vertical_depth=213.1, text=["More", "text"], t
 # comment
 comment1 = df.add_comment("CMT1", text=["Part 1 of the comment", "Part 2 of the comment"])
 comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
-
-
-# long name
-long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
 
 
 # no-format & no-format frame data
