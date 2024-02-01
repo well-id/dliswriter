@@ -239,7 +239,8 @@ class EFLRItem:
 
     @staticmethod
     def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
-                                              make_uppercase: bool = False, allow_none: bool = False) -> Callable:
+                                              make_uppercase: bool = False, allow_none: bool = False
+                                              ) -> Callable[[Union[str, None]], Union[str, None]]:
 
         def converter(v: Union[str, None]) -> Union[str, None]:
             """Check that the provided value is one of the accepted ones."""
@@ -269,7 +270,7 @@ class EFLRItem:
             make_uppercase=True
         )
 
-        return converter(v)
+        return converter(v)  # type: ignore  # it does return a str
 
 
 class DimensionedItem:
@@ -298,7 +299,8 @@ class DimensionedItem:
                 raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
                                    f"dimension {i+1} ({dims[i]})")
 
-    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None], value_label: str = None) -> None:
+    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None],
+                                           value_label: Optional[str] = None) -> None:
         if value is None:
             return
 

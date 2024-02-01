@@ -1,7 +1,7 @@
 import logging
 from numbers import Number
 from datetime import datetime
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, overload
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
@@ -22,7 +22,7 @@ class EFLRAttribute(Attribute):
 
     _units_settable = False
     _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
-    _default_repr_code = RepC.OBNAME
+    _default_repr_code: Union[RepC, None] = RepC.OBNAME
 
     def __init__(self, label: str, object_class: Optional[type[EFLRSet]] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
@@ -63,6 +63,12 @@ class EFLROrTextAttribute(EFLRAttribute):
             raise ValueError(f"{self.__class__.__name__} cannot be multivalued")
 
         super().__init__(label=label, **kwargs)
+
+    @overload
+    def _convert_value(self, v: str) -> str: ...
+
+    @overload
+    def _convert_value(self, v: EFLRItem) -> EFLRItem: ...
 
     def _convert_value(self, v: Union[EFLRItem, str]) -> Union[EFLRItem, str]:
         if isinstance(v, EFLRItem):
