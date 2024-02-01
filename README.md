@@ -36,7 +36,7 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
 
 ---
 ## Release log
-##### 0.0.10 Multiple Origins
+##### 0.0.9 Multiple Origins, processing input files, documentation (pending)
 - Added the possibility to have multiple Origin objects in the created file.
   The first added Origin is automatically used as the _defining Origin_ of the file, but an alternative Origin reference
   can be set for each created DLIS object. See [the example](./examples/create_synth_dlis.py).
@@ -46,9 +46,10 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
   (in addition to the preexisting .h5/.hdf5 converter).
   See [the `file_format_converter` subpackage](./src/dlis_writer/file_format_converter)
   and [the related example](./examples/create_dlis_from_data.py).
-
-##### 0.0.9 Processing input files (pending)
-- Scripts to create basic DLIS files from hdf5, csv, xls(x), and las files.
+- Added quotes from RP66 to docstrings of `add_<object>` methods of `DLISFile`.
+- Implemented additional restrictions specified by the standard - e.g. dimensionality of values, number of zones vs
+  number of values, number of axis coordinates vs dimension/value, etc.
+- Added the possibility for LongName objects to be referenced by Channel, Computation, and Parameter.
 
 ##### 0.0.8 API improvements & fixes
 - Removed representation code setters from `Attribute`.
