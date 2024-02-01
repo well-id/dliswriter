@@ -512,7 +512,7 @@ Note: the standard defines several more types of EFLRs.
   Channels can also be referred to by [Splice](#splice), [Path](#path), [Calibration](#calibration), 
   [Calibration Measurement](#calibration-measurement), [Process](#process), and [Tool](#tool).
   
-  On the receiving end, Channel can reference an [Axis](#axis).
+  On the receiving end, Channel can reference an [Axis](#axis) and/or a [LongName](#long-name).
   
   ##### Frame
   Frame is a collection of [Channels](#channel). It can be interpreted as a table of numerical data.
@@ -554,7 +554,7 @@ Note: the standard defines several more types of EFLRs.
   The `method` of a calibration is a string description of the applied method.
 
   ##### Computation
-  Computation can reference an [Axis](#axis) and [Zones](#zone).
+  Computation can reference an [Axis](#axis), [Zones](#zone), and [LongName](#long-name)
   Additionally, through `source` `Attribute`, it can reference another object being the direct source 
   of this computation, e.g. a [Tool](#tool). 
   There are two representation codes that can be used for referencing an object: 'OBNAME' and 'OBJREF'. 
@@ -575,6 +575,7 @@ Note: the standard defines several more types of EFLRs.
   
   ##### Long Name
   Long Name specifies various string attributes of an object to describe it in detail.
+  It can be referenced by [Channel](#channel), [Computation](#computation), or [Parameter](#parameter).
   
   ##### Message
   A Message is a string value with associated metadata - such as time 
@@ -594,7 +595,7 @@ Note: the standard defines several more types of EFLRs.
   
   ##### Parameter
   A Parameter is a collection of values, which can be either numbers or strings.
-  It can reference [Zones](#zone) and [Axes](#axis). 
+  It can reference [Zones](#zone), [Axes](#axis), and [LongName](#long-name). 
   It can be referenced by [Calibration](#calibration), [Process](#process), and [Tool](#tool).
   
   ##### Path
@@ -670,7 +671,9 @@ classDiagram
     ComputationItem o-- "0..1" AxisItem
     ComputationItem o-- "0..*" ZoneItem
     SpliceItem o-- "0..*" ZoneItem
-    
+    ChannelItem o-- "0..1" LongNameItem
+    ParameterItem o-- "0..1" LongNameItem
+    ComputationItem o-- "0..1" LongNameItem
     
     class AxisItem{
         +str axis_id
@@ -715,7 +718,7 @@ classDiagram
     
     class ChannelItem{
         +tuple~str~ allowed_property_indicators
-        +str long_name
+        +str|LongNameItem long_name
         +list~str~ properties
         +RepresentationCode representation_code
         +Units units
@@ -729,7 +732,7 @@ classDiagram
     }
     
     class ComputationItem{
-        +str long_name
+        +str|LongNameItem long_name
         +list~str~ properties
         +list~int~ dimension
         +AxisItem axis
@@ -771,7 +774,7 @@ classDiagram
     
     
     class ParameterItem{
-        +str long_name
+        +str|LongNameItem long_name
         +list~int~ dimension
         +list~AxisItem~ axis
         +list~AxisItem~ zones
@@ -842,6 +845,25 @@ classDiagram
         +float maximum
         +float minimum
     }
+    
+    class LongNameItem{
+        +str general_modifier
+        +str quantity
+        +str quantity_modifier
+        +str altered_form
+        +str entity
+        +str entity_modifier
+        +str entity_number
+        +str entity_part
+        +str entity_part_number
+        +str generic_source
+        +str source_part
+        +str source_part_number
+        +str conditions
+        +str standard_symbol
+        +str private_symbol
+    }
+    
 ```
 
 Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects 
@@ -865,24 +887,6 @@ classDiagram
     
     class CommentItem{
         +str: text
-    }
-    
-    class LongNameItem{
-        +str general_modifier
-        +str quantity
-        +str quantity_modifier
-        +str altered_form
-        +str entity
-        +str entity_modifier
-        +str entity_number
-        +str entity_part
-        +str entity_part_number
-        +str generic_source
-        +str source_part
-        +str source_part_number
-        +str conditions
-        +str standard_symbol
-        +str private_symbol
     }
     
     class NoFormatItem{
