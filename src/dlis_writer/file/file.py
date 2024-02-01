@@ -349,7 +349,7 @@ class DLISFile:
         """Define a calibration measurement item and add it to the DLIS.
 
         'Calibration-Measurement Objects record measurements, references, and tolerances used to compute
-        calibration coefficients'
+        calibration coefficients.'
 
         Args:
             name                :   Name of the object.
@@ -689,7 +689,7 @@ class DLISFile:
     ) -> eflr_types.EquipmentItem:
         """Define an equipment item.
 
-        Equipment Objects (...) specify the presence and characteristics of surface and downhole equipment
+        'Equipment Objects (...) specify the presence and characteristics of surface and downhole equipment
         used in the acquisition of data. The purpose of this Object is to record information about individual pieces
         of equipment of any sort that is used during a job. The Tool Object (...) provides a way to collect equipment
         together in ensembles that are more readily recognizable to the Consumer.'
