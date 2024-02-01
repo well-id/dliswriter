@@ -45,13 +45,48 @@ class EFLRAttribute(Attribute):
         self._object_class = object_class
         self._converter = self._convert_value
 
-    def _convert_value(self, v: type[EFLRItem]) -> type[EFLRItem]:
+    def _convert_value(self, v: EFLRItem) -> EFLRItem:
         """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
 
         object_class = self._object_class.item_type if self._object_class else EFLRItem
         if not isinstance(v, object_class):
             raise TypeError(f"Expected an instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
+
+
+class EFLROrTextAttribute(EFLRAttribute):
+    _valid_repr_codes = (RepC.OBNAME, RepC.ASCII)
+    _default_repr_code = None
+
+    def __init__(self, label: str, **kwargs: Any):
+        if kwargs.get('multivalued', False):
+            raise ValueError(f"{self.__class__.__name__} cannot be multivalued")
+
+        super().__init__(label=label, **kwargs)
+
+    def _convert_value(self, v: Union[EFLRItem, str]) -> Union[EFLRItem, str]:
+        if isinstance(v, EFLRItem):
+            return super()._convert_value(v)
+
+        if isinstance(v, str):
+            return v
+
+        else:
+            raise TypeError(f"Expected an EFLRItem or a str; got {type(v)}: {v}")
+
+    def _guess_repr_code(self) -> Union[RepC, None]:
+        v = self.value
+
+        if v is None:
+            return None
+
+        if isinstance(v, EFLRItem):
+            return RepC.OBNAME
+
+        if isinstance(v, str):
+            return RepC.ASCII
+
+        raise RuntimeError(f"Cannot determine representation code for {type(v)}: {v} in a {self.__class__.__name__}")
 
 
 class DTimeAttribute(Attribute):

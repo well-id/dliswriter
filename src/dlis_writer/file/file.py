@@ -468,7 +468,7 @@ class DLISFile:
             data: Optional[np.ndarray] = None,
             dataset_name: Optional[str] = None,
             cast_dtype: Optional[numpy_dtype_type] = None,
-            long_name: OptAttrSetupType[str] = None,
+            long_name: OptAttrSetupType[Union[eflr_types.LongNameItem, str]] = None,
             dimension: OptAttrSetupType[Union[int, list[int]]] = None,
             element_limit: OptAttrSetupType[Union[int, list[int]]] = None,
             properties: OptAttrSetupType[list[str]] = None,

@@ -40,7 +40,8 @@ def _add_frame(df: DLISFile, *channels: eflr_types.ChannelItem) -> eflr_types.Fr
     return fr
 
 
-def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.ChannelItem, ...]:
+def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem,
+                  ln: eflr_types.LongNameItem) -> tuple[eflr_types.ChannelItem, ...]:
     ch = df.add_channel(
         name="Some Channel",
         dataset_name="image1",
@@ -56,10 +57,10 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.Ch
     )
 
     ch1 = df.add_channel(name="Channel 1", dimension=[10, 10], units="in")
-    ch2 = df.add_channel("Channel 2")
+    ch2 = df.add_channel("Channel 2", long_name=ln)
     ch3 = df.add_channel("Channel 13", dataset_name='amplitude', element_limit=128)
     ch_time = df.add_channel("posix time", dataset_name="contents/time", units="s")
-    ch_rpm = df.add_channel("surface rpm", dataset_name="contents/rpm")
+    ch_rpm = df.add_channel("surface rpm", dataset_name="contents/rpm", long_name=ln)
     ch_amplitude = df.add_channel("amplitude", dataset_name="contents/image0", dimension=128)
     ch_radius = df.add_channel("radius", dataset_name="contents/image1", dimension=128, units="in")
     ch_radius_pooh = df.add_channel("radius_pooh", dataset_name="contents/image2", units="m")
@@ -543,7 +544,8 @@ def create_dlis_file_object() -> DLISFile:
     _add_origin(df)
 
     axes = _add_axes(df)
-    channels = _add_channels(df, axes[0])
+    ln = _add_long_name(df)
+    channels = _add_channels(df, axes[0], ln)
     frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
     params = _add_parameters(df, zones)
@@ -558,7 +560,6 @@ def create_dlis_file_object() -> DLISFile:
     _add_messages(df)
     _add_comments(df)
     _add_no_formats(df)
-    _add_long_name(df)
     _add_groups(df, channels, processes)
 
     return df

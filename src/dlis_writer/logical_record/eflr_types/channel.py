@@ -5,11 +5,12 @@ from h5py import Dataset  # type: ignore  # untyped library
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
+from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
-                                                       TextAttribute, IdentAttribute)
+                                                       IdentAttribute, EFLROrTextAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 logger = logging.getLogger(__name__)
@@ -55,7 +56,7 @@ class ChannelItem(EFLRItem, DimensionedItem):
         # need the attribute defined for representation code check
         self._cast_dtype: Union[numpy_dtype_type, None] = None
 
-        self.long_name = TextAttribute('long_name')
+        self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
         self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = IdentAttribute(
