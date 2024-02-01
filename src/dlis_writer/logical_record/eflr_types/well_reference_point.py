@@ -1,3 +1,7 @@
+"""From RP66 v1:
+
+"""
+
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem

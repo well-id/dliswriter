@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 
@@ -25,7 +25,7 @@ class GroupItem(EFLRItem):
 
         self.description = TextAttribute('description')
         self.object_type = IdentAttribute('object_type')
-        self.object_list = EFLRAttribute('object_list', multivalued=True)
+        self.object_list = EFLRAttribute('object_list', multivalued=True, representation_code=RepC.OBJREF)
         self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True)
 
         super().__init__(name, parent=parent, **kwargs)

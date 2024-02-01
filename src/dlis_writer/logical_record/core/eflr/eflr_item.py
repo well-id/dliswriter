@@ -1,12 +1,15 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union, Optional, Generator
+from typing import TYPE_CHECKING, Any, Union, Optional, Generator, Iterable, Callable
+import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
+from dlis_writer.utils.enums import PROPERTIES
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
+    from dlis_writer.logical_record.core.attribute.subtypes import DimensionAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -36,13 +39,15 @@ class EFLRItem:
 
     parent_eflr_class: type["EFLRSet"] = NotImplemented
 
-    def __init__(self, name: str, parent: "EFLRSet", **kwargs: Any) -> None:
+    def __init__(self, name: str, parent: "EFLRSet", origin_reference: Optional[int] = None, **kwargs: Any) -> None:
         """Initialise an EFLRItem.
 
         Args:
-            name        :   Name of the item. This will be the name it is stored with in the created DLIS file.
-            parent      :   EFLRTable instance this item belongs to. If not provided, retrieved/made based on set_name.
-            **kwargs    :   Values to be set in attributes of this item.
+            name                :   Name of the item. This will be the name it is stored with in the created DLIS file.
+            parent              :   EFLRTable instance this item belongs to. If not provided,
+                                        retrieved/made based on set_name.
+            origin_reference    :   'file_set_number' of the Origin; common for EFLRItems sharing the same Origin.
+            **kwargs            :   Values to be set in attributes of this item.
 
         Note:
             When a subclass of EFLRItem is defined, all the attributes should be defined before calling
@@ -57,8 +62,11 @@ class EFLRItem:
         self._parent = parent  #: EFLRSet instance this item belongs to
         self._parent.register_item(self)
 
-        self.origin_reference: Union[int, None] = None    #: origin reference value, common for records sharing origin
-        self._copy_number = self._compute_copy_number()    #: copy number of the item - ith EFLRItem of the same name
+        #: origin reference value, common for records sharing origin
+        self._origin_reference: Union[int, None] = self._validate_origin_reference(origin_reference, allow_none=True)
+
+        #: copy number of the item - ith EFLRItem of the same name and type
+        self._copy_number = self._compute_copy_number()
 
         for attribute in self.attributes.values():
             attribute.parent_eflr = self
@@ -74,6 +82,24 @@ class EFLRItem:
         """Copy number of this EFLRItem."""
 
         return self._copy_number
+
+    @property
+    def origin_reference(self) -> Union[int, None]:
+        return self._origin_reference
+
+    @origin_reference.setter
+    def origin_reference(self, v: int) -> None:
+        self._origin_reference = self._validate_origin_reference(v)
+
+    @staticmethod
+    def _validate_origin_reference(v: Union[int, None], allow_none: bool = False) -> Union[int, None]:
+        if v is None and allow_none:
+            return None
+
+        if not isinstance(v, int):
+            raise TypeError(f"Origin reference must be an integer; got {type(v)}: {v}")
+
+        return v
 
     def _compute_copy_number(self) -> int:
         """Compute copy number of this ELFRItem, i.e. how many other objects of the same type and name there are."""
@@ -141,7 +167,7 @@ class EFLRItem:
 
         return _bytes
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Called before writing the item's bytes. Set default values to some attributes if they were not set at all."""
 
         pass
@@ -149,7 +175,7 @@ class EFLRItem:
     def make_item_body_bytes(self) -> bytes:
         """Create bytes describing the item: its name and values of its attributes."""
 
-        self._set_defaults()
+        self._run_checks_and_set_defaults()
 
         return b'p' + self.obname + self._make_attrs_bytes()
 
@@ -210,3 +236,85 @@ class EFLRItem:
         except ValueError:
             raise ValueError(f"Value '{value}' could not be converted to a numeric type")
         return value
+
+    @staticmethod
+    def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
+                                              make_uppercase: bool = False, allow_none: bool = False
+                                              ) -> Callable[[Union[str, None]], Union[str, None]]:
+
+        def converter(v: Union[str, None]) -> Union[str, None]:
+            """Check that the provided value is one of the accepted ones."""
+
+            if allow_none and v is None:
+                return None
+
+            if not isinstance(v, str):
+                raise TypeError(f"Expected a str, got {type(v)}: {v}")
+
+            if make_uppercase:
+                v = v.upper().replace(' ', '-').replace('_', '-')
+
+            if v not in allowed_values:
+                raise ValueError(f"{repr(v)} is not one of the allowed {label or 'values'}: "
+                                 f"{', '.join(str(av) for av in allowed_values)}")
+
+            return v
+
+        return converter
+
+    @staticmethod
+    def convert_property(v: str) -> str:
+        converter = EFLRItem.make_converter_for_allowed_str_values(
+            PROPERTIES,
+            'property indicators',
+            make_uppercase=True
+        )
+
+        return converter(v)  # type: ignore  # it does return a str
+
+
+class DimensionedItem:
+    """Mixin to be used with EFLRItem subclasses which define 'axis' and 'dimension' Attributes."""
+
+    axis: Attribute
+    dimension: "DimensionAttribute"
+
+    def _check_axis_vs_dimension(self) -> None:
+        axs = self.axis.value
+        dims = self.dimension.value
+
+        if axs is None:
+            return
+        if dims is None:
+            return
+
+        if (na := len(axs)) != (nd := len(dims)):
+            raise RuntimeError(f"{self}: number of axes ({na}) does not match the number of dimensions ({nd})")
+
+        for i in range(na):
+            ac = axs[i].coordinates.value
+            if ac is None:
+                continue
+            if (nc := len(ac)) != dims[i]:
+                raise RuntimeError(f"{self}: number of coordinates in axis {i+1} ({nc}) does not match the "
+                                   f"dimension {i+1} ({dims[i]})")
+
+    def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None],
+                                           value_label: Optional[str] = None) -> None:
+        if value is None:
+            return
+
+        value_label = value_label or 'value'
+
+        try:
+            arr = np.array(value)
+        except ValueError:
+            raise RuntimeError(f"{self}: {value_label} {value} does not have a regular dimensionality structure")
+
+        dim_from_value = list(arr.shape[1:])
+        if self.dimension.value is not None:
+            if dim_from_value != self.dimension.value:
+                raise RuntimeError(f"{self}: shape of {value_label} {value} (shape {arr.shape}) does not match "
+                                   f"the specified dimensionality: {self.dimension.value}")
+        else:
+            self.dimension.value = dim_from_value

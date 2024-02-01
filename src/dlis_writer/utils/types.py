@@ -19,3 +19,4 @@ AttrDict = TypedDict('AttrDict', {'value': Any, 'units': str}, total=False)
 
 T = TypeVar('T')
 ListOrTuple = Union[list[T], tuple[T, ...]]
+NestedList = list[Union[T, 'NestedList[T]']]

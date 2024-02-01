@@ -1,5 +1,7 @@
 from datetime import datetime
 
+import pytest
+
 from dlis_writer import AttrSetup
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
 from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
@@ -13,7 +15,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
         **{
             'phase': 'BEFORE',
             'measurement_source': channel1,
-            '_type': 'Plus',
+            'type': 'Plus',
             'axis': axis1,
             'measurement': AttrSetup(12.2323),
             'sample_count': {'value': 12},
@@ -32,12 +34,12 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
     assert m.phase.value == 'BEFORE'
     assert isinstance(m.measurement_source.value, ChannelItem)
     assert m.measurement_source.value.name == "Channel 1"
-    assert m._type.value == 'Plus'
+    assert m.type.value == 'Plus'
     assert isinstance(m.axis.value[0], AxisItem)
     assert m.axis.value[0].name == 'Axis-1'
     assert m.measurement.value == [12.2323]
     assert m.sample_count.value == 12
-    assert m.maximum_deviation.value == 2.2324
+    assert m.maximum_deviation.value == [2.2324]
     assert isinstance(m.begin_time.value, datetime)
     assert m.begin_time.value == datetime(2050, 3, 12, 12, 30)
     assert m.duration.value == 15
@@ -67,6 +69,23 @@ def test_calibration_coefficient_creation() -> None:
     assert c.references.value == [89, 298]
     assert c.plus_tolerances.value == [100.2, 222.124]
     assert c.minus_tolerances.value == [87.23, 214]
+
+
+def test_calibration_coefficient_unequal_counts() -> None:
+
+    c = CalibrationCoefficientItem(
+        'CX',
+        label='Offset',
+        coefficients=[100.2, 201.3],
+        references=[89, 298, 21],
+        plus_tolerances=[100.2, 222.124],
+        parent=CalibrationCoefficientSet()
+    )
+
+    with pytest.raises(RuntimeError,
+                       match="Number of values all numeric attributes of Calibration Coefficient should be equal; "
+                             "got 2 for COEFFICIENTS, 3 for REFERENCES, 2 for PLUS-TOLERANCES"):
+        c.make_item_body_bytes()
 
 
 def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type) -> None:

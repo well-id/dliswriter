@@ -6,9 +6,9 @@ from dlis_writer.logical_record.eflr_types.zone import ZoneItem
 
 
 @pytest.mark.parametrize(("name", "properties", "zone_names", "values"), (
-        ("COMPT-1", ["PROP 1", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], [100, 200, 300]),
-        ("COMPT2", ["PROP 2", "AVERAGED"], ["Zone-1", "Zone-3"], [1.5, 2.5]),
-        ("COMPT-X", ["XYZ"], ["Zone-3"], [12]),
+        ("COMPT-1", ["LOCALLY-DEFINED", "AVERAGED"], ["Zone-1", "Zone-2", "Zone-3"], [100, 200, 300]),
+        ("COMPT2", ["UNDER-SAMPLED", "AVERAGED"], ["Zone-1", "Zone-3"], [1.5, 2.5]),
+        ("COMPT-X", ["OVER-SAMPLED"], ["Zone-3"], [12]),
 ))
 def test_computation_creation(name: str, properties: list[str], zone_names: list[str], values: list, axis1: AxisItem,
                               zones: dict[str, ZoneItem]) -> None:
@@ -25,7 +25,7 @@ def test_computation_creation(name: str, properties: list[str], zone_names: list
 
     assert comp.name == name
     assert comp.properties.value == properties
-    assert comp.axis.value.name == axis1.name
+    assert comp.axis.value[0].name == axis1.name
     assert comp.values.value == values
 
     for i, n in enumerate(zone_names):

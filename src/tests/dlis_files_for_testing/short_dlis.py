@@ -13,9 +13,8 @@ def _add_origin(df: DLISFile) -> eflr_types.OriginItem:
     origin = df.add_origin(
         "DEFAULT ORIGIN",
         creation_time="2050/03/02 15:30:00",
-        file_id="WELL ID",
         file_set_name="Test file set name",
-        file_set_number=1,
+        file_set_number=42,
         file_number=8,
         run_number=13,
         well_id=5,
@@ -41,12 +40,13 @@ def _add_frame(df: DLISFile, *channels: eflr_types.ChannelItem) -> eflr_types.Fr
     return fr
 
 
-def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.ChannelItem, ...]:
+def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem,
+                  ln: eflr_types.LongNameItem) -> tuple[eflr_types.ChannelItem, ...]:
     ch = df.add_channel(
         name="Some Channel",
         dataset_name="image1",
         long_name="Some not so very long channel name",
-        properties=["property1", "property 2 with multiple words"],
+        properties=["AVERAGED", "locally-defined", "Speed corrected"],
         cast_dtype=np.float32,
         units="acre",
         dimension=12,
@@ -57,10 +57,10 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem) -> tuple[eflr_types.Ch
     )
 
     ch1 = df.add_channel(name="Channel 1", dimension=[10, 10], units="in")
-    ch2 = df.add_channel("Channel 2")
+    ch2 = df.add_channel("Channel 2", long_name=ln)
     ch3 = df.add_channel("Channel 13", dataset_name='amplitude', element_limit=128)
     ch_time = df.add_channel("posix time", dataset_name="contents/time", units="s")
-    ch_rpm = df.add_channel("surface rpm", dataset_name="contents/rpm")
+    ch_rpm = df.add_channel("surface rpm", dataset_name="contents/rpm", long_name=ln)
     ch_amplitude = df.add_channel("amplitude", dataset_name="contents/image0", dimension=128)
     ch_radius = df.add_channel("radius", dataset_name="contents/image1", dimension=128, units="in")
     ch_radius_pooh = df.add_channel("radius_pooh", dataset_name="contents/image2", units="m")
@@ -73,8 +73,8 @@ def _add_axes(df: DLISFile) -> tuple[eflr_types.AxisItem, ...]:
     ax1 = df.add_axis(
         name="Axis-1",
         axis_id="First axis",
-        coordinates=[40.395241, 27.792471],
-        spacing=0.33
+        coordinates=list(range(12)),
+        spacing=1
     )
     ax1.spacing.units = "m"
 
@@ -86,7 +86,19 @@ def _add_axes(df: DLISFile) -> tuple[eflr_types.AxisItem, ...]:
     )
     ax2.spacing.units = "m"
 
-    return ax1, ax2
+    ax3 = df.add_axis(
+        name="Axis-3",
+        axis_id="Whatever axis",
+        coordinates=[1, 5.5, 8]
+    )
+
+    ax4 = df.add_axis(
+        name="Axis-4",
+        axis_id="Whatever axis nr 2",
+        coordinates=[-1, 0]
+    )
+
+    return ax1, ax2, ax3, ax4
 
 
 def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
@@ -141,7 +153,8 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
     return z1, z2, z3, z4, zx
 
 
-def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...]) -> tuple[eflr_types.ParameterItem, ...]:
+def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...],
+                    ln: eflr_types.LongNameItem) -> tuple[eflr_types.ParameterItem, ...]:
     p1 = df.add_parameter(
         name="Param-1",
         long_name="LATLONG-GPS",
@@ -153,12 +166,13 @@ def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...]) -> tup
         name="Param-2",
         long_name="LATLONG",
         zones=[zones[1], zones[3]],
-        values=[40.395241, 27.792471],
+        dimension=[3],
+        values=[[40.395241, 27.792471, 21.23131213], [21, 23, 24]],
     )
 
     p3 = df.add_parameter(
         name="Param-3",
-        long_name="SOME-FLOAT-PARAM",
+        long_name=ln,
         values=[12.5]
     )
     p3.values.units = "m"
@@ -283,34 +297,36 @@ def _add_processes(df: DLISFile, parameters: tuple[eflr_types.ParameterItem, ...
 
 
 def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones: tuple[eflr_types.ZoneItem, ...],
-                     tools: tuple[eflr_types.ToolItem, ...]) -> tuple[eflr_types.ComputationItem, ...]:
+                     tools: tuple[eflr_types.ToolItem, ...], ln: eflr_types.LongNameItem
+                     ) -> tuple[eflr_types.ComputationItem, ...]:
     c1 = df.add_computation(
         name="COMPT-1",
         long_name="COMPT1",
-        properties=["PROP 1", "AVERAGED"],
-        dimension=[1],
-        axis=axes[0],
-        zones=zones[:3],
-        values=[100, 200, 300],
+        properties=["locally defined", "AVERAGED"],
+        dimension=[3],
+        axis=[axes[2]],
+        zones=zones[:2],
+        values=[[100, 200, 300], [1, 2, 3]],
         source=tools[0]
     )
 
     c2 = df.add_computation(
         name="COMPT2",
-        long_name="COMPT 2",
-        properties=["PROP 2", "AVERAGED"],
-        axis=axes[0],
+        long_name=ln,
+        properties=["under-sampled", "AVERAGED"],
+        dimension=[2],
+        axis=[axes[3]],
         zones=[zones[0], zones[2]],
-        values=[1.5, 2.5]
+        values=[[1.5, 2.5], [4.5, 3.2]]
     )
 
     cx = df.add_computation(
         name="COMPT-X",
         long_name="Computation not added to process",
-        properties=["XYZ"],
-        axis=axes[0],
-        zones=[zones[2]],
-        values=[12],
+        properties=["over_sampled"],
+        axis=[axes[0]],
+        dimension=[12],
+        values=[list(range(12, 24))],
     )
 
     return c1, c2, cx
@@ -338,19 +354,19 @@ def _add_calibrations(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...],
     cm = df.add_calibration_measurement(
         name="CMEASURE-1",
         phase="BEFORE",
-        axis=axes[0],
+        axis=axes[3],
         measurement_source=channels[1],
         measurement_type="Plus",
-        measurement=[12.2323],
+        measurement=[[12.2323, 12.2131]],
         sample_count=12,
-        maximum_deviation=2.2324,
-        standard_deviation=1.123,
+        maximum_deviation=[[2.2324, 3.121]],
+        standard_deviation=[[1.123, 1.1231]],
         begin_time=datetime(year=2050, month=3, day=12, hour=12, minute=30),
         duration=15,
-        reference=[11],
-        standard=[11.2],
-        plus_tolerance=[2],
-        minus_tolerance=[1],
+        reference=[[11, 12]],
+        standard=[[11.2, 12.2]],
+        plus_tolerance=[[2, 2]],
+        minus_tolerance=[[1, 2]],
     )
     cm.duration.units = "s"
 
@@ -406,6 +422,25 @@ def _add_well_reference_points(df: DLISFile) -> tuple[eflr_types.WellReferencePo
     )
 
     return w1, w2
+
+
+def _add_paths(df: DLISFile, frame: eflr_types.FrameItem, wrp: eflr_types.WellReferencePointItem,
+               channels: tuple[eflr_types.ChannelItem, ...]) -> tuple[eflr_types.PathItem, ...]:
+    path1 = df.add_path(
+        'PATH-1',
+        frame_type=frame,
+        well_reference_point=wrp,
+        value=(channels[0], channels[1], channels[2]),
+        borehole_depth=122.12,
+        vertical_depth=211.1,
+        radial_drift=12,
+        angular_drift=1.11,
+        time=13
+    )
+
+    path2 = df.add_path('PATH-2', value=(channels[4],), tool_zero_offset=1231.1, time=11.1)
+
+    return path1, path2
 
 
 def _add_messages(df: DLISFile) -> tuple[eflr_types.MessageItem]:
@@ -481,25 +516,29 @@ def _add_groups(df: DLISFile, channels: tuple[eflr_types.ChannelItem, ...],
     g1 = df.add_group(
         name="ChannelGroup",
         description="Group of channels",
-        object_type="CHANNEL",
         object_list=[channels[1], channels[2]]
     )
 
     g2 = df.add_group(
         name="ProcessGroup",
         description="Group of processes",
-        object_type="PROCESS",
         object_list=[processes[0], processes[1]]
     )
 
     g3 = df.add_group(
         name="MultiGroup",
         description="Group of groups",
-        object_type="GROUP",
         group_list=[g1, g2]
     )
 
-    return g1, g2, g3
+    g4 = df.add_group(
+        name="Mixed-group",
+        description="Mixed objects",
+        object_list=[channels[4], channels[5], processes[1]],
+        group_list=[g1, g3]
+    )
+
+    return g1, g2, g3, g4
 
 
 def create_dlis_file_object() -> DLISFile:
@@ -507,21 +546,22 @@ def create_dlis_file_object() -> DLISFile:
     _add_origin(df)
 
     axes = _add_axes(df)
-    channels = _add_channels(df, axes[0])
-    _add_frame(df, *channels[4:9])
+    ln = _add_long_name(df)
+    channels = _add_channels(df, axes[0], ln)
+    frame = _add_frame(df, *channels[4:9])
     zones = _add_zones(df)
-    params = _add_parameters(df, zones)
+    params = _add_parameters(df, zones, ln)
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
-    computations = _add_computation(df, axes, zones, tools)
+    computations = _add_computation(df, axes, zones, tools, ln)
     processes = _add_processes(df, params, channels, computations)
     _add_splices(df, channels, zones)
     _add_calibrations(df, axes, channels, params)
-    _add_well_reference_points(df)
+    wrp = _add_well_reference_points(df)
+    _add_paths(df, frame, wrp[0], channels)
     _add_messages(df)
     _add_comments(df)
     _add_no_formats(df)
-    _add_long_name(df)
     _add_groups(df, channels, processes)
 
     return df

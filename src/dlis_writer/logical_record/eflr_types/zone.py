@@ -1,3 +1,9 @@
+"""From RP66 v1:
+
+`Zone Objects specify single intervals in depth or time. Zone Objects are useful for associating other Objects
+or values with specific regions of a well or with specific time intervals.`
+"""
+
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
@@ -10,7 +16,13 @@ class ZoneItem(EFLRItem):
 
     parent: "ZoneSet"
 
-    domains = ('BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH')  #: allowed values for 'domain' Attribute
+    #: allowed values for 'domain' Attribute
+    # comments are quotes from RP66; 'Zone interval is'...:
+    domains = (
+        'BOREHOLE-DEPTH',   # 'along the borehole'
+        'TIME',             # 'elapsed time'
+        'VERTICAL-DEPTH'    # 'depth along the Vertical Generatrix'
+    )
 
     def __init__(self, name: str, parent: "ZoneSet", **kwargs: Any) -> None:
         """Initialise ZoneItem.
@@ -36,7 +48,7 @@ class ZoneItem(EFLRItem):
             raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
         return domain
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Check maximum and minimum vs domain before writing the object."""
 
         domain = self.domain.value

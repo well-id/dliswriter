@@ -31,8 +31,9 @@ class ProcessItem(EFLRItem):
         self.description = TextAttribute('description')
         self.trademark_name = TextAttribute('trademark_name')
         self.version = TextAttribute('version')
-        self.properties = IdentAttribute('properties', multivalued=True)
-        self.status = IdentAttribute('status', converter=self.check_status)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
+        self.status = IdentAttribute('status', converter=self.make_converter_for_allowed_str_values(
+            self.allowed_status, "status values", make_uppercase=True))
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
         self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
         self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)

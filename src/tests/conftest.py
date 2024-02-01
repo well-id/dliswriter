@@ -219,3 +219,27 @@ def computation1() -> eflr_types.ComputationItem:
 @pytest.fixture
 def computation2() -> eflr_types.ComputationItem:
     return eflr_types.ComputationItem("CMPT-2", parent=eflr_types.ComputationSet())
+
+
+@pytest.fixture()
+def frame(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem,
+          channel3: eflr_types.ChannelItem) -> eflr_types.FrameItem:
+    return eflr_types.FrameItem("MAIN FRAME", channels=(channel1, channel2, channel3),
+                                index_type='BOREHOLE-DEPTH', parent=eflr_types.FrameSet())
+
+
+@pytest.fixture()
+def well_reference_point() -> eflr_types.WellReferencePointItem:
+    return eflr_types.WellReferencePointItem(
+        name="AQLN WELL-REF",
+        permanent_datum="AQLN permanent_datum",
+        vertical_zero="AQLN vertical_zero",
+        permanent_datum_elevation=1234.51,
+        above_permanent_datum=888.51,
+        magnetic_declination=999.51,
+        coordinate_1_name="Latitude",
+        coordinate_1_value=40.395240,
+        coordinate_2_name="Longitude",
+        coordinate_2_value=27.792470,
+        parent=eflr_types.WellReferencePointSet()
+    )

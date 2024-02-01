@@ -30,4 +30,10 @@ dependencies = [
   "dlisio"
 ]
 [project.urls]
-"Homepage" = "https://github.com/well-id/dlis-writer"
+"Homepage" = "https://github.com/well-id/widc.dliswriter"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"*" = ["py.typed"]

@@ -1,17 +1,17 @@
 import logging
 from typing import Union, Optional, Any, Self
 import numpy as np
-from h5py import Dataset    # type: ignore  # untyped library
+from h5py import Dataset  # type: ignore  # untyped library
 
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
+from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
-                                                       TextAttribute, IdentAttribute)
+                                                       IdentAttribute, EFLROrTextAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
-
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +36,7 @@ class ReprCodeAttribute(Attribute):
         return self.__class__()
 
 
-class ChannelItem(EFLRItem):
+class ChannelItem(EFLRItem, DimensionedItem):
     """Model an object being part of Channel EFLR."""
 
     parent: "ChannelSet"
@@ -56,10 +56,11 @@ class ChannelItem(EFLRItem):
         # need the attribute defined for representation code check
         self._cast_dtype: Union[numpy_dtype_type, None] = None
 
-        self.long_name = TextAttribute('long_name')
-        self.properties = IdentAttribute('properties', multivalued=True)
+        self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
+        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = IdentAttribute('units', converter=self.convert_unit)
+        self.units = IdentAttribute(
+            'units', converter=self.make_converter_for_allowed_str_values(UNITS, 'units', allow_none=True))
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')
@@ -117,17 +118,44 @@ class ChannelItem(EFLRItem):
 
         if self.dimension.value != dim:
             if self.dimension.value:
-                logger.warning(f"Previously defined dimension of {self}: {self.dimension.value} "
-                               f"does not match the dimension from data: {dim}")
+                raise RuntimeError(f"Previously defined dimension of {self}: {self.dimension.value} "
+                                   f"does not match the dimension from data: {dim}")
             logger.debug(f"Setting dimension of {self} to {dim}")
             self.dimension.value = dim
 
         if self.element_limit.value != dim:
-            if self.element_limit.value:
-                logger.warning(f"Previously defined element limit of {self}: {self.element_limit.value} "
-                               f"does not match the dimension from data: {dim}")
-            logger.debug(f"Setting element limit of {self} to {dim}")
+            if self.element_limit.value:  # was specified and is not exactly equal to dim
+                if not self._compare_element_limit_vs_dimension(self.element_limit.value, dim):
+                    # the difference is and not acceptable according to RP66 rules
+                    raise RuntimeError(f"Previously defined element limit of {self}: {self.element_limit.value} "
+                                       f"does not match the dimension from data: {dim}")
+            else:
+                # only set the element limit if it was None before
+                logger.debug(f"Setting element limit of {self} to {dim}")
             self.element_limit.value = dim
+
+    @staticmethod
+    def _compare_element_limit_vs_dimension(el: list[int], dim: list[int]) -> bool:
+        """Return True if the provided element limit is valid for the specified dimension, False otherwise.
+
+        From RP66:
+        'The ELEMENT-LIMIT Attribute specifies limits on the dimensionality and size of a Channel sample.
+        The Count of this Attribute specifies the maximum allowable number of dimensions, and each Element of this
+        Attribute specifies the maximum allowable size of the corresponding dimension in array elements.
+        For example, if Element-Limit = {5 10 50}, then a Channel sample may have 0, 1, 2, or 3 dimensions.
+        The first dimension size may be no larger than 5 elements, the second no larger than 10 elements, and the last
+        no larger than 50 elements. Within these limits, the Channel sample may be of arbitrary size as specified
+        by the Dimension Attribute (...).'
+        """
+
+        if len(el) < len(dim):
+            return False
+
+        for i in range(len(dim)):
+            if el[i] < dim[i]:
+                return False
+
+        return True
 
     def _set_repr_code_from_data(self, sub_data: Union[np.ndarray, Dataset]) -> None:
         """Determine representation code of the Channel data from a relevant subset of a SourceDataWrapper."""
@@ -141,38 +169,30 @@ class ChannelItem(EFLRItem):
 
         self._set_cast_dtype(dt)
 
-    def _set_defaults(self) -> None:
+    def _run_checks_and_set_defaults(self) -> None:
         """Set up default values of ChannelItem parameters if not explicitly set previously."""
 
         if not self.element_limit.value and self.dimension.value:
             logger.debug(f"Setting element limit of channel '{self.name}' to the same value "
                          f"as dimension: {self.dimension.value}")
             self.element_limit.value = self.dimension.value
+
         elif not self.dimension.value and self.element_limit.value:
             logger.debug(f"Setting dimension of channel '{self.name}' to the same value "
                          f"as element limit: {self.element_limit.value}")
             self.dimension.value = self.element_limit.value
+
         elif self.element_limit.value != self.dimension.value:
-            logger.warning(f"For channel '{self.name}', dimension is {self.dimension.value} "
-                           f"and element limit is {self.element_limit.value}")
+            if not self._compare_element_limit_vs_dimension(self.element_limit.value, self.dimension.value):
+                # difference is not acceptable according to RP66 rules
+                raise RuntimeError(f"For channel '{self.name}', dimension is {self.dimension.value} "
+                                   f"and element limit is {self.element_limit.value}")
+
+        self._check_axis_vs_dimension()
 
         if not self.long_name.value:
             logger.debug(f"Long name of channel '{self.name}' not specified; setting it to to the channel's name")
             self.long_name.value = self.name
-
-    @staticmethod
-    def convert_unit(unit: Union[str, None]) -> Union[str, None]:
-        """Check that unit is one of the values allowed by the standard (or None)."""
-
-        if unit is None:
-            return None
-
-        if not isinstance(unit, str):
-            raise TypeError(f"Expected a str, got {type(unit)}: {unit}")
-        if unit not in UNITS:
-            logger.warning(f"'{unit}' is not one of the allowed units")
-
-        return unit
 
 
 class ChannelSet(EFLRSet):

@@ -7,10 +7,11 @@ from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
 from dlis_writer.utils.logging import install_colored_logger
+from dlis_writer.utils.types import file_name_type
 from dlis_writer.misc.synthetic_data_generator import create_data_file
+from dlis_writer.file_format_converter.file_format_converter import write_dlis_from_data_file
 
-
-from utils import path_type, prepare_directory, make_dlis_file_spec
+from utils import prepare_directory
 
 
 def make_parser() -> ArgumentParser:
@@ -38,7 +39,7 @@ def make_parser() -> ArgumentParser:
     return parser
 
 
-def create_tmp_data_file_from_pargs(file_name: path_type, pargs: Namespace) -> None:
+def create_tmp_data_file_from_pargs(file_name: file_name_type, pargs: Namespace) -> None:
     """Generate synthetic data and store it in a HDF5 file.
 
     Args:
@@ -70,12 +71,11 @@ def main() -> None:
     pargs.input_file_name = tmp_file_name
     create_tmp_data_file_from_pargs(tmp_file_name, pargs)
 
-    dlis_file = make_dlis_file_spec(tmp_file_name)
-    dlis_file.write(
-        pargs.output_file_name,
-        data=tmp_file_name,
-        input_chunk_size=int(pargs.input_chunk_size) if pargs.input_chunk_size else None,
-        output_chunk_size=int(pargs.output_chunk_size) if pargs.output_chunk_size else None,
+    write_dlis_from_data_file(
+        data_file_path=pargs.input_file_name,
+        output_file_path=pargs.output_file_name,
+        input_chunk_size=int(pargs.input_chunk_size),
+        output_chunk_size=int(pargs.output_chunk_size)
     )
 
 

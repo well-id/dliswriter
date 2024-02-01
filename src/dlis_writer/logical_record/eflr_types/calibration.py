@@ -1,22 +1,34 @@
 import logging
 from typing import Any
 
-from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute,
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, Attribute,
                                                        DTimeAttribute, DimensionAttribute, IdentAttribute)
 
 
 logger = logging.getLogger(__name__)
 
 
-class CalibrationMeasurementItem(EFLRItem):
+def count_attributes(*attrs: Attribute) -> dict:
+    # check that the multivalued attributes of the object all have the same number of values - if defined at all
+    value_counts = {}
+    for attr in attrs:
+        if attr.value is not None:
+            value_counts[attr.label] = len(attr.value)
+
+    return value_counts
+
+
+class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
     """Model an object being part of CalibrationMeasurement EFLR."""
 
     parent: "CalibrationMeasurementSet"
+
+    allowed_phases = ('AFTER', 'BEFORE', 'MASTER')
 
     def __init__(self, name: str, parent: "CalibrationMeasurementSet", **kwargs: Any) -> None:
         """Initialise CalibrationMeasurementItem.
@@ -27,24 +39,40 @@ class CalibrationMeasurementItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
-        self.phase = IdentAttribute('phase')
+        self.phase = IdentAttribute('phase', converter=self.make_converter_for_allowed_str_values(
+            self.allowed_phases, 'phases', allow_none=True, make_uppercase=True))
         self.measurement_source = EFLRAttribute(
-            'measurement_source', representation_code=RepC.OBJREF, object_class=ChannelSet)
-        self._type = IdentAttribute('_type')
+            'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)
+        self.type = IdentAttribute('type')
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
-        self.measurement = NumericAttribute('measurement', multivalued=True)
+        self.measurement = NumericAttribute('measurement', multivalued=True, multidimensional=True)
         self.sample_count = NumericAttribute('sample_count', int_only=True)
-        self.maximum_deviation = NumericAttribute('maximum_deviation')
-        self.standard_deviation = NumericAttribute('standard_deviation')
+        self.maximum_deviation = NumericAttribute('maximum_deviation', multivalued=True, multidimensional=True)
+        self.standard_deviation = NumericAttribute('standard_deviation', multivalued=True, multidimensional=True)
         self.begin_time = DTimeAttribute('begin_time', allow_float=True)
         self.duration = NumericAttribute('duration')
-        self.reference = NumericAttribute('reference', multivalued=True)
-        self.standard = NumericAttribute('standard', multivalued=True)
-        self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True)
-        self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True)
+        self.reference = NumericAttribute('reference', multivalued=True, multidimensional=True)
+        self.standard = NumericAttribute('standard', multivalued=True, multidimensional=True)
+        self.plus_tolerance = NumericAttribute('plus_tolerance', multivalued=True, multidimensional=True)
+        self.minus_tolerance = NumericAttribute('minus_tolerance', multivalued=True, multidimensional=True)
 
         super().__init__(name, parent=parent, **kwargs)
+
+    def _run_checks_and_set_defaults(self) -> None:
+        self._check_axis_vs_dimension()
+
+        controlled_attrs = (self.maximum_deviation, self.standard_deviation, self.standard,
+                            self.plus_tolerance, self.minus_tolerance)
+
+        value_counts = count_attributes(*controlled_attrs)
+
+        if len(set(value_counts.values())) > 1:
+            raise RuntimeError(f"Number of values all numeric attributes of Calibration Coefficient should be equal; "
+                               f"got {', '.join('{} for {}'.format(v, k) for k, v in value_counts.items())}")
+
+        for attr in controlled_attrs:
+            self._check_or_set_value_dimensionality(attr.value, value_label=attr.label)
 
 
 class CalibrationMeasurementSet(EFLRSet):
@@ -76,6 +104,13 @@ class CalibrationCoefficientItem(EFLRItem):
         self.minus_tolerances = NumericAttribute('minus_tolerances', multivalued=True)
 
         super().__init__(name, parent=parent, **kwargs)
+
+    def _run_checks_and_set_defaults(self) -> None:
+        value_counts = count_attributes(self.coefficients, self.references, self.plus_tolerances, self.minus_tolerances)
+
+        if len(set(value_counts.values())) > 1:
+            raise RuntimeError(f"Number of values all numeric attributes of Calibration Coefficient should be equal; "
+                               f"got {', '.join('{} for {}'.format(v, k) for k, v in value_counts.items())}")
 
 
 class CalibrationCoefficientSet(EFLRSet):

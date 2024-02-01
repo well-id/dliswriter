@@ -1,7 +1,7 @@
 import logging
 from numbers import Number
 from datetime import datetime
-from typing import Union, Optional, Any
+from typing import Union, Optional, Any, overload
 
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
@@ -22,7 +22,7 @@ class EFLRAttribute(Attribute):
 
     _units_settable = False
     _valid_repr_codes = (RepC.OBNAME, RepC.OBJREF)
-    _default_repr_code = RepC.OBNAME
+    _default_repr_code: Union[RepC, None] = RepC.OBNAME
 
     def __init__(self, label: str, object_class: Optional[type[EFLRSet]] = None, **kwargs: Any) -> None:
         """Initialise EFLRAttribute.
@@ -45,13 +45,54 @@ class EFLRAttribute(Attribute):
         self._object_class = object_class
         self._converter = self._convert_value
 
-    def _convert_value(self, v: type[EFLRItem]) -> type[EFLRItem]:
+    def _convert_value(self, v: EFLRItem) -> EFLRItem:
         """Implements default converter/checker for the value(s). Check that the value is an EFLRObject."""
 
         object_class = self._object_class.item_type if self._object_class else EFLRItem
         if not isinstance(v, object_class):
             raise TypeError(f"Expected an instance of {object_class.__name__}; got {type(v)}: {v}")
         return v
+
+
+class EFLROrTextAttribute(EFLRAttribute):
+    _valid_repr_codes = (RepC.OBNAME, RepC.ASCII)
+    _default_repr_code = None
+
+    def __init__(self, label: str, **kwargs: Any):
+        if kwargs.get('multivalued', False):
+            raise ValueError(f"{self.__class__.__name__} cannot be multivalued")
+
+        super().__init__(label=label, **kwargs)
+
+    @overload
+    def _convert_value(self, v: str) -> str: ...
+
+    @overload
+    def _convert_value(self, v: EFLRItem) -> EFLRItem: ...
+
+    def _convert_value(self, v: Union[EFLRItem, str]) -> Union[EFLRItem, str]:
+        if isinstance(v, EFLRItem):
+            return super()._convert_value(v)
+
+        if isinstance(v, str):
+            return v
+
+        else:
+            raise TypeError(f"Expected an EFLRItem or a str; got {type(v)}: {v}")
+
+    def _guess_repr_code(self) -> Union[RepC, None]:
+        v = self.value
+
+        if v is None:
+            return None
+
+        if isinstance(v, EFLRItem):
+            return RepC.OBNAME
+
+        if isinstance(v, str):
+            return RepC.ASCII
+
+        raise RuntimeError(f"Cannot determine representation code for {type(v)}: {v} in a {self.__class__.__name__}")
 
 
 class DTimeAttribute(Attribute):
@@ -152,8 +193,18 @@ class NumericAttribute(Attribute):
             self._check_repr_code_numeric(rc)
 
         super().__init__(*args, **kwargs)
+
         if not self._converter:
             self._converter = self._convert_number
+        else:
+            custom_converter = self._converter
+
+            def converter(number: number_type) -> number_type:
+                number = self._convert_number(number)
+                number = custom_converter(number)
+                return number
+
+            self._converter = converter
 
     def _check_repr_code_numeric(self, rc: Union[RepC, None]) -> None:
         """Check that the provided representation code, if not None, is of appropriate numerical type."""

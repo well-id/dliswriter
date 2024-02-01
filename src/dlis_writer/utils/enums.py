@@ -214,6 +214,40 @@ UNITS = (
     "us"
 )
 
+#: allowed values for elements of the 'properties' attribute of Channel and Process
+PROPERTIES = (
+    'AVERAGED',
+    'CALIBRATED',
+    'CHANGED-INDEX',
+    'COMPUTED',
+    'DEPTH-MATCHED',
+    'DERIVED',
+    'FILTERED',
+    'HOLE-SIZE-CORRECTED',
+    'INCLINOMETRY-CORRECTED',
+    'LITHOLOGY-CORRECTED',
+    'LOCAL-COMPUTATION',
+    'LOCALLY-DEFINED',
+    'MODELLED',
+    'MUDCAKE-CORRECTED',
+    'NORMALIZED',
+    'OVER-SAMPLED',
+    'PATCHED',
+    'PRESSURE-CORRECTED',
+    'RE-SAMPLED',
+    'SALINITY-CORRECTED',
+    'SAMPLED-DOWNWARD',
+    'SAMPLED-UPWARD',
+    'SPEED-CORRECTED',
+    'SPLICED',
+    'SQUARED',
+    'STACKED',
+    'STANDARD-DEVIATION',
+    'STANDOFF-CORRECTED',
+    'TEMPERATURE-CORRECTED',
+    'UNDER-SAMPLED'
+)
+
 
 class EFLRType(IntEnum):
     """Types of explicitly formatted logical records."""

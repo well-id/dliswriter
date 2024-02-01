@@ -1,25 +1,17 @@
 from datetime import datetime, timedelta
+import numpy as np
+import pytest
 
 from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
+from dlis_writer.utils.struct_writer import ULONG_OFFSET
 
 
 def test_origin_creation() -> None:
     """Test creating OriginItem."""
 
-    origin = OriginItem(
-        'DEFAULT ORIGIN',
-        creation_time="2050/03/02 15:30:00",
-        file_id="WELL ID",
-        file_set_name="Test file set name",
-        file_set_number=1,
-        file_number=8,
-        run_number=13,
-        well_id=5,
-        well_name="Test well name",
-        field_name="Test field name",
-        company="Test company",
-        parent=OriginSet()
-    )
+    origin = OriginItem('DEFAULT ORIGIN', parent=OriginSet(), file_set_number=1, creation_time="2050/03/02 15:30:00",
+                        file_id="WELL ID", file_set_name="Test file set name", file_number=8, run_number=13, well_id=5,
+                        well_name="Test well name", field_name="Test field name", company="Test company")
 
     assert origin.name == 'DEFAULT ORIGIN'
 
@@ -60,9 +52,23 @@ def test_origin_creation_no_dtime_in_attributes() -> None:
 def test_origin_creation_no_attributes() -> None:
     """Test creating OriginItem with minimum number of parameters."""
 
-    origin = OriginItem("Some origin name", file_set_number=2, parent=OriginSet())
+    origin = OriginItem("Some origin name", parent=OriginSet())
 
     assert origin.name == "Some origin name"
     assert origin.well_name.value is None
 
+    assert origin.file_set_number.value is not None
+    assert isinstance(origin.file_set_number.value, int)
+    assert 1 <= origin.file_set_number.value <= np.iinfo(np.uint32).max - ULONG_OFFSET
+
     assert timedelta(seconds=0) <= datetime.now() - origin.creation_time.value < timedelta(seconds=1)
+
+    origin.make_item_body_bytes()  # this is where defaults are set
+    assert origin.field_name.value == 'WILDCAT'  # default according to RP66
+
+
+def test_no_reassign_file_set_number() -> None:
+    origin = OriginItem("Some origin name", parent=OriginSet())
+
+    with pytest.raises(RuntimeError, match="File set number should not be reassigned.*"):
+        origin.file_set_number.value = 15
