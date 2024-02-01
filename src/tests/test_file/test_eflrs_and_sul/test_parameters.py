@@ -31,4 +31,3 @@ def test_parameters_params(short_dlis: dlis.file.LogicalFile, idx: int, name: st
     assert param.origin == 42
 
     check_list_of_objects(param.zones, zones)
-

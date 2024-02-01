@@ -22,4 +22,3 @@ def test_equipment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str
     assert eq.status == status
     assert eq.serial_number == serial_number
     assert eq.origin == 42
-

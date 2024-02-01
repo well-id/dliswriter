@@ -16,4 +16,3 @@ def test_no_format_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str
     assert w.consumer_name == consumer_name
     assert w.description == description
     assert w.origin == 42
-

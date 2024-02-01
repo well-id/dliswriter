@@ -1,7 +1,7 @@
 from dlisio import dlis    # type: ignore  # untyped library
 
 
-from tests.common import N_COLS, select_channel, check_list_of_objects
+from tests.common import N_COLS, select_channel
 
 
 def test_channel_properties(short_dlis: dlis.file.LogicalFile) -> None:
@@ -48,4 +48,3 @@ def test_channel_not_in_frame(short_dlis: dlis.file.LogicalFile) -> None:
     name = 'channel_x'
     select_channel(short_dlis, name)  # if no error - channel is found in the file
     assert not any(c.name == name for c in short_dlis.frames[0].channels)
-

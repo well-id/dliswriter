@@ -19,4 +19,3 @@ def test_well_reference_point_params(short_dlis: dlis.file.LogicalFile, idx: int
     assert w.coordinates[c1_name] == c1_value
     assert w.coordinates[c2_name] == c2_value
     assert w.origin == 42
-

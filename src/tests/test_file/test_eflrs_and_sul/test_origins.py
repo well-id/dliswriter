@@ -33,4 +33,3 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
     assert origin.order_nr is None
     assert origin.version is None
     assert origin.programs == []
-

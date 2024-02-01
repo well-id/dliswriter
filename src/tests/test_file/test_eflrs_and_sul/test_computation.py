@@ -36,4 +36,3 @@ def test_computation_long_name(short_dlis: dlis.file.LogicalFile) -> None:
     assert short_dlis.computations[0].long_name == "COMPT1"
     assert short_dlis.computations[1].long_name is short_dlis.longnames[0]
     assert short_dlis.computations[2].long_name == "Computation not added to process"
-

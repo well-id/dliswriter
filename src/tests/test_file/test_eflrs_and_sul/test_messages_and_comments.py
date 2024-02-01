@@ -32,4 +32,3 @@ def test_comment_params(short_dlis: dlis.file.LogicalFile, idx: int, name: str, 
     assert c.name == name
     assert c.text == text
     assert c.origin == 42
-
