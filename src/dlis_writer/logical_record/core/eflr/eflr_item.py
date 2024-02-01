@@ -238,23 +238,8 @@ class EFLRItem:
         return value
 
     @staticmethod
-    def make_converter_for_allowed_values(allowed_values: Iterable[Any], return_type: type,
-                                          label: Optional[str] = None) -> Callable:
-        def converter(v: Any) -> return_type:
-            """Check that the provided value is one of the accepted ones."""
-
-            if v not in allowed_values:
-                raise ValueError(f"{repr(v)} is not one of the allowed {label or 'values'}: "
-                                 f"{', '.join(str(av) for av in allowed_values)}")
-
-            return v
-
-        return converter
-
-    @staticmethod
     def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
                                               make_uppercase: bool = False, allow_none: bool = False) -> Callable:
-        top_converter = EFLRItem.make_converter_for_allowed_values(allowed_values, str, label)
 
         def converter(v: Union[str, None]) -> Union[str, None]:
             """Check that the provided value is one of the accepted ones."""
@@ -268,7 +253,11 @@ class EFLRItem:
             if make_uppercase:
                 v = v.upper().replace(' ', '-').replace('_', '-')
 
-            return top_converter(v)
+            if v not in allowed_values:
+                raise ValueError(f"{repr(v)} is not one of the allowed {label or 'values'}: "
+                                 f"{', '.join(str(av) for av in allowed_values)}")
+
+            return v
 
         return converter
 
