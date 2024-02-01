@@ -297,7 +297,8 @@ def _add_processes(df: DLISFile, parameters: tuple[eflr_types.ParameterItem, ...
 
 
 def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones: tuple[eflr_types.ZoneItem, ...],
-                     tools: tuple[eflr_types.ToolItem, ...]) -> tuple[eflr_types.ComputationItem, ...]:
+                     tools: tuple[eflr_types.ToolItem, ...], ln: eflr_types.LongNameItem
+                     ) -> tuple[eflr_types.ComputationItem, ...]:
     c1 = df.add_computation(
         name="COMPT-1",
         long_name="COMPT1",
@@ -311,7 +312,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
 
     c2 = df.add_computation(
         name="COMPT2",
-        long_name="COMPT 2",
+        long_name=ln,
         properties=["under-sampled", "AVERAGED"],
         dimension=[2],
         axis=[axes[3]],
@@ -552,7 +553,7 @@ def create_dlis_file_object() -> DLISFile:
     params = _add_parameters(df, zones, ln)
     equipment = _add_equipment(df)
     tools = _add_tools(df, equipment, params, channels)
-    computations = _add_computation(df, axes, zones, tools)
+    computations = _add_computation(df, axes, zones, tools, ln)
     processes = _add_processes(df, params, channels, computations)
     _add_splices(df, channels, zones)
     _add_calibrations(df, axes, channels, params)

@@ -600,7 +600,7 @@ class DLISFile:
     def add_computation(
             self,
             name: str,
-            long_name: OptAttrSetupType[str] = None,
+            long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
             properties: OptAttrSetupType[list[str]] = None,
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
