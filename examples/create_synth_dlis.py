@@ -34,6 +34,7 @@ ax1.spacing.value = 0.2
 ax1.spacing.units = 'm'
 ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5], origin_reference=origin2.file_set_number.value)
 # ^ mark ax2 as belonging to origin2
+ax3 = df.add_axis("AXIS3", spacing=0.1, coordinates=[0])
 
 
 # define long_names - descriptions for channels, parameters, and computations
@@ -45,7 +46,7 @@ long_name3 = df.add_long_name("ANOTHER LONG NAME", conditions=["At Standard Temp
 # define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
 ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10 - 3, units='m')   # index channel - always scalar
-ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32) - 2, axis=ax1)  # 1D data
+ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32) - 2, axis=ax3)  # 1D data
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5), cast_dtype=np.float32,
                      long_name=long_name3)  # 2D data
 ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.randint(0, 100, dtype=np.uint8, size=n_rows_depth),
@@ -56,7 +57,7 @@ main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_typ
 # define frame 2: time-based with 2 channels, 200 rows each
 n_rows_time = 200
 ch5 = df.add_channel(
-    'TIME', data=np.arange(n_rows_time), cast_dtype=np.uint32, units='s', axis=ax2)  # index channel for frame 2
+    'TIME', data=np.arange(n_rows_time), cast_dtype=np.uint32, units='s', axis=ax3)  # index channel for frame 2
 ch6 = df.add_channel(
     'TEMPERATURE', data=np.random.randint(-10, 30, size=n_rows_time, dtype=np.int8),
     cast_dtype=np.int16, units='degC')
@@ -73,15 +74,15 @@ zone3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=
 
 
 # splices - using zones & channels
-splice1 = df.add_splice('SPLICE1', input_channels=(ch1, ch2), output_channel=ch4, zones=(zone1,))
-splice2 = df.add_splice('SPLICE2', input_channels=(ch5,), output_channel=ch6, zones=(zone2, zone3))
+splice1 = df.add_splice('SPLICE1', input_channels=(ch1,), output_channel=ch4, zones=(zone1,))
+splice2 = df.add_splice('SPLICE2', input_channels=(ch5, ch2), output_channel=ch6, zones=(zone2, zone3))
 
 
 # parameters - using zones, axes, and long name
 parameter1 = df.add_parameter('PARAM1', long_name="Parameter nr 1", axis=ax1,
                               values={'value': [1], 'units': 'in'})
-parameter2 = df.add_parameter('PARAM2', zones=(zone2, zone3, zone1), long_name=long_name2,
-                              values=["val1", "val2", "val3"], dimension=[3])
+parameter2 = df.add_parameter('PARAM2', zones=(zone2,), long_name=long_name2,
+                              values=[["val1", "val2", "val3"]], dimension=[3])
 
 
 # equipment
@@ -106,8 +107,8 @@ tool2 = df.add_tool('TOOL2', parameters=(parameter1, parameter2), channels=(ch1,
 
 
 # computation - using axis, zones, tool, and long name
-computation1 = df.add_computation('CMPT1', axis=[ax1], source=tool2, zones=(zone1, zone2, zone3), dimension=[3])
-computation1.values.value = [1, 2, 3]
+computation1 = df.add_computation('CMPT1', axis=[ax1], source=tool2, zones=(zone1, zone2, zone3), dimension=[2])
+computation1.values.value = [[1, 2], [1, 3], [1, 4]]
 computation2 = df.add_computation('CMPT2', values=[2.3, 11.12312, 2231213.22])
 computation3 = df.add_computation('CMPT3', values=[3.14], long_name=long_name3)
 
