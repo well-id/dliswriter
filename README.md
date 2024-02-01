@@ -997,6 +997,7 @@ title: Attribute and its subtypes
 ---
 classDiagram
     Attribute <|-- EFLRAttribute
+    EFLRAttribute <|-- EFLROrTextAttribute
     Attribute <|-- DTimeAttribute
     Attribute <|-- NumericAttribute
     NumericAttribute <|-- DimensionAttribute
@@ -1064,6 +1065,10 @@ classDiagram
 `CalibrationCoefficient`s and `CalibrationMeasurement`s of `Calibration`.
 The value of an `EFLRAttribute` is an instance of (usually specific subtype of) `EFLRItem`.
 The representation code can be either `OBNAME` or `OBJREF`. The unit should not be defined (is meaningless).
+Its subclass, `EFLROrTextAttribute`, is similar, but in addition accepts plain text as value
+(represented as `ASCII`). This subclass is meant for the _long-name_ attribute of [Channel](#channel), 
+[Process](#process), and [Computation](#computation); the value of this attribute can be either text 
+or a [`LongNameItem` object](#long-name).
 
 `DTimeAttribute` is meant for keeping time reference, either in the form of a `datetime.datetime` object
 or a number, indicating time since a specific event. The representation code is adapted
