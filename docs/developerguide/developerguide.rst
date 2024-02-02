@@ -7,7 +7,7 @@ Further, the principles of converting the Python objects to DLIS-compliant bytes
 
 Logical Records and Visible Records
 -----------------------------------
-:doc:`As mentioned before <aboutdlisformat>`, at an abstract level, DLIS file consists of multiple *logical records*
+:doc:`As mentioned before <../aboutdlisformat>`, at an abstract level, DLIS file consists of multiple *logical records*
 (LRs). They can be viewed as abstract units, containing a specific type of data and/or metadata.
 
 On the other hand, in physical sense, a DLIS file is divided into *visible records* (VRs). They are byte structures
@@ -546,7 +546,7 @@ Subsections below explain how these objects are converted to bytes, which then b
 
 DLISFile object
 ~~~~~~~~~~~~~~~
-The ``DLISFile`` class, as shown in the :doc:`user guide <userguide>`,
+The ``DLISFile`` class, as shown in the :doc:`user guide <../userguide/userguide>`,
 is the main point of the user's interaction with the library.
 It facilitates defining a (future) file with all kinds of EFLR and IFLR objects and the relations between them.
 
@@ -592,7 +592,7 @@ This makes it trivial to reuse already defined 'lower-level' objects as many tim
     another_channel = dlis_file.add_channel(..., axis=(an_axis, ...))
 
 
-As shown in the :doc:`user guide <userguide>`, once all required objects are defined,
+As shown in the :doc:`user guide <../userguide/userguide>`, once all required objects are defined,
 the ``write()`` method of ``DLISFile`` can be called to generate DLIS bytes and store them in a file.
 
 

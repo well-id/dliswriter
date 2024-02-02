@@ -109,7 +109,7 @@ It is also possible to pass the units together with the value, using a ``dict``:
                         minimum={'value': 10, 'units': 'm'}, maximum={'value': 30, 'units': 'm'})
 
 
-As per the logical records relations graph (see the :doc:`Developer guide <../developerguide>`),
+As per the logical records relations graph (see the :doc:`Developer guide <../developerguide/developerguide>`),
 Zone objects can be used to define e.g. Splice objects (which also refer to Channels):
 
 .. code-block:: python
@@ -118,7 +118,7 @@ Zone objects can be used to define e.g. Splice objects (which also refer to Chan
 
 
 For more objects, see example file at ``examples/create_synth_dlis.py``
-and the description of all implemented objects in the :doc:`Developer guide <../developerguide>`.
+and the description of all implemented objects in the :doc:`Developer guide <../developerguide/developerguide>`.
 
 Definition of all additional objects should precede the call to ``.write()`` of ``DLISFile``,
 otherwise no strict order is observed.

@@ -12,7 +12,7 @@ Welcome to DLIS Writer's documentation!
 
    aboutdlisformat
    userguide/index.rst
-   developerguide
+   developerguide/index.rst
    changelog
 
 
