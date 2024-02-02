@@ -10,6 +10,8 @@ Welcome to DLIS Writer's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   changelog
+
 
 
 Indices and tables

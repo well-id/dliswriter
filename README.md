@@ -3,7 +3,6 @@
 Welcome to `dlis-writer`, possibly the only public Python library for creating DLIS files.
 
 ## Table of contents
-- [Release log](#release-log)
 - [About the DLIS format](#about-the-dlis-format)
 - [User guide](#user-guide)
   - [Minimal example](#minimal-example)
@@ -33,63 +32,6 @@ Welcome to `dlis-writer`, possibly the only public Python library for creating D
     - [Converting objects and attributes to bytes](#converting-objects-and-attributes-to-bytes)
     - [Writer configuration](#writer-configuration)
 
-
----
-## Release log
-##### 0.0.9 Multiple Origins, processing input files, documentation (pending)
-- Added the possibility to have multiple Origin objects in the created file.
-  The first added Origin is automatically used as the _defining Origin_ of the file, but an alternative Origin reference
-  can be set for each created DLIS object. See [the example](./examples/create_synth_dlis.py).
-- Made `file_set_number` an optional argument for creating Origin; 
-  instead, it's generated randomly in accordance with the RP66 standard.
-- Added scripts to write data from .xls/.xlsx, .csv, and .las files to a basic DLIS
-  (in addition to the preexisting .h5/.hdf5 converter).
-  See [the `file_format_converter` subpackage](./src/dlis_writer/file_format_converter)
-  and [the related example](./examples/create_dlis_from_data.py).
-- Added quotes from RP66 to docstrings of `add_<object>` methods of `DLISFile`.
-- Implemented additional restrictions specified by the standard - e.g. dimensionality of values, number of zones vs
-  number of values, number of axis coordinates vs dimension/value, etc.
-- Added the possibility for LongName objects to be referenced by Channel, Computation, and Parameter.
-
-##### 0.0.8 API improvements & fixes
-- Removed representation code setters from `Attribute`.
-- More value type and representation code (repr code inferred from value) checks.
-- Setting up `Attribute`s' values and units together using `dict` or a new `AttrSetup` class.
-- `DLISFile`: `add_origin` method; origin instance or setup keywords no longer accepted in `DLISFile` init.
-- Support for defining multiple dlis files within one session (script).
-- Removed logging formatting from library root.
-- Exposed most frequently needed objects for import from library root (`from dlis_writer import ...`).
-- Explicit init arguments and docstrings for most frequently used classes.
-- Saving date-time in GMT rather than 'local time'.
-- Passing file header and storage unit label initialisation arguments directly to `DLISFile`.
-- General refactoring & typing fixes.
-
-##### 0.0.7 Equivalent (_parallel_) frames
-Made it easier to add frames with the same set of channel (dataset) names, but separate data - e.g. 
-two of each: DEPTH, RPM, and AMPLITUDE, coming from two separate measurements, 
-associated with relevant frames (FRAME_1, FRAME_2).
-See [this example](./examples/create_dlis_equivalent_frames.py).
-
-##### 0.0.6 Representation codes
-Fixed representation codes for numpy dtypes.
-Tests & improvements for utils (repr code converter, source data wrappers, etc.).
-
-##### 0.0.5: Cleanup
-Some name changes, restructuring. Updated README.
-
-##### 0.0.4: All DLIS objects added
-Exposed all types of DLIS objects (WellReferencePoint, Group, Message, etc.) 
-in `DLISFile` through `add_<object>` methods (e.g. `add_group`).
-
-##### 0.0.3: Instantiating ELFRObjects directly
-Each `EFLRObject` (later renamed to `EFLRInstance`) can be initialised directly by calling the constructor
-of the relevant class (before they were initialised through the corresponding `EFLR`, later renamed to `EFLRSet`).
-
-##### 0.0.2: More DLIS objects
-Added support for more objects (Zone, Splice, Axis) to the `DLISFile`.
-
-##### 0.0.1: First release
-New structure of the repository, compliant with WellID standards.
 
 ---
 ## About the DLIS format
