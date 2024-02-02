@@ -165,59 +165,6 @@ subpackage can be used to create DLIS files from a number of different input dat
 
 
 
-### Writing the binary file
-The objects described above are Python representation of the information to be included in a DLIS file.
-Subsections below explain how these objects are converted to bytes, which then become a part of the created file.
-
-#### `DLISFile` object
-The [`DLISFile` class](./src/dlis_writer/file/file.py), as shown in the [User guide](#user-guide),
-is the main point of the user's interaction with the library.
-It facilitates defining a (future) file with all kinds of EFLR and IFLR objects and the relations between them.
-
-The interface was initially inspired by that of `h5py`, in particular the HDF5-writer part of it:
-the _child_ objects (e.g. HDF5 _datasets_) can be created and simultaneously linked to the _parent_ objects 
-(e.g. HDF5 _groups_) by calling a relevant method of the parent instance like so:
-
-```python
-new_h5_dataset = some_h5_group.add_dataset(...)
-```
-
-However, while the HDF5 structure is strictly hierarchical, the same cannot be said about DLIS.
-For example, the same Zone can be referenced by multiple Splices, Parameters, and Computations.
-It is also possible to add any object without it referencing or being referenced by other objects.
-This is the case both for _standalone_ objects, such as Message or Comment, and the 
-potentially interlinked objects, such as Zone or Parameter. 
-(Note: adding a standalone Channel object is possible, but is known to cause issues in some readers, e.g. _DeepView_.)
-For this reason, in the `dlis-writer` implementation, adding objects in the `h5py` manner is only possible 
-from the top level - a `DLISFile`:
-
-```python
-dlis_file = DLISFile()
-a_channel = dlis_file.add_channel(...)
-an_axis = dlis_file.add_axis(...)
-```
-
-In order to mark relations between objects, a 'lower-level' object should be created first and then
-passed as argument when creating a 'higher-level' object:
-
-```python
-a_frame = dlis_file.add_frame(..., channels=(a_channel, ...))   # frame can have multiple channels
-a_computation = dlis_file.add_computation(..., axis=an_axis)    # computation can only have 1 axis
-```
-
-This makes it trivial to reuse already defined 'lower-level' objects as many times as needed:
-
-```python
-# (multiple axes possible for both Parameter and Channel)
-a_param = dlis_file.add_parameter(..., axis=(an_axis, ...))  
-another_channel = dlis_file.add_channel(..., axis=(an_axis, ...))
-```
-
-As shown in the [User guide](#user-guide), once all required objects are defined,
-the `write()` method of `DLISFile` can be called to generate DLIS bytes and store them in a file.
-The `write()` method first transforms the data into a [`FileLogicalRecords`](#filelogicalrecords-object) object,
-which is then passed to [`DLISWriter`](#dliswriter-and-auxiliary-objects), responsible for writing the file.
-
 #### Ways of passing data
 Data associated with the file's Channels can be passed when adding a Channel to teh `DLISFile` instance.
 Data added in this way is stored in an internal dictionary, mapped by the Channels' names.
