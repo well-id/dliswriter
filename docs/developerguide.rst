@@ -636,3 +636,62 @@ The optimal value varies depending on the structure of the data (number & widths
 as well as the hardware configuration.
 
 
+DLISWriter and auxiliary objects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+``DLISWriter`` is the object where the bytes creation and writing to file happens.
+Given the iterable of logical records, provided by the ``DLISFile``,
+a ``DLISWriter`` iterates over the logical records and for each one:
+
+#. Assigns an _origin_reference_ to all objects in the file.
+   The origin reference is the ``file_set_number`` of the Origin object defined in the file.
+#. Calls for creation of bytes describing that logical record
+   (see `Converting objects and attributes to bytes`_)
+#. If the bytes sequence is too long to fit into a single visible record,
+   it splits the bytes into several segments (see [the explanation](#logical-records-and-visible-records))
+#. Wraps the segments (or full bytes sequence) in visible records and writes the resulting bytes to a file.
+
+The writing of bytes is aided by objects of two auxiliary classes: ``ByteWriter`` and ``BufferedOutput``.
+The main motivation between both is to facilitate gradual, _chunked_ writing of bytes to a file
+rather than having to keep everything in memory and dumping it to the file at the very end.
+
+``ByteWriter`` manages access to the created DLIS file. Its ``write_bytes()`` method,
+which can be called repetitively, writes or appends the provided bytes to the file.
+The object also keeps track of the total size (in bytes) of the file as it is being created.
+
+The role of ``BufferedOutput`` is to gather bytes of the created visible records
+and periodically call the ``write_bytes()`` of the ``ByteWriter`` to send the collected
+bytes to the file and clear its internal cache, getting ready for receiving more bytes.
+The size of the gathered bytes chunk is user-tunable through ``output_chunk_size`` argument to the
+``write()`` method of the ``DLISFile``.
+It can be adjusted to tackle the tradeoff between the amount of data stored in memory at any given point
+and the number of I/O calls.
+
+
+Converting objects and attributes to bytes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+The way in which different objects are converted to DLIS-compliant bytes
+depends on the category these objects fall into, according to the earlier specified
+[division](#logical-record-types).
+
+* `Storage Unit Label`_ has its own predefined bytes structure of fixed length.
+  Its content varies minimally, taking into account the parameters specified at its creation,
+  such as visible record length, storage set identifier, etc.
+* The main part of `Frame Data`_ (IFLR) - the numerical data associated with the Channels - is stored
+  in the object as a row od a structured ``numpy.ndarray``. Each entry of the array is converted to
+  bytes using the ``numpy`` 's built-in ``tobytes()`` method (with additional ``byteswap()`` call before that
+  to account for the big-endianness of DLIS). Additional bytes referring to the [Frame](#frame)
+  and the index of the current Frame Data in the Frame are added on top.
+* In `No-Format Frame Data`_, the *data* part can be already expressed as bytes,
+  in which case it is used as-is. Otherwise, it is assumed to be of string type and is encoded as ASCII.
+  A reference to the parent `No-Format`_ object is added on top.
+* EFLR objects (`EFLRSet and EFLRItem`_) are treated per ``EFLRSet`` instance.
+
+    * First, bytes describing the ``EFLRSet`` instance are made, including its ``set_type``
+      and ``set_name`` (if present).
+    * Next, *template* bytes are added. These specify the order and names of ``Attribute`` s
+      characterising the ``EFLRItem`` instances belonging to the given ``EFLRSet``.
+    * Finally, each of the ``EFLRItem`` 's bytes are added. Bytes of an ``EFLRItem`` instance consist of
+      its name + *origin reference* + *copy number* description, followed by the values and other characteristics
+      (units, repr. codes, etc.) of each of its ``Attribute`` s in the order specified in the
+      ``EFLRSet`` 's *template*.
+
