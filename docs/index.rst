@@ -10,6 +10,7 @@ Welcome to DLIS Writer's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   aboutdlisformat
    changelog
 
 
