@@ -39,10 +39,9 @@ could also be viewed as a logical record. However, due to functional discrepanci
 in the library, it does not inherit from the base ``LogicalRecord`` class; on the other hand,
 it is implemented such that it can mock one and can be used alongside with actual ``LogicalRecord`` objects.
 
-An overview of the types of logical records is shown below.
+An overview of the types of logical records is shown below. _`LR types diagram`
 
-.. _lr types diagram:
-..mermaid:: class-diagrams/logical-record-types.mmd
+.. mermaid:: class-diagrams/logical-record-types.mmd
 
 
 Storage Unit Label
@@ -51,14 +50,14 @@ Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.
 Its format is different from that of other logical record types.
 
 The attribute ``max_record_length`` of SUL determines the maximum length allowed for visible
-records of the file (see :ref:`Logical Records and Visible Records`_),
+records of the file (see `Logical Records and Visible Records`_),
 expressed in bytes. This number is limited to 16384 and the default is 8192.
 
 IFLR objects
 ------------
 *IFLR*, or *Indirectly Formatted Logical Record* objects, are meant for keeping numerical or binary data.
-There are two categories of IFLR:  :ref:`Frame Data`_ for strictly formatted numerical data
-and :ref:`No-Format Frame Data`_ for arbitrary data bytes.
+There are two categories of IFLR:  `Frame Data`_ for strictly formatted numerical data
+and `No-Format Frame Data`_ for arbitrary data bytes.
 
 Frame Data
 ~~~~~~~~~~
@@ -83,15 +82,15 @@ It must reference a [No-Format](#no-format) object. The data - as bytes or str -
 IFLR objects and their relations to EFLR objects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The relations of Frame Data and No-Format Frame-Data to their 'parent' EFLR objects is summarised below.
-For explanation on the differences between ``FrameSet`` and ``FrameItem`` etc., please see :ref:`EFLRSet and EFLRItem`_.
+For explanation on the differences between ``FrameSet`` and ``FrameItem`` etc., please see `EFLRSet and EFLRItem`_.
 
-..mermaid:: class-diagrams/iflrs-vs-eflrs.mmd
+.. mermaid:: class-diagrams/iflrs-vs-eflrs.mmd
 
 
 EFLR objects
 ------------
 *Explicitly Formatted Logical Records* are meant for representing metadata according to pre-defined schemes.
-More than 20 such schemes are defined (see :ref:`Implemented EFLR objects`_).
+More than 20 such schemes are defined (see `Implemented EFLR objects`_).
 Each one lists a specific set of attributes.
 Some of the EFLRs are required for a DLIS file: *File Header*, *Origin*,
 *Frame*, and *Channels*. Others are optional ways of specifying more metadata.
@@ -104,7 +103,7 @@ e.g. ``ChannelSet`` and ``ChannelItem``, ``FrameSet`` and ``FrameItem``, etc.
 
 ``EFLRItem`` is e.g. a single Channel, Frame, or Axis.
 It has its own name (the first positional argument when initialising the object)
-and a number of attributes (``Attribute`` instances; :ref:`DLIS Attributes`_), pre-defined by the standard.
+and a number of attributes (``Attribute`` instances; `DLIS Attributes`_), pre-defined by the standard.
 For example, for a Channel, these attributes include: units, dimension, representation code,
 minimum and maximum value, and others.
 
@@ -115,7 +114,7 @@ all ``EFLRItem`` s added to an ``EFLRSet`` will have exactly the same set of att
 Therefore, an ``EFLRSet`` can be viewed as a table of ``EFLRItem`` s, with attribute names as table header
 and individual ``EFLRItem`` with their attribute values as rows in that table.
 
-As shown in the :ref:`class diagram <lr types diagram>` above, it is ``EFLRSet``, not ``EFLRItem``
+As shown in the `LR types diagram`_ above, it is ``EFLRSet``, not ``EFLRItem``
 that inherits from ``LogicalRecord`` base class. While this might be non-intuitive,
 it is consistent with the standard; an Explicitly Formatted Logical Record in the standard is a table
 as described above, with additional metadata.
