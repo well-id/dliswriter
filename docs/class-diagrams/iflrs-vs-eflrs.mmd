@@ -1,0 +1,35 @@
+---
+title: IFLR objects and their relation to EFLR objects
+---
+classDiagram
+  LogicalRecord <|-- IFLR
+  LogicalRecord <|-- EFLRSet
+
+  IFLR <|-- FrameData
+  IFLR <|-- NoFormatFrameData
+
+  EFLRSet <|-- FrameSet
+  EFLRSet <|-- NoFormatSet
+
+  EFLRItem <|-- FrameItem
+  FrameData --> FrameItem
+
+  EFLRItem <|-- NoFormatItem
+  NoFormatFrameData --> NoFormatItem
+
+  FrameSet o-- FrameItem
+  NoFormatSet o-- NoFormatItem
+  FrameItem --> FrameSet
+  NoFormatItem --> NoFormatSet
+
+  class FrameData{
+      +FrameItem frame
+      +int frame_number
+      +int origin_reference
+      -slots numpy.ndarray
+  }
+
+  class NoFormatFrameData{
+      +NoFormatItem no_format_object
+      +Any data
+  }

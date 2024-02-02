@@ -1,0 +1,53 @@
+---
+title: Standalone EFLR objects
+---
+classDiagram
+
+    class MessageItem{
+        +str _type
+        +datetime time
+        +float borehole_drift
+        +float vertical_depth
+        +float radial_drift
+        +float angular_drift
+        +float text
+    }
+
+    class CommentItem{
+        +str: text
+    }
+
+    class NoFormatItem{
+        +str consumer_name
+        +str description
+    }
+
+    class OriginItem{
+        +str file_id
+        +str file_set_name
+        +int file_set_number
+        +int file_number
+        +str file_type
+        +str product
+        +str version
+        +str programs
+        +datetime creation_time
+        +int order_number
+        +int descent_number
+        +int run_number
+        +int well_id
+        +str well_name
+        +str field_name
+        +int producer_code
+        +str producer_name
+        +str company
+        +str name_space_name
+        +int name_space_version
+
+    }
+
+    class FileHeader{
+        +str identifier
+        +int sequence_number
+    }
+
