@@ -11,7 +11,7 @@ Welcome to DLIS Writer's documentation!
    :caption: Contents:
 
    aboutdlisformat
-   userguide
+   userguide/index.rst
    developerguide
    changelog
 
