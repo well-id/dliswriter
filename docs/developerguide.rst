@@ -554,7 +554,7 @@ The interface was initially inspired by that of ``h5py``, in particular the HDF5
 the *child* objects (e.g. HDF5 *datasets*) can be created and simultaneously linked to the *parent* objects
 (e.g. HDF5 *groups*) by calling a relevant method of the parent instance like so:
 
-.. code-block::
+.. code-block:: python
 
     new_h5_dataset = some_h5_group.add_dataset(...)
 
@@ -567,7 +567,7 @@ potentially interlinked objects, such as Zone or Parameter.
 For this reason, in the ``dlis-writer`` implementation, adding objects in the `h5py` manner is only possible
 from the top level - a ``DLISFile``:
 
-.. code-block::
+.. code-block:: python
 
     dlis_file = DLISFile()
     a_channel = dlis_file.add_channel(...)
@@ -577,7 +577,7 @@ from the top level - a ``DLISFile``:
 In order to mark relations between objects, a 'lower-level' object should be created first and then
 passed as argument when creating a 'higher-level' object:
 
-.. code-block::
+.. code-block:: python
 
     a_frame = dlis_file.add_frame(..., channels=(a_channel, ...))   # frame can have multiple channels
     a_computation = dlis_file.add_computation(..., axis=an_axis)    # computation can only have 1 axis
@@ -585,7 +585,7 @@ passed as argument when creating a 'higher-level' object:
 
 This makes it trivial to reuse already defined 'lower-level' objects as many times as needed:
 
-.. code-block::
+.. code-block:: python
 
     # (multiple axes possible for both Parameter and Channel)
     a_param = dlis_file.add_parameter(..., axis=(an_axis, ...))
