@@ -1,0 +1,62 @@
+---
+title: Logical Record types overview
+---
+classDiagram
+    LogicalRecord <|-- EFLRSet
+    LogicalRecord <|-- IFLR
+
+    IFLR <|-- FrameData
+    IFLR <|-- NoFormatFrameData
+
+    EFLRSet o-- "1..*" EFLRItem
+    EFLRItem --> EFLRSet
+
+    class LogicalRecord{
+        +Enum logical_record_type
+        +bytes lr_type_struct
+        +bool is_eflr
+
+        +represent_as_bytes()
+    }
+
+    class EFLRSet{
+        +type item_type
+        +str eflr_name
+        +re.Pattern eflr_name_pattern
+        +str set_type
+        +str set_name
+        +int origin_reference
+        +int n_items
+
+        +clear_eflr_item_list()
+        +clear_set_instance_dict()
+        +register_item()
+        +get_all_eflr_items()
+        +get_or_make_set()
+        +get_all_sets()
+
+    }
+
+    class EFLRItem{
+        +type parent_eflr_class
+        +str name
+        +EFLRSet parent
+        +int origin_reference
+        +int copy_number
+        +dict attributes
+        +bytes obname
+
+        +make_item_body_bytes()
+        +set_attributes()
+    }
+
+    class StorageUnitLabel{
+        +str storage_unit_structure
+        +str dlis_version
+        +int max_record_length_limit
+        +int max_record_length
+        +int sequence_number
+        +str set_identifier
+
+        +represent_as_bytes()
+    }

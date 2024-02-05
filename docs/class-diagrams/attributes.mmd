@@ -1,0 +1,66 @@
+---
+title: Attribute and its subtypes
+---
+classDiagram
+    Attribute <|-- EFLRAttribute
+    EFLRAttribute <|-- EFLROrTextAttribute
+    Attribute <|-- DTimeAttribute
+    Attribute <|-- NumericAttribute
+    NumericAttribute <|-- DimensionAttribute
+    Attribute <|-- StatusAttribute
+    Attribute <|-- TextAttribute
+    Attribute <|-- IdentAttribute
+
+
+    class Attribute{
+        +str label
+        +Any value
+        +str units
+        +int count
+        +RepresentationCode representation_code
+        +[EFLRItem, EFLRSet] parent_eflr
+        +Callable converter
+        +bool multivalued
+        +bool multidimensional
+        -tuple _valid_repr_codes
+        -bool _units_settable
+        -RepresentationCode _default_repr_code
+
+        +convert_value()
+        +get_as_bytes()
+        +copy()
+    }
+
+    class EFLRAttribute{
+        -type _object_class
+
+        -_convert_value()
+    }
+
+    class DTimeAttribute{
+        +list~str~ dtime_formats
+        -bool _allow_float
+
+        +parse_dtime()
+    }
+
+    class NumericAttribute{
+        -bool _int_only
+        -bool _float_only
+
+        -_int_parser()
+        -_float_parser()
+        -_convert_number()
+    }
+
+    class StatusAttribute{
+        +convert_status()
+    }
+
+    class TextAttribute{
+        _check_string()
+    }
+
+    class IdentAttribute{
+
+    }

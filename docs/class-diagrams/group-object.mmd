@@ -1,0 +1,13 @@
+---
+title: EFLR Group object
+---
+classDiagram
+    GroupItem o-- "0..*" EFLRItem
+    GroupItem o-- "0..*" GroupItem
+
+    class GroupItem{
+        +str description
+        +str object_type
+        +list~EFLRItem~ object_list
+        +list~GroupItem~ group_list
+    }
