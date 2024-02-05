@@ -2,6 +2,8 @@
 
 This is a repository containing the `dlis_writer` - a Python library for creating DLIS files.
 
+For more details, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/).
+
 ## Installation instructions
 `widc.dliswriter` can be installed just like other WellID packages.
 
