@@ -59,7 +59,7 @@ def add_channels_from_h5_data(df: DLISFile, data: h5py.File, index_col_name: Opt
         add_channel(data[index_col_name])  # add the index channel first
 
     for ds in yield_h5_datasets(data):
-        if index_col_name is not None and (ds.name == index_col_name) or (ds.name == ('/' + index_col_name)):
+        if index_col_name is not None and (ds.name == index_col_name) or (ds.name == f'/{index_col_name}'):
             continue  # dataset already added
         add_channel(ds)
 
