@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+from typing import Optional
 
 from dlis_writer.file import DLISFile
 from dlis_writer.utils.types import file_name_type
@@ -22,7 +23,8 @@ def read_data(data_file_path: file_name_type) -> pd.DataFrame:
     return data
 
 
-def make_dlis_file_spec_from_csv_or_xlsx(data_file_path: file_name_type) -> tuple[DLISFile, None]:
+def make_dlis_file_spec_from_csv_or_xlsx(data_file_path: file_name_type, index_col_name: Optional[str] = None
+                                         ) -> tuple[DLISFile, None]:
     """Create a DLISFile object according to the contents of the input data file."""
 
     data = read_data(data_file_path)
@@ -31,9 +33,18 @@ def make_dlis_file_spec_from_csv_or_xlsx(data_file_path: file_name_type) -> tupl
     df.add_origin("ORIGIN")
 
     channels = []
-    for col_name in data.columns:
+
+    def add_channel(col_name: str) -> None:
         ch = df.add_channel(col_name, data=data[col_name].to_numpy())
         channels.append(ch)
+
+    if index_col_name is not None:
+        add_channel(index_col_name)
+
+    for cn in data.columns:
+        if cn == index_col_name:
+            continue
+        add_channel(cn)
 
     df.add_frame('MAIN', channels=channels)
 

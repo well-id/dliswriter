@@ -35,6 +35,7 @@ def make_parser() -> ArgumentParser:
                         help="Maximum allowed visible record length")
     parser.add_argument('-ref', '--reference-file-name',
                         help="Reference file to compare the new DLIS against")
+    parser.add_argument('--index-col', help="Name pointing to the index dataset (e.g. depth)")
 
     return parser
 
@@ -64,7 +65,8 @@ def main() -> None:
         data_file_path=pargs.input_file_name,
         output_file_path=pargs.output_file_name,
         input_chunk_size=int(pargs.input_chunk_size),
-        output_chunk_size=int(pargs.output_chunk_size)
+        output_chunk_size=int(pargs.output_chunk_size),
+        index_col_name=pargs.index_col
     )
 
     if pargs.reference_file_name:

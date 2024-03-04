@@ -1,4 +1,4 @@
-from typing import Union, Generator
+from typing import Union, Generator, Optional
 import h5py  # type: ignore  # untyped library
 import logging
 import numpy as np
@@ -41,32 +41,40 @@ def get_cast_dtype(dtype: numpy_dtype_type) -> numpy_dtype_type:
     return dtype
 
 
-def add_channels_from_h5_data(df: DLISFile, data: h5py.File) -> list[ChannelItem]:
+def add_channels_from_h5_data(df: DLISFile, data: h5py.File, index_col_name: Optional[str] = None) -> list[ChannelItem]:
     """Add channels specifications to the file object, taking all datasets found in the provided HDF5 file."""
 
     channels = []
 
-    for dataset in yield_h5_datasets(data):
+    def add_channel(dataset: h5py.Dataset) -> None:
         dataset_name = dataset.name
-        channel_name = dataset_name.split('/')[-1]
         ch = df.add_channel(
-            channel_name,
+            dataset_name.split('/')[-1],
             dataset_name=dataset_name,
             cast_dtype=get_cast_dtype(dataset.dtype)
         )
         channels.append(ch)
 
+    if index_col_name is not None:
+        add_channel(data[index_col_name])  # add the index channel first
+
+    for ds in yield_h5_datasets(data):
+        if index_col_name is not None and (ds.name == index_col_name) or (ds.name == ('/' + index_col_name)):
+            continue  # dataset already added
+        add_channel(ds)
+
     return channels
 
 
-def make_dlis_file_spec_from_hdf5(data_file_path: file_name_type) -> tuple[DLISFile, file_name_type]:
+def make_dlis_file_spec_from_hdf5(data_file_path: file_name_type, index_col_name: Optional[str] = None
+                                  ) -> tuple[DLISFile, file_name_type]:
     """Create a DLISFile object according to the contents of the input data file."""
 
     df = DLISFile()
     df.add_origin("ORIGIN")
 
     with h5py.File(data_file_path, 'r') as h5f:
-        channels = add_channels_from_h5_data(df, h5f)
+        channels = add_channels_from_h5_data(df, h5f, index_col_name=index_col_name)
     df.add_frame('MAIN', channels=channels)
 
     return df, data_file_path
