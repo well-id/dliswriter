@@ -11,7 +11,8 @@ from dlis_writer.file_format_converter.las_converter import make_dlis_file_spec_
 logger = logging.getLogger(__name__)
 
 
-def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union[data_form_type, None]]:
+def make_dlis_file_spec(data_file_path: file_name_type, index_col_name: Optional[str] = None
+                        ) -> tuple[DLISFile, Union[data_form_type, None]]:
     """Create a DLISFile object, containing basic objects and data reference.
 
     The configured DLISFile object contains:
@@ -21,7 +22,8 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
         - a Frame containing all the Channels.
 
     Args:
-        data_file_path  :   Path to the input data file.
+        data_file_path      :   Path to the input data file.
+        index_col_name      :   Name (HDF5 path) to the dataset to be used as the index.
 
     Returns:
         - df: Configured DLIS file object,
@@ -37,11 +39,12 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
     data_source: Union[data_form_type, None]
 
     if ext in ('h5', 'hdf5'):
-        df, data_source = make_dlis_file_spec_from_hdf5(data_file_path=data_file_path)
+        df, data_source = make_dlis_file_spec_from_hdf5(data_file_path=data_file_path, index_col_name=index_col_name)
     elif ext in ('csv', 'xls', 'xlsx'):
-        df, data_source = make_dlis_file_spec_from_csv_or_xlsx(data_file_path=data_file_path)
+        df, data_source = make_dlis_file_spec_from_csv_or_xlsx(
+            data_file_path=data_file_path, index_col_name=index_col_name)
     elif ext == 'las':
-        df, data_source = make_dlis_file_spec_from_las(data_file_path=data_file_path)
+        df, data_source = make_dlis_file_spec_from_las(data_file_path=data_file_path, index_col_name=index_col_name)
     else:
         raise ValueError(f"Could not determine converter from file extension '{ext}' ({data_file_path})")
 
@@ -49,7 +52,8 @@ def make_dlis_file_spec(data_file_path: file_name_type) -> tuple[DLISFile, Union
 
 
 def write_dlis_from_data_file(data_file_path: file_name_type, output_file_path: file_name_type,
-                              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[int] = None) -> None:
+                              input_chunk_size: Optional[int] = None, output_chunk_size: Optional[int] = None,
+                              index_col_name: Optional[str] = None) -> None:
     """Create a DLIS file based on an input data file.
 
     Args:
@@ -57,9 +61,10 @@ def write_dlis_from_data_file(data_file_path: file_name_type, output_file_path: 
         output_file_path    :   Path to the output DLIS file.
         input_chunk_size    :   Number of rows of the input data to be loaded and processed at a time.
         output_chunk_size   :   Size (in bytes) of output DLIS file chunks written to the file at a time.
+        index_col_name      :   Name (HDF5 path) to the dataset to be used as the index.
     """
 
-    dlis_file, data_source = make_dlis_file_spec(data_file_path)
+    dlis_file, data_source = make_dlis_file_spec(data_file_path, index_col_name=index_col_name)
 
     dlis_file.write(
         output_file_path,
