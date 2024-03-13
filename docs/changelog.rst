@@ -3,7 +3,7 @@ Changelog
 
 Version 0.0.9
 -------------
-**Multiple Origins, processing input files, documentation (pending)**
+**Multiple Origins, processing input files, documentation**
 
 * Added the possibility to have multiple Origin objects in the created file.
   The first added Origin is automatically used as the *defining Origin* of the file, but an alternative Origin reference
