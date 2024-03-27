@@ -12,4 +12,4 @@ Further, the principles of converting the Python objects to DLIS-compliant bytes
    logicalandvisiblerecords
    lrtypes/index.rst
    attributes/index.rst
-   writingfile
+   writingfile/index.rst
