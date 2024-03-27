@@ -1,5 +1,5 @@
 Logical Records and Visible Records
------------------------------------
+===================================
 :doc:`As mentioned before <../aboutdlisformat>`, at an abstract level, DLIS file consists of multiple *logical records*
 (LRs). They can be viewed as abstract units, containing a specific type of data and/or metadata.
 
@@ -17,7 +17,7 @@ of the original logical record.
 in a logical record segment structure, with indication that the given segment is both
 the first and the last part of the original logical record.)
 
-The maximum length of a VR is defined in the file's *Storage Unit Label*.
+The maximum length of a VR is defined in the file's :ref:`Storage Unit Label<SUL>`.
 According to the standard, the minimum length is not explicitly defined, but because the
 minimum length of a LR segment is 16 bytes (including 4 LR segment header bytes),
 the resulting minimum length of a VR is 20 bytes.
