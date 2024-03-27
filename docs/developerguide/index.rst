@@ -7,4 +7,10 @@ Further, the principles of converting the Python objects to DLIS-compliant bytes
 
 
 .. toctree::
-   developerguide
+   logicalandvisiblerecords
+   lrtypes
+   sul
+   iflrs
+   eflrs
+   attributes
+   writingfile
