@@ -1,8 +1,9 @@
 Extending basic metadata
-------------------------
-As mentioned above, initialising ``DLISFile`` object automatically constructs Storage Unit Label and File Header.
+========================
+As mentioned above, initialising :ref:`DLISFile` automatically constructs :ref:`Storage Unit Label <SUL>`
+and :ref:`File Header`.
 However, the definition of each of these can be further tuned.
-The same applies to Origin, which is the container for key meta-data concerning the well, company, operation set-up etc.
+The same applies to :ref:`Origin`, which is the container for key meta-data concerning the well, company, operation set-up etc.
 
 .. code-block:: python
 
@@ -30,8 +31,8 @@ The same applies to Origin, which is the container for key meta-data concerning 
     )
 
 
-The attributes can also be changed later by accessing the relevant objects's attributes.
-Note: because most attributes are instances of ``Attribute`` class,
+The attributes can also be changed later by accessing the relevant objects' attributes.
+Note: because most attributes are instances of :ref:`Attribute <Attribute>` class,
 you will need to use ``.value`` (or ``.unit``) of the attribute you may want to change.
 
 .. code-block:: python

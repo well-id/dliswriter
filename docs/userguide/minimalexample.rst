@@ -1,5 +1,5 @@
 Minimal example
----------------
+===============
 Below you can see a very minimal DLIS file example with two 1D channels (one of which serves as the index)
 and a single 2D channel.
 

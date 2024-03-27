@@ -1,3 +1,5 @@
+.. _Attribute:
+
 The Attribute class
 ~~~~~~~~~~~~~~~~~~~~~
 The main characteristics of ``Attribute`` are described below.

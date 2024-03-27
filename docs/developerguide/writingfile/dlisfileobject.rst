@@ -1,3 +1,5 @@
+.. _DLISFile:
+
 DLISFile object
 ~~~~~~~~~~~~~~~
 The ``DLISFile`` class, as shown in the :doc:`user guide <../userguide/userguide>`,
