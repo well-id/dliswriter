@@ -361,16 +361,16 @@ Only the type of the ``.value`` part of each ``Attribute`` is shown - e.g. in ``
 ``calibrated_channels`` is shown as a list of ``ChannelItem`` instances, where in fact it is
 an ``EFLRAttribute`` whose ``.value`` takes the form of a list of ``ChannelItem`` objects.
 
-.. mermaid:: class-diagrams/eflr-relations.mmd
+.. mermaid:: ../class-diagrams/eflr-relations.mmd
 
 
 Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects
 and are not explicitly referred to by any (although - as in case of NoFormat - a relation to IFLR objects can exist).
 
-.. mermaid:: class-diagrams/standalone-eflrs.mmd
+.. mermaid:: ../class-diagrams/standalone-eflrs.mmd
 
 
 A special case is a `Group`_ object, which can refer to any other EFLRs or other groups,.
 
-.. mermaid:: class-diagrams/group-object.mmd
+.. mermaid:: ../class-diagrams/group-object.mmd
 

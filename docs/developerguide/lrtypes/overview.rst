@@ -1,5 +1,5 @@
-Logical Record types
---------------------
+Overview of Logical Record types
+====================
 There are two main types of logical records: *Explicitly Formatted Logical Records* (EFLRs)
 and *Indirectly Formatted Logical Records* (IFLRs).
 
@@ -10,4 +10,4 @@ it is implemented such that it can mock one and can be used alongside with actua
 
 An overview of the types of logical records is shown below. _`LR types diagram`
 
-.. mermaid:: class-diagrams/logical-record-types.mmd
+.. mermaid:: ../class-diagrams/logical-record-types.mmd

@@ -8,9 +8,6 @@ Further, the principles of converting the Python objects to DLIS-compliant bytes
 
 .. toctree::
    logicalandvisiblerecords
-   lrtypes
-   sul
-   iflrs
-   eflrs
+   lrtypes/index.rst
    attributes
    writingfile
