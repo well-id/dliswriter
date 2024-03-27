@@ -1,3 +1,5 @@
+.. _SUL:
+
 Storage Unit Label
 ------------------
 Storage Unit Label (SUL) takes up the first 80 bytes of each DLIS file.

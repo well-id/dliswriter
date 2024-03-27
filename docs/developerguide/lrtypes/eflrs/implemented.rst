@@ -3,12 +3,18 @@ Implemented EFLR objects
 The types of EFLRs implemented in this library are described below.
 Note: the standard defines several more types of EFLRs.
 
+
+.. _File Header:
+
 File Header
 ^^^^^^^^^^^
 File Header must immediately follow a `Storage Unit Label`_ of the file.
 Its length must be exactly 124 bytes.
 The ``identifier`` attribute of the File Header represents the name of the DLIS file.
 It should be a string of max 65 characters.
+
+
+.. _Origin:
 
 Origin
 ^^^^^^
@@ -29,6 +35,9 @@ From RP66:
     The first Object in the first ORIGIN Set is the Defining Origin for the Logical File in which it is contained,
     and the corresponding Logical File is called the Origin’s Parent File.
     It is intended that no two Logical Files will ever have Defining Origins with all Attribute Values identical.
+
+
+.. _Channel:
 
 Channel
 ^^^^^^^
@@ -58,6 +67,9 @@ Channels can also be referred to by `Splice`_, `Path`_, `Calibration`_,
 `Calibration Measurement`_, `Process`_, and `Tool`_.
 
 On the receiving end, Channel can reference an `Axis`_ and/or a `Long Name`_.
+
+
+.. _Frame:
 
 Frame
 ^^^^^
@@ -103,6 +115,9 @@ From RP66:
 
     When there is no Index Channel, then Frames are implicitly indexed by Frame Number.
 
+
+.. _Axis:
+
 Axis
 ^^^^
 Axis defines coordinates (expressed either as floats or strings, e.g ``"40 23' 42.8676'' N"`` is a valid coordinate)
@@ -113,6 +128,9 @@ From RP66:
     An Axis Logical Record is an Explicitly Formatted Logical Record that contains information
     describing the coordinate axes of arrays.
 
+
+.. _Calibration Coefficient:
+
 Calibration Coefficient
 ^^^^^^^^^^^^^^^^^^^^^^^
 Calibration Coefficient describes a set of coefficients together with reference values and tolerances.
@@ -122,6 +140,9 @@ From RP66:
     Calibration-Coefficient Objects record coefficients, their references, and tolerances
     used in the calibration of Channels.
 
+
+.. _Calibration Measurement:
+
 Calibration Measurement
 ^^^^^^^^^^^^^^^^^^^^^^^
 Calibration Measurement describes measurement performed for the purpose of calibration.
@@ -130,6 +151,9 @@ It can reference a `Channel`_ object and can be referenced by `Calibration`.
 From RP66:
     Calibration-Measurement Objects record measurements, references, and tolerances used to compute
     calibration coefficients.
+
+
+.. _Calibration:
 
 Calibration
 ^^^^^^^^^^^
@@ -141,6 +165,9 @@ The ``method`` of a calibration is a string description of the applied method.
 From RP66:
     Calibration Objects identify the collection of measurements and coefficients that participate
     in the calibration of a Channel.
+
+
+.. _Computation:
 
 Computation
 ^^^^^^^^^^^
@@ -158,6 +185,9 @@ From RP66:
     Computation Objects may be associated with Property Indicators, and Computation Objects may be the output
     of PROCESS Objects (...).
 
+
+.. _Equipment:
+
 Equipment
 ^^^^^^^^^
 Equipment describes a single part of a `Tool`_, specifying its trademark name, serial number, etc.
@@ -171,10 +201,16 @@ From RP66:
     of equipment of any sort that is used during a job. The Tool Object (...) provides a way to collect equipment
     together in ensembles that are more readily recognizable to the Consumer.
 
+
+.. _Group:
+
 Group
 ^^^^^
 A Group can refer to multiple other EFLR objects of a given type.
 It can also keep references to other groups, creating a hierarchical structure.
+
+
+.. _Long Name:
 
 Long Name
 ^^^^^^^^^
@@ -190,15 +226,24 @@ From RP66:
     that are applicable to an Object and then selecting for each Name Part Type one or more Name Part Values
     from the corresponding Lexicons.
 
+
+.. _Message:
+
 Message
 ^^^^^^^
 A Message is a string value with associated metadata - such as time
 (``datetime`` or float - number of minutes/seconds/etc. since a specific event),
 borehole/radial/angular drift, and vertical depth.
 
+
+.. _Comment:
+
 Comment
 ^^^^^^^
 A Comment is simpler than a `Message`_ object; it contains only the comment text.
+
+
+.. _No-Format:
 
 No-Format
 ^^^^^^^^^
@@ -223,6 +268,9 @@ From RP66:
     to be a sequence of bytes, and no conversion is applied to the bytes as they are placed into the IFLRs
     nor as they are removed from the IFLRs.
 
+
+.. _Parameter:
+
 Parameter
 ^^^^^^^^^
 A Parameter is a collection of values, which can be either numbers or strings.
@@ -233,6 +281,9 @@ From RP66:
     Parameter Objects (...) specify Parameters (constant or zoned) used in the acquisition and processing of data.
     Parameters may be scalar-valued or array-valued. When they are array-valued, the semantic meaning
     of the array dimensions is defined by the application.
+
+
+.. _Path:
 
 Path
 ^^^^
@@ -247,6 +298,9 @@ From RP66:
     in the Frame Type whenever Frame Attribute INDEX-TYPE has one of the values angular-drift, borehole-depth,
     radial-drift, time, or vertical-depth.
 
+
+.. _Process:
+
 Process
 ^^^^^^^
 A Process combines multiple other objects: Channel`_ s, `Computation`_ s,
@@ -257,6 +311,9 @@ From RP66:
 
 The ``status`` ``Attribute`` of Process can be one of: 'COMPLETE', 'ABORTED', 'IN-PROGRESS'.
 
+
+.. _Splice:
+
 Splice
 ^^^^^^
 A Splice relates several input and output `Channel`_ s and `Zone` s.
@@ -264,6 +321,9 @@ A Splice relates several input and output `Channel`_ s and `Zone` s.
 From RP66:
     Splice Objects describe the process of concatenating two or more instances of a Channel
     (e.g., from different runs) to get a resultant spliced Channel.
+
+
+.. _Tool:
 
 Tool
 ^^^^
@@ -278,6 +338,9 @@ From RP66:
     and spacers. It is also possible to identify certain pieces or combinations of surface measuring equipment
     as tools.
 
+
+.. _Well Reference Point:
+
 Well Reference Point
 ^^^^^^^^^^^^^^^^^^^^
 Well Reference Point can be used to specify up to 3 coordinates of a point. The coordinates
@@ -291,6 +354,9 @@ From RP66:
     structure, but its vertical distance from the permanent structure must be stated. (...)
     Spatial coordinates of a well are depth, Radial Drift, and Angular Drift. Depth is defined in terms of
     Borehole Depth or Vertical Depth.
+
+
+.. _Zone:
 
 Zone
 ^^^^
