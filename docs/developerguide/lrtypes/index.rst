@@ -6,5 +6,5 @@ Logical Record types
 
    overview
    sul
-   iflrs
+   iflrs/index.rst
    eflrs/index.rst
