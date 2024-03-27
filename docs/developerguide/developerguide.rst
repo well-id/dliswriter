@@ -1,10 +1,3 @@
-Developer guide
-===============
-
-This section describes the ``dlis-writer`` implementation in more detail.
-The different types of logical records are explained.
-Further, the principles of converting the Python objects to DLIS-compliant bytes are described.
-
 Logical Records and Visible Records
 -----------------------------------
 :doc:`As mentioned before <../aboutdlisformat>`, at an abstract level, DLIS file consists of multiple *logical records*
