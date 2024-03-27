@@ -7,7 +7,9 @@ Further, the principles of converting the Python objects to DLIS-compliant bytes
 
 
 .. toctree::
+   :maxdepth: 3
+
    logicalandvisiblerecords
    lrtypes/index.rst
-   attributes
+   attributes/index.rst
    writingfile
