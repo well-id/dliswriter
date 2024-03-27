@@ -1,45 +1,3 @@
-EFLR objects
-------------
-*Explicitly Formatted Logical Records* are meant for representing metadata according to pre-defined schemes.
-More than 20 such schemes are defined (see `Implemented EFLR objects`_).
-Each one lists a specific set of attributes.
-Some of the EFLRs are required for a DLIS file: *File Header*, *Origin*,
-*Frame*, and *Channels*. Others are optional ways of specifying more metadata.
-
-EFLRSet and EFLRItem
-~~~~~~~~~~~~~~~~~~~~
-The implementation of the ELFRs is split over two separate classes: ``EFLRSet`` and ``EFLRItem``.
-For the different schemes (as mentioned above), subclasses of both ``EFLRSet`` and ``EFLRItem`` are defined,
-e.g. ``ChannelSet`` and ``ChannelItem``, ``FrameSet`` and ``FrameItem``, etc.
-
-``EFLRItem`` is e.g. a single Channel, Frame, or Axis.
-It has its own name (the first positional argument when initialising the object)
-and a number of attributes (``Attribute`` instances; `DLIS Attributes`_), pre-defined by the standard.
-For example, for a Channel, these attributes include: units, dimension, representation code,
-minimum and maximum value, and others.
-
-``EFLRSet`` can be viewed as a collection of ``EFLRItem`` instances.
-Because a specific subclass of ``EFLRSet`` (e.g. ``ChannelSet``)
-can only contain instances of a specific subclass of ``EFLRItem`` (e.g. ``ChannelItem``),
-all ``EFLRItem`` s added to an ``EFLRSet`` will have exactly the same set of attribute types.
-Therefore, an ``EFLRSet`` can be viewed as a table of ``EFLRItem`` s, with attribute names as table header
-and individual ``EFLRItem`` with their attribute values as rows in that table.
-
-As shown in the `LR types diagram`_ above, it is ``EFLRSet``, not ``EFLRItem``
-that inherits from ``LogicalRecord`` base class. While this might be non-intuitive,
-it is consistent with the standard; an Explicitly Formatted Logical Record in the standard is a table
-as described above, with additional metadata.
-
-Theoretically, multiple ``EFLRSet`` instances of the same type (e.g. multiple ``ChannelSet`` instances)
-can be defined in a DLIS file. The key requirement is that their names - ``set_name`` - are different.
-There cannot be two ``ChannelItem`` s (or two instances other ``EFLRItem`` subclass) with the same ``set_name``.
-However, usually only a single instance of each ``EFLRSet`` is defined, and the default ``set_name`` is ``None``.
-
-In the current implementation, there is usually no need to explicitly define ``EFLRSet`` (subclass) instances
-or to interact with these. User is supposed to interact with the relevant ``EFLRItem`` subclass instead,
-e.g. ``ChannelItem``, created through ``add_channel`` method of ``DLISFile`` instance.
-
-
 Implemented EFLR objects
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The types of EFLRs implemented in this library are described below.
@@ -348,29 +306,3 @@ Zone can be referenced by `Splice`_, `Process`_, or `Parameter`_.
 From RP66:
     Zone Objects specify single intervals in depth or time. Zone Objects are useful for associating other Objects
     or values with specific regions of a well or with specific time intervals.
-
-
-Relations between EFLR objects
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Many of the EFLR objects are interrelated - e.g. a Frame refers to multiple Channels,
-each of which can have an Axis; a Calibration uses Calibration Coefficients and Calibration Measurements;
-a Tool has Equipments as parts. The relations are summarised in the diagram below.
-
-*Note*: in the diagrams below, the description of ``Attribute`` s of the objects has been simplified.
-Only the type of the ``.value`` part of each ``Attribute`` is shown - e.g. in ``CalibrationItem``,
-``calibrated_channels`` is shown as a list of ``ChannelItem`` instances, where in fact it is
-an ``EFLRAttribute`` whose ``.value`` takes the form of a list of ``ChannelItem`` objects.
-
-.. mermaid:: ../class-diagrams/eflr-relations.mmd
-
-
-Other EFLR objects can be thought of as _standalone_ - they do not refer to other EFLR objects
-and are not explicitly referred to by any (although - as in case of NoFormat - a relation to IFLR objects can exist).
-
-.. mermaid:: ../class-diagrams/standalone-eflrs.mmd
-
-
-A special case is a `Group`_ object, which can refer to any other EFLRs or other groups,.
-
-.. mermaid:: ../class-diagrams/group-object.mmd
-

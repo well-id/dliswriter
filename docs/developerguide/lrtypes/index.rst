@@ -7,4 +7,4 @@ Logical Record types
    overview
    sul
    iflrs
-   eflrs
+   eflrs/index.rst
