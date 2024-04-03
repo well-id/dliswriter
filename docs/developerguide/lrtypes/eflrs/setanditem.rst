@@ -1,3 +1,5 @@
+.. _EFLRSet and EFLRItem:
+
 EFLRSet and EFLRItem
 ~~~~~~~~~~~~~~~~~~~~
 The implementation of the ELFRs is split over two separate classes: ``EFLRSet`` and ``EFLRItem``.
