@@ -1,3 +1,5 @@
+.. _Implemented EFLRs:
+
 Implemented EFLR objects
 ~~~~~~~~~~~~~~~~~~~~~~~~
 The types of EFLRs implemented in this library are described below.

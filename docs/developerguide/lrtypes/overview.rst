@@ -12,4 +12,7 @@ An overview of the types of logical records is shown below.
 
 .. _LR types diagram:
 
+Logical Record types diagram
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. mermaid:: ../class-diagrams/logical-record-types.mmd

@@ -6,9 +6,9 @@ The implementation of the ELFRs is split over two separate classes: ``EFLRSet`` 
 For the different schemes (as mentioned above), subclasses of both ``EFLRSet`` and ``EFLRItem`` are defined,
 e.g. ``ChannelSet`` and ``ChannelItem``, ``FrameSet`` and ``FrameItem``, etc.
 
-``EFLRItem`` is e.g. a single Channel, Frame, or Axis.
+``EFLRItem`` is e.g. a single :ref:`Channel`, :ref:`Frame`, or :ref:`Axis`.
 It has its own name (the first positional argument when initialising the object)
-and a number of attributes (``Attribute`` instances; `DLIS Attributes`_), pre-defined by the standard.
+and a number of attributes (instances of :ref:`Attribute`), pre-defined by the standard.
 For example, for a Channel, these attributes include: units, dimension, representation code,
 minimum and maximum value, and others.
 
@@ -19,7 +19,7 @@ all ``EFLRItem`` s added to an ``EFLRSet`` will have exactly the same set of att
 Therefore, an ``EFLRSet`` can be viewed as a table of ``EFLRItem`` s, with attribute names as table header
 and individual ``EFLRItem`` with their attribute values as rows in that table.
 
-As shown in the `LR types diagram`_ above, it is ``EFLRSet``, not ``EFLRItem``
+As shown in the :ref:`LR types diagram` before, it is ``EFLRSet``, not ``EFLRItem``
 that inherits from ``LogicalRecord`` base class. While this might be non-intuitive,
 it is consistent with the standard; an Explicitly Formatted Logical Record in the standard is a table
 as described above, with additional metadata.
