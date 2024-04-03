@@ -1,3 +1,5 @@
+.. _EFLRs:
+
 EFLR objects
 ------------
 *Explicitly Formatted Logical Records* are meant for representing metadata according to pre-defined schemes.

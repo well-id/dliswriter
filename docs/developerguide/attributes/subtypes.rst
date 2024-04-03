@@ -26,8 +26,8 @@ The unit should be defined if the value is a number and should express the unit 
 to restrict the type of accepted values to ints only or floats only at initialisation of the attribute.
 
 ``DimensionAttribute`` is a subclass of ``NumericAttribute``. It limits the above to ints only and is always
-multivalued (always a list of integers). It is mainly used in [Channel](#channel) objects where it describes
+multivalued (always a list of integers). It is mainly used in :ref:`Channel` objects where it describes
 the shape of the data (only the width, i.e. the number of columns).
 
 ``StatusAttribute`` encodes the status of :ref:`Tool` and :ref:`Equipment` objects.
-Its value can only be 0 or 1.
+Its ``value`` can only be 0 or 1.

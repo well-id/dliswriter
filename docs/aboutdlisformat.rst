@@ -5,7 +5,7 @@ DLIS (Digital Log Information Standard) is a binary data format dedicated to sto
 It was developed in the 1980's, when data were stored on magnetic tapes.
 Despite numerous advances in the field of information technology, DLIS is still prevalent in the oil and gas industry.
 
-A DLIS file is composed of *logical records* - topical units containing pieces of data and/or metadata.
+A DLIS file is composed of :ref:`logical records <LR types>` - topical units containing pieces of data and/or metadata.
 There are multiple subtypes of logical records which are predefined for specific types of (meta)data.
 The most important ones are mentioned below, with more extensive descriptions
 in the :doc:`Developer guide <./developerguide/index>`.

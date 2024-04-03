@@ -8,7 +8,8 @@ depends on the category these objects fall into, according to the earlier specif
 * :ref:`SUL` has its own predefined bytes structure of fixed length.
   Its content varies minimally, taking into account the parameters specified at its creation,
   such as visible record length, storage set identifier, etc.
-* The main part of :ref:`Frame Data` (IFLR) - the numerical data associated with the :ref:`Channel` s - is stored
+* The main part of :ref:`Frame Data` (:ref:`IFLR <IFLRs>`) - the numerical data associated
+  with the :ref:`Channel` s - is stored
   in the object as a row od a structured ``numpy.ndarray``. Each entry of the array is converted to
   bytes using the ``numpy`` 's built-in ``tobytes()`` method (with additional ``byteswap()`` call before that
   to account for the big-endianness of DLIS). Additional bytes referring to the :ref:`Frame`

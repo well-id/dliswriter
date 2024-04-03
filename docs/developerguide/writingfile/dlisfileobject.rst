@@ -17,9 +17,10 @@ the *child* objects (e.g. HDF5 *datasets*) can be created and simultaneously lin
 However, while the HDF5 structure is strictly hierarchical, the same cannot be said about DLIS.
 For example, the same Zone can be referenced by multiple Splices, Parameters, and Computations.
 It is also possible to add any object without it referencing or being referenced by other objects.
-This is the case both for _standalone_ objects, such as Message or Comment, and the
-potentially interlinked objects, such as Zone or Parameter.
-(Note: adding a standalone Channel object is possible, but is known to cause issues in some readers, e.g. *DeepView*.)
+This is the case both for *standalone* objects, such as :ref:`Message` or :ref:`Comment`, and the
+potentially interlinked objects, such as :ref:`Zone` or :ref:`Parameter`.
+(Note: adding a standalone :ref:`Channel` object is possible, but is known to cause issues in some readers,
+e.g. *DeepView*.)
 For this reason, in the ``dlis-writer`` implementation, adding objects in the `h5py` manner is only possible
 from the top level - a ``DLISFile``:
 

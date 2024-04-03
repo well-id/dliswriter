@@ -2,7 +2,7 @@
 
 Implemented EFLR objects
 ~~~~~~~~~~~~~~~~~~~~~~~~
-The types of EFLRs implemented in this library are described below.
+The types of :ref:`EFLRs <EFLRs>` implemented in this library are described below.
 Note: the standard defines several more types of EFLRs.
 
 
@@ -10,7 +10,7 @@ Note: the standard defines several more types of EFLRs.
 
 File Header
 ^^^^^^^^^^^
-File Header must immediately follow a :ref`Storage Unit Label <SUL>` of the file.
+File Header must immediately follow a :ref:`Storage Unit Label <SUL>` of the file.
 Its length must be exactly 124 bytes.
 The ``identifier`` attribute of the File Header represents the name of the DLIS file.
 It should be a string of max 65 characters.
@@ -208,7 +208,7 @@ From RP66:
 
 Group
 ^^^^^
-A Group can refer to multiple other EFLR objects of a given type.
+A Group can refer to multiple other :ref:`EFLR <EFLRs>` objects of a given type.
 It can also keep references to other groups, creating a hierarchical structure.
 
 

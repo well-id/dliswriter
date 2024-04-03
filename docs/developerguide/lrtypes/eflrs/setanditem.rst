@@ -2,13 +2,13 @@
 
 EFLRSet and EFLRItem
 ~~~~~~~~~~~~~~~~~~~~
-The implementation of the ELFRs is split over two separate classes: ``EFLRSet`` and ``EFLRItem``.
+The implementation of the :ref:`ELFRs <EFLRs>` is split over two separate classes: ``EFLRSet`` and ``EFLRItem``.
 For the different schemes (as mentioned above), subclasses of both ``EFLRSet`` and ``EFLRItem`` are defined,
 e.g. ``ChannelSet`` and ``ChannelItem``, ``FrameSet`` and ``FrameItem``, etc.
 
 ``EFLRItem`` is e.g. a single :ref:`Channel`, :ref:`Frame`, or :ref:`Axis`.
 It has its own name (the first positional argument when initialising the object)
-and a number of attributes (instances of :ref:`Attribute`), pre-defined by the standard.
+and a number of attributes (instances of :ref:`the Attribute class <Attribute>`), pre-defined by the standard.
 For example, for a Channel, these attributes include: units, dimension, representation code,
 minimum and maximum value, and others.
 

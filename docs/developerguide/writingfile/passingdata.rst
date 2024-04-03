@@ -1,6 +1,7 @@
 Ways of passing data
 ~~~~~~~~~~~~~~~~~~~~
-Data associated with the file's Channels can be passed when adding a Channel to the ``DLISFile`` instance.
+Data associated with the file's :ref:`Channel` s can be passed when adding a :ref:`Channel`
+to the ``DLISFile`` instance.
 Data added in this way is stored in an internal dictionary, mapped by the Channels' names.
 
 However, it is also possible to pass the data later, when calling the ``write()`` method
@@ -14,7 +15,7 @@ of the ``DLISFile``. The passed data can be of one of the following forms:
   must define the full internal paths to the datasets starting from the root of the file - e.g.
   ``/contents_root/general_group/specific_group/the_dataset``.
 
-Note: even if multiple Frames are defined, the data object passed to the ``write()`` call should contain
+Note: even if multiple :ref:`Frame` s are defined, the data object passed to the ``write()`` call should contain
 all datasets to be included in the file. The correct arrangement of the datasets is done internally
 at a later stage. The data is also allowed to contain datasets not to be used in the file;
 these will simply be ignored. However, the writing cannot be done if data for any of the Channels are missing.
@@ -28,7 +29,7 @@ The main objectives of these objects are:
 
 Note that because creating the required structure is the responsibility of the library,
 not the user, it is assumed that the provided data will not match the needed structure.
-In order to create the (chunks of) structured numpy array needed for Frame Data, the source data must be copied.
+In order to create the (chunks of) structured numpy array needed for :ref:`Frame Data`, the source data must be copied.
 The ``SourceDataWrapper`` objects copy only as much data as are needed to define a single data chunk for writing.
 When that chunk is exhausted, the 'used' data are discarded and a new chunk is loaded.
 
