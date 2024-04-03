@@ -7,14 +7,14 @@ attributes needed for various EFLR objects. The overview can be seen in the diag
 
 
 ``EFLRAttribute`` has been defined to deal with attributes which should keep reference to other
-``EFLRItem`` s - for example, `Channel`_ s of `Frame`_, `Zone`_ s of `Splice`_,
-`Calibration Coefficient`_ s and `Calibration Measurement`_ s of `Calibration`_.
+``EFLRItem`` s - for example, :ref:`Channel` s of :ref:`Frame`, :ref:`Zone` s of :ref:`Splice`,
+:ref:`Calibration Coefficient` s and :ref:`Calibration Measurement` s of :ref:`Calibration`.
 The value of an ``EFLRAttribute`` is an instance of (usually specific subtype of) ``EFLRItem``.
 The representation code can be either ``OBNAME`` or ``OBJREF``. The unit should not be defined (is meaningless).
 Its subclass, ``EFLROrTextAttribute``, is similar, but in addition accepts plain text as value
-(represented as ``ASCII``). This subclass is meant for the ``long_name`` attribute of `Channel`_,
-`Process`_, and `Computation`_; the value of this attribute can be either text
-or a ``LongNameItem`` object (`Long Name`_).
+(represented as ``ASCII``). This subclass is meant for the ``long_name`` attribute of :ref:`Channel`,
+:ref:`Process`, and :ref:`Computation`; the value of this attribute can be either text
+or a ``LongNameItem`` object (see :ref:`Long Name`).
 
 ``DTimeAttribute`` is meant for keeping time reference, either in the form of a ``datetime.datetime`` object
 or a number, indicating time since a specific event. The representation code is adapted
@@ -29,5 +29,5 @@ to restrict the type of accepted values to ints only or floats only at initialis
 multivalued (always a list of integers). It is mainly used in [Channel](#channel) objects where it describes
 the shape of the data (only the width, i.e. the number of columns).
 
-``StatusAttribute`` encodes the status of `Tool`_ and `Equipment`_ objects.
+``StatusAttribute`` encodes the status of :ref:`Tool` and :ref:`Equipment` objects.
 Its value can only be 0 or 1.
