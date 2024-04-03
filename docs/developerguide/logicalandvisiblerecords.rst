@@ -1,3 +1,5 @@
+.. _LRs and VRs:
+
 Logical Records and Visible Records
 ===================================
 :doc:`As mentioned before <../aboutdlisformat>`, at an abstract level, DLIS file consists of multiple *logical records*

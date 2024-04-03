@@ -4,16 +4,16 @@ DLISWriter and auxiliary objects
 Given the iterable of logical records, provided by the ``DLISFile``,
 a ``DLISWriter`` iterates over the logical records and for each one:
 
-#. Assigns an _origin_reference_ to all objects in the file.
+#. Assigns an ``origin_reference`` to all objects in the file.
    The origin reference is the ``file_set_number`` of the Origin object defined in the file.
 #. Calls for creation of bytes describing that logical record
-   (see `Converting objects and attributes to bytes`_)
+   (see :ref:`Converting to bytes`)
 #. If the bytes sequence is too long to fit into a single visible record,
-   it splits the bytes into several segments (see [the explanation](#logical-records-and-visible-records))
+   it splits the bytes into several segments (see :ref:`LRs and VRs`)
 #. Wraps the segments (or full bytes sequence) in visible records and writes the resulting bytes to a file.
 
 The writing of bytes is aided by objects of two auxiliary classes: ``ByteWriter`` and ``BufferedOutput``.
-The main motivation between both is to facilitate gradual, _chunked_ writing of bytes to a file
+The main motivation between both is to facilitate gradual, 'chunked' writing of bytes to a file
 rather than having to keep everything in memory and dumping it to the file at the very end.
 
 ``ByteWriter`` manages access to the created DLIS file. Its ``write_bytes()`` method,
