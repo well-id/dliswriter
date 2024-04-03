@@ -1,3 +1,5 @@
+.. _LR types:
+
 Overview of Logical Record types
 ================================
 There are two main types of logical records: *Explicitly Formatted Logical Records* (EFLRs)

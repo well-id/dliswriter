@@ -3,21 +3,20 @@
 Converting objects and attributes to bytes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The way in which different objects are converted to DLIS-compliant bytes
-depends on the category these objects fall into, according to the earlier specified
-[division](#logical-record-types).
+depends on the category these objects fall into, according to the earlier specified :ref:`division <LR types>`.
 
-* `Storage Unit Label`_ has its own predefined bytes structure of fixed length.
+* :ref:`SUL` has its own predefined bytes structure of fixed length.
   Its content varies minimally, taking into account the parameters specified at its creation,
   such as visible record length, storage set identifier, etc.
-* The main part of `Frame Data`_ (IFLR) - the numerical data associated with the Channels - is stored
+* The main part of :ref:`Frame Data` (IFLR) - the numerical data associated with the :ref:`Channel` s - is stored
   in the object as a row od a structured ``numpy.ndarray``. Each entry of the array is converted to
   bytes using the ``numpy`` 's built-in ``tobytes()`` method (with additional ``byteswap()`` call before that
-  to account for the big-endianness of DLIS). Additional bytes referring to the [Frame](#frame)
+  to account for the big-endianness of DLIS). Additional bytes referring to the :ref:`Frame`
   and the index of the current Frame Data in the Frame are added on top.
-* In `No-Format Frame Data`_, the *data* part can be already expressed as bytes,
+* In :ref:`No-Format Frame Data`, the data part can be already expressed as bytes,
   in which case it is used as-is. Otherwise, it is assumed to be of string type and is encoded as ASCII.
-  A reference to the parent `No-Format`_ object is added on top.
-* EFLR objects (`EFLRSet and EFLRItem`_) are treated per ``EFLRSet`` instance.
+  A reference to the parent :ref:`No-Format` object is added on top.
+* EFLR objects (:ref:`EFLRSet and EFLRItem`) are treated per ``EFLRSet`` instance.
 
     * First, bytes describing the ``EFLRSet`` instance are made, including its ``set_type``
       and ``set_name`` (if present).
