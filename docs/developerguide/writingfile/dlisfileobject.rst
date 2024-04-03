@@ -2,7 +2,7 @@
 
 DLISFile object
 ~~~~~~~~~~~~~~~
-The ``DLISFile`` class, as shown in the :doc:`user guide <../userguide/userguide>`,
+The ``DLISFile`` class, as shown in the :doc:`user guide <../../userguide/minimalexample>`,
 is the main point of the user's interaction with the library.
 It facilitates defining a (future) file with all kinds of EFLR and IFLR objects and the relations between them.
 
@@ -48,7 +48,7 @@ This makes it trivial to reuse already defined 'lower-level' objects as many tim
     another_channel = dlis_file.add_channel(..., axis=(an_axis, ...))
 
 
-As shown in the :doc:`user guide <../userguide/userguide>`, once all required objects are defined,
+As shown in the :doc:`user guide <../../userguide/minimalexample>`, once all required objects are defined,
 the ``write()`` method of ``DLISFile`` can be called to generate DLIS bytes and store them in a file.
 
 
