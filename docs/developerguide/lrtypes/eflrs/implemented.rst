@@ -8,7 +8,7 @@ Note: the standard defines several more types of EFLRs.
 
 File Header
 ^^^^^^^^^^^
-File Header must immediately follow a `Storage Unit Label`_ of the file.
+File Header must immediately follow a :ref`Storage Unit Label <SUL>` of the file.
 Its length must be exactly 124 bytes.
 The ``identifier`` attribute of the File Header represents the name of the DLIS file.
 It should be a string of max 65 characters.
@@ -20,10 +20,10 @@ Origin
 ^^^^^^
 Every DLIS file must contain at least one Origin. Usually, it immediately follows the `File Header`_.
 The Origin keeps key information related to the scanned well, the scan procedure, producer, etc.
-The ``creation_time`` attribute of Origin, if not explicitly specified, is set to the current
+The ``creation_time`` :ref:`Attribute <Attribute>` of Origin, if not explicitly specified, is set to the current
 date and time (when the object is initialised).
 
-The ``file_set_number`` attribute of an Origin (assigned by user or randomly generated) is used as an Origin reference
+The ``file_set_number`` :ref:`Attribute <Attribute>` of an Origin (assigned by user or randomly generated) is used as an Origin reference
 in other DLIS objects. By default, the ``file_set_number`` of the first defined Origin is assigned to all other objects.
 To indicate that an object originally comes from a different file, the user should create an additional Origin
 with the relevant information and pass its ``file_set_number`` when creating the objects belonging to that Origin.
@@ -60,7 +60,7 @@ In this implementation, dimension and element limit should have the same value.
 Setting one at initialisation of Channel automatically sets up the other in the same way.
 
 A `Frame`_ always refers to a list of channels. The order is important; the first channel
-is used as the index. When a row of data is stored (wrapped in a `Frame Data`_ object),
+is used as the index. When a row of data is stored (wrapped in a :ref:`Frame Data` object),
 the order of channels as passed to the Frame is preserved.
 
 Channels can also be referred to by `Splice`_, `Path`_, `Calibration`_,
@@ -75,16 +75,16 @@ Frame
 ^^^^^
 Frame is a collection of `Channel`_ s. It can be interpreted as a table of numerical data.
 Channels can be viewed as variable-width, vertical slices of a Frame.
-Information contained in the Frame (and Channels) is used to generate `Frame Data`_ objects,
+Information contained in the Frame (and Channels) is used to generate :ref:`Frame Data` objects,
 which are horizontal slices of Frame - this time, strictly one row per slice.
 
-Frame has an ``index_type`` ``Attribute``, which defines the kind of data used as the common index
+Frame has an ``index_type`` :ref:`Attribute <Attribute>`, which defines the kind of data used as the common index
 for all (other) channels in the Frame. The values explicitly allowed by standard are:
-'ANGULAR-DRIFT', 'BOREHOLE-DEPTH', 'NON-STANDARD', 'RADIAL-DRIFT', and 'VERTICAL-DEPTH'.
+``ANGULAR-DRIFT``, ``BOREHOLE-DEPTH``, ``NON-STANDARD``, ``RADIAL-DRIFT``, and ``VERTICAL-DEPTH``.
 However, because most readers accept other expressions for index type, this library also allows it,
 only issuing a warning in the logs.
 
-Additional metadata defining a Frame can include its direction ('INCREASING' or 'DECREASING'),
+Additional metadata defining a Frame can include its direction (``INCREASING`` or ``DECREASING``),
 spacing (a float value + unit), as well as ``index_max`` and ``index_min``.
 These values are needed for some DLIS readers to interpret the data correctly.
 Therefore, if not explicitly specified by the user, these values are inferred from the data
@@ -146,7 +146,7 @@ From RP66:
 Calibration Measurement
 ^^^^^^^^^^^^^^^^^^^^^^^
 Calibration Measurement describes measurement performed for the purpose of calibration.
-It can reference a `Channel`_ object and can be referenced by `Calibration`.
+It can reference a `Channel`_ object and can be referenced by `Calibration`_.
 
 From RP66:
     Calibration-Measurement Objects record measurements, references, and tolerances used to compute
@@ -171,13 +171,13 @@ From RP66:
 
 Computation
 ^^^^^^^^^^^
-A Computation can reference an `Axis`_, `Zone`_ s, and a `LongName`.
-Additionally, through ``source`` ``Attribute``, it can reference another object being the direct source
+A Computation can reference an `Axis`_, `Zone`_ s, and a `Long Name`_ .
+Additionally, through ``source`` :ref:`Attribute <Attribute>`, it can reference another object being the direct source
 of this computation, e.g. a `Tool`_.
 Computation can be referenced by a `Process`_.
 
-The number of values specified for the ``values`` ``Attribute`` must match the number of `Zone`_ s
-added to the Computation (through ``zones`` ``Attribute``).
+The number of values specified for the ``values`` :ref:`Attribute <Attribute>` must match the number of `Zone`_ s
+added to the Computation (through ``zones`` :ref:`Attribute <Attribute>`).
 
 From RP66:
     Computation Objects (...) contain results of computations that are more appropriately expressed as Static
@@ -247,10 +247,10 @@ A Comment is simpler than a `Message`_ object; it contains only the comment text
 
 No-Format
 ^^^^^^^^^
-No-Format is a metadata container for unformatted data `No-Format Frame Data`_.
+No-Format is a metadata container for unformatted data :ref:`No-Format Frame Data`.
 It allows users to write arbitrary bytes of data.
-Just like `Frame`_ can be thought of as a collection of `Frame Data`_ objects,
-No-Format is a collection of `No-Format Frame Data`_ objects.
+Just like `Frame`_ can be thought of as a collection of :ref:`Frame Data` objects,
+No-Format is a collection of :ref:`No-Format Frame Data` objects.
 
 No-Format specifies information such as consumer name and description of the associated data.
 
@@ -303,20 +303,20 @@ From RP66:
 
 Process
 ^^^^^^^
-A Process combines multiple other objects: Channel`_ s, `Computation`_ s,
+A Process combines multiple other objects: `Channel`_ s, `Computation`_ s,
 and `Parameter`_ s.
 
 From RP66:
     [Each Process] describes a specific process or computation applied to input Objects to get output Objects.
 
-The ``status`` ``Attribute`` of Process can be one of: 'COMPLETE', 'ABORTED', 'IN-PROGRESS'.
+The ``status`` :ref:`Attribute <Attribute>` of Process can be one of: ``COMPLETE``, ``ABORTED``, ``IN-PROGRESS``.
 
 
 .. _Splice:
 
 Splice
 ^^^^^^
-A Splice relates several input and output `Channel`_ s and `Zone` s.
+A Splice relates several input and output `Channel`_ s and `Zone`_ s.
 
 From RP66:
     Splice Objects describe the process of concatenating two or more instances of a Channel
@@ -327,7 +327,7 @@ From RP66:
 
 Tool
 ^^^^
-A Tool is a collection of `Equipment`_ objects (stored in the ``parts`` ``Attribute``).
+A Tool is a collection of `Equipment`_ objects (stored in the ``parts`` :ref:`Attribute <Attribute>`).
 It can also reference `Channel`_ s and `Parameter`_ s,
 and can be referenced by `Computation`_.
 
@@ -361,9 +361,9 @@ From RP66:
 Zone
 ^^^^
 A zone specifies a single interval in depth or time.
-The ``domain`` of a Zone can be one of: 'BOREHOLE-DEPTH', 'TIME', 'VERTICAL-DEPTH'.
+The ``domain`` of a Zone can be one of: ``BOREHOLE-DEPTH``, ``TIME``, ``VERTICAL-DEPTH``.
 The expression of ``minimum`` and ``maximum`` of a Zone depends on the domain.
-For 'TIME', they could be ``datetime`` objects or floats (indicating the time since a specific event;
+For ``TIME``, they could be ``datetime`` objects or floats (indicating the time since a specific event;
 in this case, specifying a time unit is also advisable).
 For the other domains, they should be floats, ideally with depth units (e.g. 'm').
 
