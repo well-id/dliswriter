@@ -110,6 +110,7 @@ class FrameItem(EFLRItem):
             """
 
             if getattr(attr, key) is None and value is not None:
+                logger.debug(f"Setting {attr.label}.{key} of {self} to {value}")
                 setattr(attr, key, value)
 
         index_channel: ChannelItem = self.channels.value[0]
@@ -123,19 +124,28 @@ class FrameItem(EFLRItem):
         if self.index_type.value is not None:
             assign_if_none(self.index_min, index_data.min())
             assign_if_none(self.index_max, index_data.max())
-            if spacing is not None:
-                assign_if_none(self.spacing, spacing)
-                # no need to define direction if spacing is defined
-            elif direction is not None:
-                # spacing cannot be used because it is not uniform enough; using only direction
-                assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
-
             for at in (self.index_min, self.index_max, self.spacing):
                 assign_if_none(at, key='units', value=unit)
+
+            if spacing is None:
+                # spacing cannot be used because it is not uniform enough; using only direction - if available
+                logger.warning(
+                    f"Spacing of the index channel of {self} is not uniform; this can cause issues in some viewer "
+                    f"software. Consider implicit indexing by row number number instead "
+                    f"by removing frame index_type specification."
+                )
+                if direction is not None:
+                    assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
+            else:
+                assign_if_none(self.spacing, spacing)
+                # no need to define direction if spacing is defined
+
         else:
             # according to RP66, if index_type is None:
-            #   - spacing and direction are meaningless
-            #   - there is no index channel, so index_min and index_max should be frame-data numbers
+            #   - spacing and direction are meaningless - but some viewer software need a spacing defined
+            #   - there is no index channel, so index_min and index_max should be frame-data numbers (row numbers)
+            logger.info(f"No index channel defined for {self}; it will be indexed by the row number")
+            assign_if_none(self.spacing, 1)
             assign_if_none(self.index_min, 1)
             assign_if_none(self.index_max, index_data.shape[0])
 
