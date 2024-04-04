@@ -251,6 +251,12 @@ PROPERTIES = (
 )
 
 
+class CalibrationMeasurementPhase(ValidatorEnum):
+    AFTER = 'AFTER'
+    BEFORE = 'BEFORE'
+    MASTER = 'MASTER'
+
+
 class ProcessStatus(ValidatorEnum):
     # allowed values of the 'status' Attribute of Process
     COMPLETE = 'COMPLETE'

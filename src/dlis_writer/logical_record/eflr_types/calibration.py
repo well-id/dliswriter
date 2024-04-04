@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC, CalibrationMeasurementPhase
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
@@ -28,8 +28,6 @@ class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
 
     parent: "CalibrationMeasurementSet"
 
-    allowed_phases = ('AFTER', 'BEFORE', 'MASTER')
-
     def __init__(self, name: str, parent: "CalibrationMeasurementSet", **kwargs: Any) -> None:
         """Initialise CalibrationMeasurementItem.
 
@@ -39,8 +37,10 @@ class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationMeasurementItem Attributes.
         """
 
-        self.phase = IdentAttribute('phase', converter=self.make_converter_for_allowed_str_values(
-            self.allowed_phases, 'phases', allow_none=True, make_uppercase=True))
+        self.phase = IdentAttribute(
+            'phase',
+            converter=CalibrationMeasurementPhase.make_converter('phases', allow_none=True, make_uppercase=True)
+        )
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)
         self.type = IdentAttribute('type')
