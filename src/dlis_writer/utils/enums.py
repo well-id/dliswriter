@@ -257,6 +257,58 @@ class CalibrationMeasurementPhase(ValidatorEnum):
     MASTER = 'MASTER'
 
 
+class EquipmentType(ValidatorEnum):
+    # options for the 'type' ('_type') attribute of Equipment, allowed by the standard
+    ADAPTER = "Adapter"
+    BOARD = "Board"
+    BOTTOM_NOSE = "Bottom-Nose"
+    BRIDLE = "Bridle"
+    CABLE = "Cable"
+    CALIBRATOR = "Calibrator"
+    CARTRIDGE = "Cartridge"
+    CENTRALIZER = "Centralizer"
+    CHAMBER = "Chamber"
+    CUSHION = "Cushion"
+    DEPTH_DEVICE = "Depth-Device"
+    DISPLAY = "Display"
+    DRAWER = "Drawer"
+    EXCENTRALIZER = "Excentralizer"
+    EXPLOSIVE_SOURCE = "Explosive-Source"
+    FLASK = "Flask"
+    GEOPHONE = "Geophone"
+    GUN = "Gun"
+    HEAD = "Head"
+    HOUSING = "Housing"
+    JIG = "Jig"
+    JOINT = "Joint"
+    NUCLEAR_DETECTOR = "Nuclear-Detector"
+    PACKER = "Packer"
+    PAD = "Pad"
+    PANE = "Pane"
+    POSITIONING = "Positioning"
+    PRINTER = "Printer"
+    RADIOACTIVE_SOURCE = "Radioactive-Source"
+    SHIELD = "Shield"
+    SIMULATOR = "Simulator"
+    SKID = "Skid"
+    SONDE = "Sonde"
+    SPACER = "Spacer"
+    STANDOFF = "Standoff"
+    SYSTEM = "System"
+    TOOL = "Tool"
+    TOOL_MODULE = "Tool-Module"
+    TRANSDUCER = "Transducer"
+    VIBRATION_SOURCE = "Vibration-Source"
+
+
+class EquipmentLocation(ValidatorEnum):
+    # options for the 'location' attribute of Equipment, allowed by the standard
+    LOGGING_SYSTEM = 'Logging-System'
+    REMOTE = 'Remote'
+    RIG = 'Rig'
+    WELL = 'Well'
+
+
 class ProcessStatus(ValidatorEnum):
     # allowed values of the 'status' Attribute of Process
     COMPLETE = 'COMPLETE'

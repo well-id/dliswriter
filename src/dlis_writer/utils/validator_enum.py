@@ -14,7 +14,7 @@ class ValidatorEnum(StrEnum):
 
     @classmethod
     def make_converter(cls, label: Optional[str] = None, make_uppercase: bool = False, allow_none: bool = False,
-                       allow_other_str: bool = False):
+                       soft: bool = False):
         def converter(v: Union[str, None, "ValidatorEnum"]) -> Union[str, None]:
             if allow_none and v is None:
                 return None
@@ -34,7 +34,7 @@ class ValidatorEnum(StrEnum):
                 v = cls[v]
             except KeyError:
                 message = f"{repr(v)} is not one of the allowed {label or 'values'}: {', '.join(cls.get_keys())}"
-                if allow_other_str:
+                if soft:
                     logger.warning(message)
                     return v
                 else:
