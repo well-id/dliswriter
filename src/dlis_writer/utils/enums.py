@@ -251,8 +251,15 @@ PROPERTIES = (
 )
 
 
+class ProcessStatus(ValidatorEnum):
+    # allowed values of the 'status' Attribute of Process
+    COMPLETE = 'COMPLETE'
+    ABORTED = 'ABORTED'
+    IN_PROGRESS = 'IN-PROGRESS'
+
+
 class ZoneDomains(ValidatorEnum):
-    #: allowed values for 'domain' Attribute of Zone
+    # allowed values for 'domain' Attribute of Zone
     # comments are quotes from RP66; 'Zone interval is'...:
     BOREHOLE_DEPTH = 'BOREHOLE-DEPTH',  # 'along the borehole'
     TIME = 'TIME',                      # 'elapsed time'

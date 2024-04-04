@@ -5,7 +5,7 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
-from dlis_writer.utils.enums import EFLRType
+from dlis_writer.utils.enums import EFLRType, ProcessStatus
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 
@@ -16,8 +16,6 @@ class ProcessItem(EFLRItem):
     """Model an object being part of Process EFLR."""
 
     parent: "ProcessSet"
-
-    allowed_status = ('COMPLETE', 'ABORTED', 'IN-PROGRESS')  #: allowed values of the 'status' Attribute
 
     def __init__(self, name: str, parent: "ProcessSet", **kwargs: Any) -> None:
         """Initialise ProcessItem.
@@ -32,8 +30,8 @@ class ProcessItem(EFLRItem):
         self.trademark_name = TextAttribute('trademark_name')
         self.version = TextAttribute('version')
         self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
-        self.status = IdentAttribute('status', converter=self.make_converter_for_allowed_str_values(
-            self.allowed_status, "status values", make_uppercase=True))
+        self.status = IdentAttribute(
+            'status', converter=ProcessStatus.make_converter("status values", make_uppercase=True))
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
         self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
         self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)
@@ -42,12 +40,6 @@ class ProcessItem(EFLRItem):
         self.comments = TextAttribute('comments', multivalued=True)
 
         super().__init__(name, parent=parent, **kwargs)
-
-    @classmethod
-    def check_status(cls, status: str) -> str:
-        if status not in cls.allowed_status:
-            raise ValueError(f"'status' should be one of: {', '.join(cls.allowed_status)}; got {status}")
-        return status
 
 
 class ProcessSet(EFLRSet):
