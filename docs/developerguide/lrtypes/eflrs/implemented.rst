@@ -86,11 +86,21 @@ for all (other) channels in the Frame. The values explicitly allowed by standard
 However, because most readers accept other expressions for index type, this library also allows it,
 only issuing a warning in the logs.
 
-Additional metadata defining a Frame can include its direction (``INCREASING`` or ``DECREASING``),
-spacing (a float value + unit), as well as ``index_max`` and ``index_min``.
-These values are needed for some DLIS readers to interpret the data correctly.
-Therefore, if not explicitly specified by the user, these values are inferred from the data
-(in particular, from the first channel passed to the frame), if the frame setup allows.
+If the ``index_type`` is defined, this means that the first Channel in the Frame will be interpreted as its index.
+If it is absent (left at the default value of ``None``), the Frame is implicitly indexed by the row number instead.
+
+**Note**: in some DLIS viewer software
+(e.g the `Schlumberger's Log Data Composer <https://schlumberger-log-data-toolbox.software.informer.com/>`_),
+Frame index is required to be strictly regularly spaced, i.e. the difference between the consecutive values in the
+index must be the same across the dataset. If the data of the channel which is supposed to be used as the index
+are not regularly spaced, it might be beneficial to switch to the implicit row-number indexing by removing
+the ``index_type`` specification. The writer issues a warning in the log messages if such irregularity is detected.
+
+Additional metadata defining a Frame can include its ``direction`` (``INCREASING`` or ``DECREASING``),
+``spacing`` (a float value + unit), as well as ``index_max`` and ``index_min``.
+These values are needed for some DLIS viewers to interpret the data correctly.
+Therefore, if not explicitly specified by the user, these values are inferred from the data:
+either from the first channel (if ``index_type`` is specified) or from the data size (for row-number indexing).
 
 Frame can be referenced by `Path`_.
 
@@ -116,6 +126,43 @@ From RP66:
     semantics of applications.
 
     When there is no Index Channel, then Frames are implicitly indexed by Frame Number.
+
+    (...)
+
+    Within a Logical File, no two Frame Objects may reference the same Channel Object.
+    Informally, this means that if the same "Channel" is to be recorded in two distinct Frame Types in a Logical File,
+    then the Channel must be represented by two distinct Channel Objects (...).
+
+    (...)
+
+    If Attribute Index-Type is absent, then there is no Index Channel and Attributes Direction and Spacing are
+    meaningless and are ignored. When Attribute Index-Type is absent, then Frames are implicitly indexed by the Frame
+    Number. When a Frame has an Index, then it must be the first Channel in the Frame, and it must be scalar.
+
+    (...)
+
+    The DIRECTION Attribute; specifies the behavior of the signed value of the Index.
+    If this Attribute is absent, then Index direction is unknown or irrelevant.
+
+    (...)
+
+    The Spacing Attribute; can be used to indicate a constant spacing of the Index from one Frame to the next.
+    Its value is the signed difference of the later minus the earlier Index between any (and every) two successive
+    Frames of a given Frame Type. Thus, the Spacing Attribute is negative if the Index is decreasing (e.g., an up log)
+    and is positive if the Index is increasing (e.g., a down log). Note that when Attribute Spacing is present,
+    then Attribute Direction is not required.
+    Presence of this Attribute guarantees to the Consumer that Index spacing will be constant for the current Frame Type
+    throughout the Logical File. If the Index spacing is allowed to change, then this Attribute must be absent.
+
+    (...)
+
+    INDEX-MIN Attribute specifies the minimum value of the Index Channel in all Frames of the Frame Type.
+    If there is no Index Channel, then this is the minimum Frame Number, namely 1.
+
+    (...)
+
+    The INDEX-MAX Attribute specifies the maximum value of the Index Channel in all Frames of the Frame Type.
+    If there is no Index Channel, then this is the number of Frames in the Frame Type.
 
 
 .. _Axis:
