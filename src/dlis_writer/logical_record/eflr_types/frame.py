@@ -3,7 +3,7 @@ import numpy as np
 from typing import Union, Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC, FrameIndexType
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,
                                                        IdentAttribute)
@@ -18,15 +18,6 @@ class FrameItem(EFLRItem):
 
     parent: "FrameSet"
 
-    #: values for frame index type allowed by the standard
-    frame_index_types = (
-        'ANGULAR-DRIFT',
-        'BOREHOLE-DEPTH',
-        'NON-STANDARD',
-        'RADIAL-DRIFT',
-        'VERTICAL-DEPTH'
-    )
-
     def __init__(self, name: str, parent: "FrameSet", **kwargs: Any) -> None:
         """Initialise FrameItem.
 
@@ -38,7 +29,10 @@ class FrameItem(EFLRItem):
 
         self.description = TextAttribute('description')
         self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True)
-        self.index_type = IdentAttribute('index_type', converter=self.parse_index_type)
+        self.index_type = IdentAttribute(
+            'index_type',
+            converter=FrameIndexType.make_converter("index types", soft=True, make_uppercase=True)
+        )
         self.direction = IdentAttribute('direction')
         self.spacing = NumericAttribute('spacing')
         self.encrypted = NumericAttribute(
@@ -47,18 +41,6 @@ class FrameItem(EFLRItem):
         self.index_max = NumericAttribute('index_max')
 
         super().__init__(name, parent=parent, **kwargs)
-
-    @classmethod
-    def parse_index_type(cls, value: str) -> str:
-        """Check that the provided index type value is allowed by the standard. If not, issue a warning in the logs.
-
-        Return the value as-is, unchanged.
-        """
-
-        if value not in cls.frame_index_types:
-            logger.warning(f"Frame index type should be one of the following: "
-                           f"'{', '.join(cls.frame_index_types)}'; got '{value}'")
-        return value
 
     @staticmethod
     def convert_encrypted(value: Union[str, int, float, bool]) -> int:

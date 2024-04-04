@@ -309,6 +309,15 @@ class EquipmentLocation(ValidatorEnum):
     WELL = 'Well'
 
 
+class FrameIndexType(ValidatorEnum):
+    # values for frame index type allowed by the standard
+    ANGULAR_DRIFT = 'ANGULAR-DRIFT'
+    BOREHOLE_DEPTH = 'BOREHOLE-DEPTH'
+    NON_STANDARD = 'NON-STANDARD'
+    RADIAL_DRIFT = 'RADIAL-DRIFT'
+    VERTICAL_DEPTH = 'VERTICAL-DEPTH'
+
+
 class ProcessStatus(ValidatorEnum):
     # allowed values of the 'status' Attribute of Process
     COMPLETE = 'COMPLETE'
