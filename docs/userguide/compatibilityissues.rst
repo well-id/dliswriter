@@ -78,3 +78,4 @@ In other cases, the writer only allows the values specified by the standard. Thi
 * ``phase`` of :ref:`Calibration Measurement`
 * ``status`` of :ref:`Process`
 * ``domain`` of :ref:`Zone`
+* ``properties`` of :ref:`Channel`, :ref:`Computation`, and :ref:`Process`
