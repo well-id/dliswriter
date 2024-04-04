@@ -110,111 +110,110 @@ class RepresentationCode(int, Enum):
         raise ValueError(f"{cls.__name__} '{v}' is not defined")
 
 
-# all units explicitly allowed by the RP66 standard
-UNITS = (
-    "A",
-    "K",
-    "cd",
-    "dAPI",
-    "dB",
-    "gAPI",
-    "kg",
-    "m",
-    "mol",
-    "nAPI",
-    "rad",
-    "s",
-    "sr",
-    "Btu",
-    "C",
-    "D",
-    "GPa",
-    "Gal",
-    "Hz",
-    "J",
-    "L",
-    "MHz",
-    "MPa",
-    "MeV",
-    "Mg",
-    "Mpsi",
-    "N",
-    "Oe",
-    "P",
-    "Pa",
-    "S",
-    "T",
-    "V",
-    "W",
-    "Wb",
-    "a",
-    "acre",
-    "atm",
-    "b",
-    "bar",
-    "bbl",
-    "c",
-    "cP",
-    "cal",
-    "cm",
-    "cu",
-    "d",
-    "daN",
-    "deg",
-    "degC",
-    "degF,"
-    "dm",
-    "eV",
-    "fC",
-    "ft",
-    "g",
-    "gal",
-    "h",
-    "in",
-    "kHz",
-    "kPa",
-    "kV",
-    "keV",
-    "kgf",
-    "km",
-    "lbf",
-    "lbm",
-    "mA",
-    "mC",
-    "mD",
-    "mGal",
-    "mL",
-    "mS",
-    "mT",
-    "mV",
-    "mW",
-    "mg",
-    "min",
-    "mm",
-    "mohm",
-    "ms",
-    "nC",
-    "nW",
-    "ns",
-    "ohm",
-    "pC",
-    "pPa",
-    "ppdk",
-    "ppk",
-    "ppm",
-    "psi",
-    "pu",
-    "t",
-    "ton",
-    "uA",
-    "uC",
-    "uPa",
-    "uV",
-    "um",
-    "uohm",
-    "upsi",
-    "us"
-)
+class Units(ValidatorEnum):
+    # all units explicitly allowed by the RP66 standard
+    AMPERE = "A"
+    KELVIN = "K"
+    CANDELA = "cd"
+    API_GRAVITY = "dAPI"
+    DECIBEL = "dB"
+    API_GAMMA_RAY = "gAPI"
+    KILOGRAM = "kg"
+    METER = "m"
+    MOLE = "mol"
+    API_NEUTRON = "nAPI"
+    RADIAN = "rad"
+    SECOND = "s"
+    STERADIAN = "sr"
+    BRITISH_THERMAL_UNIT = "Btu"
+    COULOMB = "C"
+    DARCY = "D"
+    GIGAPASCAL = "GPa"
+    GAL = "Gal"
+    HERTZ = "Hz"
+    JOULE = "J"
+    LITER = "L"
+    MEGAHERTZ = "MHz"
+    MEGAPASCAL = "MPa"
+    MEGAELECTRONVOLT = "MeV"
+    TONNE = "Mg"
+    MEGA_POUNDS_PER_SQUARE_METER = "Mpsi"
+    NEWTON = "N"
+    OERSTED = "Oe"
+    POISE = "P"
+    PASCAL = "Pa"
+    SIEMENS = "S"
+    TESLA = "T"
+    VOLT = "V"
+    WATT = "W"
+    WEBER = "Wb"
+    ANNUM = "a"
+    ACRE = "acre"
+    STD_ATMOSPHERE = "atm"
+    BARN = "b"
+    BAR = "bar"
+    BARREL = "bbl"
+    REVOLUTION_CYCLE = "c"
+    CENTIPOISE = "cP"
+    CALORIE = "cal"
+    CENTIMETER = "cm"
+    CAPTURE_UNIT = "cu"
+    DAY = "d"
+    DECANEWTON = "daN"
+    DEGREE_ANGLE = "deg"
+    DEGREE_CELSIUS = "degC"
+    DEGREE_FAHRENHEIT = "degF"
+    DECIMETER = "dm"
+    ELECTRONVOLT = "eV"
+    FEMTOCOULOMB = "fC"
+    FOOT = "ft"
+    GRAM = "g"
+    GALLON = "gal"
+    HOUR = "h"
+    INCH = "in"
+    KILOHERTZ = "kHz"
+    KILOPASCAL = "kPa"
+    KILOVOLT = "kV"
+    KILOELECTRONVOLT = "keV"
+    KILOGRAM_FORCE = "kgf"
+    KILOMETER = "km"
+    POUND_FORCE = "lbf"
+    POUND_MASS = "lbm"
+    MILLIAMPERE = "mA"
+    MILLICOULOMB = "mC"
+    MILLIDARCY = "mD"
+    MILLIGAL = "mGal"
+    MILLILITER = "mL"
+    MILLISIEMENS = "mS"
+    MILLITESLA = "mT"
+    MILLIVOLT = "mV"
+    MILLIWAT = "mW"
+    MILLIGRAM = "mg"
+    MINUTE = "min"
+    MILLIMETER = "mm"
+    MILLIOHM = "mohm"
+    MILLISECOND = "ms"
+    NANOCOULOMB = "nC"
+    NANOWATT = "nW"
+    NANOSECOND = "ns"
+    OHM = "ohm"
+    PICCOCOULOMB = "pC"
+    PICOPASCAL = "pPa"
+    PART_PER_TEN_THOUSAND = "ppdk"
+    PART_PER_THOUSAND = "ppk"
+    PART_PER_MILLION = "ppm"
+    POUND_PER_SQUARE_INCH = "psi"
+    POROSITY_UNIT = "pu"
+    METRIC_TON = "t"
+    US_SHORT_TON = "ton"
+    MICROAMPERE = "uA"
+    MICROCOULOMB = "uC"
+    MICROPASCAL = "uPa"
+    MICROVOLT = "uV"
+    MICROMETER = "um"
+    MICROOHM = "uohm"
+    MICRO_POUND_PER_SQUARE_INCH = "upsi"
+    MICROSECOND = "us"
 
 
 class Properties(ValidatorEnum):

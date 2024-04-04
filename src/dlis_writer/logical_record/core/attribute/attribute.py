@@ -2,7 +2,7 @@ from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 import logging
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
-from dlis_writer.utils.enums import RepresentationCode, UNITS
+from dlis_writer.utils.enums import RepresentationCode, Units
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
@@ -60,6 +60,8 @@ class Attribute:
         self._value = value
         self._converter = converter  # to convert value
         self.parent_eflr = parent_eflr
+
+        self._unit_checker = Units.make_converter("units", soft=True, allow_none=True)
 
     @staticmethod
     def _check_type(value: Any, *expected_types: type, allow_none: bool = False) -> None:
@@ -149,10 +151,7 @@ class Attribute:
         if not self._units_settable:
             raise RuntimeError(f"Units of {self.__class__.__name__} cannot be set")
 
-        if units is not None:
-            self._check_type(units, str)
-            if units not in UNITS:
-                logger.warning(f"'{units}' is not among the units allowed by the standard")
+        self._unit_checker(units)
         self._units = units
 
     @property

@@ -6,7 +6,7 @@ from h5py import Dataset  # type: ignore  # untyped library
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
-from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
+from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, Units
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
@@ -59,9 +59,7 @@ class ChannelItem(EFLRItem, DimensionedItem):
         self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
         self.properties = PropertiesAttribute('properties')
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = IdentAttribute(
-            'units', converter=self.make_converter_for_allowed_str_values(
-                UNITS, 'units', allow_none=True, allow_other_str=True))
+        self.units = IdentAttribute('units', converter=Units.make_converter("units", soft=True, allow_none=True))
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')

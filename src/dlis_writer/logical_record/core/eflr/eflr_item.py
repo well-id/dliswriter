@@ -236,36 +236,6 @@ class EFLRItem:
             raise ValueError(f"Value '{value}' could not be converted to a numeric type")
         return value
 
-    @staticmethod
-    def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
-                                              make_uppercase: bool = False, allow_none: bool = False,
-                                              allow_other_str: bool = False
-                                              ) -> Callable[[Union[str, None]], Union[str, None]]:
-
-        def converter(v: Union[str, None]) -> Union[str, None]:
-            """Check that the provided value is one of the accepted ones."""
-
-            if allow_none and v is None:
-                return None
-
-            if not isinstance(v, str):
-                raise TypeError(f"Expected a str, got {type(v)}: {v}")
-
-            if make_uppercase:
-                v = v.upper().replace(' ', '-').replace('_', '-')
-
-            if v not in allowed_values:
-                message = (f"{repr(v)} is not one of the allowed {label or 'values'}: "
-                           f"{', '.join(str(av) for av in allowed_values)}")
-                if allow_other_str:
-                    logger.warning(message)
-                else:
-                    raise ValueError(message)
-
-            return v
-
-        return converter
-
 
 class DimensionedItem:
     """Mixin to be used with EFLRItem subclasses which define 'axis' and 'dimension' Attributes."""
