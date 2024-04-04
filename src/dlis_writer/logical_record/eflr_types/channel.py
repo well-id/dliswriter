@@ -60,7 +60,8 @@ class ChannelItem(EFLRItem, DimensionedItem):
         self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = IdentAttribute(
-            'units', converter=self.make_converter_for_allowed_str_values(UNITS, 'units', allow_none=True))
+            'units', converter=self.make_converter_for_allowed_str_values(
+                UNITS, 'units', allow_none=True, allow_other_str=True))
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')

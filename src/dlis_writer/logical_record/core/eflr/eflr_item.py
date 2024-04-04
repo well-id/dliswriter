@@ -239,7 +239,8 @@ class EFLRItem:
 
     @staticmethod
     def make_converter_for_allowed_str_values(allowed_values: Iterable[str], label: Optional[str] = None,
-                                              make_uppercase: bool = False, allow_none: bool = False
+                                              make_uppercase: bool = False, allow_none: bool = False,
+                                              allow_other_str: bool = False
                                               ) -> Callable[[Union[str, None]], Union[str, None]]:
 
         def converter(v: Union[str, None]) -> Union[str, None]:
@@ -255,8 +256,12 @@ class EFLRItem:
                 v = v.upper().replace(' ', '-').replace('_', '-')
 
             if v not in allowed_values:
-                raise ValueError(f"{repr(v)} is not one of the allowed {label or 'values'}: "
-                                 f"{', '.join(str(av) for av in allowed_values)}")
+                message = (f"{repr(v)} is not one of the allowed {label or 'values'}: "
+                           f"{', '.join(str(av) for av in allowed_values)}")
+                if allow_other_str:
+                    logger.warning(message)
+                else:
+                    raise ValueError(message)
 
             return v
 
