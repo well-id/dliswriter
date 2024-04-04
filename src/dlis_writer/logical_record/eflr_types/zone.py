@@ -7,7 +7,7 @@ or values with specific regions of a well or with specific time intervals.`
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode
+from dlis_writer.utils.enums import EFLRType, RepresentationCode, ZoneDomains
 from dlis_writer.logical_record.core.attribute import IdentAttribute, DTimeAttribute, TextAttribute
 
 
@@ -15,14 +15,6 @@ class ZoneItem(EFLRItem):
     """Model an object being part of Zone EFLR."""
 
     parent: "ZoneSet"
-
-    #: allowed values for 'domain' Attribute
-    # comments are quotes from RP66; 'Zone interval is'...:
-    domains = (
-        'BOREHOLE-DEPTH',   # 'along the borehole'
-        'TIME',             # 'elapsed time'
-        'VERTICAL-DEPTH'    # 'depth along the Vertical Generatrix'
-    )
 
     def __init__(self, name: str, parent: "ZoneSet", **kwargs: Any) -> None:
         """Initialise ZoneItem.
@@ -34,19 +26,12 @@ class ZoneItem(EFLRItem):
         """
 
         self.description = TextAttribute('description')
-        self.domain = IdentAttribute('domain', converter=self.check_domain)
+        self.domain = IdentAttribute(
+            'domain', converter=ZoneDomains.make_converter('domain', make_uppercase=True))
         self.maximum = DTimeAttribute('maximum', allow_float=True)
         self.minimum = DTimeAttribute('minimum', allow_float=True)
 
         super().__init__(name, parent=parent, **kwargs)
-
-    @classmethod
-    def check_domain(cls, domain: str) -> str:
-        """Check that the provided 'domain' value is allowed by the standard. Raise a ValueError otherwise."""
-
-        if domain not in cls.domains:
-            raise ValueError(f"'domain' should be one of: {', '.join(cls.domains)}; got {domain}")
-        return domain
 
     def _run_checks_and_set_defaults(self) -> None:
         """Check maximum and minimum vs domain before writing the object."""

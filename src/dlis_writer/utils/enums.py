@@ -3,6 +3,8 @@ from struct import Struct
 from typing import Union, Any
 from typing_extensions import Self
 
+from dlis_writer.utils.validator_enum import ValidatorEnum
+
 
 class RepresentationCode(int, Enum):
     """Collect RP66 V1 representation codes with Struct converters where possible.
@@ -247,6 +249,14 @@ PROPERTIES = (
     'TEMPERATURE-CORRECTED',
     'UNDER-SAMPLED'
 )
+
+
+class ZoneDomains(ValidatorEnum):
+    #: allowed values for 'domain' Attribute of Zone
+    # comments are quotes from RP66; 'Zone interval is'...:
+    BOREHOLE_DEPTH = 'BOREHOLE-DEPTH',  # 'along the borehole'
+    TIME = 'TIME',                      # 'elapsed time'
+    VERTICAL_DEPTH = 'VERTICAL-DEPTH'   # 'depth along the Vertical Generatrix'
 
 
 class EFLRType(IntEnum):
