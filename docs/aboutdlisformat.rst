@@ -24,3 +24,11 @@ such as :ref:`Parameter`, :ref:`Zone`, :ref:`Calibration`, :ref:`Equipment`, etc
 See :doc:`the list <./developerguide/lrtypes/eflrs/implemented>` for more details.
 Additionally, for possible relations between the different objects,
 see the relevant :doc:`class diagrams <./developerguide/lrtypes/eflrs/relations>`.
+
+**Note**: this writer package has been developed in accordance with the
+`RP66 v1 standard <https://energistics.org/sites/default/files/RP66/V1/Toc/main.html>`_.
+Automatic testing of the writer functionalities and standard compliance has been done with the help of
+`dlisio Python package <https://dlisio.readthedocs.io/en/latest/>`_.
+The files produced by the writer have also been tested in PetroMar's DeepView and Schlumberger's Log Data Composer
+software; however, some :ref:`viewer-specific issues <Viewer issues>` have been observed, mainly caused by additional assumptions
+on the file format made in those viewers.
