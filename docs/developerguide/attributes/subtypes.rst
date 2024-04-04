@@ -31,3 +31,9 @@ the shape of the data (only the width, i.e. the number of columns).
 
 ``StatusAttribute`` encodes the status of :ref:`Tool` and :ref:`Equipment` objects.
 Its ``value`` can only be 0 or 1.
+
+
+``IdentAttribute`` is any Attribute represented using the IDENT representation code.
+``PropertiesAttribute`` is meant for ``properties`` Attribute of :ref:`Channel`, :ref:`Computation`, and :ref:`Process`.
+It includes a converter which checks if all the provided values belong to the standard-specified set.
+``PropertiesAttribute`` is always multivalued.
