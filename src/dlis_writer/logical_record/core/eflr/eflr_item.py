@@ -5,7 +5,6 @@ import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
-from dlis_writer.utils.enums import PROPERTIES
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
@@ -266,16 +265,6 @@ class EFLRItem:
             return v
 
         return converter
-
-    @staticmethod
-    def convert_property(v: str) -> str:
-        converter = EFLRItem.make_converter_for_allowed_str_values(
-            PROPERTIES,
-            'property indicators',
-            make_uppercase=True
-        )
-
-        return converter(v)  # type: ignore  # it does return a str
 
 
 class DimensionedItem:

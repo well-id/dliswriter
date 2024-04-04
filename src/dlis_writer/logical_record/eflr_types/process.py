@@ -6,7 +6,7 @@ from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.utils.enums import EFLRType, ProcessStatus
-from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
+from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute, PropertiesAttribute
 
 
 logger = logging.getLogger(__name__)
@@ -29,7 +29,7 @@ class ProcessItem(EFLRItem):
         self.description = TextAttribute('description')
         self.trademark_name = TextAttribute('trademark_name')
         self.version = TextAttribute('version')
-        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
+        self.properties = PropertiesAttribute('properties')
         self.status = IdentAttribute(
             'status', converter=ProcessStatus.make_converter("status values", make_uppercase=True))
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)

@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 class ValidatorEnum(StrEnum):
 
     @classmethod
-    def get_keys(cls) -> Generator:
-        yield from cls.__members__.keys()
+    def get_values(cls) -> Generator:
+        yield from cls.__members__.values()
 
     @classmethod
     def make_converter(cls, label: Optional[str] = None, make_uppercase: bool = False, allow_none: bool = False,
@@ -18,6 +18,9 @@ class ValidatorEnum(StrEnum):
         def converter(v: Union[str, None, "ValidatorEnum"]) -> Union[str, None]:
             if allow_none and v is None:
                 return None
+
+            if make_uppercase:
+                v = v.upper().replace(' ', '-').replace('_', '-')
 
             if v in cls:
                 if isinstance(v, cls):
@@ -27,13 +30,10 @@ class ValidatorEnum(StrEnum):
             if not isinstance(v, str):
                 raise TypeError(f"Expected a str, got {type(v)}: {v}")
 
-            if make_uppercase:
-                v = v.upper().replace(' ', '-').replace('_', '-')
-
             try:
                 v = cls[v]
             except KeyError:
-                message = f"{repr(v)} is not one of the allowed {label or 'values'}: {', '.join(cls.get_keys())}"
+                message = f"{repr(v)} is not one of the allowed {label or 'values'}: {', '.join(cls.get_values())}"
                 if soft:
                     logger.warning(message)
                     return v

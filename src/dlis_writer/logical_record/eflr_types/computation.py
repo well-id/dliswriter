@@ -7,7 +7,7 @@ from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.utils.enums import EFLRType
 from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute,
-                                                       EFLROrTextAttribute, IdentAttribute)
+                                                       EFLROrTextAttribute, PropertiesAttribute)
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ class ComputationItem(EFLRItem, DimensionedItem):
         """
 
         self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
-        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
+        self.properties = PropertiesAttribute('properties')
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)

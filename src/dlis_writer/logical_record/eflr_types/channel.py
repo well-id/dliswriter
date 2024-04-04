@@ -10,7 +10,7 @@ from dlis_writer.utils.enums import RepresentationCode as RepC, EFLRType, UNITS
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
-                                                       IdentAttribute, EFLROrTextAttribute)
+                                                       IdentAttribute, EFLROrTextAttribute, PropertiesAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
 
 logger = logging.getLogger(__name__)
@@ -57,7 +57,7 @@ class ChannelItem(EFLRItem, DimensionedItem):
         self._cast_dtype: Union[numpy_dtype_type, None] = None
 
         self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
-        self.properties = IdentAttribute('properties', multivalued=True, converter=self.convert_property)
+        self.properties = PropertiesAttribute('properties')
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
         self.units = IdentAttribute(
             'units', converter=self.make_converter_for_allowed_str_values(
