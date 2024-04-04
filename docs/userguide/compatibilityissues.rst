@@ -14,17 +14,48 @@ Some of the known issues - and, if applicable, solutions - are described below.
 
 PetroMar's DeepView
 ^^^^^^^^^^^^^^^^^^^
-TODO
+*   DeepView crashes if there is a :ref:`Channel` defined (added to the file e.g. by ``DLISFile.add_channel``)
+    that is not added to any :ref:`Frame`. The standard doesn't seem to mention anything about it; it only says that
+    no Channel object can be referenced by multiple Frames. The writer issues a log warning if a
+    'freelancer' Channel is detected.
+*   Some signed integer formats are not interpreted correctly, leading to erroneous overflow. Because these data are
+    handled correctly by other viewers, no specific handling has been implemented in the writer.
 
 
 Schlumberger's Log Data Composer
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-TODO
+*   Names of all objects - Frames, Channels, etc. - must be uppercase. There is no mention about this in the standard.
+    Other tested viewers accept lowercase names without any issue, so this is not handled in the writer in any way.
+*   Requirements for the ``file_set_number`` of :ref:`Origin` are unclear. This value, if not specified by the user
+    when the Origin is defined, is set to a randomly generated integer, in accordance with the standard.
+    This, however, often makes Log Data Composer complain. If the generated DLIS file is meant for this software,
+    it is recommended to explicitly set ``file_set_number`` to 1 when defining the Origin
+    (e.g. by using the relevant keyword argument in the call to ``DLISFile.add_origin``).
+*   Even though according to the standard, :ref:`Frame` spacing is meaningless if no index :ref:`Channel` is defined
+    (see :ref:`Frame` for more details), Log Data Composer still requires a spacing defined.
+    Therefore, in case of no index Channel, Frame spacing is internally set to 1 - if not specified by the user.
+*   If an index Channel is defined, it must be made sure that the spacing of that Channel is uniform.
+    (A warning in the logs is issued if this is not the case.)
+    In case of non-uniform spacing, it is recommended to switch to implicit row-number indexing by removing
+    ``index_type`` specification from the Frame; this is **not** done automatically.
 
 
 Other things to look at
 ^^^^^^^^^^^^^^^^^^^^^^^
-TODO
+In case the generated DLIS file cannot be open in the target viewer software, there are a few more possible hints
+to look at.
+
+*   Some viewers require specific names for some objects, especially :ref:`Channel` s. For example, the index Channel
+    - which might be required to represent depth - might have to be called "MD" (for "Measured Depth").
+*   It is also recommended to not use spaces or special characters in the object names.
+*   Specifying additional metadata for Channels - e.g. their minimum and maximum values - might help.
+*   One should keep in mind that when ``index_type`` of :ref:`Frame` is specified, the first Channel of the Frame
+    automatically becomes the index Channel. The data of this Channel should be 1D, monotonic, and, ideally,
+    evenly spaced. Non-compliance with these requirements might cause the viewer to refuse to open the file or crash,
+    even at a later stage (e.g. when scrolling through the data).
+*   Some viewers might crash due to the sheer amount of data to view.
+*   The :ref:`Path` object is known to cause issues in several viewers, including ``dlisio``.
+    The cause of that is not well understood.
 
 
 Loosened restrictions
