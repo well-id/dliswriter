@@ -10,9 +10,7 @@ When inspecting the objects, one might notice that:
 import numpy as np
 import logging
 
-from dlis_writer.file import DLISFile
-from dlis_writer.logical_record.core.eflr import EFLRItem
-from dlis_writer.logical_record.eflr_types import ChannelItem
+from dlis_writer import DLISFile, EFLRItem, enums, eflr_types
 from dlis_writer.utils.logging import install_colored_logger
 
 
@@ -29,18 +27,20 @@ df.add_origin("DEFAULT ORIGIN", file_set_number=80, company="XXX")
 
 # define frame 1
 n_rows_1 = 100
-ch_depth_1 = df.add_channel('DEPTH', data=np.arange(n_rows_1), units='m')
+ch_depth_1 = df.add_channel('DEPTH', data=np.arange(n_rows_1), units=enums.Units.METER)
 ch_rpm_1 = df.add_channel("RPM", data=10 * np.random.rand(n_rows_1))
 ch_amp_1 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_1, 10))
-frame1 = df.add_frame("FRAME1", channels=(ch_depth_1, ch_rpm_1, ch_amp_1), index_type='BOREHOLE-DEPTH')
+frame1 = df.add_frame("FRAME1", channels=(ch_depth_1, ch_rpm_1, ch_amp_1),
+                      index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
 
 # define frame 2
 n_rows_2 = 200
-ch_depth_2 = df.add_channel('DEPTH', data=np.arange(n_rows_2), units='m')
+ch_depth_2 = df.add_channel('DEPTH', data=np.arange(n_rows_2), units=enums.Units.METER)
 ch_rpm_2 = df.add_channel("RPM", data=(np.arange(n_rows_2) % 10).astype(np.int32))
 ch_amp_2 = df.add_channel("AMPLITUDE", data=np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6)
-frame2 = df.add_frame("FRAME2", channels=(ch_depth_2, ch_rpm_2, ch_amp_2), index_type='BOREHOLE-DEPTH')
+frame2 = df.add_frame("FRAME2", channels=(ch_depth_2, ch_rpm_2, ch_amp_2),
+                      index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
 
 # write the file
@@ -51,7 +51,7 @@ df.write('./tmp.DLIS')
 def describe_item(o: EFLRItem) -> None:
     s = f"{o}: \n\tcopy_number = {o.copy_number}"
 
-    if isinstance(o, ChannelItem):
+    if isinstance(o, eflr_types.ChannelItem):
         s += f"\n\tdataset_name = {o.dataset_name}"
 
     print(s)

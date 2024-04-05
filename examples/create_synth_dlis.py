@@ -5,7 +5,7 @@ import numpy as np
 import logging
 
 from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer import AttrSetup, DLISFile
+from dlis_writer import AttrSetup, DLISFile, enums
 
 
 # colored logs output
@@ -31,7 +31,7 @@ origin3 = df.add_origin("ANOTHER ORIGIN", well_name="XYZ", company="another comp
 # define axes - metadata objects for channels
 ax1 = df.add_axis('AXIS1', coordinates=["40 23' 42.8676'' N", "27 47' 32.8956'' E"], axis_id='AXIS 1')
 ax1.spacing.value = 0.2
-ax1.spacing.units = 'm'
+ax1.spacing.units = enums.Units.METER
 ax2 = df.add_axis('AXIS2', spacing=5, coordinates=[1, 2, 3.5], origin_reference=origin2.file_set_number.value)
 # ^ mark ax2 as belonging to origin2
 ax3 = df.add_axis("AXIS3", spacing=0.1, coordinates=[0])
@@ -45,31 +45,34 @@ long_name3 = df.add_long_name("ANOTHER LONG NAME", conditions=["At Standard Temp
 
 # define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
-ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10 - 3, units='m')   # index channel - always scalar
+ch1 = df.add_channel('DEPTH', data=np.arange(n_rows_depth) / 10 - 3,
+                     units=enums.Units.METER)   # index channel - always scalar
 ch2 = df.add_channel("RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32) - 2, axis=ax3)  # 1D data
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows_depth, 5), cast_dtype=np.float32,
                      long_name=long_name3)  # 2D data
 ch4 = df.add_channel('COMPUTED_CHANNEL', data=np.random.randint(0, 100, dtype=np.uint8, size=n_rows_depth),
                      long_name=long_name1)
-main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4), index_type='BOREHOLE-DEPTH')
+main_frame = df.add_frame("MAIN FRAME", channels=(ch1, ch2, ch3, ch4),
+                          index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
 
 # define frame 2: time-based with 2 channels, 200 rows each
 n_rows_time = 200
 ch5 = df.add_channel(
-    'TIME', data=np.arange(n_rows_time), cast_dtype=np.uint32, units='s', axis=ax3)  # index channel for frame 2
+    'TIME', data=np.arange(n_rows_time), cast_dtype=np.uint32, units=enums.Units.SECOND, axis=ax3
+)  # index channel for frame 2
 ch6 = df.add_channel(
     'TEMPERATURE', data=np.random.randint(-10, 30, size=n_rows_time, dtype=np.int8),
-    cast_dtype=np.int16, units='degC')
-second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type='NON-STANDARD')
+    cast_dtype=np.int16, units=enums.Units.DEGREE_CELSIUS)
+second_frame = df.add_frame('TIME FRAME', channels=(ch5, ch6), index_type=enums.FrameIndexType.NON_STANDARD)
 
 
 # zones
-zone1 = df.add_zone('DEPTH-ZONE', domain='BOREHOLE-DEPTH', minimum=2, maximum=4.5)
+zone1 = df.add_zone('DEPTH-ZONE', domain=enums.ZoneDomains.BOREHOLE_DEPTH, minimum=2, maximum=4.5)
 dt = datetime.now()
-zone2 = df.add_zone('TIME-ZONE', domain='TIME', minimum=dt - timedelta(hours=3), maximum=dt - timedelta(minutes=30),
-                    origin_reference=origin3.file_set_number.value)
-zone3 = df.add_zone('VDEPTH-ZONE', domain='VERTICAL-DEPTH', minimum=10, maximum=20,
+zone2 = df.add_zone('TIME-ZONE', domain=enums.ZoneDomains.TIME, minimum=dt - timedelta(hours=3),
+                    maximum=dt - timedelta(minutes=30), origin_reference=origin3.file_set_number.value)
+zone3 = df.add_zone('VDEPTH-ZONE', domain=enums.ZoneDomains.VERTICAL_DEPTH, minimum=10, maximum=20,
                     origin_reference=origin2.file_set_number.value)
 
 
@@ -87,15 +90,14 @@ parameter2 = df.add_parameter('PARAM2', zones=(zone2,), long_name=long_name2,
 
 # equipment
 # note how complex attribute values can be passed as a dict or an AttrSetup object;
-equipment1 = df.add_equipment("EQ1", status=1, eq_type='Tool', serial_number='1239-12312',
-                              weight={'value': 123.2, 'units': 'kg'},
-                              length=AttrSetup(2, 'm'))
+equipment1 = df.add_equipment("EQ1", status=1, eq_type=enums.EquipmentType.TOOL, serial_number='1239-12312',
+                              weight={'value': 123.2, 'units': enums.Units.KILOGRAM},
+                              length=AttrSetup(2, enums.Units.METER))
 
 # 'value' and 'units' can also be added later to the created object.
-equipment2 = df.add_equipment("EQ2", location='Well', trademark_name='Some trademark TM')
+equipment2 = df.add_equipment("EQ2", location=enums.EquipmentLocation.WELL, trademark_name='Some trademark TM')
 equipment2.hole_size.value = 23.5
-equipment2.hole_size.units = 'in'
-# ^ can use the enum member, name (str), or value (int)
+equipment2.hole_size.units = enums.Units.INCH
 
 equipment3 = df.add_equipment('EQ3')
 equipment3.status.value = 0
@@ -116,7 +118,7 @@ computation3 = df.add_computation('CMPT3', values=[3.14], long_name=long_name3)
 # process - using channels, computations, and parameters
 process1 = df.add_process("PROC", input_channels=(ch1, ch2), output_channels=(ch4,), input_computations=(computation1,),
                           output_computations=(computation2, computation3),
-                          properties=['AVERAGED', 'LOCALLY-DEFINED', 'SAMPLED-UPWARD'])
+                          properties=[enums.Properties.AVERAGED, enums.Properties.LOCALLY_DEFINED])
 
 
 # calibration coefficient
@@ -127,7 +129,8 @@ coef3 = df.add_calibration_coefficient('CC3', coefficients=[2])
 
 
 # calibration measurement - use Axis and Channel
-cmeas1 = df.add_calibration_measurement('CM1', phase='BEFORE', measurement_type='Plus', axis=ax1,
+cmeas1 = df.add_calibration_measurement('CM1', phase=enums.CalibrationMeasurementPhase.BEFORE,
+                                        measurement_type='Plus', axis=ax1,
                                         measurement_source=ch1, measurement=[2.1, 2.5, 2.4], sample_count=3,
                                         begin_time=15, standard=[20, 25])
 cmeas2 = df.add_calibration_measurement('CM2', measurement_source=ch5, measurement=[30, 40, 55, 61],
