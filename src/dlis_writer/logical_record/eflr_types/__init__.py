@@ -5,12 +5,13 @@ from dlis_writer.logical_record.eflr_types.calibration_coefficient import (Calib
                                                                            CalibrationCoefficientItem)
 from dlis_writer.logical_record.eflr_types.calibration import CalibrationSet, CalibrationItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
+from dlis_writer.logical_record.eflr_types.comment import CommentSet, CommentItem
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet, ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, EquipmentItem
 from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
 from dlis_writer.logical_record.eflr_types.group import GroupSet, GroupItem
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
-from dlis_writer.logical_record.eflr_types.message import MessageSet, CommentSet, MessageItem, CommentItem
+from dlis_writer.logical_record.eflr_types.message import MessageSet, MessageItem
 from dlis_writer.logical_record.eflr_types.no_format import NoFormatSet, NoFormatItem
 from dlis_writer.logical_record.eflr_types.origin import OriginSet, OriginItem
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet, ParameterItem

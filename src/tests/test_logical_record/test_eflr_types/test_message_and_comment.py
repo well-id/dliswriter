@@ -1,7 +1,8 @@
 from datetime import datetime
 import pytest
 
-from dlis_writer.logical_record.eflr_types.message import MessageSet, CommentSet, MessageItem, CommentItem
+from dlis_writer.logical_record.eflr_types.message import MessageSet, MessageItem
+from dlis_writer.logical_record.eflr_types.comment import CommentSet, CommentItem
 
 
 def test_creating_message() -> None:
