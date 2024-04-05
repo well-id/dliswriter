@@ -27,7 +27,7 @@ class Units(ValidatorEnum):
     MEGAHERTZ = "MHz"
     MEGAPASCAL = "MPa"
     MEGAELECTRONVOLT = "MeV"
-    TONNE = "Mg"
+    MEGAGRAM = "Mg"
     MEGA_POUNDS_PER_SQUARE_METER = "Mpsi"
     NEWTON = "N"
     OERSTED = "Oe"

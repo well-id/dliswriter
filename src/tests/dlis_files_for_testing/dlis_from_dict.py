@@ -3,6 +3,7 @@ from typing import Union, Optional
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
+from dlis_writer.utils.enums import FrameIndexType
 
 from tests.dlis_files_for_testing.common import make_df
 
@@ -29,6 +30,6 @@ def write_dlis_from_dict(fname: Union[str, os.PathLike[str]], data_dict: dict,
     df = make_df()
 
     channels = _add_channels(df, data_dict=data_dict, channel_kwargs=channel_kwargs)
-    df.add_frame("MAIN", index_type="DEPTH", channels=channels)
+    df.add_frame("MAIN", index_type=FrameIndexType.VERTICAL_DEPTH, channels=channels)
 
     df.write(fname)

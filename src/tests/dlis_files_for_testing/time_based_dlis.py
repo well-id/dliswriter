@@ -4,6 +4,7 @@ import numpy as np
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
+from dlis_writer.utils.enums import Units
 
 from tests.dlis_files_for_testing.common import make_df
 
@@ -12,7 +13,7 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
     ch_time = df.add_channel(
         name="posix time",
         dataset_name="/contents/time",
-        units="s",
+        units=Units.SECOND,
         cast_dtype=np.float64,
         dimension=[1]
     )
@@ -33,7 +34,7 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, ...]:
         name="radius",
         dataset_name="/contents/image1",
         dimension=[128],
-        units="in",
+        units=Units.INCH,
         cast_dtype=np.float32
     )
 
