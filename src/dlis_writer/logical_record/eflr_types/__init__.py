@@ -1,7 +1,9 @@
 from dlis_writer.logical_record.eflr_types.axis import AxisSet, AxisItem
-from dlis_writer.logical_record.eflr_types.calibration import (CalibrationSet, CalibrationMeasurementSet,
-                                                               CalibrationCoefficientSet, CalibrationItem,
-                                                               CalibrationMeasurementItem, CalibrationCoefficientItem)
+from dlis_writer.logical_record.eflr_types.calibration_measurement import (CalibrationMeasurementItem,
+                                                                           CalibrationMeasurementSet)
+from dlis_writer.logical_record.eflr_types.calibration_coefficient import (CalibrationCoefficientSet,
+                                                                           CalibrationCoefficientItem)
+from dlis_writer.logical_record.eflr_types.calibration import CalibrationSet, CalibrationItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.computation import ComputationSet, ComputationItem
 from dlis_writer.logical_record.eflr_types.equipment import EquipmentSet, EquipmentItem

@@ -210,6 +210,16 @@ class EFLRItem:
             else:
                 set_value(attr, attr_value)
 
+    @staticmethod
+    def count_attributes(*attrs: Attribute) -> dict:
+        # check that the multivalued attributes of the object all have the same number of values - if defined at all
+        value_counts = {}
+        for attr in attrs:
+            if attr.value is not None:
+                value_counts[attr.label] = len(attr.value)
+
+        return value_counts
+
 
 class DimensionedItem:
     """Mixin to be used with EFLRItem subclasses which define 'axis' and 'dimension' Attributes."""
