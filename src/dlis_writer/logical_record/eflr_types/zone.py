@@ -8,7 +8,7 @@ from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode
-from dlis_writer.utils.enums import ZoneDomains
+from dlis_writer.utils.enums import ZoneDomain
 from dlis_writer.logical_record.core.attribute import IdentAttribute, DTimeAttribute, TextAttribute
 
 
@@ -28,7 +28,7 @@ class ZoneItem(EFLRItem):
 
         self.description = TextAttribute('description')
         self.domain = IdentAttribute(
-            'domain', converter=ZoneDomains.make_converter('domains', make_uppercase=True))
+            'domain', converter=ZoneDomain.make_converter('domains', make_uppercase=True))
         self.maximum = DTimeAttribute('maximum', allow_float=True)
         self.minimum = DTimeAttribute('minimum', allow_float=True)
 

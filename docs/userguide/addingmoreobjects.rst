@@ -7,15 +7,15 @@ For example, to add a :ref:`Zone` (in depth or in time):
 
 .. code-block:: python
 
-    zone1 = df.add_zone('DEPTH-ZONE', domain=enums.ZoneDomains.BOREHOLE_DEPTH, minimum=2, maximum=4.5)
-    zone2 = df.add_zone('TIME-ZONE', domain=enums.ZoneDomains.TIME, minimum=10, maximum=30)
+    zone1 = df.add_zone('DEPTH-ZONE', domain=enums.ZoneDomain.BOREHOLE_DEPTH, minimum=2, maximum=4.5)
+    zone2 = df.add_zone('TIME-ZONE', domain=enums.ZoneDomain.TIME, minimum=10, maximum=30)
 
 
 To specify units for numerical values, you can use ``.units`` of the relevant attribute, e.g.:
 
 .. code-block:: python
 
-    zone1.minimum.units = enums.Units.INCH  # inches
+    zone1.minimum.units = enums.Unit.INCH  # inches
     zone2.maximum.units = 's'   # seconds; simple strings are also accepted
 
 
@@ -23,8 +23,8 @@ It is also possible to pass the units together with the value, using a ``dict``:
 
 .. code-block:: python
 
-    zone3 = df.add_zone('VDEPTH-ZONE', domain=enums.ZoneDomains.VERTICAL_DEPTH,
-                        minimum={'value': 10, 'units': enums.Units.METER},
+    zone3 = df.add_zone('VDEPTH-ZONE', domain=enums.ZoneDomain.VERTICAL_DEPTH,
+                        minimum={'value': 10, 'units': enums.Unit.METER},
                         maximum={'value': 30, 'units': 'm'})
 
 

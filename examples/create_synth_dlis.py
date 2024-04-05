@@ -50,7 +50,7 @@ ax1 = df.add_axis(
     axis_id='AXIS 1'
 )
 ax1.spacing.value = 0.2
-ax1.spacing.units = enums.Units.METER
+ax1.spacing.units = enums.Unit.METER
 
 ax2 = df.add_axis(
     'AXIS2',
@@ -88,7 +88,7 @@ n_rows_depth = 100
 ch1 = df.add_channel(
     'DEPTH',
     data=np.arange(n_rows_depth) / 10 - 3,  # index channel - always scalar, i.e. 1D data
-    units=enums.Units.METER
+    units=enums.Unit.METER
 )
 ch2 = df.add_channel(
     "RPM",
@@ -120,14 +120,14 @@ ch5 = df.add_channel(
     'TIME',
     data=np.arange(n_rows_time),
     cast_dtype=np.uint32,
-    units=enums.Units.SECOND,
+    units=enums.Unit.SECOND,
     axis=ax3
 )
 ch6 = df.add_channel(
     'TEMPERATURE',
     data=np.random.randint(-10, 30, size=n_rows_time, dtype=np.int8),
     cast_dtype=np.int16,
-    units=enums.Units.DEGREE_CELSIUS
+    units=enums.Unit.DEGREE_CELSIUS
 )
 second_frame = df.add_frame(
     'TIME FRAME',
@@ -139,21 +139,21 @@ second_frame = df.add_frame(
 # zones
 zone1 = df.add_zone(
     'DEPTH-ZONE',
-    domain=enums.ZoneDomains.BOREHOLE_DEPTH,
+    domain=enums.ZoneDomain.BOREHOLE_DEPTH,
     minimum=2,
     maximum=4.5
 )
 dt = datetime.now()
 zone2 = df.add_zone(
     'TIME-ZONE',
-    domain=enums.ZoneDomains.TIME,
+    domain=enums.ZoneDomain.TIME,
     minimum=dt - timedelta(hours=3),
     maximum=dt - timedelta(minutes=30),
     origin_reference=origin3.file_set_number.value  # associated with origin 3
 )
 zone3 = df.add_zone(
     'VDEPTH-ZONE',
-    domain=enums.ZoneDomains.VERTICAL_DEPTH,
+    domain=enums.ZoneDomain.VERTICAL_DEPTH,
     minimum=10,
     maximum=20,
     origin_reference=origin2.file_set_number.value  # associated with origin 2
@@ -180,7 +180,7 @@ parameter1 = df.add_parameter(
     'PARAM1',
     long_name="Parameter nr 1",  # long_name can be str or a LongName object
     axis=ax1,
-    values={'value': [1], 'units': enums.Units.INCH}  # specifying value and units of the value in one line
+    values={'value': [1], 'units': enums.Unit.INCH}  # specifying value and units of the value in one line
 )
 parameter2 = df.add_parameter(
     'PARAM2',
@@ -198,8 +198,8 @@ equipment1 = df.add_equipment(
     status=1,
     eq_type=enums.EquipmentType.TOOL,
     serial_number='1239-12312',
-    weight={'value': 123.2, 'units': enums.Units.KILOGRAM},  # specifying value and units in one line - dict version
-    length=AttrSetup(2, enums.Units.METER)  # specifying value and units in one line - AttrSetup version
+    weight={'value': 123.2, 'units': enums.Unit.KILOGRAM},  # specifying value and units in one line - dict version
+    length=AttrSetup(2, enums.Unit.METER)  # specifying value and units in one line - AttrSetup version
 )
 
 # 'value' and 'units' can also be added later to the created object.
@@ -209,7 +209,7 @@ equipment2 = df.add_equipment(
     trademark_name='Some trademark TM'
 )
 equipment2.hole_size.value = 23.5
-equipment2.hole_size.units = enums.Units.INCH
+equipment2.hole_size.units = enums.Unit.INCH
 
 equipment3 = df.add_equipment('EQ3')
 equipment3.status.value = 0
@@ -259,7 +259,7 @@ process1 = df.add_process(
     output_channels=(ch4,),
     input_computations=(computation1,),
     output_computations=(computation2, computation3),
-    properties=[enums.Properties.AVERAGED, enums.Properties.LOCALLY_DEFINED]
+    properties=[enums.Property.AVERAGED, enums.Property.LOCALLY_DEFINED]
 )
 
 

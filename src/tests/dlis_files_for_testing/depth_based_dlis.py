@@ -4,7 +4,7 @@ import numpy as np
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
-from dlis_writer.utils.enums import Units
+from dlis_writer.utils.enums import Unit
 
 from tests.dlis_files_for_testing.common import make_df
 
@@ -13,7 +13,7 @@ def _add_channels(df: DLISFile) -> tuple[eflr_types.ChannelItem, eflr_types.Chan
     ch_depth = df.add_channel(
         name="depth",
         dataset_name="/contents/depth",
-        units=Units.METER,
+        units=Unit.METER,
         cast_dtype=np.float64
     )
 

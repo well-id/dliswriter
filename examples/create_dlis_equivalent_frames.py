@@ -39,7 +39,7 @@ n_rows_1 = 100
 ch_depth_1 = df.add_channel(
     'DEPTH',
     data=np.arange(n_rows_1),
-    units=enums.Units.METER
+    units=enums.Unit.METER
 )
 ch_rpm_1 = df.add_channel(
     "RPM",
@@ -61,7 +61,7 @@ n_rows_2 = 200
 ch_depth_2 = df.add_channel(
     'DEPTH',
     data=np.arange(n_rows_2),
-    units=enums.Units.METER
+    units=enums.Unit.METER
 )
 ch_rpm_2 = df.add_channel(
     "RPM",

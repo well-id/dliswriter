@@ -6,7 +6,7 @@ from typing import Union, Optional, Any, overload
 from .attribute import Attribute
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.internal_enums import RepresentationCode as RepC
-from dlis_writer.utils.enums import Properties
+from dlis_writer.utils.enums import Property
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import number_type, dtime_or_number_type
 
@@ -362,5 +362,5 @@ class PropertiesAttribute(IdentAttribute):
         super().__init__(
             label,
             multivalued=True,
-            converter=Properties.make_converter('property indicators', make_uppercase=True)
+            converter=Property.make_converter('property indicators', make_uppercase=True)
         )

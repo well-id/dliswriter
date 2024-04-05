@@ -1,7 +1,7 @@
 from dlis_writer.utils.validator_enum import ValidatorEnum
 
 
-class Units(ValidatorEnum):
+class Unit(ValidatorEnum):
     # all units explicitly allowed by the RP66 standard
     AMPERE = "A"
     KELVIN = "K"
@@ -107,7 +107,7 @@ class Units(ValidatorEnum):
     MICROSECOND = "us"
 
 
-class Properties(ValidatorEnum):
+class Property(ValidatorEnum):
     # allowed values for elements of the 'properties' attribute of Channel, Computation, and Process
     AVERAGED = 'AVERAGED'
     CALIBRATED = 'CALIBRATED'
@@ -215,7 +215,7 @@ class ProcessStatus(ValidatorEnum):
     IN_PROGRESS = 'IN-PROGRESS'
 
 
-class ZoneDomains(ValidatorEnum):
+class ZoneDomain(ValidatorEnum):
     # allowed values for 'domain' Attribute of Zone
     # comments are quotes from RP66; 'Zone interval is'...:
     BOREHOLE_DEPTH = 'BOREHOLE-DEPTH',  # 'along the borehole'

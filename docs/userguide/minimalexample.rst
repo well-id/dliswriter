@@ -22,7 +22,7 @@ and a single 2D channel.
     # define channels with numerical data and additional information
     #  1) the first channel is also the index channel of the frame;
     #     must be 1D, ideally should be monotonic and equally spaced
-    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units=enums.Units.METER)
+    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units=enums.Unit.METER)
 
     #  2) second channel; in this case 1D and unitless
     ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))

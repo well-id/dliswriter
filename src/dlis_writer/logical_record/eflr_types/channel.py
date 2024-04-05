@@ -7,7 +7,7 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedI
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.utils.internal_enums import RepresentationCode as RepC, EFLRType
-from dlis_writer.utils.enums import Units
+from dlis_writer.utils.enums import Unit
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
@@ -60,7 +60,7 @@ class ChannelItem(EFLRItem, DimensionedItem):
         self.long_name = EFLROrTextAttribute('long_name', object_class=LongNameSet)
         self.properties = PropertiesAttribute('properties')
         self.representation_code = ReprCodeAttribute(parent_eflr=self)
-        self.units = IdentAttribute('units', converter=Units.make_converter("units", soft=True, allow_none=True))
+        self.units = IdentAttribute('units', converter=Unit.make_converter("units", soft=True, allow_none=True))
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.element_limit = DimensionAttribute('element_limit')

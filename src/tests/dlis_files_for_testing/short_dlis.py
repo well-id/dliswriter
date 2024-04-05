@@ -5,7 +5,7 @@ from datetime import datetime
 
 from dlis_writer.file import DLISFile
 from dlis_writer.logical_record import eflr_types
-from dlis_writer.utils.enums import (Units, Properties, ZoneDomains, EquipmentType, EquipmentLocation,
+from dlis_writer.utils.enums import (Unit, Property, ZoneDomain, EquipmentType, EquipmentLocation,
                                      CalibrationMeasurementPhase, ProcessStatus)
 
 from tests.dlis_files_for_testing.common import make_file_header, make_sul
@@ -38,7 +38,7 @@ def _add_frame(df: DLISFile, *channels: eflr_types.ChannelItem) -> eflr_types.Fr
         description="Frame description"
     )
 
-    fr.spacing.units = Units.SECOND
+    fr.spacing.units = Unit.SECOND
     return fr
 
 
@@ -48,9 +48,9 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem,
         name="Some Channel",
         dataset_name="image1",
         long_name="Some not so very long channel name",
-        properties=[Properties.AVERAGED, Properties.LOCALLY_DEFINED, Properties.SPEED_CORRECTED],
+        properties=[Property.AVERAGED, Property.LOCALLY_DEFINED, Property.SPEED_CORRECTED],
         cast_dtype=np.float32,
-        units=Units.ACRE,
+        units=Unit.ACRE,
         dimension=12,
         axis=ax1,
         element_limit=12,
@@ -58,14 +58,14 @@ def _add_channels(df: DLISFile, ax1: eflr_types.AxisItem,
         maximum_value=127.6,
     )
 
-    ch1 = df.add_channel(name="Channel 1", dimension=[10, 10], units=Units.INCH)
+    ch1 = df.add_channel(name="Channel 1", dimension=[10, 10], units=Unit.INCH)
     ch2 = df.add_channel("Channel 2", long_name=ln)
     ch3 = df.add_channel("Channel 13", dataset_name='amplitude', element_limit=128)
-    ch_time = df.add_channel("posix time", dataset_name="contents/time", units=Units.SECOND)
+    ch_time = df.add_channel("posix time", dataset_name="contents/time", units=Unit.SECOND)
     ch_rpm = df.add_channel("surface rpm", dataset_name="contents/rpm", long_name=ln)
     ch_amplitude = df.add_channel("amplitude", dataset_name="contents/image0", dimension=128)
     ch_radius = df.add_channel("radius", dataset_name="contents/image1", dimension=128, units="in")
-    ch_radius_pooh = df.add_channel("radius_pooh", dataset_name="contents/image2", units=Units.METER)
+    ch_radius_pooh = df.add_channel("radius_pooh", dataset_name="contents/image2", units=Unit.METER)
     ch_x = df.add_channel("channel_x", long_name="Channel not added to the frame", dataset_name="image2", units="s")
 
     return ch, ch1, ch2, ch3, ch_time, ch_rpm, ch_amplitude, ch_radius, ch_radius_pooh, ch_x
@@ -78,7 +78,7 @@ def _add_axes(df: DLISFile) -> tuple[eflr_types.AxisItem, ...]:
         coordinates=list(range(12)),
         spacing=1
     )
-    ax1.spacing.units = Units.METER
+    ax1.spacing.units = Unit.METER
 
     ax2 = df.add_axis(
         "Axis-X",
@@ -117,17 +117,17 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
     z2 = df.add_zone(
         "Zone-2",
         description="VERTICAL-DEPTH-ZONE",
-        domain=ZoneDomains.VERTICAL_DEPTH,
+        domain=ZoneDomain.VERTICAL_DEPTH,
         maximum=2300.45,
         minimum=200.0
     )
-    z2.maximum.units = Units.METER
+    z2.maximum.units = Unit.METER
     z2.minimum.units = "m"
 
     z3 = df.add_zone(
         "Zone-3",
         description="ZONE-TIME",
-        domain=ZoneDomains.TIME,
+        domain=ZoneDomain.TIME,
         maximum="2050/07/13 11:30:00",
         minimum="2050/07/12 9:00:00"
     )
@@ -140,7 +140,7 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
         minimum=10
     )
     z4.maximum.units = "min"
-    z4.minimum.units = Units.MINUTE
+    z4.minimum.units = Unit.MINUTE
 
     zx = df.add_zone(
         name="Zone-X",
@@ -149,8 +149,8 @@ def _add_zones(df: DLISFile) -> tuple[eflr_types.ZoneItem, ...]:
         maximum=10,
         minimum=1,
     )
-    zx.maximum.units = Units.SECOND
-    zx.minimum.units = Units.SECOND
+    zx.maximum.units = Unit.SECOND
+    zx.minimum.units = Unit.SECOND
 
     return z1, z2, z3, z4, zx
 
@@ -177,7 +177,7 @@ def _add_parameters(df: DLISFile, zones: tuple[eflr_types.ZoneItem, ...],
         long_name=ln,
         values=[12.5]
     )
-    p3.values.units = Units.METER
+    p3.values.units = Unit.METER
 
     return p1, p2, p3
 
@@ -204,17 +204,17 @@ def _add_equipment(df: DLISFile) -> tuple[eflr_types.EquipmentItem, ...]:
         angular_drift=32.5,
     )
 
-    eq1.height.units = Units.INCH
-    eq1.length.units = Units.CENTIMETER
-    eq1.minimum_diameter.units = Units.METER
-    eq1.maximum_diameter.units = Units.METER
-    eq1.weight.units = Units.METRIC_TON
+    eq1.height.units = Unit.INCH
+    eq1.length.units = Unit.CENTIMETER
+    eq1.minimum_diameter.units = Unit.METER
+    eq1.maximum_diameter.units = Unit.METER
+    eq1.weight.units = Unit.METRIC_TON
     eq1.hole_size.units = "m"
     eq1.pressure.units = "psi"
-    eq1.temperature.units = Units.DEGREE_CELSIUS
+    eq1.temperature.units = Unit.DEGREE_CELSIUS
     eq1.vertical_depth.units = "m"
     eq1.radial_drift.units = "m"
-    eq1.angular_drift.units = Units.METER
+    eq1.angular_drift.units = Unit.METER
 
     eq2 = df.add_equipment(
         name="EQ2",
@@ -271,7 +271,7 @@ def _add_processes(df: DLISFile, parameters: tuple[eflr_types.ParameterItem, ...
         description="MERGED",
         trademark_name="PROCESS 1",
         version="0.0.1",
-        properties=[Properties.AVERAGED],
+        properties=[Property.AVERAGED],
         status="COMPLETE",
         input_channels=[channels[7]],
         output_channels=[channels[6], channels[2]],
@@ -304,7 +304,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     c1 = df.add_computation(
         name="COMPT-1",
         long_name="COMPT1",
-        properties=[Properties.LOCALLY_DEFINED, "AVERAGED"],
+        properties=[Property.LOCALLY_DEFINED, "AVERAGED"],
         dimension=[3],
         axis=[axes[2]],
         zones=zones[:2],
@@ -315,7 +315,7 @@ def _add_computation(df: DLISFile, axes: tuple[eflr_types.AxisItem, ...], zones:
     c2 = df.add_computation(
         name="COMPT2",
         long_name=ln,
-        properties=["under-sampled", Properties.AVERAGED],
+        properties=["under-sampled", Property.AVERAGED],
         dimension=[2],
         axis=[axes[3]],
         zones=[zones[0], zones[2]],

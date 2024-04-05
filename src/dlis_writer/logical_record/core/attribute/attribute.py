@@ -3,7 +3,7 @@ import logging
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
 from dlis_writer.utils.internal_enums import RepresentationCode
-from dlis_writer.utils.enums import Units
+from dlis_writer.utils.enums import Unit
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
@@ -62,7 +62,7 @@ class Attribute:
         self._converter = converter  # to convert value
         self.parent_eflr = parent_eflr
 
-        self._unit_checker = Units.make_converter("units", soft=True, allow_none=True)
+        self._unit_checker = Unit.make_converter("units", soft=True, allow_none=True)
 
     @staticmethod
     def _check_type(value: Any, *expected_types: type, allow_none: bool = False) -> None:
