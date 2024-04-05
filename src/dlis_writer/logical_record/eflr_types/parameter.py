@@ -7,6 +7,7 @@ from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute, EFLROrTextAttribute
+from dlis_writer.utils.value_checkers import convert_maybe_numeric
 
 
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ class ParameterItem(EFLRItem, DimensionedItem):
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
-        self.values = Attribute('values', converter=self.convert_maybe_numeric, multivalued=True,
+        self.values = Attribute('values', converter=convert_maybe_numeric, multivalued=True,
                                 multidimensional=True)
 
         super().__init__(name, parent=parent, **kwargs)

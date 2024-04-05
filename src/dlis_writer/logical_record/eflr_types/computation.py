@@ -8,7 +8,6 @@ from dlis_writer.logical_record.eflr_types.long_name import LongNameSet
 from dlis_writer.utils.internal_enums import EFLRType
 from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute,
                                                        EFLROrTextAttribute, PropertiesAttribute)
-from dlis_writer.utils.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,7 @@ class ComputationItem(EFLRItem, DimensionedItem):
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.zones = EFLRAttribute('zones', object_class=ZoneSet, multivalued=True)
         self.values = NumericAttribute('values', multivalued=True, multidimensional=True)
-        self.source = EFLRAttribute('source', converter=validate_string)
+        self.source = EFLRAttribute('source')
 
         super().__init__(name, parent=parent, **kwargs)
 

@@ -3,7 +3,7 @@ from typing import Any
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.internal_enums import EFLRType
 from dlis_writer.logical_record.core.attribute import Attribute, NumericAttribute, IdentAttribute
-from dlis_writer.utils.value_checkers import validate_string
+from dlis_writer.utils.value_checkers import validate_string, convert_maybe_numeric
 
 
 class AxisItem(EFLRItem):
@@ -21,7 +21,7 @@ class AxisItem(EFLRItem):
         """
 
         self.axis_id = IdentAttribute('axis_id', converter=validate_string)
-        self.coordinates = Attribute('coordinates', multivalued=True, converter=self.convert_maybe_numeric)
+        self.coordinates = Attribute('coordinates', multivalued=True, converter=convert_maybe_numeric)
         self.spacing = NumericAttribute('spacing')
 
         super().__init__(name, parent=parent, **kwargs)
