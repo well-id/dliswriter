@@ -2,7 +2,8 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC, CalibrationMeasurementPhase
+from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.enums import CalibrationMeasurementPhase
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet

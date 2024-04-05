@@ -1,7 +1,7 @@
 import pytest
 
 from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 
 
 def test_frame_creation() -> None:

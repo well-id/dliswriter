@@ -4,7 +4,7 @@ from typing import Any
 import numpy as np
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
 from dlis_writer.utils.types import number_type
 from dlis_writer.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute

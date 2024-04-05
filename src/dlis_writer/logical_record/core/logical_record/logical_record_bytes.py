@@ -2,7 +2,7 @@ import logging
 from typing import Optional, Generator
 
 from dlis_writer.logical_record.core.logical_record.segment_attributes import SegmentAttributes
-from dlis_writer.utils.enums import RepresentationCode as RepC
+from dlis_writer.utils.internal_enums import RepresentationCode as RepC
 
 
 logger = logging.getLogger(__name__)

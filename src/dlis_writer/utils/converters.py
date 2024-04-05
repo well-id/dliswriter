@@ -2,7 +2,7 @@ from datetime import datetime
 import numpy as np
 from typing import Callable, Any, Iterable, Union, Optional
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 from dlis_writer.utils.types import numpy_dtype_type
 
 

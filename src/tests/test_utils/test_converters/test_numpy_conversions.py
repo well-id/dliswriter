@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 from dlis_writer.utils.converters import ReprCodeConverter
 
 

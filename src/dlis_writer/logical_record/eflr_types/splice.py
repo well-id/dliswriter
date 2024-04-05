@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType
+from dlis_writer.utils.internal_enums import EFLRType
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet
 from dlis_writer.logical_record.eflr_types.zone import ZoneSet
 from dlis_writer.logical_record.core.attribute import EFLRAttribute

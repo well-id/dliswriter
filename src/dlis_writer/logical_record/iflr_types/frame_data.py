@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING, Optional
 
 from dlis_writer.logical_record.core.iflr import IFLR
 from dlis_writer.utils.struct_writer import write_struct_uvari
-from dlis_writer.utils.enums import IFLRType
+from dlis_writer.utils.internal_enums import IFLRType
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.eflr_types.frame import FrameItem

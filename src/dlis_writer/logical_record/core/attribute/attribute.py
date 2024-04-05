@@ -2,7 +2,8 @@ from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 import logging
 
 from dlis_writer.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
-from dlis_writer.utils.enums import RepresentationCode, Units
+from dlis_writer.utils.internal_enums import RepresentationCode
+from dlis_writer.utils.enums import Units
 from dlis_writer.utils.converters import ReprCodeConverter
 
 if TYPE_CHECKING:

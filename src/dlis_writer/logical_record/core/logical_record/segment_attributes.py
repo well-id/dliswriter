@@ -1,6 +1,6 @@
 from functools import lru_cache
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 
 
 class SegmentAttributes:

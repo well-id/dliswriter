@@ -2,7 +2,8 @@ from typing import Any
 import logging
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, EquipmentType, EquipmentLocation
+from dlis_writer.utils.internal_enums import EFLRType
+from dlis_writer.utils.enums import EquipmentType, EquipmentLocation
 from dlis_writer.logical_record.core.attribute import NumericAttribute, StatusAttribute, TextAttribute, IdentAttribute
 
 

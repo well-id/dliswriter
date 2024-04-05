@@ -2,7 +2,7 @@ import logging
 from typing import Any
 
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType, RepresentationCode as RepC
+from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
 
 

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from struct import Struct
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 from dlis_writer.utils.converters import ReprCodeConverter
 from dlis_writer.utils.types import numpy_dtype_type
 

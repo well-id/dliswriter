@@ -3,7 +3,7 @@ from progressbar import progressbar    # type: ignore  # untyped library
 from typing import Optional, Sequence
 from pathlib import Path
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 from dlis_writer.utils.types import file_name_type, number_type, bytes_type
 from dlis_writer.logical_record.misc import StorageUnitLabel
 

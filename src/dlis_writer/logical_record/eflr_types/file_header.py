@@ -8,9 +8,8 @@ from typing import Any
 
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
-from dlis_writer.utils.enums import EFLRType
 
 
 def pack_ushort(v: int) -> bytes:

@@ -3,7 +3,7 @@ from typing import Any, TYPE_CHECKING
 from functools import lru_cache
 from pytz import utc
 
-from dlis_writer.utils.enums import RepresentationCode
+from dlis_writer.utils.internal_enums import RepresentationCode
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr import EFLRItem
