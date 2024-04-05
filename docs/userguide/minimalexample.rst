@@ -6,7 +6,7 @@ and a single 2D channel.
 .. code-block:: python
 
     import numpy as np  # for creating mock datasets
-    from dlis_writer.file import DLISFile  # the main dlis-writer object you will interact with
+    from dlis_writer import DLISFile, enums
 
     # create a DLISFile object
     # this also initialises Storage Unit Label and File Header with minimal default information
@@ -22,7 +22,7 @@ and a single 2D channel.
     # define channels with numerical data and additional information
     #  1) the first channel is also the index channel of the frame;
     #     must be 1D, ideally should be monotonic and equally spaced
-    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units='m')
+    ch1 = df.add_channel('DEPTH', data=np.arange(n_rows) / 10, units=enums.Units.METER)
 
     #  2) second channel; in this case 1D and unitless
     ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
@@ -31,7 +31,7 @@ and a single 2D channel.
     ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
 
     # define frame, referencing the above defined channels
-    main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+    main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
     # when all the required objects have been added, write the data and metadata to a physical DLIS file
     df.write('./new_dlis_file.DLIS')
