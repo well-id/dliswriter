@@ -1,10 +1,11 @@
 import logging
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Union, Optional, Generator, Iterable, Callable
+from typing import TYPE_CHECKING, Any, Union, Optional, Generator
 import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
+from dlis_writer.utils.value_checkers import check_name_compatibility
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
@@ -55,7 +56,7 @@ class EFLRItem:
 
         """
 
-        self.name = name    #: name of the item
+        self.name = self._check_name(name)    #: name of the item
 
         self._check_parent(parent)
         self._parent = parent  #: EFLRSet instance this item belongs to
@@ -71,6 +72,11 @@ class EFLRItem:
             attribute.parent_eflr = self
 
         self.set_attributes(**{k: v for k, v in kwargs.items() if v is not None})
+
+    @staticmethod
+    def _check_name(name: str) -> str:
+        check_name_compatibility(name)
+        return name
 
     @property
     def parent(self) -> "EFLRSet":
