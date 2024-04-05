@@ -32,7 +32,7 @@ class FrameItem(EFLRItem):
         self.channels = EFLRAttribute('channels', object_class=ChannelSet, multivalued=True)
         self.index_type = IdentAttribute(
             'index_type',
-            converter=FrameIndexType.make_converter("index types", soft=True, make_uppercase=True)
+            converter=FrameIndexType.make_converter("index types", soft=True)
         )
         self.direction = IdentAttribute('direction')
         self.spacing = NumericAttribute('spacing')

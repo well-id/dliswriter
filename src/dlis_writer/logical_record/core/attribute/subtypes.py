@@ -362,5 +362,5 @@ class PropertiesAttribute(IdentAttribute):
         super().__init__(
             label,
             multivalued=True,
-            converter=Property.make_converter('property indicators', make_uppercase=True)
+            converter=Property.make_converter('property indicators')
         )

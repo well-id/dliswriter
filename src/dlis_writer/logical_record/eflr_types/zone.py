@@ -28,7 +28,7 @@ class ZoneItem(EFLRItem):
 
         self.description = TextAttribute('description')
         self.domain = IdentAttribute(
-            'domain', converter=ZoneDomain.make_converter('domains', make_uppercase=True))
+            'domain', converter=ZoneDomain.make_converter('domains'))
         self.maximum = DTimeAttribute('maximum', allow_float=True)
         self.minimum = DTimeAttribute('minimum', allow_float=True)
 

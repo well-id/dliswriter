@@ -40,7 +40,7 @@ class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
 
         self.phase = IdentAttribute(
             'phase',
-            converter=CalibrationMeasurementPhase.make_converter('phases', allow_none=True, make_uppercase=True)
+            converter=CalibrationMeasurementPhase.make_converter('phases', allow_none=True)
         )
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)

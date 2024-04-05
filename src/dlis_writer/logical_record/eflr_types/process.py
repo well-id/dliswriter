@@ -32,7 +32,7 @@ class ProcessItem(EFLRItem):
         self.version = TextAttribute('version')
         self.properties = PropertiesAttribute('properties')
         self.status = IdentAttribute(
-            'status', converter=ProcessStatus.make_converter("status values", make_uppercase=True))
+            'status', converter=ProcessStatus.make_converter("status values"))
         self.input_channels = EFLRAttribute('input_channels', object_class=ChannelSet, multivalued=True)
         self.output_channels = EFLRAttribute('output_channels', object_class=ChannelSet, multivalued=True)
         self.input_computations = EFLRAttribute('input_computations', object_class=ComputationSet, multivalued=True)

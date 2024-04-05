@@ -7,6 +7,7 @@ from datetime import datetime
 from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dlis_writer.logical_record.eflr_types.axis import AxisItem
 from dlis_writer.utils.internal_enums import RepresentationCode
+from dlis_writer.utils.enums import Property
 from dlis_writer.utils.types import numpy_dtype_type
 from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
 
@@ -18,7 +19,7 @@ def test_channel_creation(axis1: AxisItem) -> None:
         'Channel',
         dataset_name='amplitude',
         long_name='Amplitude channel',
-        properties=["NORMALIZED", "spliced", "local computation", "over_sampled"],
+        properties=["NORMALIZED", "SPLICED", Property.LOCAL_COMPUTATION, Property.OVERSAMPLED],
         cast_dtype=np.float32,
         units='acre',
         dimension=12,
