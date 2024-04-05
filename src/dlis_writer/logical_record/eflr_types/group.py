@@ -4,6 +4,7 @@ from typing import Any
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.logical_record.core.attribute import EFLRAttribute, TextAttribute, IdentAttribute
+from dlis_writer.utils.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ class GroupItem(EFLRItem):
         """
 
         self.description = TextAttribute('description')
-        self.object_type = IdentAttribute('object_type')
+        self.object_type = IdentAttribute('object_type', converter=validate_string)
         self.object_list = EFLRAttribute('object_list', multivalued=True, representation_code=RepC.OBJREF)
         self.group_list = EFLRAttribute('group_list', object_class=GroupSet, multivalued=True)
 

@@ -5,6 +5,7 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
 from dlis_writer.utils.internal_enums import EFLRType
 from dlis_writer.utils.enums import EquipmentType, EquipmentLocation
 from dlis_writer.logical_record.core.attribute import NumericAttribute, StatusAttribute, TextAttribute, IdentAttribute
+from dlis_writer.utils.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ class EquipmentItem(EFLRItem):
         self.status = StatusAttribute('status')
         self._type = IdentAttribute(
             '_type', converter=EquipmentType.make_converter("equipment types", soft=True))
-        self.serial_number = IdentAttribute('serial_number')
+        self.serial_number = IdentAttribute('serial_number', converter=validate_string)
         self.location = IdentAttribute(
             'location', converter=EquipmentLocation.make_converter("equipment locations", soft=True))
         self.height = NumericAttribute('height')

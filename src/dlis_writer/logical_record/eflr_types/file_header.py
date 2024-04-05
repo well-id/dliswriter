@@ -10,6 +10,7 @@ from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.utils.struct_writer import write_struct_ascii
 from dlis_writer.utils.internal_enums import RepresentationCode, EFLRType
 from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem
+from dlis_writer.utils.value_checkers import validate_string
 
 
 def pack_ushort(v: int) -> bytes:
@@ -53,7 +54,7 @@ class FileHeaderItem(EFLRItem):
         if len(identifier) != 1:
             raise ValueError(f"'identifier' should be a single character; got '{identifier}'")
 
-        self.header_id = header_id
+        self.header_id = validate_string(header_id)
         self.sequence_number = sequence_number
 
         super().__init__(name=identifier, parent=parent)

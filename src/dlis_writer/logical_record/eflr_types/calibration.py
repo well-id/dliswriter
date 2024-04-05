@@ -9,6 +9,7 @@ from dlis_writer.logical_record.eflr_types.parameter import ParameterSet
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
 from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, Attribute,
                                                        DTimeAttribute, DimensionAttribute, IdentAttribute)
+from dlis_writer.utils.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)
@@ -44,7 +45,7 @@ class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
         )
         self.measurement_source = EFLRAttribute(
             'measurement_source', representation_code=RepC.OBJREF, object_class=EFLRSet)
-        self.type = IdentAttribute('type')
+        self.type = IdentAttribute('type', converter=validate_string)
         self.dimension = DimensionAttribute('dimension')
         self.axis = EFLRAttribute('axis', object_class=AxisSet, multivalued=True)
         self.measurement = NumericAttribute('measurement', multivalued=True, multidimensional=True)
@@ -98,7 +99,7 @@ class CalibrationCoefficientItem(EFLRItem):
             **kwargs    :   Values of to be set as characteristics of the CalibrationCoefficientItem Attributes.
         """
 
-        self.label = IdentAttribute('label')
+        self.label = IdentAttribute('label', converter=validate_string)
         self.coefficients = NumericAttribute('coefficients', multivalued=True)
         self.references = NumericAttribute('references', multivalued=True)
         self.plus_tolerances = NumericAttribute('plus_tolerances', multivalued=True)
