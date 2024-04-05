@@ -2,7 +2,7 @@ from typing import Any
 
 from dlis_writer.utils.converters import get_ascii_bytes
 from dlis_writer.logical_record.core.logical_record import LogicalRecordBytes
-from dlis_writer.utils.value_checkers import check_string_compatibility
+from dlis_writer.utils.value_checkers import validate_string
 
 
 class StorageUnitLabel:
@@ -38,10 +38,8 @@ class StorageUnitLabel:
 
         super().__init__()
 
-        check_string_compatibility(set_identifier)
-
         self.sequence_number = sequence_number
-        self.set_identifier = set_identifier
+        self.set_identifier = validate_string(set_identifier)
         self.max_record_length = max_record_length
 
         if max_record_length > self.max_record_length_limit:

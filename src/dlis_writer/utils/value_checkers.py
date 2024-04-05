@@ -18,3 +18,6 @@ def check_string_compatibility(s: str) -> None:
                          f"dashes, and underscores; got {repr(s)}")
 
 
+def validate_string(s: str) -> str:
+    check_string_compatibility(s)
+    return s
