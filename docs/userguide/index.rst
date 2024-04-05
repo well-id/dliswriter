@@ -11,4 +11,5 @@ The last page mentions some known issues when using different DLIS viewers and p
    minimalexample
    extendingmetadata
    addingmoreobjects
+   enums
    compatibilityissues

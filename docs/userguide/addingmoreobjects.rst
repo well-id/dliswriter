@@ -1,3 +1,5 @@
+.. _User guide more objects:
+
 Adding more objects
 ===================
 Adding other logical records to the file is done in the same way as adding channels and frames.

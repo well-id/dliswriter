@@ -64,18 +64,6 @@ In some cases, the standard defines a set of allowed values for a parameter - e.
 the viewers are fine with using any value, as long as it has the same data type. In these cases, this writer also
 allows the non-standard values, but issues a warning in the logs. This treatment has been applied to:
 
-* units:
-    * ``units`` :ref:`Attribute <Attribute>` of :ref:`Channel` s
-        (``my_channel.units``, where ``units`` is an Attribute instance)
-    * ``units`` part of Attributes of :ref:`EFLRs <EFLRs>` in general
-        (e.g. ``my_frame.spacing.units``, where ``spacing`` is an Attribute instance)
+* ``units`` (both as Attribute of :ref:`Channel` and as part of other Attributes)
 * ``index_type`` of :ref:`Frame`
 * ``type`` and ``location`` of :ref:`Equipment`
-
-
-In other cases, the writer only allows the values specified by the standard. This is the case for:
-
-* ``phase`` of :ref:`Calibration Measurement`
-* ``status`` of :ref:`Process`
-* ``domain`` of :ref:`Zone`
-* ``properties`` of :ref:`Channel`, :ref:`Computation`, and :ref:`Process`

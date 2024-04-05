@@ -1,7 +1,8 @@
 About the DLIS format
 =====================
 
-DLIS (Digital Log Information Standard) is a binary data format dedicated to storing well log data.
+`DLIS (Digital Log Information Standard) <https://energistics.org/sites/default/files/RP66/V1/Toc/main.html>`_.
+is a binary data format dedicated to storing well log data.
 It was developed in the 1980's, when data were stored on magnetic tapes.
 Despite numerous advances in the field of information technology, DLIS is still prevalent in the oil and gas industry.
 
