@@ -5,7 +5,7 @@ import numpy as np
 
 from dlis_writer.utils.struct_writer import write_struct_obname
 from dlis_writer.logical_record.core.attribute.attribute import Attribute
-from dlis_writer.utils.value_checkers import check_name_compatibility
+from dlis_writer.utils.value_checkers import check_string_compatibility
 
 if TYPE_CHECKING:
     from dlis_writer.logical_record.core.eflr.eflr_set import EFLRSet
@@ -75,7 +75,7 @@ class EFLRItem:
 
     @staticmethod
     def _check_name(name: str) -> str:
-        check_name_compatibility(name)
+        check_string_compatibility(name)
         return name
 
     @property
