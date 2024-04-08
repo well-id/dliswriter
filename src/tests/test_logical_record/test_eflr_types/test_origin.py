@@ -4,8 +4,7 @@ import pytest
 
 from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
-
-from tests.common import high_compatibility_mode
+from dlis_writer import high_compatibility_mode_decorator
 
 
 def test_origin_creation() -> None:
@@ -76,7 +75,7 @@ def test_no_reassign_file_set_number() -> None:
         origin.file_set_number.value = 15
 
 
-@high_compatibility_mode
+@high_compatibility_mode_decorator
 def test_file_set_number_high_compat_mode() -> None:
     parent = OriginSet()
 
@@ -91,13 +90,13 @@ def test_file_set_number_high_compat_mode() -> None:
 
 
 @pytest.mark.parametrize("name", ("MY-ORIGIN", "ORI_124", "421ORIGIN5"))
-@high_compatibility_mode
+@high_compatibility_mode_decorator
 def test_name_compatible(name: str) -> None:
     OriginItem(name, parent=OriginSet())  # no error = name accepted, test passed
 
 
 @pytest.mark.parametrize("name", ("Origin", "MY ORIGIN", "ORIGIN.3"))
-@high_compatibility_mode
+@high_compatibility_mode_decorator
 def test_name_not_compatible(name: str) -> None:
     with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
         OriginItem(name, parent=OriginSet())

@@ -1,11 +1,9 @@
 from contextlib import contextmanager
 from dlisio import dlis    # type: ignore  # untyped library
-from typing import Union, Generator, Callable, Any
+from typing import Union, Generator
 import os
-import functools
 
 from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
-from dlis_writer.configuration import global_config
 
 
 N_COLS = 128
@@ -36,15 +34,3 @@ def check_list_of_objects(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]],
     for i, n in enumerate(names):
         assert objects[i].name == n
 
-
-def high_compatibility_mode(func: Callable) -> Callable:
-
-    @functools.wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> None:
-        arch = global_config.high_compat_mode
-        global_config.high_compat_mode = True
-        try:
-            func(*args, **kwargs)
-        finally:
-            global_config.high_compat_mode = arch
-    return wrapper
