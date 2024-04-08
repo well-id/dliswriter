@@ -1,6 +1,7 @@
 import pytest
 
 from dlis_writer.logical_record.eflr_types.axis import AxisItem, AxisSet
+from dlis_writer import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(('name', 'axis_id', 'units'), (
@@ -31,3 +32,29 @@ def test_copy_numbers() -> None:
     for i in range(5):
         ax = AxisItem('XYZ', parent=parent)
         assert ax.copy_number == i
+
+
+@pytest.mark.parametrize("name", ("AXIS-1", "TIME_AXIS", "123"))
+@high_compatibility_mode_decorator
+def test_name_compatible(name: str) -> None:
+    AxisItem(name, parent=AxisSet())  # no error = name accepted, test passed
+
+
+@pytest.mark.parametrize("name", ("Axis 3", "NEW AXIS", "1.2A"))
+@high_compatibility_mode_decorator
+def test_name_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        AxisItem(name, parent=AxisSet())
+
+
+@pytest.mark.parametrize("aid", ("SOME-AXIS", "AXIS_FOR_SPECIFIC_STUFF-124", "3112-1212"))
+@high_compatibility_mode_decorator
+def test_axis_id_compatible(aid: str) -> None:
+    AxisItem("AX-1", axis_id=aid, parent=AxisSet())
+
+
+@pytest.mark.parametrize("aid", ("The third axis", "AX FOR THINGS", "A.123"))
+@high_compatibility_mode_decorator
+def test_axis_id_not_compatible(aid: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        AxisItem("AXIS3", axis_id=aid, parent=AxisSet())
