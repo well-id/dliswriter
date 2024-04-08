@@ -5,6 +5,8 @@ import pytest
 from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
 
+from tests.common import high_compatibility_mode
+
 
 def test_origin_creation() -> None:
     """Test creating OriginItem."""
@@ -72,3 +74,17 @@ def test_no_reassign_file_set_number() -> None:
 
     with pytest.raises(RuntimeError, match="File set number should not be reassigned.*"):
         origin.file_set_number.value = 15
+
+
+@high_compatibility_mode
+def test_file_set_number_high_compat_mode() -> None:
+    parent = OriginSet()
+
+    origin1 = OriginItem("ORIGIN", parent=parent)
+    assert origin1.file_set_number.value == 1
+
+    origin2 = OriginItem("ANOTHER-ORIGIN", parent=parent, file_set_number=15)
+    assert origin2.file_set_number.value == 15
+
+    origin3 = OriginItem("ORIG", parent=parent)
+    assert origin3.file_set_number.value == 3
