@@ -1,6 +1,7 @@
 from datetime import datetime
+import pytest
 
-from dlis_writer import AttrSetup, enums
+from dlis_writer import AttrSetup, enums, high_compatibility_mode_decorator
 from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, CalibrationMeasurementItem,
                                                    CalibrationMeasurementSet)
 
@@ -44,3 +45,30 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
     assert m.standard.value == [11.2]
     assert m.plus_tolerance.value == [2]
     assert m.minus_tolerance.value == [1]
+
+
+@pytest.mark.parametrize("t", ("PLUS", "TWO-POINT-LINEAR", "A3"))
+@high_compatibility_mode_decorator
+def test_type_compatible(t: str) -> None:
+    CalibrationMeasurementItem("CM-1", type=t, parent=CalibrationMeasurementSet())
+
+
+@pytest.mark.parametrize("t", ("Plus", "type 2", "T.1"))
+@high_compatibility_mode_decorator
+def test_type_not_compatible(t: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        CalibrationMeasurementItem("CM-1", type=t, parent=CalibrationMeasurementSet())
+
+
+@pytest.mark.parametrize("name", ("CMEAS-1", "MEASUREMENT_3", "M11"))
+@high_compatibility_mode_decorator
+def test_name_compatible(name: str) -> None:
+    CalibrationMeasurementItem(name, parent=CalibrationMeasurementSet())
+
+
+@pytest.mark.parametrize("name", ("Meas1", "M.1", "M TYPE 2"))
+@high_compatibility_mode_decorator
+def test_label_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        CalibrationMeasurementItem(name, parent=CalibrationMeasurementSet())
+
