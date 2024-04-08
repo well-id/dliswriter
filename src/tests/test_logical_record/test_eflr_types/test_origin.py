@@ -88,3 +88,17 @@ def test_file_set_number_high_compat_mode() -> None:
 
     origin3 = OriginItem("ORIG", parent=parent)
     assert origin3.file_set_number.value == 3
+
+
+@pytest.mark.parametrize("name", ("MY-ORIGIN", "ORI_124", "421ORIGIN5"))
+@high_compatibility_mode
+def test_name_compatible(name: str) -> None:
+    OriginItem(name, parent=OriginSet())  # no error = name accepted, test passed
+
+
+@pytest.mark.parametrize("name", ("Origin", "MY ORIGIN", "ORIGIN.3"))
+@high_compatibility_mode
+def test_name_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        OriginItem(name, parent=OriginSet())
+
