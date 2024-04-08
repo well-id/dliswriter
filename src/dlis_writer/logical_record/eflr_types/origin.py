@@ -8,6 +8,7 @@ from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as Rep
 from dlis_writer.utils.struct_writer import ULONG_OFFSET
 from dlis_writer.utils.types import number_type
 from dlis_writer.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
+from dlis_writer.configuration import global_config
 
 
 logger = logging.getLogger(__name__)
@@ -52,11 +53,17 @@ class OriginItem(EFLRItem):
         super().__init__(name, parent=parent, **kwargs)
 
         if self.file_set_number.value is None:
-            # repr code for file set number is UVARI, so USHORT/UNORM/ULONG; ULONG is the largest
-            max_val = np.iinfo(np.uint32).max - ULONG_OFFSET
-            v = np.random.randint(1, max_val)
-            logger.info(f"File set number for {self} not specified; setting it to a randomly generated number: {v}")
-            self.file_set_number.value = v
+            if global_config.high_compat_mode:
+                # there are poorly-understood issues related to the file set number when the file is opened in
+                # Schlumberger's Log Data Composer; no such issues noticed when the file set number is 1
+                logger.info(f"DLIS writer is in high-compatibility mode; setting file set number of {self} to 1")
+                self.file_set_number.value = 1
+            else:
+                # repr code for file set number is UVARI, so USHORT/UNORM/ULONG; ULONG is the largest
+                max_val = np.iinfo(np.uint32).max - ULONG_OFFSET
+                v = np.random.randint(1, max_val)
+                logger.info(f"File set number for {self} not specified; setting it to a randomly generated number: {v}")
+                self.file_set_number.value = v
 
         if self._origin_reference is not None:
             if self._origin_reference != self.file_set_number.value:
