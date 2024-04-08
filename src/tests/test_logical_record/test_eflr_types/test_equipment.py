@@ -2,7 +2,7 @@ import pytest
 from typing import Any
 
 from dlis_writer.logical_record.eflr_types import EquipmentSet, EquipmentItem
-from dlis_writer import AttrSetup
+from dlis_writer import AttrSetup, high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("name", "status", "serial_number"), (
@@ -67,3 +67,29 @@ def test_params_and_units() -> None:
     check('vertical_depth', 587, 'm')
     check('radial_drift', 23.22, 'm')
     check('angular_drift', 32.5, 'm')
+
+
+@pytest.mark.parametrize("sn", ("124-111", "123_B3", "A12"))
+@high_compatibility_mode_decorator
+def test_serial_number_compatible(sn: str) -> None:
+    EquipmentItem("EQUIPMENT-1", serial_number=sn, parent=EquipmentSet())
+
+
+@pytest.mark.parametrize("sn", ("123.1", "112 131", "213/1"))
+@high_compatibility_mode_decorator
+def test_type_not_compatible(sn: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        EquipmentItem("EQUIPMENT-1", serial_number=sn, parent=EquipmentSet())
+
+
+@pytest.mark.parametrize("name", ("EQ-1", "EQP3", "11C"))
+@high_compatibility_mode_decorator
+def test_name_compatible(name: str) -> None:
+    EquipmentItem(name, parent=EquipmentSet())
+
+
+@pytest.mark.parametrize("name", ("EQ 1", "Equip-1", "EQ.32"))
+@high_compatibility_mode_decorator
+def test_label_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        EquipmentItem(name, parent=EquipmentSet())
