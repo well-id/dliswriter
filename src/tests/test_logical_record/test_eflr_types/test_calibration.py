@@ -2,7 +2,7 @@ from datetime import datetime
 
 import pytest
 
-from dlis_writer import AttrSetup
+from dlis_writer import AttrSetup, enums, high_compatibility_mode_decorator
 from dlis_writer.logical_record.core.attribute import EFLRAttribute
 from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, ParameterItem, CalibrationMeasurementItem,
                                                    CalibrationCoefficientItem, CalibrationItem, CalibrationSet,
@@ -13,7 +13,7 @@ def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem
     m = CalibrationMeasurementItem(
         "CMEASURE-1",
         **{
-            'phase': 'BEFORE',
+            'phase': enums.CalibrationMeasurementPhase.BEFORE,
             'measurement_source': channel1,
             'type': 'Plus',
             'axis': axis1,
@@ -122,3 +122,30 @@ def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, chan
     _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficientItem)
     _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurementItem)
     _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), ParameterItem)
+
+
+@pytest.mark.parametrize("label", ("CCOEF-1", "COEFFICIENT_3", "3112-1212"))
+@high_compatibility_mode_decorator
+def test_ccoef_label_compatible(label: str) -> None:
+    CalibrationCoefficientItem("CC-1", label=label, parent=CalibrationCoefficientSet())
+
+
+@pytest.mark.parametrize("label", ("Calibration coefficient", "CALIB C0EFF-3", "C@2"))
+@high_compatibility_mode_decorator
+def test_ccoef_label_not_compatible(label: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        CalibrationCoefficientItem("CC-1", label=label, parent=CalibrationCoefficientSet())
+
+
+@pytest.mark.parametrize("name", ("CCOEF-1", "COEFFICIENT_3", "C12"))
+@high_compatibility_mode_decorator
+def test_ccoef_name_compatible(name: str) -> None:
+    CalibrationCoefficientItem(name, parent=CalibrationCoefficientSet())
+
+
+@pytest.mark.parametrize("name", ("Coefficient", "C0EFF 3", "C.12"))
+@high_compatibility_mode_decorator
+def test_ccoef_label_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        CalibrationCoefficientItem(name, parent=CalibrationCoefficientSet())
+
