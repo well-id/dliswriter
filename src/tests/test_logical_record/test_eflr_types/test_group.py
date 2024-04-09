@@ -4,6 +4,7 @@ from dlis_writer.logical_record.eflr_types.group import GroupSet, GroupItem
 from dlis_writer.logical_record.eflr_types.channel import ChannelItem
 from dlis_writer.logical_record.eflr_types.process import ProcessItem
 from dlis_writer.logical_record.core.eflr import EFLRItem
+from dlis_writer import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("name", "description", "object_type", "object_class", "object_names", "group_names"), (
@@ -41,3 +42,29 @@ def test_group_params(name: str, description: str, object_type: str,
 
     assert isinstance(g.parent, GroupSet)
     assert g.parent.set_name is None
+
+
+@pytest.mark.parametrize("name", ("GROUP-1", "GROUP_OF_CHANNELS", "12-CHANNEL_GROUP"))
+@high_compatibility_mode_decorator
+def test_name_compatible(name: str) -> None:
+    GroupItem(name, parent=GroupSet())
+
+
+@pytest.mark.parametrize("name", ("Group 1", "Group#12", "A.5"))
+@high_compatibility_mode_decorator
+def test_name_not_compatible(name: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        GroupItem(name, parent=GroupSet())
+
+
+@pytest.mark.parametrize("ot", ("GROUP", "CHANNEL", "FRAME"))
+@high_compatibility_mode_decorator
+def test_object_type_compatible(ot: str) -> None:
+    GroupItem("G1", object_type=ot, parent=GroupSet())
+
+
+@pytest.mark.parametrize("ot", ("Channel", "CALIBRATION MEASUREMENT", "MEASUREMENTS#5"))
+@high_compatibility_mode_decorator
+def test_object_type_not_compatible(ot: str) -> None:
+    with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
+        GroupItem("G12", object_type=ot, parent=GroupSet())
