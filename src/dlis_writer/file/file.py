@@ -20,6 +20,7 @@ from dlis_writer.logical_record.iflr_types.no_format_frame_data import NoFormatF
 from dlis_writer.file.multi_frame_data import MultiFrameData
 from dlis_writer.file.writer import DLISWriter
 from dlis_writer.file.eflr_sets_dict import EFLRSetsDict
+from dlis_writer.configuration import global_config
 
 
 logger = logging.getLogger(__name__)
@@ -1809,8 +1810,11 @@ class DLISFile:
 
         for channel_item in self.channels:
             if channel_item not in channels_in_frames:
-                logger.warning(f"{channel_item} has not been added to any frame; "
-                               f"this might cause issues with opening the produced DLIS file in some software")
+                m = (f"{channel_item} has not been added to any frame; "
+                     f"this might cause issues with opening the produced DLIS file in some software")
+                if global_config.high_compat_mode:
+                    raise RuntimeError(m)
+                logger.warning(m)
 
     def _make_multi_frame_data(
             self,
