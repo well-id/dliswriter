@@ -9,6 +9,7 @@ from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelIte
 from dlis_writer.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,
                                                        IdentAttribute)
 from dlis_writer.utils.source_data_wrappers import SourceDataWrapper
+from dlis_writer.configuration import global_config
 
 
 logger = logging.getLogger(__name__)
@@ -112,11 +113,12 @@ class FrameItem(EFLRItem):
 
             if spacing is None:
                 # spacing cannot be used because it is not uniform enough; using only direction - if available
-                logger.warning(
-                    f"Spacing of the index channel of {self} is not uniform; this can cause issues in some viewer "
-                    f"software. Consider implicit indexing by row number number instead "
-                    f"by removing frame index_type specification."
-                )
+                m = (f"Spacing of the index channel of {self} is not uniform; this can cause issues in some viewer "
+                     f"software. Consider implicit indexing by row number number instead "
+                     f"by removing frame index_type specification.")
+                if global_config.high_compat_mode:
+                    raise RuntimeError(m)
+                logger.warning(m)
                 if direction is not None:
                     assign_if_none(self.direction, 'INCREASING' if direction > 0 else 'DECREASING')
             else:
@@ -125,7 +127,7 @@ class FrameItem(EFLRItem):
 
         else:
             # according to RP66, if index_type is None:
-            #   - spacing and direction are meaningless - but some viewer software need a spacing defined
+            #   - spacing and direction are meaningless - b ut some viewer software need a spacing defined
             #   - there is no index channel, so index_min and index_max should be frame-data numbers (row numbers)
             logger.info(f"No index channel defined for {self}; it will be indexed by the row number")
             assign_if_none(self.spacing, 1)
