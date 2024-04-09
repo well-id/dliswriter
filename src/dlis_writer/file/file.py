@@ -37,10 +37,10 @@ class DLISFile:
             self,
             storage_unit_label: Optional[StorageUnitLabel] = None,
             file_header: Optional[eflr_types.FileHeaderItem] = None,
-            set_identifier: str = "MAIN STORAGE UNIT",
+            set_identifier: str = "MAIN-STORAGE-UNIT",
             sul_sequence_number: int = 1,
             max_record_length: int = 8192,
-            fh_id: str = "FILE HEADER",
+            fh_id: str = "FILE-HEADER",
             fh_identifier: str = "0",
             fh_sequence_number: int = 1
     ):
