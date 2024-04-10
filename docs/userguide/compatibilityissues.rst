@@ -18,8 +18,9 @@ PetroMar's DeepView
     that is not added to any :ref:`Frame`. The standard doesn't seem to mention anything about it; it only says that
     no Channel object can be referenced by multiple Frames. The writer issues a log warning if a
     'freelancer' Channel is detected.
-*   Some signed integer formats are not interpreted correctly, leading to erroneous overflow. Because these data are
-    handled correctly by other viewers, no specific handling has been implemented in the writer.
+*   Signed integer formats are not interpreted correctly, leading to erroneous overflow (negative values are
+    represented as large positive ones). Because these data are handled correctly by other viewers,
+    no specific handling has been implemented in the writer.
 
 
 Schlumberger's Log Data Composer

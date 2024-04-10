@@ -1812,18 +1812,19 @@ class DLISFile:
                     raise RuntimeError(f"{ch} from {frame_item} has not been registered in file's channels")
                 counts[ch] += 1
 
-        def raise_or_warn(message: str) -> None:
-            if global_config.high_compat_mode:
-                raise RuntimeError(message)
-            logger.warning(message)
-
         for ch, v in counts.items():
             if not v:
-                raise_or_warn(f"{ch} has not been added to any frame; this might cause issues "
-                              f"with opening the produced DLIS file in some software")
+                self.raise_or_warn(f"{ch} has not been added to any frame; this might cause issues "
+                                   f"with opening the produced DLIS file in some software")
             if v > 1:
-                raise_or_warn(f"{ch} has been added to {v} frames; according to RP66 v1, a channel can only be added "
-                              f"to a single frame")
+                self.raise_or_warn(f"{ch} has been added to {v} frames; according to RP66 v1, a channel "
+                                   f"can only be added to a single frame")
+
+    @staticmethod
+    def raise_or_warn(message: str) -> None:
+        if global_config.high_compat_mode:
+            raise RuntimeError(message)
+        logger.warning(message)
 
     def _make_multi_frame_data(
             self,
@@ -1855,8 +1856,17 @@ class DLISFile:
                 from_idx=from_idx, to_idx=to_idx
             )
 
+        self._check_data(data_object)
         fr.setup_from_data(data_object)
         return MultiFrameData(fr, data_object, **kwargs)
+
+    @staticmethod
+    def _check_data(data: SourceDataWrapper) -> None:
+        dt = data.dtype
+        for name in dt.names:
+            if np.issubdtype(dt[name].base, np.signedinteger):
+                DLISFile.raise_or_warn(f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "
+                                       f"interpret signed integers correctly (overflow for negative values)")
 
     def generate_logical_records(self, chunk_size: Optional[int], data: Optional[data_form_type] = None,
                                  **kwargs: Any) -> SizedGenerator:
