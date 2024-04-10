@@ -99,17 +99,29 @@ class FrameItem(EFLRItem):
 
         index_channel: ChannelItem = self.channels.value[0]
         index_data = data[index_channel.name][:]
-        unit = index_channel.units.value
         repr_code = index_channel.representation_code.value or RepC.FDOUBL
-        spacing, direction = self._compute_spacing_and_direction(index_data)
 
         assign_if_none(index_channel.representation_code, repr_code)
 
-        if self.index_type.value is not None:
+        if self.index_type.value is None:
+            # according to RP66, if index_type is None:
+            #   - spacing and direction are meaningless - b ut some viewer software need a spacing defined
+            #   - there is no index channel, so index_min and index_max should be frame-data numbers (row numbers)
+            logger.info(f"No index channel defined for {self}; it will be indexed by the row number")
+            assign_if_none(self.spacing, 1)
+            assign_if_none(self.index_min, 1)
+            assign_if_none(self.index_max, index_data.shape[0])
+
+        else:
             assign_if_none(self.index_min, index_data.min())
             assign_if_none(self.index_max, index_data.max())
             for at in (self.index_min, self.index_max, self.spacing):
-                assign_if_none(at, key='units', value=unit)
+                assign_if_none(at, key='units', value=index_channel.units.value)
+
+            if index_data.ndim != 1:
+                raise RuntimeError(f"Index channel's data must be 1-dimensional; got {index_data.ndim} dimensions "
+                                   f"for {index_channel} of {self}")
+            spacing, direction = self._compute_spacing_and_direction(index_data)
 
             if spacing is None:
                 # spacing cannot be used because it is not uniform enough; using only direction - if available
@@ -124,15 +136,6 @@ class FrameItem(EFLRItem):
             else:
                 assign_if_none(self.spacing, spacing)
                 # no need to define direction if spacing is defined
-
-        else:
-            # according to RP66, if index_type is None:
-            #   - spacing and direction are meaningless - b ut some viewer software need a spacing defined
-            #   - there is no index channel, so index_min and index_max should be frame-data numbers (row numbers)
-            logger.info(f"No index channel defined for {self}; it will be indexed by the row number")
-            assign_if_none(self.spacing, 1)
-            assign_if_none(self.index_min, 1)
-            assign_if_none(self.index_max, index_data.shape[0])
 
     @staticmethod
     def _compute_spacing_and_direction(index_data: np.ndarray) -> tuple[Union[int, float, None], Union[bool, None]]:

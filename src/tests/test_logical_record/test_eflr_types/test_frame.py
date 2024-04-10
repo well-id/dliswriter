@@ -1,7 +1,7 @@
 import logging
-import re
 import pytest
 import numpy as np
+from typing import Optional
 
 from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
 from dlis_writer.utils.internal_enums import RepresentationCode
@@ -78,3 +78,22 @@ def test_spacing_not_even_high_compat_mode():
     with pytest.raises(RuntimeError, match="Spacing of the index channel .* is not uniform.*"):
         df.generate_logical_records(chunk_size=None)
 
+
+def _prepare_file_first_channel_2d(index_type: Optional[enums.FrameIndexType] = None) -> DLISFile:
+    df = DLISFile()
+    ch1 = df.add_channel("INDEX", data=np.arange(24).reshape(12, 2))
+    ch2 = df.add_channel("X", data=np.random.rand(12))
+    ch3 = df.add_channel("Y", data=np.random.randint(0, 10, size=(12, 10)))
+    df.add_frame("F1", channels=(ch1, ch2, ch3), index_type=index_type)
+    return df
+
+
+def test_index_channel_not_1d() -> None:
+    df = _prepare_file_first_channel_2d(index_type=enums.FrameIndexType.NON_STANDARD)
+    with pytest.raises(RuntimeError, match="Index channel's data must be 1-dimensional.*"):
+        df.generate_logical_records(chunk_size=None)
+
+
+def test_first_channel_not_1d_but_no_index() -> None:
+    df = _prepare_file_first_channel_2d(index_type=None)
+    df.generate_logical_records(chunk_size=None)  # goes through without error
