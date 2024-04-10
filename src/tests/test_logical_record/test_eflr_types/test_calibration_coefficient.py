@@ -63,7 +63,7 @@ def test_ccoef_name_compatible(name: str) -> None:
 
 @pytest.mark.parametrize("name", ("Coefficient", "C0EFF 3", "C.12"))
 @high_compatibility_mode_decorator
-def test_ccoef_label_not_compatible(name: str) -> None:
+def test_ccoef_name_not_compatible(name: str) -> None:
     with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
         CalibrationCoefficientItem(name, parent=CalibrationCoefficientSet())
 

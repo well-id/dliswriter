@@ -16,7 +16,7 @@ def _prepare_file_channel_not_in_frame() -> DLISFile:
     return df
 
 
-def test_channel_not_in_frame(caplog: pytest.LogCaptureFixture):
+def test_channel_not_in_frame(caplog: pytest.LogCaptureFixture) -> None:
 
     with caplog.at_level(logging.WARNING, logger='dlis_writer'):
         df = _prepare_file_channel_not_in_frame()
@@ -25,7 +25,7 @@ def test_channel_not_in_frame(caplog: pytest.LogCaptureFixture):
 
 
 @high_compatibility_mode_decorator
-def test_channel_not_in_frame_high_compat_mode():
+def test_channel_not_in_frame_high_compat_mode() -> None:
     df = _prepare_file_channel_not_in_frame()
 
     with pytest.raises(RuntimeError, match="ChannelItem 'X' has not been added to any frame.*"):
@@ -47,7 +47,7 @@ def _prepare_file_channel_in_multiple_frames() -> DLISFile:
     return df
 
 
-def test_channel_in_multiple_frames(caplog: pytest.LogCaptureFixture):
+def test_channel_in_multiple_frames(caplog: pytest.LogCaptureFixture) -> None:
 
     with caplog.at_level(logging.WARNING, logger='dlis_writer'):
         df = _prepare_file_channel_in_multiple_frames()
@@ -57,7 +57,7 @@ def test_channel_in_multiple_frames(caplog: pytest.LogCaptureFixture):
 
 
 @high_compatibility_mode_decorator
-def test_channel_in_multiple_frames_high_compat_mode():
+def test_channel_in_multiple_frames_high_compat_mode() -> None:
     df = _prepare_file_channel_in_multiple_frames()
 
     with pytest.raises(RuntimeError, match="ChannelItem 'A' has been added to 3 frames.*"):
@@ -76,7 +76,7 @@ def _prepare_file_with_sint_data() -> DLISFile:
     return df
 
 
-def test_sint_data(caplog: pytest.LogCaptureFixture):
+def test_sint_data(caplog: pytest.LogCaptureFixture) -> None:
 
     with caplog.at_level(logging.WARNING, logger='dlis_writer'):
         df = _prepare_file_with_sint_data()
@@ -87,7 +87,7 @@ def test_sint_data(caplog: pytest.LogCaptureFixture):
 
 
 @high_compatibility_mode_decorator
-def test_sint_data_high_compat_mode():
+def test_sint_data_high_compat_mode() -> None:
     df = _prepare_file_with_sint_data()
 
     with pytest.raises(

@@ -1,5 +1,5 @@
 from enum import StrEnum
-from typing import Union, Optional, Generator
+from typing import Union, Optional, Generator, Callable
 import logging
 
 from dlis_writer.configuration import global_config
@@ -15,7 +15,7 @@ class ValidatorEnum(StrEnum):
         yield from cls.__members__.values()
 
     @classmethod
-    def make_converter(cls, label: Optional[str] = None, allow_none: bool = False, soft: bool = False):
+    def make_converter(cls, label: Optional[str] = None, allow_none: bool = False, soft: bool = False) -> Callable:
         def converter(v: Union[str, None, "ValidatorEnum"]) -> Union[str, None]:
             if allow_none and v is None:
                 return None

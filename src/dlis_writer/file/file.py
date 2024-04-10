@@ -1863,6 +1863,8 @@ class DLISFile:
     @staticmethod
     def _check_data(data: SourceDataWrapper) -> None:
         dt = data.dtype
+        if dt.names is None:
+            raise RuntimeError("Data types not defined")
         for name in dt.names:
             if np.issubdtype(dt[name].base, np.signedinteger):
                 DLISFile.raise_or_warn(f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "

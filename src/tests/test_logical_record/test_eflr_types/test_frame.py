@@ -63,7 +63,7 @@ def _prepare_file_uneven_spacing() -> DLISFile:
     return df
 
 
-def test_spacing_not_even(caplog: pytest.LogCaptureFixture):
+def test_spacing_not_even(caplog: pytest.LogCaptureFixture) -> None:
     df = _prepare_file_uneven_spacing()
 
     with caplog.at_level(logging.WARNING, logger='dlis_writer'):
@@ -72,7 +72,7 @@ def test_spacing_not_even(caplog: pytest.LogCaptureFixture):
 
 
 @high_compatibility_mode_decorator
-def test_spacing_not_even_high_compat_mode():
+def test_spacing_not_even_high_compat_mode() -> None:
     df = _prepare_file_uneven_spacing()
 
     with pytest.raises(RuntimeError, match="Spacing of the index channel .* is not uniform.*"):
