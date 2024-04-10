@@ -3,7 +3,7 @@
 Frame Data
 ~~~~~~~~~~
 Each Frame Data object represents a single row of formatted numerical data.
-The order of values in a Frame Data must follow the order of :ref:`Channel` s in the :ref:`Frame` it references.
+The order of values in a Frame Data must follow the order of :ref:`Channel`\ s in the :ref:`Frame` it references.
 
 For example, assume a Frame has 2 channels: 1D depth channel (``dimension=[1]`` )
 and 2D image channel with 128 columns (``dimension=[128]``).

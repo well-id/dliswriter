@@ -34,7 +34,7 @@ the following code:
     with high_compatibility_mode:
         df = DLISFile()
         df.add_origin("MY-ORIGIN")
-        ch1 = df.add_channel('Depth', data=np.arange(100) / 10, units=enums.Unit.METER)
+        ch1 = df.add_channel('Depth', data=np.arange(100) / 10, units=Renums.Unit.METER)
 
 
 will raise a ``ValueError``:
@@ -86,7 +86,7 @@ Other things to look at
 In case the generated DLIS file cannot be open in the target viewer software, there are a few more possible hints
 to look at.
 
-*   Some viewers require specific names for some objects, especially :ref:`Channel` s. For example, the index Channel
+*   Some viewers require specific names for some objects, especially :ref:`Channel`\ s. For example, the index Channel
     - which might be required to represent depth - might have to be called "MD" (for "Measured Depth").
 *   Specifying additional metadata for Channels - e.g. their minimum and maximum values - might help.
 *   One should keep in mind that when ``index_type`` of :ref:`Frame` is specified, the first Channel of the Frame

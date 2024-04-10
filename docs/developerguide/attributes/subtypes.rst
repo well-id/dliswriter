@@ -7,8 +7,8 @@ attributes needed for various EFLR objects. The overview can be seen in the diag
 
 
 ``EFLRAttribute`` has been defined to deal with attributes which should keep reference to other
-``EFLRItem`` s - for example, :ref:`Channel` s of :ref:`Frame`, :ref:`Zone` s of :ref:`Splice`,
-:ref:`Calibration Coefficient` s and :ref:`Calibration Measurement` s of :ref:`Calibration`.
+``EFLRItem``\ s - for example, :ref:`Channel`\ s of :ref:`Frame`, :ref:`Zone`\ s of :ref:`Splice`,
+:ref:`Calibration Coefficient`\ s and :ref:`Calibration Measurement`\ s of :ref:`Calibration`.
 The value of an ``EFLRAttribute`` is an instance of (usually specific subtype of) ``EFLRItem``.
 The representation code can be either ``OBNAME`` or ``OBJREF``. The unit should not be defined (is meaningless).
 Its subclass, ``EFLROrTextAttribute``, is similar, but in addition accepts plain text as value

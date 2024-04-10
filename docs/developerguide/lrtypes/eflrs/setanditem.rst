@@ -15,8 +15,8 @@ minimum and maximum value, and others.
 ``EFLRSet`` can be viewed as a collection of ``EFLRItem`` instances.
 Because a specific subclass of ``EFLRSet`` (e.g. ``ChannelSet``)
 can only contain instances of a specific subclass of ``EFLRItem`` (e.g. ``ChannelItem``),
-all ``EFLRItem`` s added to an ``EFLRSet`` will have exactly the same set of attribute types.
-Therefore, an ``EFLRSet`` can be viewed as a table of ``EFLRItem`` s, with attribute names as table header
+all ``EFLRItem``\ s added to an ``EFLRSet`` will have exactly the same set of attribute types.
+Therefore, an ``EFLRSet`` can be viewed as a table of ``EFLRItem``\ s, with attribute names as table header
 and individual ``EFLRItem`` with their attribute values as rows in that table.
 
 As shown in the :ref:`LR types diagram` before, it is ``EFLRSet``, not ``EFLRItem``
@@ -26,7 +26,7 @@ as described above, with additional metadata.
 
 Theoretically, multiple ``EFLRSet`` instances of the same type (e.g. multiple ``ChannelSet`` instances)
 can be defined in a DLIS file. The key requirement is that their names - ``set_name`` - are different.
-There cannot be two ``ChannelItem`` s (or two instances other ``EFLRItem`` subclass) with the same ``set_name``.
+There cannot be two ``ChannelItem``\ s (or two instances other ``EFLRItem`` subclass) with the same ``set_name``.
 However, usually only a single instance of each ``EFLRSet`` is defined, and the default ``set_name`` is ``None``.
 
 In the current implementation, there is usually no need to explicitly define ``EFLRSet`` (subclass) instances

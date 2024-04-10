@@ -8,7 +8,7 @@ which can be used as shown in :ref:`the examples <User guide more objects>` befo
 The implemented enumerations are listed below. They are available from ``dlis_writer.enums``.
 
 * ``Unit`` enum
-   * for ``units`` :ref:`Attribute <Attribute>` of :ref:`Channel` s (``my_channel.units``, where ``units`` is an Attribute instance)
+   * for ``units`` :ref:`Attribute <Attribute>` of :ref:`Channel`\ s (``my_channel.units``, where ``units`` is an Attribute instance)
    * ``units`` part of Attributes of :ref:`EFLRs <EFLRs>` in general (e.g. ``my_frame.spacing.units``, where ``spacing`` is an Attribute instance)
 * ``FrameIndexType`` enum for ``index_type`` Attribute of :ref:`Frame`
 * ``EquipmentType`` enum for ``type`` Attribute of :ref:`Equipment`
