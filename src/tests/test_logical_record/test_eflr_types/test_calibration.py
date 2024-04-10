@@ -37,4 +37,3 @@ def test_calibration_creation(channel1: ChannelItem, channel2: ChannelItem, chan
     _check_list(c.coefficients, ("COEF-1",), CalibrationCoefficientItem)
     _check_list(c.measurements, ("CMEASURE-1",), CalibrationMeasurementItem)
     _check_list(c.parameters, ("Param-1", "Param-2", "Param-3"), ParameterItem)
-

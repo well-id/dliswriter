@@ -33,4 +33,3 @@ def check_list_of_objects(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]],
     assert len(objects) == len(names)
     for i, n in enumerate(names):
         assert objects[i].name == n
-

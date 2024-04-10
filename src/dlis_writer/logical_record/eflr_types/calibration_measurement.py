@@ -5,7 +5,7 @@ from dlis_writer.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedI
 from dlis_writer.utils.internal_enums import EFLRType, RepresentationCode as RepC
 from dlis_writer.utils.enums import CalibrationMeasurementPhase
 from dlis_writer.logical_record.eflr_types.axis import AxisSet
-from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, Attribute,
+from dlis_writer.logical_record.core.attribute import (EFLRAttribute, NumericAttribute,
                                                        DTimeAttribute, DimensionAttribute, IdentAttribute)
 from dlis_writer.utils.value_checkers import validate_string
 

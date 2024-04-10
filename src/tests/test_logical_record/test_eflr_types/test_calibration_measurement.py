@@ -71,4 +71,3 @@ def test_name_compatible(name: str) -> None:
 def test_label_not_compatible(name: str) -> None:
     with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
         CalibrationMeasurementItem(name, parent=CalibrationMeasurementSet())
-

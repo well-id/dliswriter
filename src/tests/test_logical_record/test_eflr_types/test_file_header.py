@@ -28,4 +28,3 @@ def test_header_id_compatible(name: str) -> None:
 def test_header_id_not_compatible(name: str) -> None:
     with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
         FileHeaderItem(name, parent=FileHeaderSet())
-

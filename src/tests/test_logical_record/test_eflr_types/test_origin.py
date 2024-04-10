@@ -100,4 +100,3 @@ def test_name_compatible(name: str) -> None:
 def test_name_not_compatible(name: str) -> None:
     with pytest.raises(ValueError, match=".*strings can contain only uppercase characters, digits, dashes, .*"):
         OriginItem(name, parent=OriginSet())
-
