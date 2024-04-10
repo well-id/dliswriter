@@ -99,9 +99,6 @@ class FrameItem(EFLRItem):
 
         index_channel: ChannelItem = self.channels.value[0]
         index_data = data[index_channel.name][:]
-        repr_code = index_channel.representation_code.value or RepC.FDOUBL
-
-        assign_if_none(index_channel.representation_code, repr_code)
 
         if self.index_type.value is None:
             # according to RP66, if index_type is None:
