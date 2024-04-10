@@ -1,3 +1,5 @@
+.. _DLIS Enums:
+
 DLIS Enums
 ==========
 

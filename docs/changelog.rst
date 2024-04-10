@@ -1,6 +1,17 @@
 Changelog
 =========
 
+Version 0.0.10 (pending)
+------------------------
+**High-compatibility mode**
+
+* Added *high-compatibility mode* in the form of a context manager. All potential issues are raised as errors.
+* Described potential compatibility issues in different DLIS viewers.
+* Implemented additional checks on the channels and data of channels in frames and frame index.
+* Added :ref:`DLIS Enums` for more robust value checks where a set of allowed values is pre-defined.
+* Re-factored and updated documentation.
+
+
 Version 0.0.9
 -------------
 **Multiple Origins, processing input files, documentation**
