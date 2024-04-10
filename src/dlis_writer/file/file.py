@@ -1799,22 +1799,31 @@ class DLISFile:
             raise RuntimeError("No frames defined for the file")
 
     def _check_channels_assigned_to_frames(self) -> None:
-        """Check that all defined ChannelObject instances are assigned to at least one FrameObject.
+        """Check that all defined ChannelObject instances are assigned to exactly one FrameObject.
 
-        Issues a warning in the logs if the condition is not fulfilled (possible issues with opening file in DeepView).
+        Issues a warning in the logs if the condition is not fulfilled.
         """
 
-        channels_in_frames = set()
-        for frame_item in self.frames:
-            channels_in_frames |= set(frame_item.channels.value)
+        counts = {ch: 0 for ch in self.channels}
 
-        for channel_item in self.channels:
-            if channel_item not in channels_in_frames:
-                m = (f"{channel_item} has not been added to any frame; "
-                     f"this might cause issues with opening the produced DLIS file in some software")
-                if global_config.high_compat_mode:
-                    raise RuntimeError(m)
-                logger.warning(m)
+        for frame_item in self.frames:
+            for ch in frame_item.channels.value:
+                if ch not in counts:
+                    raise RuntimeError(f"{ch} from {frame_item} has not been registered in file's channels")
+                counts[ch] += 1
+
+        def raise_or_warn(message: str) -> None:
+            if global_config.high_compat_mode:
+                raise RuntimeError(message)
+            logger.warning(message)
+
+        for ch, v in counts.items():
+            if not v:
+                raise_or_warn(f"{ch} has not been added to any frame; this might cause issues "
+                              f"with opening the produced DLIS file in some software")
+            if v > 1:
+                raise_or_warn(f"{ch} has been added to {v} frames; according to RP66 v1, a channel can only be added "
+                              f"to a single frame")
 
     def _make_multi_frame_data(
             self,
