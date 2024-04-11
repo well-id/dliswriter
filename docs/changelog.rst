@@ -1,8 +1,8 @@
 Changelog
 =========
 
-Version 0.0.10 (pending)
-------------------------
+Version 0.0.10
+--------------
 **High-compatibility mode**
 
 * Added *high-compatibility mode* in the form of a context manager. All potential issues are raised as errors.

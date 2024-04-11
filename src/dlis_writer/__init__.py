@@ -9,4 +9,4 @@ from dlis_writer.utils.source_data_wrappers import SourceDataWrapper, DictDataWr
 from dlis_writer.logical_record import eflr_types
 
 
-__version__ = '0.0.9'
+__version__ = '0.0.10'
