@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from dlis_writer.utils.internal_enums import RepresentationCode
-from dlis_writer.utils.converters import ReprCodeConverter
+from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.converters import ReprCodeConverter
 
 
 def _check_conversion(arr: np.ndarray, rc: RepresentationCode) -> None:

@@ -1,9 +1,9 @@
 from datetime import datetime
 import pytest
 
-from dlis_writer import AttrSetup, enums, high_compatibility_mode_decorator
-from dlis_writer.logical_record.eflr_types import (AxisItem, ChannelItem, CalibrationMeasurementItem,
-                                                   CalibrationMeasurementSet)
+from dliswriter import AttrSetup, enums, high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types import (AxisItem, ChannelItem, CalibrationMeasurementItem,
+                                                  CalibrationMeasurementSet)
 
 
 def test_calibration_measurement_creation(channel1: ChannelItem, axis1: AxisItem) -> None:

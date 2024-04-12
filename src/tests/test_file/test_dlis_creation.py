@@ -3,7 +3,7 @@ import pytest
 from pathlib import Path
 import numpy as np
 
-from dlis_writer.misc.dlis_file_comparator import compare
+from dliswriter.misc.dlis_file_comparator import compare
 
 from tests.common import N_COLS, load_dlis, select_channel
 from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis, write_dlis_from_dict

@@ -27,7 +27,7 @@ A minimal example is shown below:
 
 ```python
 import numpy as np  # for creating mock datasets
-from dlis_writer.file import DLISFile  # the main dlis-writer object you will interact with
+from dliswriter.file import DLISFile  # the main dlis-writer object you will interact with
 
 df = DLISFile()
 

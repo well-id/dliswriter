@@ -1,8 +1,8 @@
 import os
 from typing import Union
 
-from dlis_writer.file import DLISFile
-from dlis_writer.utils.enums import FrameIndexType
+from dliswriter.file import DLISFile
+from dliswriter.utils.enums import FrameIndexType
 
 from tests.dlis_files_for_testing.common import make_df
 

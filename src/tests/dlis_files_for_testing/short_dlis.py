@@ -3,10 +3,10 @@ from typing import Union
 import numpy as np
 from datetime import datetime
 
-from dlis_writer.file import DLISFile
-from dlis_writer.logical_record import eflr_types
-from dlis_writer.utils.enums import (Unit, Property, ZoneDomain, EquipmentType, EquipmentLocation,
-                                     CalibrationMeasurementPhase, ProcessStatus)
+from dliswriter.file import DLISFile
+from dliswriter.logical_record import eflr_types
+from dliswriter.utils.enums import (Unit, Property, ZoneDomain, EquipmentType, EquipmentLocation,
+                                    CalibrationMeasurementPhase, ProcessStatus)
 
 from tests.dlis_files_for_testing.common import make_file_header, make_sul
 

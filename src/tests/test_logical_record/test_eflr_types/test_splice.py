@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.eflr_types import SpliceSet, SpliceItem, ZoneItem, ChannelItem
+from dliswriter.logical_record.eflr_types import SpliceSet, SpliceItem, ZoneItem, ChannelItem
 
 
 def test_splice_creation(zone1: ZoneItem, zone3: ZoneItem, chan: ChannelItem, channel2: ChannelItem,

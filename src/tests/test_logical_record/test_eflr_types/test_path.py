@@ -1,9 +1,9 @@
 import pytest
 from typing import Optional
 
-from dlis_writer.logical_record.eflr_types.path import PathItem, PathSet
-from dlis_writer.logical_record.eflr_types.frame import FrameItem
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointItem
+from dliswriter.logical_record.eflr_types.path import PathItem, PathSet
+from dliswriter.logical_record.eflr_types.frame import FrameItem
+from dliswriter.logical_record.eflr_types.well_reference_point import WellReferencePointItem
 
 
 @pytest.mark.parametrize(("name", "frm", "value", "wrp", "vertical_depth", "time"), (

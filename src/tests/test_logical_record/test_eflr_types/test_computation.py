@@ -1,8 +1,8 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.computation import ComputationSet, ComputationItem
-from dlis_writer.logical_record.eflr_types.axis import AxisItem
-from dlis_writer.logical_record.eflr_types.zone import ZoneItem
+from dliswriter.logical_record.eflr_types.computation import ComputationSet, ComputationItem
+from dliswriter.logical_record.eflr_types.axis import AxisItem
+from dliswriter.logical_record.eflr_types.zone import ZoneItem
 
 
 @pytest.mark.parametrize(("name", "properties", "zone_names", "values"), (

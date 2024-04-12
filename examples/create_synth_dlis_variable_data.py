@@ -6,10 +6,10 @@ import logging
 from argparse import ArgumentParser, Namespace
 from pathlib import Path
 
-from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer.utils.types import file_name_type
-from dlis_writer.misc.synthetic_data_generator import create_data_file
-from dlis_writer.file_format_converter.file_format_converter import write_dlis_from_data_file
+from dliswriter.utils.logging import install_colored_logger
+from dliswriter.utils.types import file_name_type
+from dliswriter.misc.synthetic_data_generator import create_data_file
+from dliswriter.file_format_converter.file_format_converter import write_dlis_from_data_file
 
 from utils import prepare_directory
 
@@ -61,7 +61,7 @@ def create_tmp_data_file_from_pargs(file_name: file_name_type, pargs: Namespace)
 
 
 def main() -> None:
-    install_colored_logger(logging.getLogger('dlis_writer'))
+    install_colored_logger(logging.getLogger('dliswriter'))
 
     pargs = make_parser().parse_args()
 

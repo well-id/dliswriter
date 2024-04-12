@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.tool import ToolSet, ToolItem
+from dliswriter.logical_record.eflr_types.tool import ToolSet, ToolItem
 
 
 @pytest.mark.parametrize(("name", "description", "status", "param_names", "channel_names"), (

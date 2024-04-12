@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.well_reference_point import WellReferencePointSet, WellReferencePointItem
+from dliswriter.logical_record.eflr_types.well_reference_point import WellReferencePointSet, WellReferencePointItem
 
 
 @pytest.mark.parametrize(("name", "v_zero", "m_decl", "c1_name", "c1_value", "c2_name", "c2_value"), (

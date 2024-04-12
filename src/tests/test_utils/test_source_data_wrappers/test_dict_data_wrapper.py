@@ -4,7 +4,7 @@ import pytest
 import logging
 from typing import Union, Any
 
-from dlis_writer.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
+from dliswriter.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
 
 
 source_data_type = dict[str, np.ndarray]
@@ -274,7 +274,7 @@ def test_chunked_generator_all_rows(data: source_data_type, caplog: pytest.LogCa
 
     w = DictDataWrapper(data, from_idx=from_idx, to_idx=to_idx)
 
-    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+    with caplog.at_level(logging.DEBUG, logger='dliswriter'):
         gen = w.make_chunked_generator(chunk_rows=None)
         rows = list(gen)
 
@@ -295,7 +295,7 @@ def test_chunked_generator_full_chunks(data: source_data_type, caplog: pytest.Lo
 
     w = DictDataWrapper(data)
 
-    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+    with caplog.at_level(logging.DEBUG, logger='dliswriter'):
         gen = w.make_chunked_generator(chunk_rows=chunk_rows)
         rows = list(gen)
 
@@ -319,7 +319,7 @@ def test_chunked_generator_remainder_chunk(data: source_data_type, caplog: pytes
 
     w = DictDataWrapper(data)
 
-    with caplog.at_level(logging.DEBUG, logger='dlis_writer'):
+    with caplog.at_level(logging.DEBUG, logger='dliswriter'):
         gen = w.make_chunked_generator(chunk_rows=chunk_rows)
         rows = list(gen)
 

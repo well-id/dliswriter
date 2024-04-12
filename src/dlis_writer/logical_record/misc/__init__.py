@@ -1,1 +1,0 @@
-from dlis_writer.logical_record.misc.storage_unit_label import StorageUnitLabel

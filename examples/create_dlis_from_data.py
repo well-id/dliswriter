@@ -6,10 +6,10 @@ All channels etc. are added automatically from the contents of the data file.
 import logging
 from argparse import ArgumentParser
 
-from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer.file_format_converter.file_format_converter import write_dlis_from_data_file
-from dlis_writer.misc.dlis_file_comparator import compare
-from dlis_writer.utils.types import file_name_type
+from dliswriter.utils.logging import install_colored_logger
+from dliswriter.file_format_converter.file_format_converter import write_dlis_from_data_file
+from dliswriter.misc.dlis_file_comparator import compare
+from dliswriter.utils.types import file_name_type
 
 from utils import prepare_directory
 
@@ -55,7 +55,7 @@ def compare_files(output_file_name: file_name_type, reference_file_name: file_na
 
 
 def main() -> None:
-    install_colored_logger(logging.getLogger('dlis_writer'))
+    install_colored_logger(logging.getLogger('dliswriter'))
 
     pargs = make_parser().parse_args()
 

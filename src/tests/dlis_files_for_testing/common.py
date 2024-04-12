@@ -1,5 +1,5 @@
-from dlis_writer import DLISFile, StorageUnitLabel
-from dlis_writer.logical_record.eflr_types import FileHeaderSet, FileHeaderItem
+from dliswriter import DLISFile, StorageUnitLabel
+from dliswriter.logical_record.eflr_types import FileHeaderSet, FileHeaderItem
 
 
 def make_file_header() -> FileHeaderItem:

@@ -3,7 +3,7 @@ from dlisio import dlis    # type: ignore  # untyped library
 from typing import Union, Generator
 import os
 
-from dlis_writer.logical_record.core.eflr.eflr_item import EFLRItem
+from dliswriter.logical_record.core.eflr.eflr_item import EFLRItem
 
 
 N_COLS = 128

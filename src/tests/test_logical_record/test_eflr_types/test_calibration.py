@@ -1,6 +1,6 @@
-from dlis_writer.logical_record.core.attribute import EFLRAttribute
-from dlis_writer.logical_record.eflr_types import (ChannelItem, ParameterItem, CalibrationMeasurementItem,
-                                                   CalibrationCoefficientItem, CalibrationItem, CalibrationSet)
+from dliswriter.logical_record.core.attribute import EFLRAttribute
+from dliswriter.logical_record.eflr_types import (ChannelItem, ParameterItem, CalibrationMeasurementItem,
+                                                  CalibrationCoefficientItem, CalibrationItem, CalibrationSet)
 
 
 def _check_list(objects: EFLRAttribute, names: tuple[str, ...], object_class: type) -> None:

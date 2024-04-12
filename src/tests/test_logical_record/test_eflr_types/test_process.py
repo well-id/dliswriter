@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.process import ProcessSet, ProcessItem
+from dliswriter.logical_record.eflr_types.process import ProcessSet, ProcessItem
 
 
 @pytest.mark.parametrize(("name", "input_channels", "output_channels", "input_compts", "output_compts"), (

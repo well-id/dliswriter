@@ -1,10 +1,10 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.group import GroupSet, GroupItem
-from dlis_writer.logical_record.eflr_types.channel import ChannelItem
-from dlis_writer.logical_record.eflr_types.process import ProcessItem
-from dlis_writer.logical_record.core.eflr import EFLRItem
-from dlis_writer import high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types.group import GroupSet, GroupItem
+from dliswriter.logical_record.eflr_types.channel import ChannelItem
+from dliswriter.logical_record.eflr_types.process import ProcessItem
+from dliswriter.logical_record.core.eflr import EFLRItem
+from dliswriter import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("name", "description", "object_type", "object_class", "object_names", "group_names"), (

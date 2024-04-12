@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from typing import Union, Any
 
-from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper, SourceDataWrapper
+from dliswriter.utils.source_data_wrappers import NumpyDataWrapper, SourceDataWrapper
 
 
 @pytest.fixture

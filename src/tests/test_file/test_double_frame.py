@@ -5,7 +5,7 @@ from typing import Generator
 from dlisio import dlis  # type: ignore  # untyped library
 import numpy as np
 
-from dlis_writer.file.file import DLISFile
+from dliswriter.file.file import DLISFile
 
 from tests.common import load_dlis
 from tests.dlis_files_for_testing.double_frame_dlis import write_double_frame_dlis

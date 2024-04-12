@@ -1,7 +1,7 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.file_header import FileHeaderSet, FileHeaderItem
-from dlis_writer import high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types.file_header import FileHeaderSet, FileHeaderItem
+from dliswriter import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("header_id", "identifier", "sequence_number"), (("a", "A", 9), ("123ert", "8", 3)))

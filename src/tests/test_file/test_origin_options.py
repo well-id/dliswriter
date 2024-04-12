@@ -1,4 +1,4 @@
-from dlis_writer.file.file import DLISFile
+from dliswriter.file.file import DLISFile
 
 from tests.dlis_files_for_testing.common import make_sul, make_file_header
 

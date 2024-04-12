@@ -2,7 +2,7 @@ import pytest
 import logging
 import numpy as np
 
-from dlis_writer import DLISFile, high_compatibility_mode_decorator, enums
+from dliswriter import DLISFile, high_compatibility_mode_decorator, enums
 
 
 def _prepare_file_channel_not_in_frame() -> DLISFile:
@@ -18,7 +18,7 @@ def _prepare_file_channel_not_in_frame() -> DLISFile:
 
 def test_channel_not_in_frame(caplog: pytest.LogCaptureFixture) -> None:
 
-    with caplog.at_level(logging.WARNING, logger='dlis_writer'):
+    with caplog.at_level(logging.WARNING, logger='dliswriter'):
         df = _prepare_file_channel_not_in_frame()
         df.check_objects()
         assert "ChannelItem 'X' has not been added to any frame" in caplog.text
@@ -49,7 +49,7 @@ def _prepare_file_channel_in_multiple_frames() -> DLISFile:
 
 def test_channel_in_multiple_frames(caplog: pytest.LogCaptureFixture) -> None:
 
-    with caplog.at_level(logging.WARNING, logger='dlis_writer'):
+    with caplog.at_level(logging.WARNING, logger='dliswriter'):
         df = _prepare_file_channel_in_multiple_frames()
         df.check_objects()
         assert "ChannelItem 'A' has been added to 3 frames" in caplog.text
@@ -78,7 +78,7 @@ def _prepare_file_with_sint_data() -> DLISFile:
 
 def test_sint_data(caplog: pytest.LogCaptureFixture) -> None:
 
-    with caplog.at_level(logging.WARNING, logger='dlis_writer'):
+    with caplog.at_level(logging.WARNING, logger='dliswriter'):
         df = _prepare_file_with_sint_data()
         df.generate_logical_records(None)
         assert "Data type of channel 'X' is int16; some DLIS viewers cannot interpret signed integers" in caplog.text

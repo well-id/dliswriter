@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import pytest
 
-from dlis_writer.logical_record.eflr_types.origin import OriginItem, OriginSet
-from dlis_writer.utils.struct_writer import ULONG_OFFSET
-from dlis_writer import high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types.origin import OriginItem, OriginSet
+from dliswriter.utils.struct_writer import ULONG_OFFSET
+from dliswriter import high_compatibility_mode_decorator
 
 
 def test_origin_creation() -> None:
