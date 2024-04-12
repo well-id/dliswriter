@@ -1,6 +1,6 @@
 # `widc.dliswriter`
 
-This is a repository containing the `dlis_writer` - a Python library for creating DLIS files.
+This is a repository containing the DLIS Writer - a Python package for creating DLIS files.
 
 For more details, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/).
 
@@ -20,7 +20,7 @@ git+https://${GIT_PAT}:x-oauth-basic@github.com/well-id/widc.dliswriter@master
 ```
 
 ## Using `widc.dliswriter`
-When using the `dlis_writer`, the main class you interact with is `DLISFIle`.
+When using the DLIS Writer, the main class you interact with is `DLISFIle`.
 An instance of this class allows you to define the structure of your DLIS and specify the data it should contain.
 
 A minimal example is shown below:
@@ -45,6 +45,13 @@ main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type='BO
 # write the data and metadata to a physical DLIS file
 df.write('./new_dlis_file.DLIS')
 ```
+
+Note that some DLIS viewers additionally restrict the expected format of the DLIS files.
+In other words, if a DLIS file produced by the DLIS Writer causes issues in some of the viewers,
+it might not necessarily be a DLIS Writer bug.
+Some of the known compatibility issues - and ways of dealing with them - are described 
+[in the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/userguide/compatibilityissues.html)
+
 
 ## Contributing to `widc.dliswriter`
 To contribute to `widc.dliswriter`, please first read the 
