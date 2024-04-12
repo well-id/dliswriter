@@ -64,4 +64,4 @@ section of Well ID's software documentation. In short, follow these steps:
 
 With inputs from Magne Lauritzen.
 
-Based on the definition of the RP66 v1 standard.
+Based on the definition of the [RP66 v1 standard](https://energistics.org/sites/default/files/RP66/V1/Toc/main.html).
