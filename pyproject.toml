@@ -3,10 +3,11 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "dlis-writer"
+name = "dliswriter"
 version = "0.0.10"
 authors = [
   { name="Dominika Dlugosz", email="dominika.dlugosz@wellid.no" },
+  { name="Magne Lauritzen", email="magne.lauritzen@wellid.no" },
   { name="Kamil Grunwald", email="kamil.grunwald@wellid.no" },
   { name = "Omer Faruk Sari" }
 ]
@@ -30,7 +31,7 @@ dependencies = [
   "dlisio"
 ]
 [project.urls]
-"Homepage" = "https://github.com/well-id/widc.dliswriter"
+"Homepage" = "https://github.com/well-id/dliswriter"
 
 [tool.setuptools.packages.find]
 where = ["src"]

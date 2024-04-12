@@ -1,25 +1,25 @@
-# `widc.dliswriter`
+# DLIS Writer (`dliswriter`)
 
 This is a repository containing the DLIS Writer - a Python package for creating DLIS files.
 
 For more details, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/).
 
 ## Installation instructions
-`widc.dliswriter` can be installed just like other WellID packages.
+DLIS Writer can be installed just like other WellID packages.
 
 From a console:
 
 ```commandline
-pip install git+https://%GIT_PAT%:x-oauth-basic@github.com/well-id/widc.dliswriter@master
+pip install git+https://%GIT_PAT%:x-oauth-basic@github.com/well-id/dliswriter@master
 ```
 
 From requirements.txt:
 
 ```commandline
-git+https://${GIT_PAT}:x-oauth-basic@github.com/well-id/widc.dliswriter@master
+git+https://${GIT_PAT}:x-oauth-basic@github.com/well-id/dliswriter@master
 ```
 
-## Using `widc.dliswriter`
+## Using the DLIS Writer
 When using the DLIS Writer, the main class you interact with is `DLISFIle`.
 An instance of this class allows you to define the structure of your DLIS and specify the data it should contain.
 
@@ -53,22 +53,24 @@ Some of the known compatibility issues - and ways of dealing with them - are des
 [in the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/userguide/compatibilityissues.html).
 
 
-## Contributing to `widc.dliswriter`
-To contribute to `widc.dliswriter`, please first read the 
+## Contributing to the DLIS Writer
+To contribute to the DLIS Writer, please first read the 
 [Contributing](https://well-id-well-id-software-documentation.readthedocs-hosted.com/en/latest/for_developers/contribute.html) 
 section of Well ID's software documentation. In short, follow these steps:
 
-* Clone the repository to your machine: `git clone https://github.com/well-id/widc.dliswriter.git`
+* Clone the repository to your machine: `git clone https://github.com/well-id/dliswriter.git`
 * Checkout the `devel` branch: `git checkout devel`
 * Create a new branch: `git checkout -b <your branch name>`
 * Make your changes, commit them, and push them.
 * Create a pull request to the `devel` branch.
 
 ## Authors
-* Dominika Dlugosz
-* Kamil Grunwald
-* Omer Faruk Sari
+The DLIS Writer has been developed at [Well ID](https://wellid.no/) by:
 
-With inputs from Magne Lauritzen.
+* Dominika Dlugosz,
+* Magne Lauritzen,
+* Kamil Grunwald,
+* Omer Faruk Sari.
+
 
 Based on the definition of the [RP66 v1 standard](https://energistics.org/sites/default/files/RP66/V1/Toc/main.html).

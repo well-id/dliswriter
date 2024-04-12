@@ -8,7 +8,7 @@
 
 project = 'DLIS Writer'
 copyright = '2023, Well ID'
-author = 'Dominika Dlugosz, Kamil Grunwald, Omer Faruk Sari'
+author = 'Dominika Dlugosz, Magne Lauritzen, Kamil Grunwald, Omer Faruk Sari'
 release = '0.0.10'
 
 # -- General configuration ---------------------------------------------------
