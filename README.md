@@ -50,7 +50,7 @@ Note that some DLIS viewers additionally restrict the expected format of the DLI
 In other words, if a DLIS file produced by the DLIS Writer causes issues in some of the viewers,
 it might not necessarily be a DLIS Writer bug.
 Some of the known compatibility issues - and ways of dealing with them - are described 
-[in the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/userguide/compatibilityissues.html)
+[in the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/userguide/compatibilityissues.html).
 
 
 ## Contributing to `widc.dliswriter`
