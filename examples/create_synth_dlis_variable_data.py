@@ -3,14 +3,12 @@ Define channels for the data and write them into a DLIS file.
 """
 
 import logging
-from argparse import ArgumentParser, Namespace
+from argparse import ArgumentParser
 from pathlib import Path
 import numpy as np
 
 from dliswriter import DLISFile, enums
 from dliswriter.utils.logging import install_colored_logger
-from dliswriter.utils.types import file_name_type
-from dliswriter.misc.synthetic_data_generator import create_data_file
 
 from utils import prepare_directory
 
@@ -100,27 +98,6 @@ def create_dlis_spec(n_points: int, n_images: int = 0, n_cols: int = 128, time_b
     df.add_frame("MAIN-FRAME", channels=channels, index_type=index_type)
 
     return df
-
-
-def create_tmp_data_file_from_pargs(file_name: file_name_type, pargs: Namespace) -> None:
-    """Generate synthetic data and store it in a HDF5 file.
-
-    Args:
-        file_name   :   Name for the data file to be created.
-        pargs       :   Parsed command line arguments with specification of the data to be generated.
-
-    Returns:
-
-    """
-
-    create_data_file(
-        fpath=file_name,
-        n_points=int(pargs.n_points),
-        n_images=pargs.n_images,
-        n_cols=pargs.n_cols,
-        time_based=pargs.time_based,
-        overwrite=True
-    )
 
 
 def main() -> None:
