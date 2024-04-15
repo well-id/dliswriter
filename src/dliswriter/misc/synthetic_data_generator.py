@@ -12,21 +12,7 @@ from dliswriter.utils.logging import install_colored_logger
 logger = logging.getLogger(__name__)
 
 
-def make_image(n_points: int, n_cols: int, divider: int = 11) -> np.ndarray:
-    """Create a 2D array with synthetic data.
 
-    Args:
-        n_points    :   Number of rows.
-        n_cols      :   Number of columns.
-        divider     :   The array will be populated with remainders of division of values in range
-                        (0, n_points x n_cols) by the divider. This creates an array with periodically repeating
-                        integers, facilitating fast visual checks whether file data has been saved and read correctly.
-
-    Returns:
-        A numpy.ndarray of shape (n_points, n_cols) with values in range (0, divider).
-    """
-
-    return (np.arange(n_points * n_cols) % divider).reshape(n_points, n_cols) + 5 * np.random.rand(n_points, n_cols)
 
 
 def _fill_in_data(h5_group: h5py.Group, n_points: int, n_images: int = 0, n_cols: int = 128,
