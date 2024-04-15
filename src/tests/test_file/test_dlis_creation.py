@@ -3,9 +3,7 @@ import pytest
 from pathlib import Path
 import numpy as np
 
-from dliswriter.misc.dlis_file_comparator import compare
-
-from tests.common import N_COLS, load_dlis, select_channel
+from tests.common import N_COLS, load_dlis, select_channel, compare_binary_files
 from tests.dlis_files_for_testing import write_time_based_dlis, write_depth_based_dlis, write_dlis_from_dict
 
 
@@ -16,7 +14,7 @@ def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_d
     write_depth_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_rpm_depth_based.DLIS'
-    assert compare(reference_dlis_path, new_dlis_path, verbose=False)
+    assert compare_binary_files(reference_dlis_path, new_dlis_path, verbose=False)
 
 
 def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, base_data_path: Path,
@@ -26,7 +24,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, b
     write_time_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_full_time_based.DLIS'
-    assert compare(reference_dlis_path, new_dlis_path, verbose=False)
+    assert compare_binary_files(reference_dlis_path, new_dlis_path, verbose=False)
 
 
 def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path)\
