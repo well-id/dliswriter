@@ -20,15 +20,11 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "flake8",
-  "mypy",
-  "pytest",
   "numpy",
   "h5py",
   "progressbar2",
   "coloredlogs",
   "typing_extensions",
-  "dlisio"
 ]
 [project.urls]
 "Homepage" = "https://github.com/well-id/dliswriter"

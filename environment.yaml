@@ -13,8 +13,6 @@ dependencies:
   - coloredlogs
   - typing_extensions
   - pip
-  - pandas  # for reading data from csv and xls(x) files, only used in file_format_formatter subpackage
   - pytz
   - pip:
       - dlisio
-      - lasio   # for reading data from LAS files, only used in file_format_formatter subpackage
