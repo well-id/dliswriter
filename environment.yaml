@@ -13,6 +13,5 @@ dependencies:
   - coloredlogs
   - typing_extensions
   - pip
-  - pytz
   - pip:
       - dlisio
