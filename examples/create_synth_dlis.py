@@ -4,8 +4,9 @@ from datetime import datetime, timedelta
 import numpy as np
 import logging
 
-from dliswriter.utils.logging import install_colored_logger
 from dliswriter import AttrSetup, DLISFile, enums
+
+from utils import install_colored_logger
 
 
 # colored logs output

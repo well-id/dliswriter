@@ -11,7 +11,8 @@ import numpy as np
 import logging
 
 from dliswriter import DLISFile, EFLRItem, enums, eflr_types
-from dliswriter.utils.logging import install_colored_logger
+
+from utils import install_colored_logger
 
 
 # colored logs output

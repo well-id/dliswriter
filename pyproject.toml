@@ -20,10 +20,9 @@ classifiers = [
     "Operating System :: OS Independent",
 ]
 dependencies = [
-  "numpy",
   "h5py",
+  "numpy",
   "progressbar2",
-  "coloredlogs",
   "typing_extensions",
 ]
 [project.urls]

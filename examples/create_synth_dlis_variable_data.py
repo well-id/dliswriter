@@ -8,9 +8,8 @@ from pathlib import Path
 import numpy as np
 
 from dliswriter import DLISFile, enums
-from dliswriter.utils.logging import install_colored_logger
 
-from utils import prepare_directory
+from utils import prepare_directory, install_colored_logger
 
 
 logger = logging.getLogger(__name__)
