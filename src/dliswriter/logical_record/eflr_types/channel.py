@@ -1,5 +1,6 @@
 import logging
-from typing import Union, Optional, Any, Self
+from typing import Union, Optional, Any
+from typing_extensions import Self
 import numpy as np
 from h5py import Dataset  # type: ignore  # untyped library
 

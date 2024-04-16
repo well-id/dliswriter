@@ -218,6 +218,6 @@ class ProcessStatus(ValidatorEnum):
 class ZoneDomain(ValidatorEnum):
     # allowed values for 'domain' Attribute of Zone
     # comments are quotes from RP66; 'Zone interval is'...:
-    BOREHOLE_DEPTH = 'BOREHOLE-DEPTH',  # 'along the borehole'
-    TIME = 'TIME',                      # 'elapsed time'
+    BOREHOLE_DEPTH = 'BOREHOLE-DEPTH'   # 'along the borehole'
+    TIME = 'TIME'                       # 'elapsed time'
     VERTICAL_DEPTH = 'VERTICAL-DEPTH'   # 'depth along the Vertical Generatrix'
