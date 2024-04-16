@@ -3,15 +3,18 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.9
+  - python>=3.10
   - flake8
   - mypy
   - pytest
-  - numpy
-  - h5py
-  - progressbar2
-  - coloredlogs
-  - typing_extensions
+  - numpy>=1.21.2
+  - h5py>=3.6.0
+  - progressbar2>=4.0.0
+  - coloredlogs>=14.0.1
+  - typing_extensions>=4.5.0
+  - hatchling
+  - editables
+  - pytz
   - pip
   - pip:
-      - dlisio
+      - dlisio>=1.0.1
