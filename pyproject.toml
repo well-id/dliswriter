@@ -11,14 +11,27 @@ authors = [
   { name="Kamil Grunwald", email="kamil.grunwald@wellid.no" },
   { name = "Omer Faruk Sari" }
 ]
-description = "A package for creating DLIS files."
+maintainers = [
+  { name="Dominika Dlugosz", email="dominika.dlugosz@wellid.no" }
+]
+description = "An open-source Python package for writing DLIS files."
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">= 3.10"
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Manufacturing",
+    "Topic :: File Formats",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+keywords = ["data", "drilling", "dlis", "oil and gas", "well logging", "dlisio", "binary file IO"]
 dependencies = [
   "h5py = 3.6.0",
   "numpy >= 1.21.2",
@@ -28,6 +41,9 @@ dependencies = [
 ]
 [project.urls]
 "Homepage" = "https://github.com/well-id/dliswriter"
+"Documentation" = "https://well-id-widcdliswriter.readthedocs-hosted.com/"
+"Issues" = "https://github.com/well-id/dliswriter/issues"
+"Changelog" = "https://well-id-widcdliswriter.readthedocs-hosted.com/changelog.html"
 
 [tool.setuptools.packages.find]
 where = ["src"]
