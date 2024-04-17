@@ -13,6 +13,7 @@ from dliswriter.utils.source_data_wrappers import DictDataWrapper, SourceDataWra
 from dliswriter.utils.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
                                     file_name_type, data_form_type, ListOrTuple, NestedList, AttrDict)
 from dliswriter.utils.sized_generator import SizedGenerator
+from dliswriter.utils import enums
 from dliswriter.logical_record.core.eflr import EFLRItem, AttrSetup
 from dliswriter.logical_record.misc import StorageUnitLabel
 from dliswriter.logical_record import eflr_types
@@ -329,7 +330,7 @@ class DLISFile:
     def add_calibration_measurement(
             self,
             name: str,
-            phase: OptAttrSetupType[str] = None,
+            phase: OptAttrSetupType[Union[str, enums.CalibrationMeasurementPhase]] = None,
             measurement_source: OptAttrSetupType[EFLRItem] = None,
             measurement_type: OptAttrSetupType[str] = None,
             dimension: OptAttrSetupType[list[int]] = None,
@@ -472,8 +473,8 @@ class DLISFile:
             long_name: OptAttrSetupType[Union[eflr_types.LongNameItem, str]] = None,
             dimension: OptAttrSetupType[Union[int, list[int]]] = None,
             element_limit: OptAttrSetupType[Union[int, list[int]]] = None,
-            properties: OptAttrSetupType[list[str]] = None,
-            units: OptAttrSetupType[str] = None,
+            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
+            units: OptAttrSetupType[Union[str, enums.Unit]] = None,
             axis: OptAttrSetupType[eflr_types.AxisItem] = None,
             minimum_value: OptAttrSetupType[float] = None,
             maximum_value: OptAttrSetupType[float] = None,
@@ -495,7 +496,7 @@ class DLISFile:
             long_name           :   Description of the Channel.
             properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize the
                                     characteristics of the Channel and the processing that has occurred to produce it.'
-                                    See dliswriter.utils.enums.PROPERTIES for allowed values.
+                                    See dliswriter.utils.enums.Property for allowed values.
             dimension           :   Dimension of the Channel data. Determined automatically if not provided.
                                     '[T]he array structure of a sample value for the Channel'
             element_limit       :   Element limit of the Channel data. Determined automatically if not provided.
@@ -602,7 +603,7 @@ class DLISFile:
             self,
             name: str,
             long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
-            properties: OptAttrSetupType[list[str]] = None,
+            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
             dimension: OptAttrSetupType[list[int]] = None,
             axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
             zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
@@ -624,7 +625,7 @@ class DLISFile:
             properties          :   '[A] List of Property Indicators (...). The Property Indicators summarize
                                     the characteristics of the Computation and the processing that has occurred
                                     to produce it.'
-                                    See dliswriter.utils.enums.PROPERTIES for allowed values.
+                                    See dliswriter.utils.enums.Property for allowed values.
             dimension           :   '[S]pecifies the array structure of a single value of the current Computation'
             axis                :   An Axis Object (AxisItem) associated with the computation.
             zones               :   '[A] List of Zone Objects that specify mutually disjoint intervals over which
@@ -670,9 +671,9 @@ class DLISFile:
             name: str,
             trademark_name: OptAttrSetupType[str] = None,
             status: OptAttrSetupType[int] = None,
-            eq_type: OptAttrSetupType[str] = None,
+            eq_type: OptAttrSetupType[Union[str, enums.EquipmentType]] = None,
             serial_number: OptAttrSetupType[str] = None,
-            location: OptAttrSetupType[str] = None,
+            location: OptAttrSetupType[Union[str, enums.EquipmentLocation]] = None,
             height: OptAttrSetupType[number_type] = None,
             length: OptAttrSetupType[number_type] = None,
             minimum_diameter: OptAttrSetupType[number_type] = None,
@@ -782,7 +783,7 @@ class DLISFile:
             name: str,
             channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]],
             description: OptAttrSetupType[str] = None,
-            index_type: OptAttrSetupType[str] = None,
+            index_type: OptAttrSetupType[Union[str, enums.FrameIndexType]] = None,
             direction: OptAttrSetupType[str] = None,
             spacing: OptAttrSetupType[number_type] = None,
             encrypted: OptAttrSetupType[int] = None,
@@ -1450,8 +1451,8 @@ class DLISFile:
             description: OptAttrSetupType[str] = None,
             trademark_name: OptAttrSetupType[str] = None,
             version: OptAttrSetupType[str] = None,
-            properties: OptAttrSetupType[list[str]] = None,
-            status: OptAttrSetupType[str] = None,
+            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
+            status: OptAttrSetupType[Union[str, enums.ProcessStatus]] = None,
             input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
             output_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
             input_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
@@ -1471,7 +1472,7 @@ class DLISFile:
             trademark_name      :   '[T]he name used by the Producer to refer to the process and its products.'
             version             :   '[T]he Producer’s software version of the process.'
             properties          :   '[P]roperties that apply to the output of the process as a result of the process.'
-                                    See dliswriter.utils.enums.PROPERTIES for allowed values.
+                                    See dliswriter.utils.enums.Property for allowed values.
             status              :   Status of the process; 'ABORTED', 'COMPLETE' or 'IN-PROGRESS'.
                                     '[T]he state of the process at the time that the Status Attribute was recorded.'
             input_channels      :   'Channels that are used directly by this Process.'
@@ -1703,7 +1704,7 @@ class DLISFile:
             self,
             name: str,
             description: OptAttrSetupType[str] = None,
-            domain: OptAttrSetupType[str] = None,
+            domain: OptAttrSetupType[Union[str, enums.ZoneDomain]] = None,
             maximum: OptAttrSetupType[dtime_or_number_type] = None,
             minimum: Optional[AttrSetupType[dtime_or_number_type]] = None,
             set_name: Optional[str] = None,

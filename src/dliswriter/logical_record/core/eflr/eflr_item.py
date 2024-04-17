@@ -6,6 +6,7 @@ import numpy as np
 from dliswriter.utils.struct_writer import write_struct_obname
 from dliswriter.logical_record.core.attribute.attribute import Attribute
 from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils import enums
 
 if TYPE_CHECKING:
     from dliswriter.logical_record.core.eflr.eflr_set import EFLRSet
@@ -21,7 +22,7 @@ class AttrSetup:
     # Note: the initial plan was to make it a dataclass, but this doesn't give the PyCharm IDE typing hints,
     # which is one of the main points of this class
 
-    def __init__(self, value: Optional[Any] = None, units: Optional[str] = None) -> None:
+    def __init__(self, value: Optional[Any] = None, units: Optional[Union[str, enums.Unit]] = None) -> None:
         """Initialise AttrSetup with any of the passed values."""
 
         self.value = value
