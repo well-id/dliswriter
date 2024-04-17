@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dliswriter"
-version = "0.0.10"
+version = "0.1.0"
 authors = [
   { name="Dominika Dlugosz", email="dominika.dlugosz@wellid.no" },
   { name="Magne Lauritzen", email="magne.lauritzen@wellid.no" },
@@ -24,7 +24,6 @@ classifiers = [
     "Intended Audience :: Manufacturing",
     "Topic :: File Formats",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -33,11 +32,13 @@ classifiers = [
 ]
 keywords = ["data", "drilling", "dlis", "oil and gas", "well logging", "dlisio", "binary file IO"]
 dependencies = [
-  "h5py = 3.6.0",
+  "h5py >= 3.6.0",
   "numpy >= 1.21.2",
   "progressbar2 >= 4.0.0",
   "pytz",
   "typing_extensions >= 4.5.0",
+  "coloredlogs >= 14.0.1",
+  "dlisio >= 1.0.1"
 ]
 [project.urls]
 "Homepage" = "https://github.com/well-id/dliswriter"
