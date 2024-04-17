@@ -26,7 +26,7 @@ main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type='BO
 df.write('./new_dlis_file.DLIS')
 ```
 
-For more details about the DLIS file format and the usage of the package, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/en/latest/).
+For more details about the DLIS file format and the usage of the package, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/index.html).
 
 Please note that some DLIS viewers additionally restrict the expected format of the DLIS files.
 In other words, if a DLIS file produced by the DLIS Writer causes issues in some of the viewers,
