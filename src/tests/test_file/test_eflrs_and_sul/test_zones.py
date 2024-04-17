@@ -1,8 +1,7 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from dlisio import dlis    # type: ignore  # untyped library
 from typing import Any
-from pytz import utc
 
 
 def test_zones(short_dlis: dlis.file.LogicalFile) -> None:
@@ -15,8 +14,8 @@ def test_zones(short_dlis: dlis.file.LogicalFile) -> None:
 @pytest.mark.parametrize(("name", "description", "maximum", "minimum", "value_type"), (
         ("Zone-1", "BOREHOLE-DEPTH-ZONE", 1300, 100, float),
         ("Zone-2", "VERTICAL-DEPTH-ZONE", 2300.45, 200, float),
-        ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30).astimezone(utc),
-         datetime(2050, 7, 12, 9).astimezone(utc), datetime),
+        ("Zone-3", "ZONE-TIME", datetime(2050, 7, 13, 11, 30).astimezone(timezone.utc),
+         datetime(2050, 7, 12, 9).astimezone(timezone.utc), datetime),
         ("Zone-4", "ZONE-TIME-2", 90, 10, float),
         ("Zone-X", "Zone not added to any parameter", 10, 1, float)
 ))
@@ -37,9 +36,9 @@ def test_zone_params(short_dlis: dlis.file.LogicalFile, name: str, description: 
     z_minimum = z.minimum
 
     if value_type is datetime:
-        # dlisio doesn't add time zone info to the parsed datetime objects; utc.localize marks them as UTC
-        z_maximum = utc.localize(z_maximum)  # type: ignore
-        z_minimum = utc.localize(z_minimum)  # type: ignore
+        # dlisio doesn't add time zone info to the parsed datetime objects; mark them as UTC using .replace()
+        z_maximum = z_maximum.replace(tzinfo=timezone.utc)  # type: ignore
+        z_minimum = z_minimum.replace(tzinfo=timezone.utc)  # type: ignore
 
     assert z_maximum == maximum
     assert z_minimum == minimum

@@ -1,7 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, TYPE_CHECKING
 from functools import lru_cache
-from pytz import utc
 
 from dliswriter.utils.internal_enums import RepresentationCode
 
@@ -50,7 +49,7 @@ def write_struct_dtime(date_time: datetime) -> bytes:
     """
 
     # bring the date-time to UTC
-    date_time = date_time.astimezone(utc)
+    date_time = date_time.astimezone(timezone.utc)
 
     value = b''
 

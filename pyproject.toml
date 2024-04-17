@@ -36,7 +36,6 @@ dependencies = [
   "h5py = 3.6.0",
   "numpy >= 1.21.2",
   "progressbar2 >= 4.0.0",
-  "pytz",
   "typing_extensions >= 4.5.0",
 ]
 [project.urls]

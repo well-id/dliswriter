@@ -14,7 +14,6 @@ dependencies:
   - typing_extensions>=4.5.0
   - hatchling
   - editables
-  - pytz
   - pip
   - pip:
       - dlisio>=1.0.1

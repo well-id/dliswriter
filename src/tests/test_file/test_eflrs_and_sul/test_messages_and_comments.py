@@ -1,7 +1,6 @@
 import pytest
-from datetime import datetime
+from datetime import datetime, timezone
 from dlisio import dlis    # type: ignore  # untyped library
-from pytz import utc
 
 
 def test_message_params(short_dlis: dlis.file.LogicalFile) -> None:
@@ -11,7 +10,7 @@ def test_message_params(short_dlis: dlis.file.LogicalFile) -> None:
 
     assert m.name == "MESSAGE-1"
     assert m.message_type == 'Command'
-    assert utc.localize(m.time) == datetime(2050, 3, 4, 11, 23, 11).astimezone(utc)
+    assert m.time.replace(tzinfo=timezone.utc) == datetime(2050, 3, 4, 11, 23, 11).astimezone(timezone.utc)
     assert m.borehole_drift == 123.34
     assert m.vertical_depth == 234.45
     assert m.radial_drift == 345.56

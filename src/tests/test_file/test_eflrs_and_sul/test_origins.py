@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from dlisio import dlis    # type: ignore  # untyped library
-from pytz import utc
 
 
 def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
@@ -13,8 +12,8 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
     assert origin.name == "DEFAULT ORIGIN"
 
     # dlisio doesn't add time zone info to the parsed datetime objects, so we use utc.localize here to put it in UTC
-    assert (utc.localize(origin.creation_time) ==
-            datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S").astimezone(utc))
+    assert (origin.creation_time.replace(tzinfo=timezone.utc) ==
+            datetime.strptime("2050/03/02 15:30:00", "%Y/%m/%d %H:%M:%S").astimezone(timezone.utc))
 
     assert origin.file_id == short_dlis.fileheader.id
     assert origin.file_set_name == "Test file set name"
