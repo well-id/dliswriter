@@ -31,7 +31,19 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
-keywords = ["data", "drilling", "dlis", "oil and gas", "well logging", "dlisio", "binary file IO"]
+keywords = [
+    "data",
+    "drilling",
+    "dlis",
+    "RP66",
+    "RP66 v1",
+    "oil and gas",
+    "petroleum engineering",
+    "well logging",
+    "well imaging",
+    "dlisio",
+    "binary file IO"
+]
 dependencies = [
   "h5py >= 3.6.0",
   "numpy >= 1.21.2",
