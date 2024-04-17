@@ -7,7 +7,7 @@ in a simple and flexible fashion. A minimal example is shown below.
 
 ```python
 import numpy as np  # for creating mock datasets
-from dliswriter import DLISFile  # the main dlis-writer object you will interact with
+from dliswriter import DLISFile, enums
 
 df = DLISFile()
 
@@ -20,7 +20,7 @@ ch2 = df.add_channel("RPM", data=(np.arange(n_rows) % 10).astype(float))
 ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
 
 # define frame, referencing the above defined channels
-main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type='BOREHOLE-DEPTH')
+main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
 # write the data and metadata to a physical DLIS file
 df.write('./new_dlis_file.DLIS')
