@@ -40,7 +40,7 @@ Some of the known compatibility issues - and ways of dealing with them - are des
 DLIS Writer can be installed from PyPI:
 
 ```commandline
-pip install dliswriter.
+pip install dliswriter
 ```
 
 Anaconda installation option is coming soon.
