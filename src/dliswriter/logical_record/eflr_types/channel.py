@@ -19,6 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class ReprCodeAttribute(Attribute):
+    """Model an Attribute whose value is a representation code.
+
+    This attribute's value is not settable by the user. Channel's representation code is determined internally
+    from its data.
+    """
+
     def __init__(self, parent_eflr: Optional[EFLRItem] = None) -> None:
         super().__init__('representation_code', converter=self.no_set, representation_code=RepC.USHORT,
                          parent_eflr=parent_eflr)
@@ -29,13 +35,12 @@ class ReprCodeAttribute(Attribute):
         raise RuntimeError("Representation code of channel should not be set directly. Set `cast_dtype` instead.")
 
     def set_from_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        """Determine the correct representation code from a numpy dtype and set it as the Attribute's value."""
+
         if dt is None:
             self._value = None
         else:
             self._value = ReprCodeConverter.determine_repr_code_from_numpy_dtype(dt)
-
-    def copy(self) -> Self:
-        return self.__class__()
 
 
 class ChannelItem(EFLRItem, DimensionedItem):
@@ -99,6 +104,8 @@ class ChannelItem(EFLRItem, DimensionedItem):
         self._set_cast_dtype(dt)
 
     def _set_cast_dtype(self, dt: Union[numpy_dtype_type, None]) -> None:
+        """Check that the provided cast dtype is acceptable and set it in the Channel."""
+
         if dt is not None:
             ReprCodeConverter.validate_numpy_dtype(dt)
 

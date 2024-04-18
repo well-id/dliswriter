@@ -50,6 +50,8 @@ class CalibrationMeasurementItem(EFLRItem, DimensionedItem):
         super().__init__(name, parent=parent, **kwargs)
 
     def _run_checks_and_set_defaults(self) -> None:
+        """Check that the number of max/std deviations, standards, and tolerances is equal."""
+
         self._check_axis_vs_dimension()
 
         controlled_attrs = (self.maximum_deviation, self.standard_deviation, self.standard,

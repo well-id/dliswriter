@@ -32,6 +32,8 @@ class SpliceItem(EFLRItem):
         super().__init__(name, parent=parent, **kwargs)
 
     def _run_checks_and_set_defaults(self) -> None:
+        """Check that the number of input channels and zones in the splice is the same."""
+
         if self.input_channels.value is not None and self.zones.value is not None:
             if (nc := self.input_channels.count) != (nz := self.zones.count):
                 raise RuntimeError("A Splice must have the same number of input channels and zones if both are "

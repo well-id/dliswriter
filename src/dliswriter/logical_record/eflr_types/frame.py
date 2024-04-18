@@ -173,10 +173,14 @@ class FrameItem(EFLRItem):
 
     @property
     def channel_name_mapping(self) -> dict:
+        """Mapping of names of channels of the frame on the names of the associated datasets."""
+
         return {ch.name: ch.dataset_name for ch in self.channels.value}
 
     @property
     def known_channel_dtypes_mapping(self) -> dict:
+        """Mapping of names of channels of the frame on the data types, if explicitly defined."""
+
         return {ch.name: ch.cast_dtype for ch in self.channels.value if ch.cast_dtype is not None}
 
 
