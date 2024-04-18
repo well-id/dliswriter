@@ -26,6 +26,8 @@ class ByteWriter:
 
     @property
     def filename(self) -> file_name_type:
+        """Name of the file being written."""
+
         return self._filename
 
     @property
