@@ -1,7 +1,7 @@
 import pytest
 
-from dlis_writer import high_compatibility_mode_decorator
-from dlis_writer.logical_record.eflr_types import CalibrationCoefficientItem, CalibrationCoefficientSet
+from dliswriter import high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types import CalibrationCoefficientItem, CalibrationCoefficientSet
 
 
 def test_calibration_coefficient_creation() -> None:

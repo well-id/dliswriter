@@ -1,7 +1,7 @@
 import pytest
 
-from dlis_writer.logical_record.misc import StorageUnitLabel
-from dlis_writer import high_compatibility_mode_decorator
+from dliswriter.logical_record.misc import StorageUnitLabel
+from dliswriter import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("name", "sequence_number"), (("SUL-1", 11), ("Default storage", 0)))

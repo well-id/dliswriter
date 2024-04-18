@@ -3,9 +3,9 @@ import pytest
 import numpy as np
 from typing import Optional
 
-from dlis_writer.logical_record.eflr_types.frame import FrameSet, FrameItem
-from dlis_writer.utils.internal_enums import RepresentationCode
-from dlis_writer import DLISFile, high_compatibility_mode_decorator, enums
+from dliswriter.logical_record.eflr_types.frame import FrameSet, FrameItem
+from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter import DLISFile, high_compatibility_mode_decorator, enums
 
 
 def test_frame_creation() -> None:
@@ -66,7 +66,7 @@ def _prepare_file_uneven_spacing() -> DLISFile:
 def test_spacing_not_even(caplog: pytest.LogCaptureFixture) -> None:
     df = _prepare_file_uneven_spacing()
 
-    with caplog.at_level(logging.WARNING, logger='dlis_writer'):
+    with caplog.at_level(logging.WARNING, logger='dliswriter'):
         df.generate_logical_records(chunk_size=None)
         assert "Spacing of the index channel" in caplog.text
 

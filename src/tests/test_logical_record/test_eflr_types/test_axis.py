@@ -1,7 +1,7 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.axis import AxisItem, AxisSet
-from dlis_writer import high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types.axis import AxisItem, AxisSet
+from dliswriter import high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(('name', 'axis_id', 'units'), (

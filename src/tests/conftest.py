@@ -5,8 +5,8 @@ import h5py    # type: ignore  # untyped library
 import os
 from typing import Generator
 
-from dlis_writer.logical_record import eflr_types
-from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
+from dliswriter.logical_record import eflr_types
+from dliswriter.utils.source_data_wrappers import NumpyDataWrapper
 
 from tests.common import load_dlis
 from tests.dlis_files_for_testing import write_short_dlis

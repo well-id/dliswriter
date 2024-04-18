@@ -4,7 +4,7 @@ import h5py  # type: ignore  # untyped library
 from pathlib import Path
 from typing import Union
 
-from dlis_writer.utils.source_data_wrappers import HDF5DataWrapper, SourceDataWrapper
+from dliswriter.utils.source_data_wrappers import HDF5DataWrapper, SourceDataWrapper
 
 
 @pytest.fixture(scope='session')

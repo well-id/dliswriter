@@ -4,12 +4,12 @@ from typing import Union, Any
 import numpy as np
 from datetime import datetime
 
-from dlis_writer.logical_record.eflr_types.channel import ChannelSet, ChannelItem
-from dlis_writer.logical_record.eflr_types.axis import AxisItem
-from dlis_writer.utils.internal_enums import RepresentationCode
-from dlis_writer.utils.enums import Property
-from dlis_writer.utils.types import numpy_dtype_type
-from dlis_writer.utils.source_data_wrappers import NumpyDataWrapper
+from dliswriter.logical_record.eflr_types.channel import ChannelSet, ChannelItem
+from dliswriter.logical_record.eflr_types.axis import AxisItem
+from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.enums import Property
+from dliswriter.utils.types import numpy_dtype_type
+from dliswriter.utils.source_data_wrappers import NumpyDataWrapper
 
 
 def test_channel_creation(axis1: AxisItem) -> None:

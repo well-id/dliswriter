@@ -1,6 +1,6 @@
 import pytest
 
-from dlis_writer.logical_record.eflr_types.no_format import NoFormatSet, NoFormatItem
+from dliswriter.logical_record.eflr_types.no_format import NoFormatSet, NoFormatItem
 
 
 @pytest.mark.parametrize(("name", "consumer_name", "description"), (

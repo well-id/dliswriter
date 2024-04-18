@@ -1,8 +1,8 @@
 import pytest
 from typing import Any
 
-from dlis_writer.logical_record.eflr_types import EquipmentSet, EquipmentItem
-from dlis_writer import AttrSetup, high_compatibility_mode_decorator
+from dliswriter.logical_record.eflr_types import EquipmentSet, EquipmentItem
+from dliswriter import AttrSetup, high_compatibility_mode_decorator
 
 
 @pytest.mark.parametrize(("name", "status", "serial_number"), (

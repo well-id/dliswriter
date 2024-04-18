@@ -1,6 +1,5 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from dlisio import dlis    # type: ignore  # untyped library
-from pytz import utc
 
 from tests.common import check_list_of_objects
 
@@ -18,7 +17,7 @@ def test_calibration_measurement_params(short_dlis: dlis.file.LogicalFile) -> No
     assert m.samples.tolist() == [[12.2323, 12.2131]]
     assert m.samplecount == 12
     assert m.max_deviation.tolist() == [2.2324, 3.121]
-    assert utc.localize(m.begin_time) == datetime(2050, 3, 12, 12, 30).astimezone(utc)
+    assert m.begin_time.replace(tzinfo=timezone.utc) == datetime(2050, 3, 12, 12, 30).astimezone(timezone.utc)
     assert m.duration == 15
     assert m.reference.tolist() == [11, 12]
     assert m.standard == [11.2, 12.2]

@@ -8,7 +8,7 @@
 
 project = 'DLIS Writer'
 copyright = '2023, Well ID'
-author = 'Dominika Dlugosz, Kamil Grunwald, Omer Faruk Sari'
+author = 'Dominika Dlugosz, Magne Lauritzen, Kamil Grunwald, Omer Faruk Sari'
 release = '0.0.10'
 
 # -- General configuration ---------------------------------------------------
@@ -32,7 +32,7 @@ html_static_path = ['_static']
 html_context = {
     "display_github": True,
     "github_user": "well-id",
-    "github_repo": "dlis-writer",
+    "github_repo": "dliswriter",
     "github_version": "main",
     "conf_py_path": "/docs/",
 }

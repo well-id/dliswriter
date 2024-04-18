@@ -1,4 +1,4 @@
-from dlis_writer.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
+from dliswriter.logical_record.eflr_types.long_name import LongNameSet, LongNameItem
 
 
 def test_from_config() -> None:

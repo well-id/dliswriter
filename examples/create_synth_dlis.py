@@ -4,12 +4,13 @@ from datetime import datetime, timedelta
 import numpy as np
 import logging
 
-from dlis_writer.utils.logging import install_colored_logger
-from dlis_writer import AttrSetup, DLISFile, enums
+from dliswriter import AttrSetup, DLISFile, enums
+
+from utils import install_colored_logger
 
 
 # colored logs output
-install_colored_logger(logging.getLogger('dlis_writer'))
+install_colored_logger(logging.getLogger('dliswriter'))
 
 
 # create DLISFile instance; optionally, pass custom parameters for file header and storage unit label

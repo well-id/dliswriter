@@ -2,9 +2,9 @@ import os
 from typing import Union
 import numpy as np
 
-from dlis_writer.file import DLISFile
-from dlis_writer.logical_record import eflr_types
-from dlis_writer.utils.enums import Unit
+from dliswriter.file import DLISFile
+from dliswriter.logical_record import eflr_types
+from dliswriter.utils.enums import Unit
 
 from tests.dlis_files_for_testing.common import make_df
 

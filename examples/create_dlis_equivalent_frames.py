@@ -10,12 +10,13 @@ When inspecting the objects, one might notice that:
 import numpy as np
 import logging
 
-from dlis_writer import DLISFile, EFLRItem, enums, eflr_types
-from dlis_writer.utils.logging import install_colored_logger
+from dliswriter import DLISFile, EFLRItem, enums, eflr_types
+
+from utils import install_colored_logger
 
 
 # colored logs output
-install_colored_logger(logging.getLogger('dlis_writer'))
+install_colored_logger(logging.getLogger('dliswriter'))
 
 
 # create DLISFile instance; optionally, pass arguments for creating file header & storage unit label

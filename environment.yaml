@@ -3,18 +3,17 @@ channels:
   - conda-forge
   - defaults
 dependencies:
-  - python>=3.10
+  - python>=3.9
   - flake8
   - mypy
   - pytest
-  - numpy
+  - numpy>=1.19.2  # 1.16.6 does not work; 1.19.2 seems to be the next installable version for Python 3.9 (conda-forge)
   - h5py
   - progressbar2
-  - coloredlogs
-  - typing_extensions
+  - typing_extensions>=4.0.1  # patch to 'Fix usage of Self as a type argument' (from release notes)
+  - coloredlogs    # used only in examples
+  - hatchling      # build - needed to install dliswriter in editable mode using pip
+  - editables      # build (see above)
   - pip
-  - pandas  # for reading data from csv and xls(x) files, only used in file_format_formatter subpackage
-  - pytz
   - pip:
-      - dlisio
-      - lasio   # for reading data from LAS files, only used in file_format_formatter subpackage
+      - dlisio>=1.0.1

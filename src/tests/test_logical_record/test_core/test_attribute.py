@@ -2,7 +2,7 @@ import pytest
 from datetime import datetime, timedelta
 from typing import Any, Generator
 
-from dlis_writer.logical_record.core.attribute import Attribute, DTimeAttribute
+from dliswriter.logical_record.core.attribute import Attribute, DTimeAttribute
 
 
 @pytest.fixture
