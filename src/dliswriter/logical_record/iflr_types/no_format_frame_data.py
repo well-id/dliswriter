@@ -39,4 +39,5 @@ class NoFormatFrameData(IFLR):
     @property
     def n_items(self) -> int:
         """Number of data items in this object."""
+
         return 1

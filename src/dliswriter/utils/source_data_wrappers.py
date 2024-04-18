@@ -211,6 +211,14 @@ class SourceDataWrapper(ABC):
     @classmethod
     def make_wrapper(cls, source: data_form_type, mapping: Optional[dict] = None,
                      **kwargs: Any) -> Union["DictDataWrapper", "NumpyDataWrapper", "HDF5DataWrapper"]:
+        """Create an instance of one of the SourceDataWrapper subclasses based on the provided data.
+
+        Args:
+            source  :   Original data object.
+            mapping :   Mapping of data type names on the names of data in the data source (e.g. on the paths to
+                        particular HDF5 datasets).
+            kwargs:     Additional keyword arguments accepted by the SourceDataWrapper subclasses' constructors.
+        """
 
         if isinstance(source, dict):
             return DictDataWrapper(source, mapping, **kwargs)

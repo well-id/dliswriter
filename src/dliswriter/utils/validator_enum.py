@@ -9,6 +9,14 @@ logger = logging.getLogger(__name__)
 
 
 class ValidatorEnum(Enum):
+    """Define an enum with a converter defining ability.
+
+    The 'make_converter' method returns a callable which verifies whether a provided value can be found among the
+    enum's members or their values. It then returns the value of the relevant member or raises an error if no fitting
+    member is found.
+
+    The enum's values are expected to be strings.
+    """
 
     @classmethod
     def make_converter(cls, label: Optional[str] = None, allow_none: bool = False, soft: bool = False) -> Callable:
