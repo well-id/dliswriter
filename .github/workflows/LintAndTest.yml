@@ -20,7 +20,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat update -n base -c defaults conda
           C:\Miniconda\condabin\conda.bat config --add channels conda-forge
           C:\Miniconda\condabin\conda.bat config --set channel_priority strict
-          C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
+          C:\Miniconda\condabin\conda.bat env update --file environment.yaml --name base
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           C:\Miniconda\condabin\conda.bat init powershell
