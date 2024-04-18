@@ -4,8 +4,8 @@ from typing import Union, Optional, Any, Generator
 import logging
 from abc import ABC
 
-from dliswriter.utils.converters import ReprCodeConverter
-from dliswriter.utils.types import data_form_type, data_source_type, file_name_type, numpy_dtype_type
+from dliswriter.utils.internal.converters import ReprCodeConverter
+from dliswriter.utils.internal.types import data_form_type, data_source_type, file_name_type, numpy_dtype_type
 
 
 logger = logging.getLogger(__name__)

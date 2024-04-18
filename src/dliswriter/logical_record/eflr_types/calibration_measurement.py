@@ -2,12 +2,12 @@ import logging
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
 from dliswriter.utils.enums import CalibrationMeasurementPhase
 from dliswriter.logical_record.eflr_types.axis import AxisSet
 from dliswriter.logical_record.core.attribute import (EFLRAttribute, NumericAttribute,
                                                       DTimeAttribute, DimensionAttribute, IdentAttribute)
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)

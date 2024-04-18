@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Union
 
 from dliswriter.logical_record.eflr_types.zone import ZoneSet, ZoneItem
-from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.internal.internal_enums import RepresentationCode
 
 
 @pytest.mark.parametrize(("name", "description", "domain", "maximum", "minimum", "m_type", "rc"), (

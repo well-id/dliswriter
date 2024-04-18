@@ -2,7 +2,7 @@ from datetime import datetime, timezone
 from typing import Any, TYPE_CHECKING
 from functools import lru_cache
 
-from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.internal.internal_enums import RepresentationCode
 
 if TYPE_CHECKING:
     from dliswriter.logical_record.core.eflr import EFLRItem

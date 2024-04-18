@@ -5,10 +5,10 @@ from typing import Union, Optional, Any, overload
 
 from .attribute import Attribute
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import RepresentationCode as RepC
 from dliswriter.utils.enums import Property
-from dliswriter.utils.converters import ReprCodeConverter
-from dliswriter.utils.types import number_type, dtime_or_number_type
+from dliswriter.utils.internal.converters import ReprCodeConverter
+from dliswriter.utils.internal.types import number_type, dtime_or_number_type
 
 
 logger = logging.getLogger(__name__)

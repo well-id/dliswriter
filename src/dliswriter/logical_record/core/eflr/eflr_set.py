@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 
-from dliswriter.utils.struct_writer import write_struct_ascii
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.struct_writer import write_struct_ascii
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.core.logical_record import LogicalRecord
 from dliswriter.logical_record.core.eflr.eflr_item import EFLRItem
 

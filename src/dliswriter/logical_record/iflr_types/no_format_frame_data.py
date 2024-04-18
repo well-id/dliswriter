@@ -2,7 +2,7 @@ from typing import Union
 
 from dliswriter.logical_record.core.iflr import IFLR
 from dliswriter.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
-from dliswriter.utils.internal_enums import IFLRType
+from dliswriter.utils.internal.internal_enums import IFLRType
 from dliswriter.logical_record.eflr_types.no_format import NoFormatItem
 
 

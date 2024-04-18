@@ -1,4 +1,4 @@
-from dliswriter.utils.validator_enum import ValidatorEnum
+from dliswriter.utils.internal.validator_enum import ValidatorEnum
 
 
 class Unit(ValidatorEnum):

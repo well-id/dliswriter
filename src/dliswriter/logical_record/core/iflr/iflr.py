@@ -1,4 +1,4 @@
-from dliswriter.utils.internal_enums import IFLRType
+from dliswriter.utils.internal.internal_enums import IFLRType
 from dliswriter.logical_record.core.logical_record import LogicalRecord
 
 

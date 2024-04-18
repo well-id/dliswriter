@@ -4,7 +4,7 @@ import numpy as np
 from typing import Optional
 
 from dliswriter.logical_record.eflr_types.frame import FrameSet, FrameItem
-from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.internal.internal_enums import RepresentationCode
 from dliswriter import DLISFile, high_compatibility_mode_decorator, enums
 
 

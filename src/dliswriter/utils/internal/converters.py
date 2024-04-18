@@ -2,8 +2,8 @@ from datetime import datetime
 import numpy as np
 from typing import Callable, Any, Iterable, Union, Optional
 
-from dliswriter.utils.internal_enums import RepresentationCode
-from dliswriter.utils.types import numpy_dtype_type
+from dliswriter.utils.internal.internal_enums import RepresentationCode
+from dliswriter.utils.internal.types import numpy_dtype_type
 
 
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:

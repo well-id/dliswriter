@@ -3,7 +3,7 @@ import numpy as np
 from typing import Union, Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
 from dliswriter.utils.enums import FrameIndexType
 from dliswriter.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dliswriter.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,

@@ -1,10 +1,10 @@
 from typing import Union, Any, TYPE_CHECKING, Callable, Optional
 import logging
 
-from dliswriter.utils.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
-from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.internal.struct_writer import write_struct, write_struct_ascii, write_struct_uvari
+from dliswriter.utils.internal.internal_enums import RepresentationCode
 from dliswriter.utils.enums import Unit
-from dliswriter.utils.converters import ReprCodeConverter
+from dliswriter.utils.internal.converters import ReprCodeConverter
 
 if TYPE_CHECKING:
     from dliswriter.logical_record.core.eflr import EFLRItem

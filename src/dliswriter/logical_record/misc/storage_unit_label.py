@@ -1,8 +1,8 @@
 from typing import Any
 
-from dliswriter.utils.converters import get_ascii_bytes
+from dliswriter.utils.internal.converters import get_ascii_bytes
 from dliswriter.logical_record.core.logical_record import LogicalRecordBytes
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 
 
 class StorageUnitLabel:

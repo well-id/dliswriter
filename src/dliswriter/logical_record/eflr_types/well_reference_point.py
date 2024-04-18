@@ -5,7 +5,7 @@
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
 from dliswriter.logical_record.core.attribute import NumericAttribute, TextAttribute
 
 

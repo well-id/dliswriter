@@ -1,16 +1,15 @@
 import logging
 from typing import Union, Optional, Any
-from typing_extensions import Self
 import numpy as np
 from h5py import Dataset  # type: ignore  # untyped library
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
 from dliswriter.logical_record.eflr_types.axis import AxisSet
 from dliswriter.logical_record.eflr_types.long_name import LongNameSet
-from dliswriter.utils.internal_enums import RepresentationCode as RepC, EFLRType
+from dliswriter.utils.internal.internal_enums import RepresentationCode as RepC, EFLRType
 from dliswriter.utils.enums import Unit
-from dliswriter.utils.converters import ReprCodeConverter
-from dliswriter.utils.types import numpy_dtype_type
+from dliswriter.utils.internal.converters import ReprCodeConverter
+from dliswriter.utils.internal.types import numpy_dtype_type
 from dliswriter.logical_record.core.attribute import (Attribute, DimensionAttribute, EFLRAttribute, NumericAttribute,
                                                       IdentAttribute, EFLROrTextAttribute, PropertiesAttribute)
 from dliswriter.utils.source_data_wrappers import SourceDataWrapper

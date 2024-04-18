@@ -3,7 +3,7 @@ import logging
 from typing import Union, Any
 
 from dliswriter.logical_record.core.logical_record.logical_record_bytes import LogicalRecordBytes
-from dliswriter.utils.internal_enums import RepresentationCode, EFLRType, IFLRType
+from dliswriter.utils.internal.internal_enums import RepresentationCode, EFLRType, IFLRType
 
 
 logger = logging.getLogger(__name__)

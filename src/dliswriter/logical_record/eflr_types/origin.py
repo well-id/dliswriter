@@ -4,9 +4,9 @@ from typing import Any
 import numpy as np
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
-from dliswriter.utils.struct_writer import ULONG_OFFSET
-from dliswriter.utils.types import number_type
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.struct_writer import ULONG_OFFSET
+from dliswriter.utils.internal.types import number_type
 from dliswriter.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
 from dliswriter.configuration import global_config
 

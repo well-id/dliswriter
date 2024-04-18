@@ -10,9 +10,9 @@ from datetime import timedelta, datetime
 import logging
 
 from dliswriter.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
-from dliswriter.utils.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
-                                    file_name_type, data_form_type, ListOrTuple, NestedList, AttrDict)
-from dliswriter.utils.sized_generator import SizedGenerator
+from dliswriter.utils.internal.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
+                                             file_name_type, data_form_type, ListOrTuple, NestedList, AttrDict)
+from dliswriter.utils.internal.sized_generator import SizedGenerator
 from dliswriter.utils import enums
 from dliswriter.logical_record.core.eflr import EFLRItem, AttrSetup
 from dliswriter.logical_record.misc import StorageUnitLabel

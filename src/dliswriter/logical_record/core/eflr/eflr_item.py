@@ -3,9 +3,9 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional, Generator
 import numpy as np
 
-from dliswriter.utils.struct_writer import write_struct_obname
+from dliswriter.utils.internal.struct_writer import write_struct_obname
 from dliswriter.logical_record.core.attribute.attribute import Attribute
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 from dliswriter.utils import enums
 
 if TYPE_CHECKING:

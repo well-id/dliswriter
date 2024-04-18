@@ -3,7 +3,7 @@ from pathlib import Path
 import logging
 import coloredlogs
 
-from dliswriter.utils.types import file_name_type
+from dliswriter.utils.internal.types import file_name_type
 
 
 logger = logging.getLogger(__name__)

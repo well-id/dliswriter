@@ -2,12 +2,12 @@ import logging
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem, DimensionedItem
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.eflr_types.zone import ZoneSet
 from dliswriter.logical_record.eflr_types.axis import AxisSet
 from dliswriter.logical_record.eflr_types.long_name import LongNameSet
 from dliswriter.logical_record.core.attribute import Attribute, EFLRAttribute, DimensionAttribute, EFLROrTextAttribute
-from dliswriter.utils.value_checkers import convert_maybe_numeric
+from dliswriter.utils.internal.value_checkers import convert_maybe_numeric
 
 
 logger = logging.getLogger(__name__)
