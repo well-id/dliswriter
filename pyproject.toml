@@ -45,10 +45,10 @@ keywords = [
     "binary file IO"
 ]
 dependencies = [
-  "h5py >= 3.6.0",
-  "numpy >= 1.21.2",
-  "progressbar2 >= 4.0.0",
-  "typing_extensions >= 4.5.0",
+  "h5py",
+  "numpy >= 1.19.2",
+  "progressbar2",
+  "typing_extensions >= 4.0.1",
 ]
 [project.urls]
 "Homepage" = "https://github.com/well-id/dliswriter"

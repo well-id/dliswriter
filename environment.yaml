@@ -7,13 +7,13 @@ dependencies:
   - flake8
   - mypy
   - pytest
-  - numpy>=1.21.2
-  - h5py>=3.6.0
-  - progressbar2>=4.0.0
-  - coloredlogs>=14.0.1
-  - typing_extensions>=4.5.0
-  - hatchling
-  - editables
+  - numpy>=1.19.2  # 1.16.6 does not work; 1.19.2 seems to be the next installable version for Python 3.9 (conda-forge)
+  - h5py
+  - progressbar2
+  - typing_extensions>=4.0.1  # patch to 'Fix usage of Self as a type argument' (from release notes)
+  - coloredlogs    # used only in examples
+  - hatchling      # build - needed to install dliswriter in editable mode using pip
+  - editables      # build (see above)
   - pip
   - pip:
       - dlisio>=1.0.1
