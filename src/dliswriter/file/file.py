@@ -1823,6 +1823,8 @@ class DLISFile:
 
     @staticmethod
     def raise_or_warn(message: str) -> None:
+        """If high-compatibility mode is on, raise a RuntimeError with given message. Otherwise, put it in the logs."""
+
         if global_config.high_compat_mode:
             raise RuntimeError(message)
         logger.warning(message)
@@ -1863,6 +1865,8 @@ class DLISFile:
 
     @staticmethod
     def _check_data(data: SourceDataWrapper) -> None:
+        """Check for possible issues in the data."""
+
         dt = data.dtype
         if dt.names is None:
             raise RuntimeError("Data types not defined")
@@ -1894,6 +1898,8 @@ class DLISFile:
         n += len(self._no_format_frame_data)
 
         def generator() -> Generator:
+            """Define a generator yielding logical records to be put in the file."""
+
             if self.defining_origin is None:
                 raise RuntimeError("No Origin defined for the file")
 
