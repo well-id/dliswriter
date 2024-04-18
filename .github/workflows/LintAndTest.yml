@@ -1,0 +1,47 @@
+name: Linting and testing
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          C:\Miniconda\condabin\conda.bat update -n base -c defaults conda
+          C:\Miniconda\condabin\conda.bat config --add channels conda-forge
+          C:\Miniconda\condabin\conda.bat config --set channel_priority strict
+          C:\Miniconda\condabin\conda.bat env update --file environment.yml --name base
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          C:\Miniconda\condabin\conda.bat init powershell
+      - name: Lint with Flake8
+        run: |
+          # Activate the testenv environment
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          cd src
+          flake8
+      - name: Type check with mypy
+        run: |
+          # Activate the testenv environment
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          cd src
+          mypy .
+      - name: Test with pytest
+        run: |
+          # Activate the testenv environment
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          pytest
+      
