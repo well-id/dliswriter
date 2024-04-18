@@ -270,6 +270,8 @@ class Attribute:
 
     @staticmethod
     def flatten_list(v: Union[list, tuple], res: Optional[list] = None) -> list:
+        """Take a possibly nested list or tuple and produce a flat list."""
+
         if res is None:
             res = []
 
