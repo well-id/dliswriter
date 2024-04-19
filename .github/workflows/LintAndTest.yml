@@ -46,12 +46,5 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           pytest
-      - name: Test with pytest
-        run: |
-          # Activate the testenv environment
-          C:\Miniconda\condabin\conda.bat activate base
-          C:\Miniconda\condabin\conda.bat list
-          coverage xml -o coverage.xml
-          genbadge coverage -i coverage.xml
           
       
