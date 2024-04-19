@@ -1,3 +1,5 @@
+# prepared with the help of https://github.com/marketplace/actions/python-coverage-comment
+
 name: Test Coverage
 on: [pull_request]
 
@@ -5,6 +7,9 @@ jobs:
   build:
 
     runs-on: windows-latest
+    permissions:
+      pull-requests: write
+      contents: write
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
@@ -22,10 +27,13 @@ jobs:
           pip install genbadge[coverage]
           C:\Miniconda\condabin\conda.bat list
           C:\Miniconda\condabin\conda.bat init powershell
-      - name: Check coverage
+      - name: Run coverage check
         run: |
           # Activate the testenv environment
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage xml -o coverage.xml
           genbadge coverage -i coverage.xml
+        env:
+          COVERAGE_FILE: "coverage.xml"
+        
