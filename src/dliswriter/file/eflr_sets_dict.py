@@ -1,7 +1,10 @@
 from collections import defaultdict
-from typing import Generator, Optional, TypeVar, Union
+from typing import Generator, Optional, TypeVar, Union, TYPE_CHECKING
 
 from dliswriter.logical_record.core.eflr import EFLRSet
+
+if TYPE_CHECKING:
+    from dliswriter.logical_record.core.eflr.eflr_item import EFLRItem
 
 
 AnyEFLRSet = TypeVar("AnyEFLRSet", bound="EFLRSet")

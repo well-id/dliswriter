@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 import logging
-import coloredlogs
+import coloredlogs  # type: ignore  # untyped
 
 from dliswriter.utils.internal.types import file_name_type
 

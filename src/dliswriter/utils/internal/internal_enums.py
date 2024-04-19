@@ -66,7 +66,7 @@ class RepresentationCode(int, Enum):
             raise RuntimeError("Converter struct not defined; cannot directly convert the value to bytes")
         return self.converter.pack(value)
 
-    def decode_bytes(self, value: bytes) -> tuple[Any]:
+    def decode_bytes(self, value: bytes) -> tuple[Any, ...]:
         """Convert bytes to a value according to the Struct pattern defined for the enum member (if any).
 
         Used in unit tests.

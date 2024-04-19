@@ -1,5 +1,5 @@
 import logging
-from progressbar import progressbar    # type: ignore  # untyped library
+from progressbar import progressbar
 from typing import Optional, Sequence
 from pathlib import Path
 
