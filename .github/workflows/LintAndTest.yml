@@ -52,6 +52,6 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage report
-          genbadge coverage -i .\coverage.xml
+          genbadge coverage
           
       
