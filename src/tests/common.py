@@ -38,34 +38,3 @@ def check_list_of_objects(objects: Union[list[EFLRItem], tuple[EFLRItem, ...]],
     assert len(objects) == len(names)
     for i, n in enumerate(names):
         assert objects[i].name == n
-
-
-def read_binary_file(fname: path_type) -> bytes:
-    """Read a binary file and return the contained bytes."""
-
-    with open(fname, 'rb') as f:
-        contents = f.read()
-    return contents
-
-
-def compare_binary_files(f1: path_type, f2: path_type) -> bool:
-    """Compare two files at binary level.
-
-    Args
-        f1      :   Name of the first file.
-        f2      :   Name of the second file.
-
-    Returns:
-          True if files are identical; False otherwise.
-    """
-
-    data1 = read_binary_file(f1)
-    data2 = read_binary_file(f2)
-
-    if (l1 := len(data1)) != (l2 := len(data2)):
-        raise FilesNotEqualError(f"Lengths of the files don't match ({l1} vs {l2})")
-
-    mismatched_indices = [i for i in range(len(data1)) if data1[i] != data2[i]]
-    if mismatched_indices:
-        raise FilesNotEqualError(f"Files do not match at {len(mismatched_indices)} indices: {mismatched_indices}")
-    return True
