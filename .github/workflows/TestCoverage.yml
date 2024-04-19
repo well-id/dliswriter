@@ -27,5 +27,6 @@ jobs:
           # Activate the testenv environment
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
+          coverage run -m pytest
           coverage xml -o coverage.xml
           genbadge coverage -i coverage.xml
