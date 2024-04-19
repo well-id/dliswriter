@@ -34,7 +34,7 @@ jobs:
         with:
           auth: ${{ secrets.TEST_COVERAGE_GIST }}
           gistID: 8ec74eae558f3a7793622f6469064b73
-          filename: test_coverage_badge.svg
+          filename: test_coverage_badge.json
           label: Test coverage
           message: TBD
           color: orange
