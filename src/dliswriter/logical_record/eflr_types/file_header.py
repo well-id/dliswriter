@@ -6,11 +6,11 @@ Unless otherwise specified, all quotes in this file come from the RP66 v1 standa
 
 from typing import Any
 
-from dliswriter.utils.converters import get_ascii_bytes
-from dliswriter.utils.struct_writer import write_struct_ascii
-from dliswriter.utils.internal_enums import RepresentationCode, EFLRType
+from dliswriter.utils.internal.converters import get_ascii_bytes
+from dliswriter.utils.internal.struct_writer import write_struct_ascii
+from dliswriter.utils.internal.internal_enums import RepresentationCode, EFLRType
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 
 
 def pack_ushort(v: int) -> bytes:

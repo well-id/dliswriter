@@ -2,8 +2,8 @@ from datetime import datetime
 import numpy as np
 from typing import Callable, Any, Iterable, Union, Optional
 
-from dliswriter.utils.internal_enums import RepresentationCode
-from dliswriter.utils.types import numpy_dtype_type
+from dliswriter.utils.internal.internal_enums import RepresentationCode
+from dliswriter.utils.internal.types import numpy_dtype_type
 
 
 def get_ascii_bytes(value: str, required_length: int, justify_left: bool = False) -> bytes:
@@ -78,6 +78,8 @@ class ReprCodeConverter:
 
     @classmethod
     def validate_numpy_dtype(cls, number_type: numpy_dtype_type) -> tuple[str, RepresentationCode]:
+        """Check that the provided value is a numpy dtype. Return the dtype name and the corresponding repr code."""
+
         if isinstance(number_type, np.dtype):
             number_type_name = number_type.name
         elif isinstance(number_type, type) and issubclass(number_type, np.generic):

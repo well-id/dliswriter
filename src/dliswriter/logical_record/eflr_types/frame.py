@@ -3,7 +3,7 @@ import numpy as np
 from typing import Union, Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
 from dliswriter.utils.enums import FrameIndexType
 from dliswriter.logical_record.eflr_types.channel import ChannelSet, ChannelItem
 from dliswriter.logical_record.core.attribute import (Attribute, EFLRAttribute, NumericAttribute, TextAttribute,
@@ -173,10 +173,14 @@ class FrameItem(EFLRItem):
 
     @property
     def channel_name_mapping(self) -> dict:
+        """Mapping of names of channels of the frame on the names of the associated datasets."""
+
         return {ch.name: ch.dataset_name for ch in self.channels.value}
 
     @property
     def known_channel_dtypes_mapping(self) -> dict:
+        """Mapping of names of channels of the frame on the data types, if explicitly defined."""
+
         return {ch.name: ch.cast_dtype for ch in self.channels.value if ch.cast_dtype is not None}
 
 

@@ -2,7 +2,7 @@ import pytest
 from typing import Any
 
 from dliswriter.logical_record.eflr_types.parameter import ParameterSet, ParameterItem
-from dliswriter.utils.internal_enums import RepresentationCode
+from dliswriter.utils.internal.internal_enums import RepresentationCode
 
 
 @pytest.mark.parametrize(("name", "value", "value_type", "n_values", "repr_code"), (

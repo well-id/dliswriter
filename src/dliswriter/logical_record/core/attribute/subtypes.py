@@ -5,10 +5,10 @@ from typing import Union, Optional, Any, overload
 
 from .attribute import Attribute
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import RepresentationCode as RepC
+from dliswriter.utils.internal.internal_enums import RepresentationCode as RepC
 from dliswriter.utils.enums import Property
-from dliswriter.utils.converters import ReprCodeConverter
-from dliswriter.utils.types import number_type, dtime_or_number_type
+from dliswriter.utils.internal.converters import ReprCodeConverter
+from dliswriter.utils.internal.types import number_type, dtime_or_number_type
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,8 @@ class EFLRAttribute(Attribute):
 
 
 class EFLROrTextAttribute(EFLRAttribute):
+    """Model an Attribute whose value might be an EFLRItem instance or a string."""
+
     _valid_repr_codes = (RepC.OBNAME, RepC.ASCII)
     _default_repr_code = None
 
@@ -72,6 +74,8 @@ class EFLROrTextAttribute(EFLRAttribute):
     def _convert_value(self, v: EFLRItem) -> EFLRItem: ...
 
     def _convert_value(self, v: Union[EFLRItem, str]) -> Union[EFLRItem, str]:
+        """Check that the provided value is an EFLRItem or a string."""
+
         if isinstance(v, EFLRItem):
             return super()._convert_value(v)
 
@@ -82,6 +86,8 @@ class EFLROrTextAttribute(EFLRAttribute):
             raise TypeError(f"Expected an EFLRItem or a str; got {type(v)}: {v}")
 
     def _guess_repr_code(self) -> Union[RepC, None]:
+        """Determine representation code from the Attribute's value."""
+
         v = self.value
 
         if v is None:

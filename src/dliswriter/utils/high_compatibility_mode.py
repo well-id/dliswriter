@@ -19,6 +19,7 @@ def high_compatibility_mode() -> Generator:
 
 
 def high_compatibility_mode_decorator(func: Callable) -> Callable:
+    """Decorator. Turn on DLIS Writer's high-compatibility mode for the scope of the decorated function."""
 
     @functools.wraps(func)
     def wrapper(*args: Any, **kwargs: Any) -> None:

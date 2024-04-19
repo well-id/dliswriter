@@ -3,9 +3,9 @@ from functools import cached_property
 from typing import TYPE_CHECKING, Any, Union, Optional, Generator
 import numpy as np
 
-from dliswriter.utils.struct_writer import write_struct_obname
+from dliswriter.utils.internal.struct_writer import write_struct_obname
 from dliswriter.logical_record.core.attribute.attribute import Attribute
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 from dliswriter.utils import enums
 
 if TYPE_CHECKING:
@@ -76,6 +76,8 @@ class EFLRItem:
 
     @property
     def parent(self) -> "EFLRSet":
+        """EFLRSet instance that this EFLRItem is a part of."""
+
         return self._parent
 
     @property
@@ -86,14 +88,23 @@ class EFLRItem:
 
     @property
     def origin_reference(self) -> Union[int, None]:
+        """Reference to the Origin associated with this EFLRItem."""
+
         return self._origin_reference
 
     @origin_reference.setter
     def origin_reference(self, v: int) -> None:
+        """Set a new origin reference (point to a different Origin)."""
+
         self._origin_reference = self._validate_origin_reference(v)
 
     @staticmethod
     def _validate_origin_reference(v: Union[int, None], allow_none: bool = False) -> Union[int, None]:
+        """Check that the provided origin reference value is an integer (or None, depending on the setup).
+
+        Return the provided origin reference value (if it's correct). Raise an error otherwise.
+        """
+
         if v is None and allow_none:
             return None
 
@@ -194,6 +205,8 @@ class EFLRItem:
         """
 
         def set_value(_attr: Attribute, _value: Any, _key: str = 'value') -> None:
+            """Set 'value' or 'units' of the provided Attribute instance."""
+
             logger.debug(f"Setting {_attr.label}.{_key} of {self} to {repr(_value)}")
             setattr(_attr, _key, _value)
 
@@ -213,7 +226,11 @@ class EFLRItem:
 
     @staticmethod
     def count_attributes(*attrs: Attribute) -> dict:
-        # check that the multivalued attributes of the object all have the same number of values - if defined at all
+        """Count the number of values (length of value list) defined for each of the provided Attribute.
+
+        If no values are defined foe an Attribute, it is not included in the counts dict.
+        """
+
         value_counts = {}
         for attr in attrs:
             if attr.value is not None:
@@ -229,6 +246,8 @@ class DimensionedItem:
     dimension: "DimensionAttribute"
 
     def _check_axis_vs_dimension(self) -> None:
+        """Check that the number of axes matches the number of dimensions defined for the EFLRItem."""
+
         axs = self.axis.value
         dims = self.dimension.value
 
@@ -250,6 +269,8 @@ class DimensionedItem:
 
     def _check_or_set_value_dimensionality(self, value: Union[list, tuple, None],
                                            value_label: Optional[str] = None) -> None:
+        """Determine the dimensionality (shape) of a value. Verify or set up the 'dimension' attr based on that."""
+
         if value is None:
             return
 

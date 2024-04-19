@@ -5,7 +5,7 @@ from dliswriter.logical_record.core.eflr import EFLRItem, EFLRSet, DimensionedIt
 from dliswriter.logical_record.eflr_types.axis import AxisSet
 from dliswriter.logical_record.eflr_types.zone import ZoneSet
 from dliswriter.logical_record.eflr_types.long_name import LongNameSet
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.core.attribute import (EFLRAttribute, NumericAttribute, DimensionAttribute,
                                                       EFLROrTextAttribute, PropertiesAttribute)
 

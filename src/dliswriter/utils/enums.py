@@ -1,8 +1,9 @@
-from dliswriter.utils.validator_enum import ValidatorEnum
+from dliswriter.utils.internal.validator_enum import ValidatorEnum
 
 
 class Unit(ValidatorEnum):
-    # all units explicitly allowed by the RP66 standard
+    """All units explicitly allowed by the RP66 standard."""
+
     AMPERE = "A"
     KELVIN = "K"
     CANDELA = "cd"
@@ -108,7 +109,8 @@ class Unit(ValidatorEnum):
 
 
 class Property(ValidatorEnum):
-    # allowed values for elements of the 'properties' attribute of Channel, Computation, and Process
+    """Allowed values for elements of the 'properties' attribute of Channel, Computation, and Process"""
+
     AVERAGED = 'AVERAGED'
     CALIBRATED = 'CALIBRATED'
     CHANGED_INDEX = 'CHANGED-INDEX'
@@ -142,13 +144,16 @@ class Property(ValidatorEnum):
 
 
 class CalibrationMeasurementPhase(ValidatorEnum):
+    """Allowed values for 'phase' of a CalibrationMeasurementItem."""
+
     AFTER = 'AFTER'
     BEFORE = 'BEFORE'
     MASTER = 'MASTER'
 
 
 class EquipmentType(ValidatorEnum):
-    # options for the 'type' ('_type') attribute of Equipment, allowed by the standard
+    """Options for the 'type' ('_type') attribute of Equipment, allowed by the standard"""
+
     ADAPTER = "Adapter"
     BOARD = "Board"
     BOTTOM_NOSE = "Bottom-Nose"
@@ -192,7 +197,8 @@ class EquipmentType(ValidatorEnum):
 
 
 class EquipmentLocation(ValidatorEnum):
-    # options for the 'location' attribute of Equipment, allowed by the standard
+    """Options for the 'location' attribute of Equipment, allowed by the standard."""
+
     LOGGING_SYSTEM = 'Logging-System'
     REMOTE = 'Remote'
     RIG = 'Rig'
@@ -200,7 +206,8 @@ class EquipmentLocation(ValidatorEnum):
 
 
 class FrameIndexType(ValidatorEnum):
-    # values for frame index type allowed by the standard
+    """Values for frame index type allowed by the standard."""
+
     ANGULAR_DRIFT = 'ANGULAR-DRIFT'
     BOREHOLE_DEPTH = 'BOREHOLE-DEPTH'
     NON_STANDARD = 'NON-STANDARD'
@@ -209,15 +216,18 @@ class FrameIndexType(ValidatorEnum):
 
 
 class ProcessStatus(ValidatorEnum):
-    # allowed values of the 'status' Attribute of Process
+    """Allowed values of the 'status' Attribute of Process."""
+
     COMPLETE = 'COMPLETE'
     ABORTED = 'ABORTED'
     IN_PROGRESS = 'IN-PROGRESS'
 
 
 class ZoneDomain(ValidatorEnum):
-    # allowed values for 'domain' Attribute of Zone
-    # comments are quotes from RP66; 'Zone interval is'...:
+    """Allowed values for 'domain' Attribute of Zone.
+
+    Comments are quotes from RP66; 'Zone interval is'...:"""
+
     BOREHOLE_DEPTH = 'BOREHOLE-DEPTH'   # 'along the borehole'
     TIME = 'TIME'                       # 'elapsed time'
     VERTICAL_DEPTH = 'VERTICAL-DEPTH'   # 'depth along the Vertical Generatrix'

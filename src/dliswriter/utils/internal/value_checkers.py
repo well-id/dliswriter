@@ -7,20 +7,24 @@ from dliswriter.configuration import global_config
 HC_STRING_PATTERN = re.compile(r"[A-Z0-9_-]+")
 
 
-def check_string_compatibility(s: str) -> None:
+def validate_string(s: str) -> str:
+    """Check that a strings fulfills the conditions to be deemed safe for all known DLIS viewers.
+
+    For more details, see https://well-id-widcdliswriter.readthedocs-hosted.com/userguide/compatibilityissues.html
+
+    Returns the original string.
+    """
+
     if not isinstance(s, str):
         raise TypeError(f"Expected a str, got {type(s)}: {s}")
 
     if not global_config.high_compat_mode:
-        return None
+        return s
 
     if HC_STRING_PATTERN.fullmatch(s) is None:
         raise ValueError("In high-compatibility mode, strings can contain only uppercase characters, digits, "
                          f"dashes, and underscores; got {repr(s)}")
 
-
-def validate_string(s: str) -> str:
-    check_string_compatibility(s)
     return s
 
 

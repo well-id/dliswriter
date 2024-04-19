@@ -4,9 +4,9 @@ from typing import Any
 import numpy as np
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode as RepC
-from dliswriter.utils.struct_writer import ULONG_OFFSET
-from dliswriter.utils.types import number_type
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode as RepC
+from dliswriter.utils.internal.struct_writer import ULONG_OFFSET
+from dliswriter.utils.internal.types import number_type
 from dliswriter.logical_record.core.attribute import DTimeAttribute, NumericAttribute, TextAttribute, IdentAttribute
 from dliswriter.configuration import global_config
 
@@ -83,10 +83,15 @@ class OriginItem(EFLRItem):
             self.creation_time.value = datetime.now()
 
     def _run_checks_and_set_defaults(self) -> None:
+        """Set a default field name value - if no field name has been defined."""
+
         if self.field_name.value is None:
+            logger.debug(f"Setting field_name of {self} to the default value: 'WILDCAT'")
             self.field_name.value = 'WILDCAT'  # according to RP66
 
     def _no_reassign_file_set_number(self, v: number_type) -> number_type:
+        """Value checker for file_set_number. Make sure the value is not reassigned."""
+
         if self.file_set_number.value is not None:
             raise RuntimeError("File set number should not be reassigned; to have an alternative file set number, "
                                "please pass it to the OriginItem constructor")

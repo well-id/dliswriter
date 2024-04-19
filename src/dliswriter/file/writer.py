@@ -1,10 +1,10 @@
 import logging
-from progressbar import progressbar    # type: ignore  # untyped library
+from progressbar import progressbar
 from typing import Optional, Sequence
 from pathlib import Path
 
-from dliswriter.utils.internal_enums import RepresentationCode
-from dliswriter.utils.types import file_name_type, number_type, bytes_type
+from dliswriter.utils.internal.internal_enums import RepresentationCode
+from dliswriter.utils.internal.types import file_name_type, number_type, bytes_type
 from dliswriter.logical_record.misc import StorageUnitLabel
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,8 @@ class ByteWriter:
 
     @property
     def filename(self) -> file_name_type:
+        """Name of the file being written."""
+
         return self._filename
 
     @property

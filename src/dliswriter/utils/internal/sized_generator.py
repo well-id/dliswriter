@@ -3,6 +3,8 @@ from typing import Generator, Union, Any
 
 
 class SizedGenerator(Sequence):
+    """Wrap a generator with a pre-defined number of elements."""
+
     def __init__(self, generator: Generator, size: int) -> None:
         self._generator = generator
         self._size = size

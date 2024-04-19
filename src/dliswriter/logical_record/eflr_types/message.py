@@ -1,7 +1,7 @@
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.core.attribute import IdentAttribute, DTimeAttribute, NumericAttribute, TextAttribute
 
 

@@ -7,7 +7,7 @@ or values with specific regions of a well or with specific time intervals.`
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType, RepresentationCode
+from dliswriter.utils.internal.internal_enums import EFLRType, RepresentationCode
 from dliswriter.utils.enums import ZoneDomain
 from dliswriter.logical_record.core.attribute import IdentAttribute, DTimeAttribute, TextAttribute
 

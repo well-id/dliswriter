@@ -5,9 +5,9 @@ from datetime import datetime, timedelta
 from enum import Enum
 from struct import Struct
 
-from dliswriter.utils.internal_enums import RepresentationCode
-from dliswriter.utils.converters import ReprCodeConverter
-from dliswriter.utils.types import numpy_dtype_type
+from dliswriter.utils.internal.internal_enums import RepresentationCode
+from dliswriter.utils.internal.converters import ReprCodeConverter
+from dliswriter.utils.internal.types import numpy_dtype_type
 
 
 @pytest.mark.parametrize(('dt', 'rc'), (

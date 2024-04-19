@@ -2,8 +2,8 @@ import numpy as np
 from typing import TYPE_CHECKING, Optional
 
 from dliswriter.logical_record.core.iflr import IFLR
-from dliswriter.utils.struct_writer import write_struct_uvari
-from dliswriter.utils.internal_enums import IFLRType
+from dliswriter.utils.internal.struct_writer import write_struct_uvari
+from dliswriter.utils.internal.internal_enums import IFLRType
 
 if TYPE_CHECKING:
     from dliswriter.logical_record.eflr_types.frame import FrameItem

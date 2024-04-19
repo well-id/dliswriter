@@ -2,10 +2,10 @@ from typing import Any
 import logging
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.utils.enums import EquipmentType, EquipmentLocation
 from dliswriter.logical_record.core.attribute import NumericAttribute, StatusAttribute, TextAttribute, IdentAttribute
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)

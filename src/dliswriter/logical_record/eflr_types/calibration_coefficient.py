@@ -2,9 +2,9 @@ import logging
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.core.attribute import NumericAttribute, IdentAttribute
-from dliswriter.utils.value_checkers import validate_string
+from dliswriter.utils.internal.value_checkers import validate_string
 
 
 logger = logging.getLogger(__name__)
@@ -33,6 +33,8 @@ class CalibrationCoefficientItem(EFLRItem):
         super().__init__(name, parent=parent, **kwargs)
 
     def _run_checks_and_set_defaults(self) -> None:
+        """Check that the number of coefficients, references, and tolerances is equal."""
+
         value_counts = self.count_attributes(
             self.coefficients, self.references, self.plus_tolerances, self.minus_tolerances)
 

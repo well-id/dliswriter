@@ -3,7 +3,7 @@ import numpy as np
 import pytest
 
 from dliswriter.logical_record.eflr_types.origin import OriginItem, OriginSet
-from dliswriter.utils.struct_writer import ULONG_OFFSET
+from dliswriter.utils.internal.struct_writer import ULONG_OFFSET
 from dliswriter import high_compatibility_mode_decorator
 
 

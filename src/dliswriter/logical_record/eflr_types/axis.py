@@ -1,9 +1,9 @@
 from typing import Any
 
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem
-from dliswriter.utils.internal_enums import EFLRType
+from dliswriter.utils.internal.internal_enums import EFLRType
 from dliswriter.logical_record.core.attribute import Attribute, NumericAttribute, IdentAttribute
-from dliswriter.utils.value_checkers import validate_string, convert_maybe_numeric
+from dliswriter.utils.internal.value_checkers import validate_string, convert_maybe_numeric
 
 
 class AxisItem(EFLRItem):
