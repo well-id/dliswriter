@@ -20,7 +20,6 @@ jobs:
           C:\Miniconda\condabin\conda.bat env update --file environment.yaml --name base
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat install coverage
-          pip install genbadge[coverage]
           C:\Miniconda\condabin\conda.bat list
           C:\Miniconda\condabin\conda.bat init powershell
       - name: Check coverage
@@ -30,9 +29,12 @@ jobs:
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
           coverage xml -o coverage.xml
-          genbadge coverage -i coverage.xml -o coverage-badge.svg
-      - name: Save coverage badge
-        uses: actions/upload-artifact@v4
+      - name: Create Awesome Badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
         with:
-          name: coverage-badge
-          path: coverage-badge.svg
+          auth: ${{ secrets.TEST_COVERAGE_GIST }}
+          gistID: 8ec74eae558f3a7793622f6469064b73
+          filename: test_coverage_badge.svg
+          label: Test coverage
+          message: TBD
+          color: orange
