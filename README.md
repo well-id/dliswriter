@@ -1,3 +1,5 @@
+[![Linting and testing](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml)
+
 # `dliswriter`
 
 Welcome to `dliswriter` - an open-source Python package for writing DLIS files.
