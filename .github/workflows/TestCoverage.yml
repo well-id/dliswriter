@@ -13,20 +13,9 @@ jobs:
           python-version: "3.11"
       - name: Install dependencies
         run: |
-          C:\Miniconda\condabin\conda.bat update -n base -c defaults conda
-          C:\Miniconda\condabin\conda.bat config --add channels conda-forge
-          C:\Miniconda\condabin\conda.bat config --set channel_priority strict
-          C:\Miniconda\condabin\conda.bat env update --file environment.yaml --name base
-          C:\Miniconda\condabin\conda.bat activate base
-          C:\Miniconda\condabin\conda.bat install coverage
-          pip install genbadge[coverage]
-          C:\Miniconda\condabin\conda.bat list
-          C:\Miniconda\condabin\conda.bat init powershell
+          python -m pip install coverage genbadge[coverage]
       - name: Check coverage
         run: |
-          # Activate the testenv environment
-          C:\Miniconda\condabin\conda.bat activate base
-          C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
           coverage xml -o coverage.xml
           genbadge coverage -i coverage.xml
