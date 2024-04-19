@@ -28,7 +28,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          coverage xml -o coverage.xml
+          echo "PCOV=$(coverage report --format total)"  >> $GITHUB_ENV
       - name: Create Awesome Badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
@@ -36,5 +36,7 @@ jobs:
           gistID: 8ec74eae558f3a7793622f6469064b73
           filename: test_coverage_badge.json
           label: Test coverage
-          message: TBD
-          color: orange
+          message: ${{ env.PCOV }}
+          valColorRange: ${{ env.PCOV }}
+          maxColorRange: 100
+          minColorRange: 0
