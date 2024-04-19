@@ -22,6 +22,8 @@ jobs:
           C:\Miniconda\condabin\conda.bat config --set channel_priority strict
           C:\Miniconda\condabin\conda.bat env update --file environment.yaml --name base
           C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat install coverage
+          pip install genbadge[coverage]
           C:\Miniconda\condabin\conda.bat list
           C:\Miniconda\condabin\conda.bat init powershell
       - name: Lint with Flake8
@@ -44,4 +46,12 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           pytest
+      - name: Test with pytest
+        run: |
+          # Activate the testenv environment
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          coverage report
+          genbadge coverage -i .\coverage.xml
+          
       
