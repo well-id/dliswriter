@@ -14,7 +14,7 @@ def test_correct_contents_rpm_only_depth_based(reference_data_path: Path, base_d
     write_depth_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_rpm_depth_based.DLIS'
-    assert compare_binary_files(reference_dlis_path, new_dlis_path, verbose=False)
+    assert compare_binary_files(reference_dlis_path, new_dlis_path)
 
 
 def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, base_data_path: Path,
@@ -24,7 +24,7 @@ def test_correct_contents_rpm_and_images_time_based(reference_data_path: Path, b
     write_time_based_dlis(new_dlis_path, data=reference_data_path)
 
     reference_dlis_path = base_data_path / 'resources/reference_dlis_full_time_based.DLIS'
-    assert compare_binary_files(reference_dlis_path, new_dlis_path, verbose=False)
+    assert compare_binary_files(reference_dlis_path, new_dlis_path)
 
 
 def test_dlis_depth_based(short_reference_data: h5py.File, short_reference_data_path: Path, new_dlis_path: Path)\
