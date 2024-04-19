@@ -30,4 +30,9 @@ jobs:
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
           coverage xml -o coverage.xml
-          genbadge coverage -i coverage.xml
+          genbadge coverage -i coverage.xml -o coverage-badge.svg
+      - name: Save coverage badge
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-badge
+          path: coverage-badge.svg
