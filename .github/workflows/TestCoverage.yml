@@ -28,11 +28,10 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          echo "pcov=35" >> $GITHUB_OUTPUT
-          echo "pcov=45" >> "$GITHUB_ENV"
+          Add-Content -Path ${env:GITHUB_ENV} -Value "p_cov=55"
       - name: Create badge
         env:
-          P_COV: "pcov is: '${{ env.pcov }}'"
+          P_COV: "pcov is: ${{ env.pcov }}"
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.TEST_COVERAGE_GIST }}
