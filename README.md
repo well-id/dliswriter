@@ -1,3 +1,4 @@
+![Licence](https://img.shields.io/github/license/well-id/dliswriter)
 ![Test coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/the-mysh/8ec74eae558f3a7793622f6469064b73/raw/test_coverage_badge.json)
 [![Linting and testing](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml)
 [![Documentation Status](https://readthedocs.com/projects/well-id-widcdliswriter/badge/?version=latest)](https://well-id-widcdliswriter.readthedocs-hosted.com/?badge=latest)
