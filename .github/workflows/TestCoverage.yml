@@ -38,7 +38,7 @@ jobs:
           gistID: 8ec74eae558f3a7793622f6469064b73
           filename: test_coverage_badge.json
           label: Test coverage
-          message: "is $P_COV"
-          valColorRange: $P_COV
+          message: ${{ steps.check-coverage.outputs.P_COV }}
+          valColorRange: ${{ steps.check-coverage.outputs.P_COV }}
           maxColorRange: 100
           minColorRange: 0
