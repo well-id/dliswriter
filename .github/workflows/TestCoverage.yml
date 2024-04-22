@@ -29,15 +29,13 @@ jobs:
           coverage run -m pytest
           echo "pcov=55" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Create badge
-        env:
-          P_COV: "pcov: ${{ env.pcov }}"
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.TEST_COVERAGE_GIST }}
           gistID: 8ec74eae558f3a7793622f6469064b73
           filename: test_coverage_badge.json
           label: Test coverage
-          message: "${{ env.P_COV }}%"
-          valColorRange: ${{ env.P_COV }}
+          message: "${{ env.pcov }}%"
+          valColorRange: ${{ env.pcov }}
           maxColorRange: 100
           minColorRange: 0
