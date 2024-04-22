@@ -5,7 +5,6 @@ on: [pull_request]
 jobs:
   coverage:
     runs-on: windows-latest
-    environment: tcenv
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
@@ -31,7 +30,7 @@ jobs:
           Add-Content -Path ${env:GITHUB_ENV} -Value "p_cov=55"
       - name: Create badge
         env:
-          P_COV: "pcov is: ${{ env.pcov }}"
+          P_COV: "pcov: ${{ env.pcov }}"
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.TEST_COVERAGE_GIST }}
