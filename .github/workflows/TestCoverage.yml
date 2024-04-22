@@ -38,7 +38,7 @@ jobs:
           gistID: 8ec74eae558f3a7793622f6469064b73
           filename: test_coverage_badge.json
           label: Test coverage
-          message: "coverage is ${{ P_COV }} per cent"
-          valColorRange: ${{ P_COV }}
+          message: "coverage is ${{ env.P_COV }} per cent"
+          valColorRange: ${{ env.P_COV }}
           maxColorRange: 100
           minColorRange: 0
