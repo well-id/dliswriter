@@ -39,6 +39,6 @@ jobs:
           filename: test_coverage_badge.json
           label: Test coverage
           message: "is $P_COV"
-          valColorRange: ${{ P_COV }}
+          valColorRange: $P_COV
           maxColorRange: 100
           minColorRange: 0
