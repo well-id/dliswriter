@@ -4,8 +4,9 @@
 [![Documentation Status](https://readthedocs.com/projects/well-id-widcdliswriter/badge/?version=latest)](https://well-id-widcdliswriter.readthedocs-hosted.com/?badge=latest)
 ![Latest PyPI release](https://img.shields.io/pypi/v/dliswriter)
 
-
 # `dliswriter`
+
+![dliswriter logo](./logo.png)
 
 Welcome to `dliswriter` - an open-source Python package for writing DLIS files.
 
