@@ -27,7 +27,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          echo "PCOV=90"  >> "$GITHUB_ENV"
+          echo "PCOV=35"  >> "$GITHUB_ENV"
       - name: Create badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
@@ -35,7 +35,7 @@ jobs:
           gistID: 8ec74eae558f3a7793622f6469064b73
           filename: test_coverage_badge.json
           label: Test coverage
-          message: "$PCOV %"
+          message: "${{ PCOV }}%"
           valColorRange: $PCOV
           maxColorRange: 100
           minColorRange: 0
