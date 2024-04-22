@@ -4,8 +4,8 @@ on: [pull_request]
 
 jobs:
   coverage:
-
     runs-on: windows-latest
+    environment: tcenv
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python 3.11
