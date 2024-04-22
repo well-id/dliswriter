@@ -6,7 +6,7 @@
 
 # `dliswriter`
 
-![dliswriter logo](./logo.png)
+![dliswriter logo](logo.png)
 
 Welcome to `dliswriter` - an open-source Python package for writing DLIS files.
 
