@@ -27,7 +27,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          Add-Content -Path ${env:GITHUB_ENV} -Value "p_cov=55"
+          echo "pcov=55" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Create badge
         env:
           P_COV: "pcov: ${{ env.pcov }}"
