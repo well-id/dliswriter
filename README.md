@@ -1,4 +1,5 @@
 [![Linting and testing](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml)
+![Test coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/the-mysh/8ec74eae558f3a7793622f6469064b73/raw/test_coverage_badge.json)
 
 # `dliswriter`
 
