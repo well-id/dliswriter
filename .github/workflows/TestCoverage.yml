@@ -28,7 +28,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          echo "P_COV=35" >> "$GITHUB_OUTPUT"
+          echo "P_COV=35" >> $GITHUB_OUTPUT
       - name: Create badge
         env:
           P_COV: ${{ steps.check-coverage.outputs.P_COV }}
