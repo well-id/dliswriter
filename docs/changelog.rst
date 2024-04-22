@@ -1,6 +1,18 @@
 Changelog
 =========
 
+Version 1.0.0
+-------------
+**First public release!**
+
+* Specified licence for the project: `MIT <https://choosealicense.com/licenses/mit/>`_.
+* Added README badges for an appearance boost.
+* Completed docs wherever they were missing.
+* Designed the `logo <https://github.com/well-id/dliswriter/blob/master/logo.png>`_.
+* Lowered minimum required Python version to 3.9.
+* Limited the number of dependencies.
+
+
 Version 0.0.10
 --------------
 **High-compatibility mode**
