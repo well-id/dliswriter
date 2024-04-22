@@ -27,7 +27,7 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           coverage run -m pytest
-          echo "pcov=55" | Out-File -FilePath $env:GITHUB_ENV -Append
+          echo "pcov=$(coverage report --format total)" | Out-File -FilePath $env:GITHUB_ENV -Append
       - name: Create badge
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
