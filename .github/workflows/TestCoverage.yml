@@ -31,7 +31,7 @@ jobs:
           echo "P_COV=35" >> "$GITHUB_OUTPUT"
       - name: Create badge
         env:
-          P_COV: 48
+          P_COV: ${{ steps.check-coverage.outputs.P_COV }}
         uses: schneegans/dynamic-badges-action@v1.7.0
         with:
           auth: ${{ secrets.TEST_COVERAGE_GIST }}
