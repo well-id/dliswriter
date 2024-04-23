@@ -1,4 +1,4 @@
-![Licence](https://img.shields.io/github/license/well-id/dliswriter)
+[![License](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 ![Test coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/the-mysh/8ec74eae558f3a7793622f6469064b73/raw/test_coverage_badge.json)
 [![Pytest](https://github.com/well-id/dliswriter/actions/workflows/Pytest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/Pytest.yml)
 [![Mypy](https://github.com/well-id/dliswriter/actions/workflows/mypy.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/mypy.yml)
