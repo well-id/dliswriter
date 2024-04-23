@@ -6,7 +6,7 @@
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
-project = 'DLIS Writer'
+project = 'dliswriter'
 copyright = '2023, Well ID'
 author = 'Dominika Dlugosz, Magne Lauritzen, Kamil Grunwald, Omer Faruk Sari'
 release = '1.0.0'
