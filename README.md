@@ -39,6 +39,22 @@ df.write('./new_dlis_file.DLIS')
 
 For more details about the DLIS file format and using `dliswriter`, please see [the documentation](https://well-id-widcdliswriter.readthedocs-hosted.com/index.html).
 
+### Performance
+According to our rough measurements, the file writing time seems to be pretty much linearly dependent on the 
+amount of data, in particular the number of rows. There is also some dependency on the dimensionality 
+of the data - e.g a single image (2D dataset) with 1000 columns will write about 20% faster 
+than 10 images of 100 columns each. A rough estimate of the writing speed is about 20M `float64` values per second
+(measured on an x64-based PC with Intel Core i9-8950HK with MS Windows 11 and Python 3.9.19).
+
+The performance may be further tuned by adjusting the `input_chunk_size` and `output_chunk_size` of the writer
+(see [this example](./examples/create_synth_dlis_variable_data.py)). The former limits how much of the input 
+data are loaded to memory at a time; the latter denotes the number of output bytes kept in memory before each partial 
+file write action. The optimal values depend on the hardware/software configuration and the characteristics of the data
+(number and dimensionality of the datasets), but the defaults should in general be a good starting point.
+
+
+### Compatibility notes
+
 Please note that some DLIS viewer applications are not fully compliant with the DLIS standard.
 If a DLIS file produced by `dliswriter` causes issues in some of the viewers, it might not necessarily 
 be a `dliswriter` bug.
