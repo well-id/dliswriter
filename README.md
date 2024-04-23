@@ -6,7 +6,9 @@
 
 # `dliswriter`
 
-<div style="text-align:center"><img src="logo.png" width="15%" /></div>
+<p align="center" width="100%">
+    <img width="15%" src="logo.png">
+</p>
 
 
 Welcome to `dliswriter` - an open-source Python package for writing DLIS files.
