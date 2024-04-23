@@ -15,11 +15,3 @@ Welcome to ``dliswriter``'s documentation!
    developerguide/index.rst
    changelog
 
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
