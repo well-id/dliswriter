@@ -27,7 +27,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 html_theme = 'classic'
 html_static_path = ['_static']
-html_logo = "../logo-recoloured.png"
+html_logo = "../logo.png"
 
 # Add an "Edit on GitHub" link to the top of all pages
 html_context = {
