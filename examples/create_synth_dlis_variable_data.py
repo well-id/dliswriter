@@ -82,11 +82,7 @@ def create_dlis_spec(n_points: int, n_images: int = 0, n_cols: int = 128, time_b
         index = df.add_channel('DEPTH', data=2500 + 0.1 * np.arange(n_points))
         index_type = enums.FrameIndexType.BOREHOLE_DEPTH
 
-    logger.debug("Creating two more linear datasets")
-    rpm = df.add_channel('RPM', data=10 * np.sin(np.linspace(0, 1e4 * np.pi, n_points)))
-    col3 = df.add_channel('COL3', data=np.arange(n_points, dtype=np.float32))
-
-    channels = [index, rpm, col3]
+    channels = [index]
 
     for i in range(n_images):
         logger.debug(f"Creating image dataset {i+1}/{n_images}")
