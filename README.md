@@ -76,7 +76,7 @@ Anaconda installation option is coming soon.
 
 ### For developers
 Setting up `dliswriter` for development purposes requires: 
-- Python (at least 3.10)
+- Python (at least 3.9)
 - Anaconda, e.g. [Miniconda](https://docs.anaconda.com/free/miniconda/)
 - [git](https://git-scm.com/)
 
