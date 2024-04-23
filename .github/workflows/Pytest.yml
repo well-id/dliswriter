@@ -1,4 +1,4 @@
-name: Linting and testing
+name: Pytest
 on: [pull_request]
 
 jobs:
@@ -24,20 +24,6 @@ jobs:
           C:\Miniconda\condabin\conda.bat activate base
           C:\Miniconda\condabin\conda.bat list
           C:\Miniconda\condabin\conda.bat init powershell
-      - name: Lint with Flake8
-        run: |
-          # Activate the testenv environment
-          C:\Miniconda\condabin\conda.bat activate base
-          C:\Miniconda\condabin\conda.bat list
-          cd src
-          flake8
-      - name: Type check with mypy
-        run: |
-          # Activate the testenv environment
-          C:\Miniconda\condabin\conda.bat activate base
-          C:\Miniconda\condabin\conda.bat list
-          cd src
-          mypy .
       - name: Test with pytest
         run: |
           # Activate the testenv environment
