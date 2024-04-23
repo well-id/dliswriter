@@ -1,6 +1,8 @@
 ![Licence](https://img.shields.io/github/license/well-id/dliswriter)
 ![Test coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/the-mysh/8ec74eae558f3a7793622f6469064b73/raw/test_coverage_badge.json)
-[![Linting and testing](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/LintAndTest.yml)
+[![Pytest](https://github.com/well-id/dliswriter/actions/workflows/Pytest.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/Pytest.yml)
+[![Mypy](https://github.com/well-id/dliswriter/actions/workflows/mypy.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/mypy.yml)
+[![Flake8](https://github.com/well-id/dliswriter/actions/workflows/Flake8.yml/badge.svg)](https://github.com/well-id/dliswriter/actions/workflows/Flake8.yml)
 [![Documentation Status](https://readthedocs.com/projects/well-id-widcdliswriter/badge/?version=latest)](https://well-id-widcdliswriter.readthedocs-hosted.com/?badge=latest)
 ![Latest PyPI release](https://img.shields.io/pypi/v/dliswriter)
 
