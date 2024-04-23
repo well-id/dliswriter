@@ -108,10 +108,15 @@ Once these requirements are fulfilled, follow the steps below:
 
 ## Contributing
 To contribute to the `dliswriter`, please follow this procedure:
-1. Check out the `devel` branch: `git checkout devel`
-2. Create a new branch from `devel`: `git checkout -b <your branch name>`
-3. Make your changes, commit them, and push them
-4.  Create a pull request to the `devel` branch
+1. Fork the repository
+2. Clone the fork to your computer
+3. Check out the `devel` branch: `git checkout devel`
+4. Create a new branch from `devel`: `git checkout -b <your branch name>`
+5. Make your changes, commit them, and push them 
+6. From the GitHub page of your fork, create a pull request to the original repository.
+
+You can find some more detailed instructions about the fork-and-pull request workflow 
+[in the GitHub Docs](https://docs.github.com/en/get-started/exploring-projects-on-github/contributing-to-a-project).
 
 You might also want to have a look at our [issues log](https://github.com/well-id/dliswriter/issues).
 
