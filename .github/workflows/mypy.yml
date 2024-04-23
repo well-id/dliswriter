@@ -1,0 +1,34 @@
+name: Typing checks
+on: [pull_request]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          C:\Miniconda\condabin\conda.bat update -n base -c defaults conda
+          C:\Miniconda\condabin\conda.bat config --add channels conda-forge
+          C:\Miniconda\condabin\conda.bat config --set channel_priority strict
+          C:\Miniconda\condabin\conda.bat env update --file environment.yaml --name base
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          C:\Miniconda\condabin\conda.bat init powershell
+      - name: Type check with mypy
+        run: |
+          # Activate the testenv environment
+          C:\Miniconda\condabin\conda.bat activate base
+          C:\Miniconda\condabin\conda.bat list
+          cd src
+          mypy .
+      
