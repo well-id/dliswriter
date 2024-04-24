@@ -1,5 +1,5 @@
 
-name: Flake8
+name: flake8
 on: [pull_request]
 
 jobs:
