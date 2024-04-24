@@ -1,5 +1,5 @@
 
-name: Test Coverage
+name: test coverage
 on: [pull_request]
 
 jobs:
