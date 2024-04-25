@@ -9,7 +9,7 @@
 # `dliswriter`
 
 <p align="center" width="100%">
-    <img width="15%" src="./src/dliswriter/logo.png">
+    <img width="15%" src="https://github.com/well-id/dliswriter/raw/master/src/dliswriter/logo.png">
 </p>
 
 
