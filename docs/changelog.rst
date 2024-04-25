@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.0.1
+-------------
+* Project logo visibility fix for PyPI.
+
 Version 1.0.0
 -------------
 **First public release!**

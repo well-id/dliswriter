@@ -9,4 +9,4 @@ from dliswriter.utils.high_compatibility_mode import high_compatibility_mode, hi
 from dliswriter.utils.source_data_wrappers import SourceDataWrapper, DictDataWrapper, NumpyDataWrapper, HDF5DataWrapper
 
 
-__version__ = '1.0.0'
+__version__ = '1.0.1'
