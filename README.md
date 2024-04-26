@@ -97,13 +97,13 @@ Once these requirements are fulfilled, follow the steps below:
     conda activate dlis-writer
     ```
 
-4. Install DLIS Writer in editable mode using `pip`:
+3. Install `dliswriter` in editable mode using `pip`:
     ```commandline
     pip install --no-build-isolation --no-deps -e .
     ```
     For explanation of the required flags, see [this issue](https://github.com/conda/conda-build/issues/4251).
 
-5. You're good to go! For verification, you can run the tests for the package 
+4. You're good to go! For verification, you can run the tests for the package 
 (still from inside the `dliswriter` directory):
     ```commandline
     pytest .
