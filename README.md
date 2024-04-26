@@ -66,13 +66,16 @@ If you run into problems not covered by the documentation, please open a new [is
 
 
 ## Installation
-`dliswriter` can be installed from PyPI:
+`dliswriter` can be installed from [PyPI](https://pypi.org/project/dliswriter/):
 
 ```commandline
 pip install dliswriter
 ```
 
-Anaconda installation option is coming soon.
+or [Anaconda](https://anaconda.org/conda-forge/dliswriter) (in a conda environment):
+```commandline
+conda install dliswriter -c conda-forge
+```
 
 ### For developers
 Setting up `dliswriter` for development purposes requires: 
