@@ -19,7 +19,13 @@ class OriginItem(EFLRItem):
 
     parent: "OriginSet"
 
-    def __init__(self, name: str, parent: "OriginSet", **kwargs: Any) -> None:
+    def __init__(
+        self,
+        name: str,
+        parent: "OriginSet",
+        origin_reference: int,
+        **kwargs: Any,
+    ) -> None:
         """Initialise OriginItem.
 
         Args:
@@ -50,7 +56,12 @@ class OriginItem(EFLRItem):
         self.name_space_name = IdentAttribute('name_space_name')
         self.name_space_version = NumericAttribute('name_space_version', representation_code=RepC.UVARI)
 
-        super().__init__(name, parent=parent, **kwargs)
+        super().__init__(
+            name,
+            parent=parent,
+            origin_reference=origin_reference,
+            **kwargs,
+        )
 
         if self.file_set_number.value is None:
             logger.info(f"File set number for {self} not specified")
@@ -70,13 +81,6 @@ class OriginItem(EFLRItem):
                 v = np.random.randint(1, max_val)
                 logger.info(f"Setting file set number of {self} to a randomly generated number: {v}")
                 self.file_set_number.value = v
-
-        if self._origin_reference is not None:
-            if self._origin_reference != self.file_set_number.value:
-                raise ValueError("Origin reference of an Origin should be the same as it's own file set number; "
-                                 f"got {self._origin_reference} and {self.file_set_number.value}")
-        else:
-            self._origin_reference = self.file_set_number.value
 
         if self.creation_time.value is None:
             logger.info("Creation time ('creation_time') not specified; setting it to the current date and time")

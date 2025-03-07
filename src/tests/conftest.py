@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 from pathlib import Path
-import h5py    # type: ignore  # untyped library
+import h5py  # type: ignore  # untyped library
 import os
 from typing import Generator
 
@@ -12,50 +12,50 @@ from tests.common import load_dlis
 from tests.dlis_files_for_testing import write_short_dlis
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def base_data_path() -> Path:
     """Path to the resources files."""
 
     return Path(__file__).resolve().parent
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def reference_data_path(base_data_path: Path) -> Path:
     """Path to the reference HDF5 data file."""
 
-    return base_data_path / 'resources/mock_data.hdf5'
+    return base_data_path / "resources/mock_data.hdf5"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def reference_data(reference_data_path: Path) -> Generator:
     """The reference HDF5 data file, open in read mode."""
 
-    f = h5py.File(reference_data_path, 'r')
+    f = h5py.File(reference_data_path, "r")
     yield f
     f.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def short_reference_data_path(base_data_path: Path) -> Path:
     """Path to the HDF5 file with short version of the reference data."""
 
-    return base_data_path / 'resources/mock_data_short.hdf5'
+    return base_data_path / "resources/mock_data_short.hdf5"
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def short_reference_data(short_reference_data_path: Path) -> Generator:
     """The reference short HDF5 data file, open in read mode."""
 
-    f = h5py.File(short_reference_data_path, 'r')
+    f = h5py.File(short_reference_data_path, "r")
     yield f
     f.close()
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def short_dlis(short_reference_data_path: Path, base_data_path: Path) -> Generator:
     """A freshly written DLIS file - used in tests to check if all contents are there as expected."""
 
-    dlis_path = base_data_path / 'outputs/new_fake_dlis_shared.DLIS'
+    dlis_path = base_data_path / "outputs/new_fake_dlis_shared.DLIS"
     write_short_dlis(dlis_path, data=short_reference_data_path)
 
     with load_dlis(dlis_path) as f:
@@ -69,7 +69,7 @@ def short_dlis(short_reference_data_path: Path, base_data_path: Path) -> Generat
 def new_dlis_path(base_data_path: Path) -> Generator:
     """Path for a new DLIS file to be created. The file is removed afterwards."""
 
-    new_path = base_data_path/'outputs/new_fake_dlis.DLIS'
+    new_path = base_data_path / "outputs/new_fake_dlis.DLIS"
     os.makedirs(new_path.parent, exist_ok=True)
     yield new_path
 
@@ -105,13 +105,17 @@ def chan(channel_parent: eflr_types.ChannelSet) -> Generator:
 
 
 @pytest.fixture
-def channels(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem, channel3: eflr_types.ChannelItem,
-             chan: eflr_types.ChannelItem) -> dict:
+def channels(
+    channel1: eflr_types.ChannelItem,
+    channel2: eflr_types.ChannelItem,
+    channel3: eflr_types.ChannelItem,
+    chan: eflr_types.ChannelItem,
+) -> dict:
     return {
-        'Channel 1': channel1,
-        'Channel 2': channel2,
-        'Channel 3': channel3,
-        'some_channel': chan
+        "Channel 1": channel1,
+        "Channel 2": channel2,
+        "Channel 3": channel3,
+        "some_channel": chan,
     }
 
 
@@ -119,18 +123,24 @@ def channels(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem,
 def mock_data() -> NumpyDataWrapper:
     """Mock data (structured numpy array) for tests."""
 
-    dt = np.dtype([('time', float), ('amplitude', float, (10,)), ('radius', float, (12,))])
+    dt = np.dtype(
+        [("time", float), ("amplitude", float, (10,)), ("radius", float, (12,))]
+    )
     return NumpyDataWrapper(np.zeros(30, dtype=dt))
 
 
 @pytest.fixture
 def ccoef1() -> eflr_types.CalibrationCoefficientItem:
-    return eflr_types.CalibrationCoefficientItem("COEF-1", parent=eflr_types.CalibrationCoefficientSet())
+    return eflr_types.CalibrationCoefficientItem(
+        "COEF-1", parent=eflr_types.CalibrationCoefficientSet()
+    )
 
 
 @pytest.fixture
 def cmeasure1() -> eflr_types.CalibrationMeasurementItem:
-    return eflr_types.CalibrationMeasurementItem("CMEASURE-1", parent=eflr_types.CalibrationMeasurementSet())
+    return eflr_types.CalibrationMeasurementItem(
+        "CMEASURE-1", parent=eflr_types.CalibrationMeasurementSet()
+    )
 
 
 @pytest.fixture
@@ -179,7 +189,9 @@ def zone3(zone_parent: eflr_types.ZoneSet) -> eflr_types.ZoneItem:
 
 
 @pytest.fixture
-def zones(zone1: eflr_types.ZoneItem, zone2: eflr_types.ZoneItem, zone3: eflr_types.ZoneItem) -> dict:
+def zones(
+    zone1: eflr_types.ZoneItem, zone2: eflr_types.ZoneItem, zone3: eflr_types.ZoneItem
+) -> dict:
     return {"Zone-1": zone1, "Zone-2": zone2, "Zone-3": zone3}
 
 
@@ -199,16 +211,29 @@ def process2(process_parent: eflr_types.ProcessSet) -> eflr_types.ProcessItem:
 
 
 @pytest.fixture
-def channel_group(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem,
-                  channel3: eflr_types.ChannelItem) -> eflr_types.GroupItem:
-    return eflr_types.GroupItem("Group of channels", object_type="CHANNEL",
-                                object_list=[channel1, channel2, channel3], parent=eflr_types.GroupSet())
+def channel_group(
+    channel1: eflr_types.ChannelItem,
+    channel2: eflr_types.ChannelItem,
+    channel3: eflr_types.ChannelItem,
+) -> eflr_types.GroupItem:
+    return eflr_types.GroupItem(
+        "Group of channels",
+        object_type="CHANNEL",
+        object_list=[channel1, channel2, channel3],
+        parent=eflr_types.GroupSet(),
+    )
 
 
 @pytest.fixture
-def process_group(process2: eflr_types.ProcessItem, process1: eflr_types.ProcessItem) -> eflr_types.GroupItem:
-    return eflr_types.GroupItem("Group of processes", object_type="PROCESS", object_list=[process1, process2],
-                                parent=eflr_types.GroupSet())
+def process_group(
+    process2: eflr_types.ProcessItem, process1: eflr_types.ProcessItem
+) -> eflr_types.GroupItem:
+    return eflr_types.GroupItem(
+        "Group of processes",
+        object_type="PROCESS",
+        object_list=[process1, process2],
+        parent=eflr_types.GroupSet(),
+    )
 
 
 @pytest.fixture
@@ -222,10 +247,17 @@ def computation2() -> eflr_types.ComputationItem:
 
 
 @pytest.fixture()
-def frame(channel1: eflr_types.ChannelItem, channel2: eflr_types.ChannelItem,
-          channel3: eflr_types.ChannelItem) -> eflr_types.FrameItem:
-    return eflr_types.FrameItem("MAIN FRAME", channels=(channel1, channel2, channel3),
-                                index_type='BOREHOLE-DEPTH', parent=eflr_types.FrameSet())
+def frame(
+    channel1: eflr_types.ChannelItem,
+    channel2: eflr_types.ChannelItem,
+    channel3: eflr_types.ChannelItem,
+) -> eflr_types.FrameItem:
+    return eflr_types.FrameItem(
+        "MAIN FRAME",
+        channels=(channel1, channel2, channel3),
+        index_type="BOREHOLE-DEPTH",
+        parent=eflr_types.FrameSet(),
+    )
 
 
 @pytest.fixture()
@@ -241,5 +273,5 @@ def well_reference_point() -> eflr_types.WellReferencePointItem:
         coordinate_1_value=40.395240,
         coordinate_2_name="Longitude",
         coordinate_2_value=27.792470,
-        parent=eflr_types.WellReferencePointSet()
+        parent=eflr_types.WellReferencePointSet(),
     )

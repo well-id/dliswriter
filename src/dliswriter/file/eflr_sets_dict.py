@@ -33,6 +33,15 @@ class EFLRSetsDict(defaultdict):
 
         self[eflr_set.__class__][eflr_set.set_name] = eflr_set
 
+    def try_add_set(self, eflr_set: EFLRSet) -> None:
+        """Try to register a new EFLRSet instance in the structure. Return True on success, False otherwise."""
+
+        if eflr_set.set_name in self[eflr_set.__class__]:
+            return False
+        else:
+            self[eflr_set.__class__][eflr_set.set_name] = eflr_set
+            return True
+
     def get_or_make_set(self, eflr_set_type: type[AnyEFLRSet], set_name: Optional[str] = None) -> AnyEFLRSet:
         """Given an EFLRSet subclass and name, either retrieve a relevant EFLRSet from the structure or create it.
 
