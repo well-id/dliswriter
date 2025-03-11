@@ -71,26 +71,27 @@ def create_dlis_spec(n_points: int, n_images: int = 0, n_cols: int = 128, time_b
     """
 
     df = DLISFile()
-    df.add_origin("ORIGIN")
+    lf = df.add_logical_file()
+    lf.add_origin("ORIGIN")
 
     if time_based:
         logger.debug("Creating time dataset")
-        index = df.add_channel("TIME", data=0.5 * np.arange(n_points))
+        index = lf.add_channel("TIME", data=0.5 * np.arange(n_points))
         index_type = enums.FrameIndexType.NON_STANDARD
     else:
         logger.debug("Creating depth dataset")
-        index = df.add_channel('DEPTH', data=2500 + 0.1 * np.arange(n_points))
+        index = lf.add_channel('DEPTH', data=2500 + 0.1 * np.arange(n_points))
         index_type = enums.FrameIndexType.BOREHOLE_DEPTH
 
     channels = [index]
 
     for i in range(n_images):
         logger.debug(f"Creating image dataset {i+1}/{n_images}")
-        ch = df.add_channel(
+        ch = lf.add_channel(
             f'IMAGE{i}', data=make_image(n_points, n_cols, divider=int(10 + (n_cols - 11) * np.random.rand())))
         channels.append(ch)
 
-    df.add_frame("MAIN-FRAME", channels=channels, index_type=index_type)
+    lf.add_frame("MAIN-FRAME", channels=channels, index_type=index_type)
 
     return df
 

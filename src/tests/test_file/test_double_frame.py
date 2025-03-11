@@ -17,15 +17,15 @@ def double_frame_data() -> tuple[dict, dict]:
     n_rows_2 = 200
 
     frame1_data = {
-        "DEPTH": np.arange(n_rows_1),
-        "RPM": 10 * np.random.rand(n_rows_1),
+        "DEPTH": np.arange(start=0, stop=n_rows_1, dtype=np.uint32),
+        "RPM": (10 * np.random.rand(n_rows_1)).astype(np.float32),
         "AMPLITUDE": np.random.rand(n_rows_1, 10),
     }
 
     frame2_data = {
-        "DEPTH": np.arange(n_rows_2) / 10,
-        "RPM": (np.arange(n_rows_2) % 10).astype(np.int32),
-        "AMPLITUDE": np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6,
+        "DEPTH": (np.arange(start=0, stop=n_rows_2) / 10).astype(np.uint32),
+        "RPM": (np.arange(n_rows_2) % 10).astype(np.float32),
+        "AMPLITUDE": (np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6).astype(np.float32),
     }
 
     return frame1_data, frame2_data

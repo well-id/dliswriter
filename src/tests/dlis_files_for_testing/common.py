@@ -1,4 +1,4 @@
-from dliswriter import DLISFile, LogicalFile, StorageUnitLabel
+from dliswriter import DLISFile, StorageUnitLabel
 from dliswriter.logical_record.eflr_types import FileHeaderSet, FileHeaderItem
 
 

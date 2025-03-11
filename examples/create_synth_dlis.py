@@ -5,6 +5,7 @@ import numpy as np
 import logging
 
 from dliswriter import AttrSetup, DLISFile, enums
+from dliswriter.file.file import LogicalFile
 
 from utils import install_colored_logger
 
@@ -14,10 +15,11 @@ install_colored_logger(logging.getLogger("dliswriter"))
 
 
 # create DLISFile instance; optionally, pass custom parameters for file header and storage unit label
-df = DLISFile(fh_id="DEFAULT FILE HEADER", fh_identifier="3")
+df = DLISFile()
+lf: LogicalFile = df.add_logical_file()
 
 # add origin
-origin = df.add_origin("DEFAULT ORIGIN", company="XXX", order_number="352")
+origin = lf.add_origin("DEFAULT ORIGIN", company="XXX", order_number="352")
 origin.creation_time.value = datetime(
     year=2023, month=12, day=6, hour=12, minute=30, second=5
 )
@@ -26,62 +28,62 @@ origin.creation_time.value = datetime(
 # the origin_reference of the first origin will be used as origin_reference in all objects automatically
 # but you can also choose to pass other origins' origin_reference as the reference
 # to indicate that a given object belongs to one of the other origins
-origin2 = df.add_origin("ADDITIONAL ORIGIN", well_name="XYZ", company="ABC")
-origin3 = df.add_origin(
+origin2 = lf.add_origin("ADDITIONAL ORIGIN", well_name="XYZ", company="ABC")
+origin3 = lf.add_origin(
     "ANOTHER ORIGIN", well_name="XYZ", company="another company", origin_reference=35
 )
 
 
 # define axes - metadata objects for channels
-ax1 = df.add_axis(
+ax1 = lf.add_axis(
     "AXIS1", coordinates=["40 23' 42.8676'' N", "27 47' 32.8956'' E"], axis_id="AXIS 1"
 )
 ax1.spacing.value = 0.2
 ax1.spacing.units = enums.Unit.METER
 
-ax2 = df.add_axis(
+ax2 = lf.add_axis(
     "AXIS2",
     spacing=5,
     coordinates=[1, 2, 3.5],
     origin_reference=origin2.origin_reference,  # mark ax2 as belonging to origin2
 )
 
-ax3 = df.add_axis("AXIS3", spacing=0.1, coordinates=[0])
+ax3 = lf.add_axis("AXIS3", spacing=0.1, coordinates=[0])
 
 
 # define long_names - descriptions for channels, parameters, and computations
-long_name1 = df.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
-long_name2 = df.add_long_name(
+long_name1 = lf.add_long_name("LONG-NAME1", quantity="23", standard_symbol="ABC")
+long_name2 = lf.add_long_name(
     "LONG-NAME-2", entity_part="X", source_part_number=["121.111"]
 )
-long_name3 = df.add_long_name(
+long_name3 = lf.add_long_name(
     "ANOTHER LONG NAME", conditions=["At Standard Temperature"]
 )
 
 
 # define frame 1: depth-based with 4 channels, 100 rows each
 n_rows_depth = 100
-ch1 = df.add_channel(
+ch1 = lf.add_channel(
     "DEPTH",
     data=np.arange(n_rows_depth) / 10
     - 3,  # index channel - always scalar, i.e. 1D data
     units=enums.Unit.METER,
 )
-ch2 = df.add_channel(
+ch2 = lf.add_channel(
     "RPM", data=(np.arange(n_rows_depth) % 10).astype(np.int32) - 2, axis=ax3  # 1D data
 )
-ch3 = df.add_channel(
+ch3 = lf.add_channel(
     "AMPLITUDE",
     data=np.random.rand(n_rows_depth, 5),  # 2D data - 5 columns
     cast_dtype=np.float32,
     long_name=long_name3,
 )
-ch4 = df.add_channel(
+ch4 = lf.add_channel(
     "COMPUTED_CHANNEL",
     data=np.random.randint(0, 100, dtype=np.uint8, size=n_rows_depth),
     long_name=long_name1,
 )
-main_frame = df.add_frame(
+main_frame = lf.add_frame(
     "MAIN FRAME",
     channels=(ch1, ch2, ch3, ch4),
     index_type=enums.FrameIndexType.BOREHOLE_DEPTH,
@@ -90,7 +92,7 @@ main_frame = df.add_frame(
 
 # define frame 2: time-based with 2 channels, 200 rows each
 n_rows_time = 200
-ch5 = df.add_channel(
+ch5 = lf.add_channel(
     # index channel for frame 2
     "TIME",
     data=np.arange(n_rows_time),
@@ -98,30 +100,30 @@ ch5 = df.add_channel(
     units=enums.Unit.SECOND,
     axis=ax3,
 )
-ch6 = df.add_channel(
+ch6 = lf.add_channel(
     "TEMPERATURE",
     data=np.random.randint(-10, 30, size=n_rows_time, dtype=np.int8),
     cast_dtype=np.int16,
     units=enums.Unit.DEGREE_CELSIUS,
 )
-second_frame = df.add_frame(
+second_frame = lf.add_frame(
     "TIME FRAME", channels=(ch5, ch6), index_type=enums.FrameIndexType.NON_STANDARD
 )
 
 
 # zones
-zone1 = df.add_zone(
+zone1 = lf.add_zone(
     "DEPTH-ZONE", domain=enums.ZoneDomain.BOREHOLE_DEPTH, minimum=2, maximum=4.5
 )
 dt = datetime.now()
-zone2 = df.add_zone(
+zone2 = lf.add_zone(
     "TIME-ZONE",
     domain=enums.ZoneDomain.TIME,
     minimum=dt - timedelta(hours=3),
     maximum=dt - timedelta(minutes=30),
     origin_reference=origin3.origin_reference,  # associated with origin 3
 )
-zone3 = df.add_zone(
+zone3 = lf.add_zone(
     "VDEPTH-ZONE",
     domain=enums.ZoneDomain.VERTICAL_DEPTH,
     minimum=10,
@@ -131,16 +133,16 @@ zone3 = df.add_zone(
 
 
 # splices - using zones & channels
-splice1 = df.add_splice(
+splice1 = lf.add_splice(
     "SPLICE1", input_channels=(ch1,), output_channel=ch4, zones=(zone1,)
 )
-splice2 = df.add_splice(
+splice2 = lf.add_splice(
     "SPLICE2", input_channels=(ch5, ch2), output_channel=ch6, zones=(zone2, zone3)
 )
 
 
 # parameters - using zones, axes, and long name
-parameter1 = df.add_parameter(
+parameter1 = lf.add_parameter(
     "PARAM1",
     long_name="Parameter nr 1",  # long_name can be str or a LongName object
     axis=ax1,
@@ -149,7 +151,7 @@ parameter1 = df.add_parameter(
         "units": enums.Unit.INCH,
     },  # specifying value and units of the value in one line
 )
-parameter2 = df.add_parameter(
+parameter2 = lf.add_parameter(
     "PARAM2",
     zones=(zone2,),
     long_name=long_name2,
@@ -162,7 +164,7 @@ parameter2 = df.add_parameter(
 
 # equipment
 # note how complex attribute values can be passed as a dict or an AttrSetup object; the effect exactly is the same
-equipment1 = df.add_equipment(
+equipment1 = lf.add_equipment(
     "EQ1",
     status=1,
     eq_type=enums.EquipmentType.TOOL,
@@ -177,25 +179,25 @@ equipment1 = df.add_equipment(
 )
 
 # 'value' and 'units' can also be added later to the created object.
-equipment2 = df.add_equipment(
+equipment2 = lf.add_equipment(
     "EQ2", location=enums.EquipmentLocation.WELL, trademark_name="Some trademark TM"
 )
 equipment2.hole_size.value = 23.5
 equipment2.hole_size.units = enums.Unit.INCH
 
-equipment3 = df.add_equipment("EQ3")
+equipment3 = lf.add_equipment("EQ3")
 equipment3.status.value = 0
 
 
 # tool - using equipment, channels, and parameters
-tool1 = df.add_tool(
+tool1 = lf.add_tool(
     "TOOL1",
     status=1,
     parts=(equipment1, equipment2),
     channels=(ch5, ch6),
     description="...",
 )
-tool2 = df.add_tool(
+tool2 = lf.add_tool(
     "TOOL2",
     parameters=(parameter1, parameter2),
     channels=(ch1, ch2, ch3),
@@ -204,17 +206,17 @@ tool2 = df.add_tool(
 
 
 # computation - using axis, zones, tool, and long name
-computation1 = df.add_computation(
+computation1 = lf.add_computation(
     "CMPT1", axis=[ax1], source=tool2, zones=(zone1, zone2, zone3), dimension=[2]
 )
 computation1.values.value = [[1, 2], [1, 3], [1, 4]]
 
-computation2 = df.add_computation("CMPT2", values=[2.3, 11.12312, 2231213.22])
-computation3 = df.add_computation("CMPT3", values=[3.14], long_name=long_name3)
+computation2 = lf.add_computation("CMPT2", values=[2.3, 11.12312, 2231213.22])
+computation3 = lf.add_computation("CMPT3", values=[3.14], long_name=long_name3)
 
 
 # process - using channels, computations, and parameters
-process1 = df.add_process(
+process1 = lf.add_process(
     "PROC",
     input_channels=(ch1, ch2),
     output_channels=(ch4,),
@@ -225,7 +227,7 @@ process1 = df.add_process(
 
 
 # calibration coefficient
-coef1 = df.add_calibration_coefficient(
+coef1 = lf.add_calibration_coefficient(
     "CC1",
     label="Gain",
     coefficients=[100.1, 100.2],
@@ -233,12 +235,12 @@ coef1 = df.add_calibration_coefficient(
     plus_tolerances=[2, 2.5],
     minus_tolerances=[3, 2.4],
 )
-coef2 = df.add_calibration_coefficient("CC2", coefficients=[1.2, 2.2, 3.4])
-coef3 = df.add_calibration_coefficient("CC3", coefficients=[2])
+coef2 = lf.add_calibration_coefficient("CC2", coefficients=[1.2, 2.2, 3.4])
+coef3 = lf.add_calibration_coefficient("CC3", coefficients=[2])
 
 
 # calibration measurement - use Axis and Channel
-cmeas1 = df.add_calibration_measurement(
+cmeas1 = lf.add_calibration_measurement(
     "CM1",
     phase=enums.CalibrationMeasurementPhase.BEFORE,
     measurement_type="Plus",
@@ -249,7 +251,7 @@ cmeas1 = df.add_calibration_measurement(
     begin_time=15,
     standard=[20, 25],
 )
-cmeas2 = df.add_calibration_measurement(
+cmeas2 = lf.add_calibration_measurement(
     "CM2",
     measurement_source=ch5,
     measurement=[30, 40, 55, 61],
@@ -258,7 +260,7 @@ cmeas2 = df.add_calibration_measurement(
 
 
 # calibration - using calibration coefficient & measurement, channels, and parameters
-calibration1 = df.add_calibration(
+calibration1 = lf.add_calibration(
     "CALIB-1",
     calibrated_channels=(ch4,),
     uncalibrated_channels=(ch1, ch5),
@@ -269,7 +271,7 @@ calibration1 = df.add_calibration(
 )
 
 # well reference point
-wrp = df.add_well_reference_point(
+wrp = lf.add_well_reference_point(
     "WELL-REF",
     coordinate_1_name="Latitude",
     coordinate_1_value=40.34,
@@ -286,40 +288,40 @@ wrp = df.add_well_reference_point(
 
 
 # message
-message1 = df.add_message(
+message1 = lf.add_message(
     "MSG1", text=["Some message", "part 2 of the message"], time=datetime.now()
 )
-message2 = df.add_message("MSG2", text=["You have a message"], message_type="Command")
-message3 = df.add_message(
+message2 = lf.add_message("MSG2", text=["You have a message"], message_type="Command")
+message3 = lf.add_message(
     "MSG3", vertical_depth=213.1, text=["More", "text"], time=121.22
 )
 
 
 # comment
-comment1 = df.add_comment(
+comment1 = lf.add_comment(
     "CMT1", text=["Part 1 of the comment", "Part 2 of the comment"]
 )
-comment2 = df.add_comment("COMMENT-2", text=["Short comment"])
+comment2 = lf.add_comment("COMMENT-2", text=["Short comment"])
 
 
 # no-format & no-format frame data
-no_format1 = df.add_no_format(
+no_format1 = lf.add_no_format(
     "NF1", consumer_name="Some consumer", description="Some description"
 )
-no_format2 = df.add_no_format("NF2", description="XYZ")
-ndf1_1 = df.add_no_format_frame_data(no_format1, data="XYZ")
-nfd1_2 = df.add_no_format_frame_data(no_format1, data="ABC")
-nfd2_1 = df.add_no_format_frame_data(no_format2, data="Lorem ipsum")
+no_format2 = lf.add_no_format("NF2", description="XYZ")
+ndf1_1 = lf.add_no_format_frame_data(no_format1, data="XYZ")
+nfd1_2 = lf.add_no_format_frame_data(no_format1, data="ABC")
+nfd2_1 = lf.add_no_format_frame_data(no_format2, data="Lorem ipsum")
 
 
 # groups
-group1 = df.add_group(
+group1 = lf.add_group(
     "DEPTH ZONES", description="Zones describing depth", object_list=(zone1, zone3)
 )
-group2 = df.add_group("MESSAGES", object_list=(message1, message2, message3))
-group3 = df.add_group("INDEX CHANNELS", object_list=(ch1, ch5))
-df.add_group("ALL CHANNELS", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
-group5 = df.add_group("GROUPS", group_list=(group1, group2, group3))
+group2 = lf.add_group("MESSAGES", object_list=(message1, message2, message3))
+group3 = lf.add_group("INDEX CHANNELS", object_list=(ch1, ch5))
+lf.add_group("ALL CHANNELS", object_list=(ch2, ch3, ch4, ch6), group_list=(group3,))
+group5 = lf.add_group("GROUPS", group_list=(group1, group2, group3))
 
 
 # write the file

@@ -55,6 +55,7 @@ def test_creation_with_channels(channel_names: tuple[str], channels: dict) -> No
 def _prepare_file_uneven_spacing() -> DLISFile:
     df = DLISFile()
     lf = df.add_logical_file()
+    lf.add_origin("ORIGIN")
     ch1 = lf.add_channel("INDEX", data=np.arange(10) + np.random.rand(10))
     ch2 = lf.add_channel("X", units="m", data=np.random.rand(10, 10))
     lf.add_frame(
@@ -86,9 +87,10 @@ def _prepare_file_first_channel_2d(
 ) -> DLISFile:
     df = DLISFile()
     lf = df.add_logical_file()
-    ch1 = lf.add_channel("INDEX", data=np.arange(24).reshape(12, 2))
+    lf.add_origin("DEFINING ORIGIN")
+    ch1 = lf.add_channel("INDEX", data=np.arange(start=0, stop=24, dtype=np.uint32).reshape(12, 2))
     ch2 = lf.add_channel("X", data=np.random.rand(12))
-    ch3 = lf.add_channel("Y", data=np.random.randint(0, 10, size=(12, 10)))
+    ch3 = lf.add_channel("Y", data=np.random.randint(0, 10, size=(12, 10), dtype=np.int32))
     lf.add_frame("F1", channels=(ch1, ch2, ch3), index_type=index_type)
     return df
 
