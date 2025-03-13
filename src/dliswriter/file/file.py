@@ -110,6 +110,23 @@ class DLISFile:
         self.logical_files.append(lf)
         return lf
 
+    def generator(self, multi_frame_data_objects: list[list[MultiFrameData]]) -> Generator:
+        """Define a generator yielding logical records to be put in the file."""
+
+        for idx_lf, logical_file in enumerate(self.logical_files):
+            yield logical_file.file_header_item.parent
+
+            yield from logical_file._eflr_sets[eflr_types.OriginSet].values()
+
+            for set_type, set_dict in logical_file._eflr_sets.items():
+                if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
+                    yield from set_dict.values()
+
+            yield from logical_file._no_format_frame_data
+
+            for multi_frame_data in multi_frame_data_objects[idx_lf]:
+                yield from multi_frame_data
+
     def generate_logical_records(
         self,
         chunk_size: Optional[int],
@@ -123,18 +140,21 @@ class DLISFile:
         Note: Storage Unit Label should be added to the file separately before adding other records.
         """
 
+        for idx_lf, f in enumerate(self.logical_files):
+            if f.defining_origin is None:
+                raise RuntimeError(
+                    f"No Origin defined for the {idx_lf}-th logical file"
+                )
+
         multi_frame_data_objects: list[list[MultiFrameData]] = []
         frame_items: list[Generator[eflr_types.FrameItem, None, None]] = []
 
         for idx_lf, logical_file in enumerate(self.logical_files):
 
-            frame_items.append(
-                list(
-                    logical_file._eflr_sets.get_all_items_for_set_type(
-                        eflr_types.FrameSet
-                    )
-                )
-            )
+            lf_frame_items: Generator[eflr_types.FrameItem, None, None] = \
+                logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
+
+            frame_items.append(lf_frame_items)
 
             multi_frame_data_objects.append(
                 [
@@ -154,29 +174,7 @@ class DLISFile:
                 n += len(mfd)
             n += len(logical_file._no_format_frame_data)
 
-        def generator() -> Generator:
-            """Define a generator yielding logical records to be put in the file."""
-
-            for idx_lf, logical_file in enumerate(self.logical_files):
-                if logical_file.defining_origin is None:
-                    raise RuntimeError(
-                        f"No Origin defined for the {idx_lf}-th logical file"
-                    )
-
-                yield logical_file.file_header_item.parent
-
-                yield from logical_file._eflr_sets[eflr_types.OriginSet].values()
-
-                for set_type, set_dict in logical_file._eflr_sets.items():
-                    if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
-                        yield from set_dict.values()
-
-                yield from logical_file._no_format_frame_data
-
-                for multi_frame_data in multi_frame_data_objects[idx_lf]:
-                    yield from multi_frame_data
-
-        return SizedGenerator(generator(), size=n)
+        return SizedGenerator(self.generator(multi_frame_data_objects), size=n)
 
     def write(
         self,
@@ -268,14 +266,17 @@ class LogicalFile:
         fh_set = eflr_types.FileHeaderSet()
 
         # fh_set.set_name = fh_identifier
-        # FIXME - Setting the name of the file header somehow corrupts the output DLIS file. This is probably related to the Issue #14
-        # And because of that it's problematic to add the fh_set to the self._eflr_sets and physical_file._eflr_sets, now that we
-        # have multiple logical files, each one having their header. This is why we have file_header_item as an attribute, as we see below:
+        # FIXME - Setting the name of the file header somehow corrupts the output DLIS file. This is probably related
+        # to the Issue #14
+        # And because of that it's problematic to add the fh_set to the self._eflr_sets and physical_file._eflr_sets,
+        # now that we have multiple logical files, each one having their header. This is why we have file_header_item
+        # as an attribute, as we see below:
 
+        self.file_header_item: eflr_types.FileHeaderItem
         if file_header is not None:
-            self.file_header_item: eflr_types.FileHeaderItem = file_header
+            self.file_header_item = file_header
         else:
-            self.file_header_item: eflr_types.FileHeaderItem = _set_up_sul_or_fh(
+            self.file_header_item = _set_up_sul_or_fh(
                 item_class=eflr_types.FileHeaderItem,
                 item=file_header,
                 header_id=fh_id,
@@ -299,13 +300,15 @@ class LogicalFile:
     def defining_origin(self) -> Union[eflr_types.OriginItem, None]:
         """First Origin of this Logical File, describing the circumstances under which it was created."""
 
-        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        origins: list[eflr_types.OriginItem] = list(
+            self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet)
+        )
         return origins[0] if origins else None
 
     @property
     def default_origin_reference(self) -> Union[int, None]:
         if origin := self.defining_origin:
-            return origin.origin_reference  # type: ignore  # this is an int or None, but mypy doesn't know
+            return origin.origin_reference
         return None
 
     @property
@@ -324,7 +327,7 @@ class LogicalFile:
     def origins(self) -> list[eflr_types.OriginItem]:
         """Channels defined for the DLIS."""
 
-        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginItem))
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
 
     def add_axis(
         self,
@@ -378,7 +381,8 @@ class LogicalFile:
     def add_calibration(
         self,
         name: str,
-        calibrated_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]
+        calibrated_channels: OptAttrSetupType[
+            ListOrTuple[eflr_types.ChannelItem]
         ] = None,
         uncalibrated_channels: OptAttrSetupType[
             ListOrTuple[eflr_types.ChannelItem]
@@ -732,13 +736,15 @@ class LogicalFile:
         if data is not None and not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}: {data}")
 
-        dataset_name = self._get_unique_dataset_name(channel_name=name, dataset_name=dataset_name)
+        dataset_name = self._get_unique_dataset_name(
+            channel_name=name, dataset_name=dataset_name
+        )
 
         parent = self.physical_file._eflr_sets.get_or_make_set(
             eflr_types.ChannelSet, set_name=set_name
         )
 
-        prnt = self._eflr_sets.try_add_set(parent)
+        self._eflr_sets.try_add_set(parent)
 
         ch = eflr_types.ChannelItem(
             name,
@@ -762,14 +768,18 @@ class LogicalFile:
 
         return ch
 
-    def _get_unique_dataset_name(self, channel_name: str, dataset_name: Optional[str] = None) -> str:
+    def _get_unique_dataset_name(
+        self, channel_name: str, dataset_name: Optional[str] = None
+    ) -> str:
         """Determine a unique name for channel's data in the internal data dict."""
 
         current_dataset_names = [ch.dataset_name for ch in self.channels]
 
         if dataset_name is not None:
             if dataset_name in current_dataset_names:
-                raise ValueError(f"A data set with name '{dataset_name}' already exists")
+                raise ValueError(
+                    f"A data set with name '{dataset_name}' already exists"
+                )
             return dataset_name
 
         if channel_name not in current_dataset_names:
@@ -781,7 +791,9 @@ class LogicalFile:
                 break
         else:
             # loop not broken - all options exhausted
-            raise RuntimeError(f"Cannot find a unique dataset name for channel '{channel_name}'")
+            raise RuntimeError(
+                f"Cannot find a unique dataset name for channel '{channel_name}'"
+            )
 
         return n
 
@@ -1086,14 +1098,18 @@ class LogicalFile:
         """
 
         if not isinstance(channels, (list, tuple)):
-            raise TypeError(f"Expected a list or tuple of channels, got {type(channels)}: {channels}")
+            raise TypeError(
+                f"Expected a list or tuple of channels, got {type(channels)}: {channels}"
+            )
 
         if not channels:
             raise ValueError("At least one channel must be specified for a frame")
 
         if not all(isinstance(c, eflr_types.ChannelItem) for c in channels):
-            raise TypeError(f"Expected a list of ChannelObject instances; "
-                            f"got types: {', '.join(str(type(c)) for c in channels)}")
+            raise TypeError(
+                f"Expected a list of ChannelObject instances; "
+                f"got types: {', '.join(str(type(c)) for c in channels)}"
+            )
 
         parent = self.physical_file._eflr_sets.get_or_make_set(
             eflr_types.FrameSet, set_name=set_name
@@ -1154,7 +1170,9 @@ class LogicalFile:
             description=description,
             object_list=object_list,
             group_list=group_list,
-            parent=self.physical_file._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name),
+            parent=self.physical_file._eflr_sets.get_or_make_set(
+                eflr_types.GroupSet, set_name=set_name
+            ),
             origin_reference=origin_reference or self.default_origin_reference,
         )
 
@@ -1381,11 +1399,28 @@ class LogicalFile:
         self._no_format_frame_data.append(d)
         return d
 
+    def next_available_origin_ref(
+            self, origin_reference: Union[int, None], origins: list[eflr_types.OriginItem]
+    ) -> int:
+        origins_refs = [o.origin_reference for o in origins]
+        next_available_origin_ref: int = 0
+        if origin_reference:
+            next_available_origin_ref = origin_reference
+            if origin_reference in origins_refs:
+                raise RuntimeError(
+                    f"There's already an origin with origin_reference {origin_reference} in this logical file."
+                )
+        else:
+            next_available_origin_ref = len(origins)
+        while next_available_origin_ref in origins_refs:
+            next_available_origin_ref += 1
+        return next_available_origin_ref
+
     def add_origin(
         self,
         name: str,
         file_set_number: OptAttrSetupType[int] = None,
-        origin_reference: OptAttrSetupType[int] = None,
+        origin_reference: Optional[int] = None,
         file_set_name: OptAttrSetupType[str] = None,
         file_number: OptAttrSetupType[int] = None,
         file_type: OptAttrSetupType[str] = None,
@@ -1426,7 +1461,8 @@ class LogicalFile:
                                     Attribute is absent. In that case, it is considered to apply to the File Set
                                     consisting of the single current Logical File.'
             origin_reference    :   This value is used as reference to the objects that are associated with this origin.
-                                    It is simpler to pass None. This way, a new, unique value, is assigned to this origin
+                                    It is simpler to pass None. This way, a new, unique value, is assigned to this
+                                    origin
             file_set_name       :   '[T]he name of a File Set, a group of Logical Files related according to
                                     Producer-defined criteria to which the Parent File belongs.
                                     The File Set is an arbitrary grouping of a set of Logical Files
@@ -1491,22 +1527,26 @@ class LogicalFile:
         )
         self._eflr_sets.try_add_set(parent)
 
-        origins = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
-        origins_refs = [o.origin_reference for o in origins]
+        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        new_origin_ref = self.next_available_origin_ref(origin_reference, origins)
+        """ origins_refs = [o.origin_reference for o in origins]
+        next_available_origin_ref: int = 0
         if origin_reference:
+            next_available_origin_ref = origin_reference
             if origin_reference in origins_refs:
                 raise RuntimeError(
                     f"There's already an origin with origin_reference {origin_reference} in this logical file."
                 )
-            next_available_origin_ref = origin_reference
         else:
             next_available_origin_ref = len(origins)
         while next_available_origin_ref in origins_refs:
-            next_available_origin_ref += 1
+            next_available_origin_ref += 1 """
+
+        logger.debug(f"origin_reference = {origin_reference},  new_origin_ref = {new_origin_ref}")
 
         o = eflr_types.OriginItem(
             name=name,
-            origin_reference=origin_reference or next_available_origin_ref,
+            origin_reference=origin_reference or new_origin_ref,
             file_set_number=file_set_number,
             file_set_name=file_set_name,
             file_id=self.file_header.header_id,
@@ -2067,7 +2107,9 @@ class LogicalFile:
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            parent=self.physical_file._eflr_sets.get_or_make_set(eflr_types.ZoneSet, set_name=set_name),
+            parent=self.physical_file._eflr_sets.get_or_make_set(
+                eflr_types.ZoneSet, set_name=set_name
+            ),
             origin_reference=origin_reference or self.default_origin_reference,
         )
 
@@ -2093,8 +2135,10 @@ class LogicalFile:
             do.file_id.value = fh_id
         else:
             if do.file_id.value != fh_id:
-                raise ValueError("'file_id' of the Defining Origin should be the same as the ID (header_id) "
-                                 f"of the file header; got {repr(do.file_id.value)} and {repr(fh_id)}")
+                raise ValueError(
+                    "'file_id' of the Defining Origin should be the same as the ID (header_id) "
+                    f"of the file header; got {repr(do.file_id.value)} and {repr(fh_id)}"
+                )
 
     def _check_completeness(self) -> None:
         """Check that the collection contains all required objects in the required (min/max) numbers.
@@ -2126,16 +2170,22 @@ class LogicalFile:
         for frame_item in self.frames:
             for ch in frame_item.channels.value:
                 if ch not in counts:
-                    raise RuntimeError(f"{ch} from {frame_item} has not been registered in file's channels")
+                    raise RuntimeError(
+                        f"{ch} from {frame_item} has not been registered in file's channels"
+                    )
                 counts[ch] += 1
 
         for ch, v in counts.items():
             if not v:
-                raise_or_warn(f"{ch} has not been added to any frame; this might cause issues "
-                              f"with opening the produced DLIS file in some software")
+                raise_or_warn(
+                    f"{ch} has not been added to any frame; this might cause issues "
+                    f"with opening the produced DLIS file in some software"
+                )
             if v > 1:
-                raise_or_warn(f"{ch} has been added to {v} frames; according to RP66 v1, a channel "
-                              f"can only be added to a single frame")
+                raise_or_warn(
+                    f"{ch} has been added to {v} frames; according to RP66 v1, a channel "
+                    f"can only be added to a single frame"
+                )
 
     def _make_multi_frame_data(
         self,
@@ -2189,5 +2239,7 @@ class LogicalFile:
             raise RuntimeError("Data types not defined")
         for name in dt.names:
             if np.issubdtype(dt[name].base, np.signedinteger):
-                raise_or_warn(f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "
-                              f"interpret signed integers correctly (overflow for negative values)")
+                raise_or_warn(
+                    f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "
+                    f"interpret signed integers correctly (overflow for negative values)"
+                )
