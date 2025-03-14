@@ -33,7 +33,7 @@ class EFLRSetsDict(defaultdict):
 
         self[eflr_set.__class__][eflr_set.set_name] = eflr_set
 
-    def try_add_set(self, eflr_set: EFLRSet) -> None:
+    def try_add_set(self, eflr_set: EFLRSet) -> bool:
         """Try to register a new EFLRSet instance in the structure. Return True on success, False otherwise."""
 
         if eflr_set.set_name in self[eflr_set.__class__]:

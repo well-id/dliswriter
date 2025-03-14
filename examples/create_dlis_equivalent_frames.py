@@ -20,15 +20,16 @@ install_colored_logger(logging.getLogger('dliswriter'))
 
 
 # create DLISFile instance; optionally, pass arguments for creating file header & storage unit label
-df = DLISFile(
-    sul_sequence_number=2,
+df = DLISFile(sul_sequence_number=2)
+
+lf = df.add_logical_file(
     fh_sequence_number=2,
     fh_id="MAIN FILE",
     fh_identifier="X"
 )
 
 # add origin - required item
-df.add_origin(
+lf.add_origin(
     "DEFAULT ORIGIN",
     file_set_number=80,
     company="XXX"
@@ -37,20 +38,20 @@ df.add_origin(
 
 # define frame 1
 n_rows_1 = 100
-ch_depth_1 = df.add_channel(
+ch_depth_1 = lf.add_channel(
     'DEPTH',
     data=np.arange(n_rows_1),
     units=enums.Unit.METER
 )
-ch_rpm_1 = df.add_channel(
+ch_rpm_1 = lf.add_channel(
     "RPM",
     data=10 * np.random.rand(n_rows_1)
 )
-ch_amp_1 = df.add_channel(
+ch_amp_1 = lf.add_channel(
     "AMPLITUDE",
     data=np.random.rand(n_rows_1, 10)
 )
-frame1 = df.add_frame(
+frame1 = lf.add_frame(
     "FRAME1",
     channels=(ch_depth_1, ch_rpm_1, ch_amp_1),
     index_type=enums.FrameIndexType.BOREHOLE_DEPTH
@@ -59,20 +60,20 @@ frame1 = df.add_frame(
 
 # define frame 2
 n_rows_2 = 200
-ch_depth_2 = df.add_channel(
+ch_depth_2 = lf.add_channel(
     'DEPTH',
     data=np.arange(n_rows_2),
     units=enums.Unit.METER
 )
-ch_rpm_2 = df.add_channel(
+ch_rpm_2 = lf.add_channel(
     "RPM",
     data=(np.arange(n_rows_2) % 10).astype(np.int32)
 )
-ch_amp_2 = df.add_channel(
+ch_amp_2 = lf.add_channel(
     "AMPLITUDE",
     data=np.arange(n_rows_2 * 5).reshape(n_rows_2, 5) % 6
 )
-frame2 = df.add_frame(
+frame2 = lf.add_frame(
     "FRAME2",
     channels=(ch_depth_2, ch_rpm_2, ch_amp_2),
     index_type=enums.FrameIndexType.BOREHOLE_DEPTH

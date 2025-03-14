@@ -36,8 +36,9 @@ def test_specifying_other_origin_reference() -> None:
         "MAIN FRAME", channels=(ch_time, ch_rpm, ch_depth, ch_x), origin_reference=10
     )
 
-    # Items created before the logical file's defining origin (i.e., the first origin) assume the defining origin's origin_reference
-    # value when it is created. This value is also assigned to items created after the defining origin with no origin_reference as creation argument
+    # Items created before the logical file's defining origin (i.e., the first origin) assume the defining origin's
+    # origin_reference value when it is created. This value is also assigned to items created after the defining
+    # origin with no origin_reference as creation argument
     for obj in (ch_depth, ch_x, origin):
         assert obj.origin_reference == 38
 
@@ -61,10 +62,8 @@ def test_multiple_origins() -> None:
     comp2 = lf.add_computation("comp2")  # should have origin1 as reference
     assert lf.default_origin_reference == 23
 
-    origin3 = lf.add_origin("ANOTHER ORIGIN")
     param1 = lf.add_parameter("PARAM1", origin_reference=11)  # origin2
     param2 = lf.add_parameter("PARAM2")  # origin1
-    param3 = lf.add_parameter("PARAM3", origin_reference=origin3.origin_reference)
     assert lf.default_origin_reference == 23
 
     for obj in (origin1, axis1, ch1, comp2, param2):
