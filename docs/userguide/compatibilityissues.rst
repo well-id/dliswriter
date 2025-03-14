@@ -33,8 +33,9 @@ the following code:
 
     with high_compatibility_mode:
         df = DLISFile()
-        df.add_origin("MY-ORIGIN")
-        ch1 = df.add_channel('Depth', data=np.arange(100) / 10, units=Renums.Unit.METER)
+        lf = df.add_logical_file()
+        lf.add_origin("MY-ORIGIN")
+        ch1 = lf.add_channel('Depth', data=np.arange(100) / 10, units=Renums.Unit.METER)
 
 
 will raise a ``ValueError``:

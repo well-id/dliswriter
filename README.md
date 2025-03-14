@@ -24,16 +24,18 @@ from dliswriter import DLISFile, enums
 
 df = DLISFile()
 
-df.add_origin("MY-ORIGIN")  # required; can contain metadata about the well, scan procedure, etc.
+lf = df.add_logical_file()  # a DLIS file is basically comprised of independent fully self-contained logical files
+
+lf.add_origin("MY-ORIGIN")  # required; can contain metadata about the well, scan procedure, etc.
 
 # define channels with numerical data and additional information
 n_rows = 100  # all datasets must have the same number of rows
-ch1 = df.add_channel('DEPTH', data=np.linspace(0, 10, n_rows), units=enums.Unit.METER)
-ch2 = df.add_channel("RPM", data=np.arange(n_rows) % 10)
-ch3 = df.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
+ch1 = lf.add_channel('DEPTH', data=np.linspace(0, 10, n_rows), units=enums.Unit.METER)
+ch2 = lf.add_channel("RPM", data=np.arange(n_rows) % 10)
+ch3 = lf.add_channel("AMPLITUDE", data=np.random.rand(n_rows, 5))
 
 # define frame, referencing the above defined channels
-main_frame = df.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
+main_frame = lf.add_frame("MAIN-FRAME", channels=(ch1, ch2, ch3), index_type=enums.FrameIndexType.BOREHOLE_DEPTH)
 
 # write the data and metadata to a physical DLIS file
 df.write('./new_dlis_file.DLIS')
