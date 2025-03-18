@@ -54,7 +54,7 @@ def test_determine_repr_code_from_generic_type_not_a_type(t: Any) -> None:
         (-92003198.2, RepresentationCode.FDOUBL),
         (3.123121231, RepresentationCode.FDOUBL),
         ('abc', RepresentationCode.ASCII),
-        (np.arange(10), RepresentationCode.SLONG),
+        (np.arange(start=0, stop=10, dtype=np.int32), RepresentationCode.SLONG),
         (np.random.rand(12, 13), RepresentationCode.FDOUBL)
 ))
 def test_determine_repr_code_from_value_single(v: Any, rc: RepresentationCode) -> None:

@@ -10,8 +10,17 @@ from datetime import timedelta, datetime
 import logging
 
 from dliswriter.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
-from dliswriter.utils.internal.types import (numpy_dtype_type, number_type, dtime_or_number_type, list_of_values_type,
-                                             file_name_type, data_form_type, ListOrTuple, NestedList, AttrDict)
+from dliswriter.utils.internal.types import (
+    numpy_dtype_type,
+    number_type,
+    dtime_or_number_type,
+    list_of_values_type,
+    file_name_type,
+    data_form_type,
+    ListOrTuple,
+    NestedList,
+    AttrDict,
+)
 from dliswriter.utils.internal.sized_generator import SizedGenerator
 from dliswriter.utils import enums
 from dliswriter.logical_record.core.eflr import EFLRItem, AttrSetup
@@ -23,42 +32,222 @@ from dliswriter.file.writer import DLISWriter
 from dliswriter.file.eflr_sets_dict import EFLRSetsDict
 from dliswriter.configuration import global_config
 
-
 logger = logging.getLogger(__name__)
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 AttrSetupType = Union[T, AttrDict, AttrSetup]
 OptAttrSetupType = Optional[AttrSetupType[T]]
 
 
+def _set_up_sul_or_fh(item_class: type[T], item: Optional[T], **kwargs: Any) -> T:
+
+    if item is not None:
+        if not isinstance(item, item_class):
+            raise TypeError(
+                f"Expected a {item_class.__name__}, got {type(item)}: {item}"
+            )
+        logger.debug(f"Using the provided {item_class.__name__} instance")
+
+    else:
+        logger.debug(f"Creating a new {item_class.__name__} instance")
+        item = item_class(**kwargs)
+
+    logger.debug(f"{item_class.__name__} for the file: {repr(item)}")
+    return item
+
+
+def raise_or_warn(message: str) -> None:
+    """If high-compatibility mode is on, raise a RuntimeError with given message. Otherwise, put it in the logs."""
+
+    if global_config.high_compat_mode:
+        raise RuntimeError(message)
+    logger.warning(message)
+
+
 class DLISFile:
-    """Define the structure and contents of a DLIS and create a file based on the provided information."""
+    """DLIS file. Contains the list of the logical files, the Storage Unit Label and the writing routines"""
 
     def __init__(
-            self,
-            storage_unit_label: Optional[StorageUnitLabel] = None,
-            file_header: Optional[eflr_types.FileHeaderItem] = None,
-            set_identifier: str = "MAIN-STORAGE-UNIT",
-            sul_sequence_number: int = 1,
-            max_record_length: int = 8192,
-            fh_id: str = "FILE-HEADER",
-            fh_identifier: str = "0",
-            fh_sequence_number: int = 1
+        self,
+        storage_unit_label: Optional[StorageUnitLabel] = None,
+        set_identifier: str = "MAIN-STORAGE-UNIT",
+        sul_sequence_number: int = 1,
+        max_record_length: int = 8192,
     ):
-        """Initialise DLISFile.
+        self.logical_files: list[LogicalFile] = []
+
+        self._sul: StorageUnitLabel = _set_up_sul_or_fh(
+            item_class=StorageUnitLabel,
+            item=storage_unit_label,
+            set_identifier=set_identifier,
+            sequence_number=sul_sequence_number,
+            max_record_length=max_record_length,
+        )
+
+        self._eflr_sets = EFLRSetsDict()
+
+    @property
+    def storage_unit_label(self) -> StorageUnitLabel:
+        """Storage Unit Label of the DLIS."""
+
+        return self._sul
+
+    def add_logical_file(
+        self,
+        file_header: Optional[eflr_types.FileHeaderItem] = None,
+        fh_id: str = "FILE-HEADER",
+        fh_identifier: str = "0",
+        fh_sequence_number: int = 1,
+    ) -> "LogicalFile":
+        lf = LogicalFile(
+            physical_file=self,
+            file_header=file_header,
+            fh_id=fh_id,
+            fh_identifier=fh_identifier,
+            fh_sequence_number=fh_sequence_number,
+        )
+        self.logical_files.append(lf)
+        return lf
+
+    def generator(self, multi_frame_data_objects: list[list[MultiFrameData]]) -> Generator:
+        """Define a generator yielding logical records to be put in the file."""
+
+        for idx_lf, logical_file in enumerate(self.logical_files):
+            yield logical_file.file_header_item.parent
+
+            yield from logical_file._eflr_sets[eflr_types.OriginSet].values()
+
+            for set_type, set_dict in logical_file._eflr_sets.items():
+                if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
+                    yield from set_dict.values()
+
+            yield from logical_file._no_format_frame_data
+
+            for multi_frame_data in multi_frame_data_objects[idx_lf]:
+                yield from multi_frame_data
+
+    def generate_logical_records(
+        self,
+        chunk_size: Optional[int],
+        data: Optional[data_form_type] = None,
+        **kwargs: Any,
+    ) -> SizedGenerator:
+        """Iterate over all logical records defined in the file.
+
+        Yields: EFLR and IFLR objects defined for the file.
+
+        Note: Storage Unit Label should be added to the file separately before adding other records.
+        """
+
+        for idx_lf, f in enumerate(self.logical_files):
+            if f.defining_origin is None:
+                raise RuntimeError(
+                    f"No Origin defined for the {idx_lf}-th logical file"
+                )
+
+        multi_frame_data_objects: list[list[MultiFrameData]] = []
+        frame_items: list[Generator[eflr_types.FrameItem, None, None]] = []
+
+        for idx_lf, logical_file in enumerate(self.logical_files):
+
+            lf_frame_items: Generator[eflr_types.FrameItem, None, None] = \
+                logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
+
+            frame_items.append(lf_frame_items)
+
+            multi_frame_data_objects.append(
+                [
+                    logical_file._make_multi_frame_data(
+                        fr, chunk_size=chunk_size, data=data, **kwargs
+                    )
+                    for fr in frame_items[idx_lf]
+                ]
+            )
+
+        n = 0
+        for eflr_set_type in self._eflr_sets:
+            n += len(list(self._eflr_sets.get_all_items_for_set_type(eflr_set_type)))
+
+        for idx_lf, logical_file in enumerate(self.logical_files):
+            for mfd in multi_frame_data_objects[idx_lf]:
+                n += len(mfd)
+            n += len(logical_file._no_format_frame_data)
+
+        return SizedGenerator(self.generator(multi_frame_data_objects), size=n)
+
+    def write(
+        self,
+        dlis_file_name: file_name_type,
+        input_chunk_size: Optional[int] = None,
+        output_chunk_size: Optional[number_type] = 2**32,
+        data: Optional[data_form_type] = None,
+        from_idx: int = 0,
+        to_idx: Optional[int] = None,
+    ) -> None:
+        """Create a DLIS file form the current specifications.
 
         Args:
-            storage_unit_label  :   An instance of StorageUnitLabel. If not provided, a new instance will be created
-                                    based on other provided arguments and/or defaults.
+            dlis_file_name          :   Name of the file to be created.
+            input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
+            output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
+            data                    :   Data for channels - if not specified when channels were added.
+            from_idx                :   Index from which the data should be loaded (or number of initial rows
+                                        to ignore).
+            to_idx                  :   Index up to which data should be loaded.
+        """
+
+        def timed_func() -> None:
+            """Perform the action of creating a DLIS file.
+
+            This function is used in a timeit call to time the file creation.
+            """
+
+            for lf in self.logical_files:
+                lf.check_objects()
+
+            logical_records = self.generate_logical_records(
+                chunk_size=input_chunk_size,
+                data=data,
+                from_idx=from_idx,
+                to_idx=to_idx,
+            )
+
+            writer = DLISWriter(
+                dlis_file_name,
+                visible_record_length=self.storage_unit_label.max_record_length,
+            )
+            writer.write_storage_unit_label(self.storage_unit_label)
+            writer.write_logical_records(
+                logical_records, output_chunk_size=output_chunk_size
+            )
+
+        exec_time = timeit(timed_func, number=1)
+        logger.info(
+            f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)"
+        )
+
+
+class LogicalFile:
+    """Define the structure and contents of a DLIS Logical File. The Logical File constitutes the DLIS logical
+    format ("The view of DLIS data that is completely independent of any physical mapping" - rp66v1). A DLIS file
+    can have one or more Logical Files, and these logical files are mutually independent
+    """
+
+    def __init__(
+        self,
+        physical_file: DLISFile,
+        file_header: Optional[eflr_types.FileHeaderItem] = None,
+        fh_id: str = "FILE-HEADER",
+        fh_identifier: str = "0",
+        fh_sequence_number: int = 1,
+    ):
+        """Initialise LogicalFile.
+
+        Args:
+            physical_file       :   The DLIS file (storage unit, in rp66v1 terms) that this logical file belongs to
             file_header         :   An instance of FileHeaderItem. If not provided, a new instance will be created
                                     based on other provided arguments and/or defaults.
-            set_identifier      :   Used to create a StorageUnitLabel. ID of the storage set.
-            sul_sequence_number :   Used to create a StorageUnitLabel. Indicates the order in which the current
-                                    Storage Unit appears in a Storage Set.
-            max_record_length   :   Used to create a StorageUnitLabel. Maximum length of each visible record.
-                                    Cannot exceed 16384.
-                                    See  # http://w3.energistics.org/rp66/v1/rp66v1_sec2.html#2_3_6_5
             fh_id               :   Used to create a FileHeaderItem.
                                     '[A] descriptive identification of the Logical File', max 65 characters long.
             fh_identifier       :   Used to create a FileHeaderItem.
@@ -69,69 +258,57 @@ class DLISFile:
                                     A positive integer of max 10 digits.
         """
 
-        self._sul: StorageUnitLabel = self._set_up_sul_or_fh(
-            item_class=StorageUnitLabel,
-            item=storage_unit_label,
-            set_identifier=set_identifier,
-            sequence_number=sul_sequence_number,
-            max_record_length=max_record_length
-        )
+        self.physical_file = physical_file
 
-        file_header_item: eflr_types.FileHeaderItem = self._set_up_sul_or_fh(
-            item_class=eflr_types.FileHeaderItem,
-            item=file_header,
-            header_id=fh_id,
-            identifier=fh_identifier,
-            sequence_number=fh_sequence_number,
-            parent=eflr_types.FileHeaderSet()
-        )
-
+        # Having a _eflr_sets also in the logical file allows for checks that don't relate to the whole DLIS file
         self._eflr_sets = EFLRSetsDict()
-        self._eflr_sets.add_set(file_header_item.parent)
+
+        fh_set = eflr_types.FileHeaderSet()
+
+        # fh_set.set_name = fh_identifier
+        # FIXME - Setting the name of the file header somehow corrupts the output DLIS file. This is probably related
+        # to the Issue #14
+        # And because of that it's problematic to add the fh_set to the self._eflr_sets and physical_file._eflr_sets,
+        # now that we have multiple logical files, each one having their header. This is why we have file_header_item
+        # as an attribute, as we see below:
+
+        self.file_header_item: eflr_types.FileHeaderItem
+        if file_header is not None:
+            self.file_header_item = file_header
+        else:
+            self.file_header_item = _set_up_sul_or_fh(
+                item_class=eflr_types.FileHeaderItem,
+                item=file_header,
+                header_id=fh_id,
+                identifier=fh_identifier,
+                sequence_number=fh_sequence_number,
+                parent=fh_set,  # file_header.parent
+            )
 
         self._data_dict: dict[str, np.ndarray] = {}
         self._max_dataset_copy = 1000
 
         self._no_format_frame_data: list[NoFormatFrameData] = []
 
-    @staticmethod
-    def _set_up_sul_or_fh(item_class: type[T], item: Optional[T], **kwargs: Any) -> T:
-
-        if item is not None:
-            if not isinstance(item, item_class):
-                raise TypeError(f"Expected a {item_class.__name__}, got {type(item)}: {item}")
-            logger.debug(f"Using the provided {item_class.__name__} instance")
-
-        else:
-            logger.debug(f"Creating a new {item_class.__name__} instance")
-            item = item_class(**kwargs)
-
-        logger.debug(f"{item_class.__name__} for the file: {repr(item)}")
-        return item
-
-    @property
-    def storage_unit_label(self) -> StorageUnitLabel:
-        """Storage Unit Label of the DLIS."""
-
-        return self._sul
-
     @property
     def file_header(self) -> eflr_types.FileHeaderItem:
-        """File header of the DLIS."""
+        """File header of this Logical File"""
 
-        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))[0]
+        return self.file_header_item
 
     @property
     def defining_origin(self) -> Union[eflr_types.OriginItem, None]:
-        """First Origin of the DLIS, describing the circumstances under which the file was created."""
+        """First Origin of this Logical File, describing the circumstances under which it was created."""
 
-        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        origins: list[eflr_types.OriginItem] = list(
+            self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet)
+        )
         return origins[0] if origins else None
 
     @property
     def default_origin_reference(self) -> Union[int, None]:
         if origin := self.defining_origin:
-            return origin.file_set_number.value  # type: ignore  # this is an int or None, but mypy doesn't know
+            return origin.origin_reference
         return None
 
     @property
@@ -146,14 +323,20 @@ class DLISFile:
 
         return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet))
 
+    @property
+    def origins(self) -> list[eflr_types.OriginItem]:
+        """Channels defined for the DLIS."""
+
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+
     def add_axis(
-            self,
-            name: str,
-            axis_id: OptAttrSetupType[str] = None,
-            coordinates: OptAttrSetupType[list_of_values_type] = None,
-            spacing: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        axis_id: OptAttrSetupType[str] = None,
+        coordinates: OptAttrSetupType[list_of_values_type] = None,
+        spacing: OptAttrSetupType[number_type] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.AxisItem:
         """Define an axis (AxisItem) and add it to the DLIS.
 
@@ -176,31 +359,44 @@ class DLISFile:
                                     of successive coordinate values along the axis, and the first coordinate value
                                     is assumed to be zero (0).'
             set_name            :   Name of the AxisSet this axis should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.AxisSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         ax = eflr_types.AxisItem(
             name=name,
             axis_id=axis_id,
             coordinates=coordinates,
             spacing=spacing,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.AxisSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return ax
 
     def add_calibration(
-            self,
-            name: str,
-            calibrated_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            uncalibrated_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            coefficients: OptAttrSetupType[ListOrTuple[eflr_types.CalibrationCoefficientItem]] = None,
-            measurements: OptAttrSetupType[ListOrTuple[eflr_types.CalibrationMeasurementItem]] = None,
-            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
-            method: OptAttrSetupType[str] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        calibrated_channels: OptAttrSetupType[
+            ListOrTuple[eflr_types.ChannelItem]
+        ] = None,
+        uncalibrated_channels: OptAttrSetupType[
+            ListOrTuple[eflr_types.ChannelItem]
+        ] = None,
+        coefficients: OptAttrSetupType[
+            ListOrTuple[eflr_types.CalibrationCoefficientItem]
+        ] = None,
+        measurements: OptAttrSetupType[
+            ListOrTuple[eflr_types.CalibrationMeasurementItem]
+        ] = None,
+        parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
+        method: OptAttrSetupType[str] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.CalibrationItem:
         """Define a calibration item and add it to the DLIS.
 
@@ -233,11 +429,16 @@ class DLISFile:
                                         by the Calibrated-Channels Attribute. (...) For the simple model described
                                         earlier [gain and offset calibration], the Method might be "Two-Point-Linear".'
             set_name                :   Name of the CalibrationSet this calibration should be added to.
-            origin_reference        :   file_set_number of the Origin this record belongs to.
+            origin_reference        :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured calibration object.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.CalibrationSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         c = eflr_types.CalibrationItem(
             name=name,
@@ -247,22 +448,22 @@ class DLISFile:
             measurements=measurements,
             parameters=parameters,
             method=method,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return c
 
     def add_calibration_coefficient(
-            self,
-            name: str,
-            label: OptAttrSetupType[str] = None,
-            coefficients: OptAttrSetupType[list[number_type]] = None,
-            references: OptAttrSetupType[list[number_type]] = None,
-            plus_tolerances: OptAttrSetupType[list[number_type]] = None,
-            minus_tolerances: OptAttrSetupType[list[number_type]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        label: OptAttrSetupType[str] = None,
+        coefficients: OptAttrSetupType[list[number_type]] = None,
+        references: OptAttrSetupType[list[number_type]] = None,
+        plus_tolerances: OptAttrSetupType[list[number_type]] = None,
+        minus_tolerances: OptAttrSetupType[list[number_type]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.CalibrationCoefficientItem:
         """Define a calibration coefficient object and add it to the DLIS.
 
@@ -304,7 +505,7 @@ class DLISFile:
                                     when its reference is 1.0 and its minus tolerance is 0.1.
                                     It is out of tolerance when its reference is 1.0 and its minus tolerance is 0.01.'
             set_name            :   Name of the CorrelationCoefficientSet this item should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Notes:
             Attributes 'coefficients', 'references', 'plus_tolerances', and 'minus_tolerances' must have the same number
@@ -314,6 +515,11 @@ class DLISFile:
             A configured calibration coefficient item.
         """
 
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.CalibrationCoefficientSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
+
         c = eflr_types.CalibrationCoefficientItem(
             name=name,
             label=label,
@@ -321,32 +527,32 @@ class DLISFile:
             references=references,
             plus_tolerances=plus_tolerances,
             minus_tolerances=minus_tolerances,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationCoefficientSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return c
 
     def add_calibration_measurement(
-            self,
-            name: str,
-            phase: OptAttrSetupType[Union[str, enums.CalibrationMeasurementPhase]] = None,
-            measurement_source: OptAttrSetupType[EFLRItem] = None,
-            measurement_type: OptAttrSetupType[str] = None,
-            dimension: OptAttrSetupType[list[int]] = None,
-            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
-            measurement: OptAttrSetupType[NestedList[number_type]] = None,
-            sample_count: OptAttrSetupType[int] = None,
-            maximum_deviation: OptAttrSetupType[NestedList[number_type]] = None,
-            standard_deviation: OptAttrSetupType[NestedList[number_type]] = None,
-            begin_time: OptAttrSetupType[dtime_or_number_type] = None,
-            duration: OptAttrSetupType[number_type] = None,
-            reference: OptAttrSetupType[NestedList[number_type]] = None,
-            standard: OptAttrSetupType[NestedList[number_type]] = None,
-            plus_tolerance: OptAttrSetupType[NestedList[number_type]] = None,
-            minus_tolerance: OptAttrSetupType[NestedList[number_type]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        phase: OptAttrSetupType[Union[str, enums.CalibrationMeasurementPhase]] = None,
+        measurement_source: OptAttrSetupType[EFLRItem] = None,
+        measurement_type: OptAttrSetupType[str] = None,
+        dimension: OptAttrSetupType[list[int]] = None,
+        axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+        measurement: OptAttrSetupType[NestedList[number_type]] = None,
+        sample_count: OptAttrSetupType[int] = None,
+        maximum_deviation: OptAttrSetupType[NestedList[number_type]] = None,
+        standard_deviation: OptAttrSetupType[NestedList[number_type]] = None,
+        begin_time: OptAttrSetupType[dtime_or_number_type] = None,
+        duration: OptAttrSetupType[number_type] = None,
+        reference: OptAttrSetupType[NestedList[number_type]] = None,
+        standard: OptAttrSetupType[NestedList[number_type]] = None,
+        plus_tolerance: OptAttrSetupType[NestedList[number_type]] = None,
+        minus_tolerance: OptAttrSetupType[NestedList[number_type]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.CalibrationMeasurementItem:
         """Define a calibration measurement item and add it to the DLIS.
 
@@ -435,11 +641,16 @@ class DLISFile:
                                     is within tolerance when its reference is 350 and its minus tolerance is 5.
                                     It is out of tolerance when its reference is 400 and its minus tolerance is 50.'
             set_name            :   Name of the CorrelationMeasurementSet this measurement should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured CalibrationMeasurementItem instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.CalibrationMeasurementSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         m = eflr_types.CalibrationMeasurementItem(
             name=name,
@@ -458,29 +669,29 @@ class DLISFile:
             standard=standard,
             plus_tolerance=plus_tolerance,
             minus_tolerance=minus_tolerance,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CalibrationMeasurementSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return m
 
     def add_channel(
-            self,
-            name: str,
-            data: Optional[np.ndarray] = None,
-            dataset_name: Optional[str] = None,
-            cast_dtype: Optional[numpy_dtype_type] = None,
-            long_name: OptAttrSetupType[Union[eflr_types.LongNameItem, str]] = None,
-            dimension: OptAttrSetupType[Union[int, list[int]]] = None,
-            element_limit: OptAttrSetupType[Union[int, list[int]]] = None,
-            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
-            units: OptAttrSetupType[Union[str, enums.Unit]] = None,
-            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
-            minimum_value: OptAttrSetupType[float] = None,
-            maximum_value: OptAttrSetupType[float] = None,
-            source: OptAttrSetupType[EFLRItem] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        data: Optional[np.ndarray] = None,
+        dataset_name: Optional[str] = None,
+        cast_dtype: Optional[numpy_dtype_type] = None,
+        long_name: OptAttrSetupType[Union[eflr_types.LongNameItem, str]] = None,
+        dimension: OptAttrSetupType[Union[int, list[int]]] = None,
+        element_limit: OptAttrSetupType[Union[int, list[int]]] = None,
+        properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
+        units: OptAttrSetupType[Union[str, enums.Unit]] = None,
+        axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+        minimum_value: OptAttrSetupType[float] = None,
+        maximum_value: OptAttrSetupType[float] = None,
+        source: OptAttrSetupType[EFLRItem] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ChannelItem:
         """Define a channel (ChannelItem) and add it to the DLIS.
 
@@ -516,7 +727,7 @@ class DLISFile:
             source              :   '[A] reference to another Object that describes the immediate source of the Channel,
                                     for example, a TOOL, PROCESS, SPLICE, or CALIBRATION Object.'
             set_name            :   Name of the ChannelSet this Channel should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured ChannelItem instance, which is already added to the DLIS (but not to any frame).
@@ -525,7 +736,15 @@ class DLISFile:
         if data is not None and not isinstance(data, np.ndarray):
             raise ValueError(f"Expected a numpy.ndarray, got a {type(data)}: {data}")
 
-        dataset_name = self._get_unique_dataset_name(channel_name=name, dataset_name=dataset_name)
+        dataset_name = self._get_unique_dataset_name(
+            channel_name=name, dataset_name=dataset_name
+        )
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ChannelSet, set_name=set_name
+        )
+
+        self._eflr_sets.try_add_set(parent)
 
         ch = eflr_types.ChannelItem(
             name,
@@ -540,8 +759,8 @@ class DLISFile:
             minimum_value=minimum_value,
             maximum_value=maximum_value,
             source=source,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ChannelSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         if data is not None:
@@ -549,14 +768,18 @@ class DLISFile:
 
         return ch
 
-    def _get_unique_dataset_name(self, channel_name: str, dataset_name: Optional[str] = None) -> str:
+    def _get_unique_dataset_name(
+        self, channel_name: str, dataset_name: Optional[str] = None
+    ) -> str:
         """Determine a unique name for channel's data in the internal data dict."""
 
         current_dataset_names = [ch.dataset_name for ch in self.channels]
 
         if dataset_name is not None:
             if dataset_name in current_dataset_names:
-                raise ValueError(f"A data set with name '{dataset_name}' already exists")
+                raise ValueError(
+                    f"A data set with name '{dataset_name}' already exists"
+                )
             return dataset_name
 
         if channel_name not in current_dataset_names:
@@ -568,15 +791,18 @@ class DLISFile:
                 break
         else:
             # loop not broken - all options exhausted
-            raise RuntimeError(f"Cannot find a unique dataset name for channel '{channel_name}'")
+            raise RuntimeError(
+                f"Cannot find a unique dataset name for channel '{channel_name}'"
+            )
 
         return n
 
     def add_comment(
-            self, name: str,
-            text: OptAttrSetupType[list[str]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        text: OptAttrSetupType[list[str]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.CommentItem:
         """Create a comment item and add it to the DLIS.
 
@@ -584,33 +810,38 @@ class DLISFile:
             name                :   Name of the object.
             text                :   Content of the comment.
             set_name            :   Name of the CommentSet this comment should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured comment item.
         """
 
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.CommentSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
+
         c = eflr_types.CommentItem(
             name=name,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.CommentSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return c
 
     def add_computation(
-            self,
-            name: str,
-            long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
-            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
-            dimension: OptAttrSetupType[list[int]] = None,
-            axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
-            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: OptAttrSetupType[NestedList[number_type]] = None,
-            source: OptAttrSetupType[EFLRItem] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
+        properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
+        dimension: OptAttrSetupType[list[int]] = None,
+        axis: OptAttrSetupType[ListOrTuple[eflr_types.AxisItem]] = None,
+        zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
+        values: OptAttrSetupType[NestedList[number_type]] = None,
+        source: OptAttrSetupType[EFLRItem] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ComputationItem:
         """Create a computation item and add it to the DLIS.
 
@@ -645,11 +876,16 @@ class DLISFile:
             source              :   '[A] reference to another Object that describes the immediate source of the
                                     Computation, for example, a PROCESS Object.'
             set_name            :   Name of the ComputationSet this computation should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured computation item.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ComputationSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         c = eflr_types.ComputationItem(
             name=name,
@@ -660,34 +896,34 @@ class DLISFile:
             zones=zones,
             values=values,
             source=source,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ComputationSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return c
 
     def add_equipment(
-            self,
-            name: str,
-            trademark_name: OptAttrSetupType[str] = None,
-            status: OptAttrSetupType[int] = None,
-            eq_type: OptAttrSetupType[Union[str, enums.EquipmentType]] = None,
-            serial_number: OptAttrSetupType[str] = None,
-            location: OptAttrSetupType[Union[str, enums.EquipmentLocation]] = None,
-            height: OptAttrSetupType[number_type] = None,
-            length: OptAttrSetupType[number_type] = None,
-            minimum_diameter: OptAttrSetupType[number_type] = None,
-            maximum_diameter: OptAttrSetupType[number_type] = None,
-            volume: OptAttrSetupType[number_type] = None,
-            weight: OptAttrSetupType[number_type] = None,
-            hole_size: OptAttrSetupType[number_type] = None,
-            pressure: OptAttrSetupType[number_type] = None,
-            temperature: OptAttrSetupType[number_type] = None,
-            vertical_depth: OptAttrSetupType[number_type] = None,
-            radial_drift: OptAttrSetupType[number_type] = None,
-            angular_drift: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        trademark_name: OptAttrSetupType[str] = None,
+        status: OptAttrSetupType[int] = None,
+        eq_type: OptAttrSetupType[Union[str, enums.EquipmentType]] = None,
+        serial_number: OptAttrSetupType[str] = None,
+        location: OptAttrSetupType[Union[str, enums.EquipmentLocation]] = None,
+        height: OptAttrSetupType[number_type] = None,
+        length: OptAttrSetupType[number_type] = None,
+        minimum_diameter: OptAttrSetupType[number_type] = None,
+        maximum_diameter: OptAttrSetupType[number_type] = None,
+        volume: OptAttrSetupType[number_type] = None,
+        weight: OptAttrSetupType[number_type] = None,
+        hole_size: OptAttrSetupType[number_type] = None,
+        pressure: OptAttrSetupType[number_type] = None,
+        temperature: OptAttrSetupType[number_type] = None,
+        vertical_depth: OptAttrSetupType[number_type] = None,
+        radial_drift: OptAttrSetupType[number_type] = None,
+        angular_drift: OptAttrSetupType[number_type] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.EquipmentItem:
         """Define an equipment item.
 
@@ -741,7 +977,7 @@ class DLISFile:
             radial_drift        :   Radial drift; see Notes below.
             angular_drift       :   Angular drift; see Notes below.
             set_name            :   Name of the EquipmentSet this equipment should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Notes:
             'The Vertical-Depth, Radial-Drift, and Angular-Drift Attributes specify the corresponding position
@@ -752,6 +988,11 @@ class DLISFile:
         Returns:
             A configured EquipmentItem instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.EquipmentSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         eq = eflr_types.EquipmentItem(
             name=name,
@@ -772,25 +1013,25 @@ class DLISFile:
             vertical_depth=vertical_depth,
             radial_drift=radial_drift,
             angular_drift=angular_drift,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.EquipmentSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return eq
 
     def add_frame(
-            self,
-            name: str,
-            channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]],
-            description: OptAttrSetupType[str] = None,
-            index_type: OptAttrSetupType[Union[str, enums.FrameIndexType]] = None,
-            direction: OptAttrSetupType[str] = None,
-            spacing: OptAttrSetupType[number_type] = None,
-            encrypted: OptAttrSetupType[int] = None,
-            index_min: OptAttrSetupType[number_type] = None,
-            index_max: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]],
+        description: OptAttrSetupType[str] = None,
+        index_type: OptAttrSetupType[Union[str, enums.FrameIndexType]] = None,
+        direction: OptAttrSetupType[str] = None,
+        spacing: OptAttrSetupType[number_type] = None,
+        encrypted: OptAttrSetupType[int] = None,
+        index_min: OptAttrSetupType[number_type] = None,
+        index_max: OptAttrSetupType[number_type] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.FrameItem:
         """Define a frame (FrameItem) and add it to the DLIS.
 
@@ -846,7 +1087,7 @@ class DLISFile:
                                     (i.e. 'the number of rows' in the data table in which Channels are
                                     the (sets of) columns).
             set_name            :   Name of the FrameSet this frame should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Note:
             Values: direction, spacing, index_min, and index_max are automatically determined if not provided.
@@ -857,14 +1098,23 @@ class DLISFile:
         """
 
         if not isinstance(channels, (list, tuple)):
-            raise TypeError(f"Expected a list or tuple of channels, got {type(channels)}: {channels}")
+            raise TypeError(
+                f"Expected a list or tuple of channels, got {type(channels)}: {channels}"
+            )
 
         if not channels:
             raise ValueError("At least one channel must be specified for a frame")
 
         if not all(isinstance(c, eflr_types.ChannelItem) for c in channels):
-            raise TypeError(f"Expected a list of ChannelObject instances; "
-                            f"got types: {', '.join(str(type(c)) for c in channels)}")
+            raise TypeError(
+                f"Expected a list of ChannelObject instances; "
+                f"got types: {', '.join(str(type(c)) for c in channels)}"
+            )
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.FrameSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         fr = eflr_types.FrameItem(
             name,
@@ -876,20 +1126,20 @@ class DLISFile:
             encrypted=encrypted,
             index_min=index_min,
             index_max=index_max,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.FrameSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return fr
 
     def add_group(
-            self,
-            name: str,
-            description: OptAttrSetupType[str] = None,
-            object_list: OptAttrSetupType[ListOrTuple[EFLRItem]] = None,
-            group_list: OptAttrSetupType[ListOrTuple[eflr_types.GroupItem]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        description: OptAttrSetupType[str] = None,
+        object_list: OptAttrSetupType[ListOrTuple[EFLRItem]] = None,
+        group_list: OptAttrSetupType[ListOrTuple[eflr_types.GroupItem]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.GroupItem:
         """Create a group of EFLR items and add it to the DLIS.
 
@@ -904,43 +1154,50 @@ class DLISFile:
                                     are completely arbitrary.' The types of objects referenced by these groups might
                                     be different from other objects referenced by the current group.
             set_name            :   Name of the FrameSet this frame should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured group item.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.GroupSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         g = eflr_types.GroupItem(
             name=name,
             description=description,
             object_list=object_list,
             group_list=group_list,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.GroupSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=self.physical_file._eflr_sets.get_or_make_set(
+                eflr_types.GroupSet, set_name=set_name
+            ),
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return g
 
     def add_long_name(
-            self,
-            name: str,
-            general_modifier: OptAttrSetupType[list[str]] = None,
-            quantity: OptAttrSetupType[str] = None,
-            quantity_modifier: OptAttrSetupType[list[str]] = None,
-            altered_form: OptAttrSetupType[str] = None,
-            entity: OptAttrSetupType[str] = None,
-            entity_modifier: OptAttrSetupType[list[str]] = None,
-            entity_number: OptAttrSetupType[str] = None,
-            entity_part: OptAttrSetupType[str] = None,
-            entity_part_number: OptAttrSetupType[str] = None,
-            generic_source: OptAttrSetupType[str] = None,
-            source_part: OptAttrSetupType[list[str]] = None,
-            source_part_number: OptAttrSetupType[list[str]] = None,
-            conditions: OptAttrSetupType[list[str]] = None,
-            standard_symbol: OptAttrSetupType[str] = None,
-            private_symbol: Optional[str] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        general_modifier: OptAttrSetupType[list[str]] = None,
+        quantity: OptAttrSetupType[str] = None,
+        quantity_modifier: OptAttrSetupType[list[str]] = None,
+        altered_form: OptAttrSetupType[str] = None,
+        entity: OptAttrSetupType[str] = None,
+        entity_modifier: OptAttrSetupType[list[str]] = None,
+        entity_number: OptAttrSetupType[str] = None,
+        entity_part: OptAttrSetupType[str] = None,
+        entity_part_number: OptAttrSetupType[str] = None,
+        generic_source: OptAttrSetupType[str] = None,
+        source_part: OptAttrSetupType[list[str]] = None,
+        source_part_number: OptAttrSetupType[list[str]] = None,
+        conditions: OptAttrSetupType[list[str]] = None,
+        standard_symbol: OptAttrSetupType[str] = None,
+        private_symbol: Optional[str] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.LongNameItem:
         """Create a Long Name item and add it to the DLIS.
 
@@ -987,11 +1244,16 @@ class DLISFile:
                                     are completely at the discretion of the Producer that is identified
                                     in the Origin Object associated with the Long Name Object.'
             set_name            :   Name of the LongNameSet this long name item should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured Long Name item.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.LongNameSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         ln = eflr_types.LongNameItem(
             name=name,
@@ -1010,24 +1272,24 @@ class DLISFile:
             conditions=conditions,
             standard_symbol=standard_symbol,
             private_symbol=private_symbol,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.LongNameSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return ln
 
     def add_message(
-            self,
-            name: str,
-            message_type: OptAttrSetupType[str] = None,
-            time: OptAttrSetupType[dtime_or_number_type] = None,
-            borehole_drift: OptAttrSetupType[number_type] = None,
-            vertical_depth: OptAttrSetupType[number_type] = None,
-            radial_drift: OptAttrSetupType[number_type] = None,
-            angular_drift: OptAttrSetupType[number_type] = None,
-            text: OptAttrSetupType[list[str]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        message_type: OptAttrSetupType[str] = None,
+        time: OptAttrSetupType[dtime_or_number_type] = None,
+        borehole_drift: OptAttrSetupType[number_type] = None,
+        vertical_depth: OptAttrSetupType[number_type] = None,
+        radial_drift: OptAttrSetupType[number_type] = None,
+        angular_drift: OptAttrSetupType[number_type] = None,
+        text: OptAttrSetupType[list[str]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.MessageItem:
         """Create a message and add it to DLIS.
 
@@ -1041,11 +1303,16 @@ class DLISFile:
             angular_drift       :   Angular drift.
             text                :   Text of the message.
             set_name            :   Name of the MessageSet this message should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured message.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.MessageSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         m = eflr_types.MessageItem(
             name=name,
@@ -1056,19 +1323,19 @@ class DLISFile:
             radial_drift=radial_drift,
             angular_drift=angular_drift,
             text=text,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.MessageSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return m
 
     def add_no_format(
-            self,
-            name: str,
-            consumer_name: OptAttrSetupType[str] = None,
-            description: OptAttrSetupType[str] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        consumer_name: OptAttrSetupType[str] = None,
+        description: OptAttrSetupType[str] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.NoFormatItem:
         """Create a no-format (a subtype of unformatted data logical record) item and add it to the DLIS.
 
@@ -1090,26 +1357,29 @@ class DLISFile:
             consumer_name       :   '[A] client-provided name for the data, for example an external file specification.'
             description         :   Description of the data item.
             set_name            :   Name of the NoFormatSet this item should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured no-format item.
         """
 
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.NoFormatSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
+
         nf = eflr_types.NoFormatItem(
             name=name,
             consumer_name=consumer_name,
             description=description,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.NoFormatSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return nf
 
     def add_no_format_frame_data(
-            self,
-            no_format_object: eflr_types.NoFormatItem,
-            data: str
+        self, no_format_object: eflr_types.NoFormatItem, data: str
     ) -> NoFormatFrameData:
         """Create a no-format frame data object.
 
@@ -1129,30 +1399,47 @@ class DLISFile:
         self._no_format_frame_data.append(d)
         return d
 
+    def next_available_origin_ref(
+            self, origin_reference: Union[int, None], origins: list[eflr_types.OriginItem]
+    ) -> int:
+        origins_refs = [o.origin_reference for o in origins]
+        next_available_origin_ref: int = 0
+        if origin_reference:
+            next_available_origin_ref = origin_reference
+            if origin_reference in origins_refs:
+                raise RuntimeError(
+                    f"There's already an origin with origin_reference {origin_reference} in this logical file."
+                )
+        else:
+            next_available_origin_ref = len(origins)
+        while next_available_origin_ref in origins_refs:
+            next_available_origin_ref += 1
+        return next_available_origin_ref
+
     def add_origin(
-            self,
-            name: str,
-            file_set_number: OptAttrSetupType[int] = None,
-            file_set_name: OptAttrSetupType[str] = None,
-            file_id: OptAttrSetupType[str] = None,
-            file_number: OptAttrSetupType[int] = None,
-            file_type: OptAttrSetupType[str] = None,
-            product: OptAttrSetupType[str] = None,
-            version: OptAttrSetupType[str] = None,
-            programs: OptAttrSetupType[list[str]] = None,
-            creation_time: OptAttrSetupType[Union[datetime, str]] = None,
-            order_number: OptAttrSetupType[str] = None,
-            descent_number: OptAttrSetupType[int] = None,
-            run_number: OptAttrSetupType[int] = None,
-            well_id: OptAttrSetupType[int] = None,
-            well_name: OptAttrSetupType[str] = None,
-            field_name: OptAttrSetupType[str] = None,
-            producer_code: OptAttrSetupType[int] = None,
-            producer_name: OptAttrSetupType[str] = None,
-            company: OptAttrSetupType[str] = None,
-            name_space_name: OptAttrSetupType[str] = None,
-            name_space_version: OptAttrSetupType[int] = None,
-            set_name: Optional[str] = None
+        self,
+        name: str,
+        file_set_number: OptAttrSetupType[int] = None,
+        origin_reference: Optional[int] = None,
+        file_set_name: OptAttrSetupType[str] = None,
+        file_number: OptAttrSetupType[int] = None,
+        file_type: OptAttrSetupType[str] = None,
+        product: OptAttrSetupType[str] = None,
+        version: OptAttrSetupType[str] = None,
+        programs: OptAttrSetupType[list[str]] = None,
+        creation_time: OptAttrSetupType[Union[datetime, str]] = None,
+        order_number: OptAttrSetupType[str] = None,
+        descent_number: OptAttrSetupType[int] = None,
+        run_number: OptAttrSetupType[int] = None,
+        well_id: OptAttrSetupType[int] = None,
+        well_name: OptAttrSetupType[str] = None,
+        field_name: OptAttrSetupType[str] = None,
+        producer_code: OptAttrSetupType[int] = None,
+        producer_name: OptAttrSetupType[str] = None,
+        company: OptAttrSetupType[str] = None,
+        name_space_name: OptAttrSetupType[str] = None,
+        name_space_version: OptAttrSetupType[int] = None,
+        set_name: Optional[str] = None,
     ) -> eflr_types.OriginItem:
         """Create an origin.
 
@@ -1165,8 +1452,7 @@ class DLISFile:
 
         Args:
             name                :   Name of the object.
-            file_set_number     :   File set number. Used as 'origin reference' in all other objects added to the file.
-                                    If not specified, it is assigned randomly (in accordance with the RP66 specs).
+            file_set_number     :   If not specified, it is assigned randomly (in accordance with the RP66 specs).
                                     '[A] random number, called the File Set Number, that is used to distinguish
                                     the Logical Files of one File Set from the Logical Files of another File Set.
                                     This number should be such that there is a high probability that it uniquely
@@ -1174,16 +1460,14 @@ class DLISFile:
                                     of a given File Set. This Attribute must be present, even when the File-Set-Name
                                     Attribute is absent. In that case, it is considered to apply to the File Set
                                     consisting of the single current Logical File.'
+            origin_reference    :   This value is used as reference to the objects that are associated with this origin.
+                                    It is simpler to pass None. This way, a new, unique value, is assigned to this
+                                    origin
             file_set_name       :   '[T]he name of a File Set, a group of Logical Files related according to
                                     Producer-defined criteria to which the Parent File belongs.
                                     The File Set is an arbitrary grouping of a set of Logical Files
                                     and has no DLIS semantic meaning. The File-Set-Name Attribute is not expected
                                     to be unique for all File Sets.'
-            file_id             :   '[A]n exact copy of the ID Attribute of the File-Header Object of the Parent File,
-                                    i.e., the Logical File for which this Origin Object is the Defining Origin.'
-                                    For defining origin (the first origin in the file) this will be set automatically,
-                                    so it does not have to be specified here. For other origins - origins defining other
-                                    DLIS files - the file_id should be specified manually.
             file_number         :   '[T]he File Number of the Parent File relative to the File Set specified by the
                                     File-Set-Name Attribute. File Numbers for a File Set are positive and increase
                                     in the order in which the Logical Files of the File Set are created.
@@ -1238,11 +1522,34 @@ class DLISFile:
             A configured OriginItem instance.
         """
 
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.OriginSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
+
+        origins: list[eflr_types.OriginItem] = list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+        new_origin_ref = self.next_available_origin_ref(origin_reference, origins)
+        """ origins_refs = [o.origin_reference for o in origins]
+        next_available_origin_ref: int = 0
+        if origin_reference:
+            next_available_origin_ref = origin_reference
+            if origin_reference in origins_refs:
+                raise RuntimeError(
+                    f"There's already an origin with origin_reference {origin_reference} in this logical file."
+                )
+        else:
+            next_available_origin_ref = len(origins)
+        while next_available_origin_ref in origins_refs:
+            next_available_origin_ref += 1 """
+
+        logger.debug(f"origin_reference = {origin_reference},  new_origin_ref = {new_origin_ref}")
+
         o = eflr_types.OriginItem(
             name=name,
+            origin_reference=origin_reference or new_origin_ref,
             file_set_number=file_set_number,
             file_set_name=file_set_name,
-            file_id=file_id,
+            file_id=self.file_header.header_id,
             file_number=file_number,
             file_type=file_type,
             product=product,
@@ -1260,31 +1567,42 @@ class DLISFile:
             company=company,
             name_space_name=name_space_name,
             name_space_version=name_space_version,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.OriginSet, set_name=set_name)
+            parent=parent,
         )
 
-        if len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))) == 1:
-            ref = o.file_set_number.value
-            logger.info(f"Assigning origin reference {ref} to all EFLR items without origin reference defined")
-
+        if (
+            len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet)))
+            == 1
+        ):
+            logger.info(
+                f"Assigning origin reference {o.origin_reference} to all EFLR items without origin reference defined"
+            )
             for eflr_set_dict in self._eflr_sets.values():
                 for eflr_set in eflr_set_dict.values():
                     for eflr_item in eflr_set.get_all_eflr_items():
                         if eflr_item.origin_reference is None:
-                            eflr_item.origin_reference = ref
+                            eflr_item.origin_reference = o.origin_reference
+            for eflr_set_dict in self.physical_file._eflr_sets.values():
+                for eflr_set in eflr_set_dict.values():
+                    for eflr_item in eflr_set.get_all_eflr_items():
+                        if eflr_item.origin_reference is None:
+                            eflr_item.origin_reference = o.origin_reference
+
+            # Not enlisted in the sets. See Issue #
+            self.file_header_item.origin_reference = o.origin_reference
 
         return o
 
     def add_parameter(
-            self,
-            name: str,
-            long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
-            dimension: OptAttrSetupType[list[int]] = None,
-            axis: OptAttrSetupType[eflr_types.AxisItem] = None,
-            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            values: OptAttrSetupType[NestedList[Union[str, int, float]]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        long_name: OptAttrSetupType[Union[str, eflr_types.LongNameItem]] = None,
+        dimension: OptAttrSetupType[list[int]] = None,
+        axis: OptAttrSetupType[eflr_types.AxisItem] = None,
+        zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
+        values: OptAttrSetupType[NestedList[Union[str, int, float]]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ParameterItem:
         """Create a parameter.
 
@@ -1310,11 +1628,16 @@ class DLISFile:
                                     to the kth zone. When the Parameter is Unzoned, there is a single Parameter value
                                     in the Values Attribute.'
             set_name            :   Name of the ParameterSet this parameter should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured ParameterItem instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ParameterSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         p = eflr_types.ParameterItem(
             name=name,
@@ -1323,28 +1646,30 @@ class DLISFile:
             axis=axis,
             zones=zones,
             values=values,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ParameterSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return p
 
     def add_path(
-            self,
-            name: str,
-            frame_type: OptAttrSetupType[eflr_types.FrameItem] = None,
-            well_reference_point: OptAttrSetupType[eflr_types.WellReferencePointItem] = None,
-            value: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            borehole_depth: OptAttrSetupType[number_type] = None,
-            vertical_depth: OptAttrSetupType[number_type] = None,
-            radial_drift: OptAttrSetupType[number_type] = None,
-            angular_drift: OptAttrSetupType[number_type] = None,
-            time: OptAttrSetupType[number_type] = None,
-            depth_offset: OptAttrSetupType[number_type] = None,
-            measure_point_offset: OptAttrSetupType[number_type] = None,
-            tool_zero_offset: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        frame_type: OptAttrSetupType[eflr_types.FrameItem] = None,
+        well_reference_point: OptAttrSetupType[
+            eflr_types.WellReferencePointItem
+        ] = None,
+        value: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+        borehole_depth: OptAttrSetupType[number_type] = None,
+        vertical_depth: OptAttrSetupType[number_type] = None,
+        radial_drift: OptAttrSetupType[number_type] = None,
+        angular_drift: OptAttrSetupType[number_type] = None,
+        time: OptAttrSetupType[number_type] = None,
+        depth_offset: OptAttrSetupType[number_type] = None,
+        measure_point_offset: OptAttrSetupType[number_type] = None,
+        tool_zero_offset: OptAttrSetupType[number_type] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.PathItem:
         """Define a Path and add it to the DLIS.
 
@@ -1420,11 +1745,16 @@ class DLISFile:
                                         it is frequently zero.
                                         Specifically, Data Reference Point = Tool Zero Point + Tool-Zero-Offset.'
             set_name                :   Name of the PathSet this path should be added to.
-            origin_reference        :   file_set_number of the Origin this record belongs to.
+            origin_reference        :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured Path instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.PathSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         p = eflr_types.PathItem(
             name=name,
@@ -1439,28 +1769,32 @@ class DLISFile:
             depth_offset=depth_offset,
             measure_point_offset=measure_point_offset,
             tool_zero_offset=tool_zero_offset,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.PathSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return p
 
     def add_process(
-            self,
-            name: str,
-            description: OptAttrSetupType[str] = None,
-            trademark_name: OptAttrSetupType[str] = None,
-            version: OptAttrSetupType[str] = None,
-            properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
-            status: OptAttrSetupType[Union[str, enums.ProcessStatus]] = None,
-            input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            output_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            input_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
-            output_computations: OptAttrSetupType[ListOrTuple[eflr_types.ComputationItem]] = None,
-            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
-            comments: OptAttrSetupType[list[str]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        description: OptAttrSetupType[str] = None,
+        trademark_name: OptAttrSetupType[str] = None,
+        version: OptAttrSetupType[str] = None,
+        properties: OptAttrSetupType[list[Union[str, enums.Property]]] = None,
+        status: OptAttrSetupType[Union[str, enums.ProcessStatus]] = None,
+        input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+        output_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+        input_computations: OptAttrSetupType[
+            ListOrTuple[eflr_types.ComputationItem]
+        ] = None,
+        output_computations: OptAttrSetupType[
+            ListOrTuple[eflr_types.ComputationItem]
+        ] = None,
+        parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
+        comments: OptAttrSetupType[list[str]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ProcessItem:
         """Define a process item and add it to DLIS.
 
@@ -1487,11 +1821,16 @@ class DLISFile:
             comments            :   '[I]nformation specific to the particular execution of the process
                                     (generally provided by the user).'
             set_name            :   Name of the ProcessSet this process should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured ProcessItem instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ProcessSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         p = eflr_types.ProcessItem(
             name=name,
@@ -1506,20 +1845,20 @@ class DLISFile:
             output_computations=output_computations,
             parameters=parameters,
             comments=comments,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ProcessSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return p
 
     def add_splice(
-            self,
-            name: str,
-            output_channel: OptAttrSetupType[eflr_types.ChannelItem] = None,
-            input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        output_channel: OptAttrSetupType[eflr_types.ChannelItem] = None,
+        input_channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+        zones: OptAttrSetupType[ListOrTuple[eflr_types.ZoneItem]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.SpliceItem:
         """Create a splice object.
 
@@ -1542,35 +1881,40 @@ class DLISFile:
                                     must specify mutually-disjoint zones in the same domain, but the ordering
                                     of the zones is arbitrary.'
             set_name            :   Name of the SpliceSet this splice should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured splice.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.SpliceSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         sp = eflr_types.SpliceItem(
             name=name,
             output_channel=output_channel,
             input_channels=input_channels,
             zones=zones,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.SpliceSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return sp
 
     def add_tool(
-            self,
-            name: str,
-            description: OptAttrSetupType[str] = None,
-            trademark_name: OptAttrSetupType[str] = None,
-            generic_name: OptAttrSetupType[str] = None,
-            parts: OptAttrSetupType[ListOrTuple[eflr_types.EquipmentItem]] = None,
-            status: OptAttrSetupType[int] = None,
-            channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
-            parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        description: OptAttrSetupType[str] = None,
+        trademark_name: OptAttrSetupType[str] = None,
+        generic_name: OptAttrSetupType[str] = None,
+        parts: OptAttrSetupType[ListOrTuple[eflr_types.EquipmentItem]] = None,
+        status: OptAttrSetupType[int] = None,
+        channels: OptAttrSetupType[ListOrTuple[eflr_types.ChannelItem]] = None,
+        parameters: OptAttrSetupType[ListOrTuple[eflr_types.ParameterItem]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ToolItem:
         """Create a tool object.
 
@@ -1594,11 +1938,16 @@ class DLISFile:
             parameters          :   A list of ParameterItem objects `corresponding to Parameters that directly affect
                                     or reflect the operation of this Tool`.
             set_name            :   Name of the ToolSet this tool should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Returns:
             A configured tool.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ToolSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         t = eflr_types.ToolItem(
             name=name,
@@ -1609,28 +1958,28 @@ class DLISFile:
             status=status,
             channels=channels,
             parameters=parameters,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ToolSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return t
 
     def add_well_reference_point(
-            self,
-            name: str,
-            permanent_datum: OptAttrSetupType[str] = None,
-            vertical_zero: OptAttrSetupType[str] = None,
-            permanent_datum_elevation: OptAttrSetupType[number_type] = None,
-            above_permanent_datum: OptAttrSetupType[number_type] = None,
-            magnetic_declination: OptAttrSetupType[number_type] = None,
-            coordinate_1_name: OptAttrSetupType[str] = None,
-            coordinate_1_value: OptAttrSetupType[number_type] = None,
-            coordinate_2_name: OptAttrSetupType[str] = None,
-            coordinate_2_value: OptAttrSetupType[number_type] = None,
-            coordinate_3_name: OptAttrSetupType[str] = None,
-            coordinate_3_value: OptAttrSetupType[number_type] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        permanent_datum: OptAttrSetupType[str] = None,
+        vertical_zero: OptAttrSetupType[str] = None,
+        permanent_datum_elevation: OptAttrSetupType[number_type] = None,
+        above_permanent_datum: OptAttrSetupType[number_type] = None,
+        magnetic_declination: OptAttrSetupType[number_type] = None,
+        coordinate_1_name: OptAttrSetupType[str] = None,
+        coordinate_1_value: OptAttrSetupType[number_type] = None,
+        coordinate_2_name: OptAttrSetupType[str] = None,
+        coordinate_2_value: OptAttrSetupType[number_type] = None,
+        coordinate_3_name: OptAttrSetupType[str] = None,
+        coordinate_3_value: OptAttrSetupType[number_type] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.WellReferencePointItem:
         """Define a well reference point and add it to the DLIS.
 
@@ -1668,7 +2017,7 @@ class DLISFile:
                                             to locate the Well Reference Point.'
             coordinate_3_value          :   '[T]he numerical value of the [third] coordinate'.
             set_name                    :   Name of the WellReferencePointSet this item should be added to.
-            origin_reference            :   file_set_number of the Origin this record belongs to.
+            origin_reference            :   origin_reference of the Origin this record belongs to.
 
         Note:
             'Traditionally the coordinates of a well are described by latitude, longitude, and elevation.
@@ -1680,6 +2029,11 @@ class DLISFile:
         Returns:
             A configured WellReferencePointItem instance.
         """
+
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.WellReferencePointSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
 
         w = eflr_types.WellReferencePointItem(
             name=name,
@@ -1694,21 +2048,21 @@ class DLISFile:
             coordinate_2_value=coordinate_2_value,
             coordinate_3_name=coordinate_3_name,
             coordinate_3_value=coordinate_3_value,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.WellReferencePointSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=parent,
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return w
 
     def add_zone(
-            self,
-            name: str,
-            description: OptAttrSetupType[str] = None,
-            domain: OptAttrSetupType[Union[str, enums.ZoneDomain]] = None,
-            maximum: OptAttrSetupType[dtime_or_number_type] = None,
-            minimum: Optional[AttrSetupType[dtime_or_number_type]] = None,
-            set_name: Optional[str] = None,
-            origin_reference: Optional[int] = None
+        self,
+        name: str,
+        description: OptAttrSetupType[str] = None,
+        domain: OptAttrSetupType[Union[str, enums.ZoneDomain]] = None,
+        maximum: OptAttrSetupType[dtime_or_number_type] = None,
+        minimum: Optional[AttrSetupType[dtime_or_number_type]] = None,
+        set_name: Optional[str] = None,
+        origin_reference: Optional[int] = None,
     ) -> eflr_types.ZoneItem:
         """Create a zone (ZoneItem) and add it to the DLIS.
 
@@ -1732,7 +2086,7 @@ class DLISFile:
                                     When this Attribute is absent, the zone is considered to extend indefinitely
                                     in the direction corresponding to shallowest or earliest.'
             set_name            :   Name of the ZoneSet this zone should be added to.
-            origin_reference    :   file_set_number of the Origin this record belongs to.
+            origin_reference    :   origin_reference of the Origin this record belongs to.
 
         Note:
             Maximum and minimum should be instances of datetime.datetime if the domain is TIME. In other cases,
@@ -1742,14 +2096,21 @@ class DLISFile:
             A configured zone, added to the DLIS.
         """
 
+        parent = self.physical_file._eflr_sets.get_or_make_set(
+            eflr_types.ZoneSet, set_name=set_name
+        )
+        self._eflr_sets.try_add_set(parent)
+
         z = eflr_types.ZoneItem(
             name=name,
             description=description,
             domain=domain,
             maximum=maximum,
             minimum=minimum,
-            parent=self._eflr_sets.get_or_make_set(eflr_types.ZoneSet, set_name=set_name),
-            origin_reference=origin_reference or self.default_origin_reference
+            parent=self.physical_file._eflr_sets.get_or_make_set(
+                eflr_types.ZoneSet, set_name=set_name
+            ),
+            origin_reference=origin_reference or self.default_origin_reference,
         )
 
         return z
@@ -1774,8 +2135,10 @@ class DLISFile:
             do.file_id.value = fh_id
         else:
             if do.file_id.value != fh_id:
-                raise ValueError("'file_id' of the Defining Origin should be the same as the ID (header_id) "
-                                 f"of the file header; got {repr(do.file_id.value)} and {repr(fh_id)}")
+                raise ValueError(
+                    "'file_id' of the Defining Origin should be the same as the ID (header_id) "
+                    f"of the file header; got {repr(do.file_id.value)} and {repr(fh_id)}"
+                )
 
     def _check_completeness(self) -> None:
         """Check that the collection contains all required objects in the required (min/max) numbers.
@@ -1786,9 +2149,6 @@ class DLISFile:
 
         if not self.file_header:
             raise RuntimeError("No file header defined for the file")
-
-        if len(list(self._eflr_sets.get_all_items_for_set_type(eflr_types.FileHeaderSet))) > 1:
-            raise RuntimeError("Only one origin can be defined for the file")
 
         if not self.defining_origin:
             raise RuntimeError("No origin defined for the file")
@@ -1810,32 +2170,30 @@ class DLISFile:
         for frame_item in self.frames:
             for ch in frame_item.channels.value:
                 if ch not in counts:
-                    raise RuntimeError(f"{ch} from {frame_item} has not been registered in file's channels")
+                    raise RuntimeError(
+                        f"{ch} from {frame_item} has not been registered in file's channels"
+                    )
                 counts[ch] += 1
 
         for ch, v in counts.items():
             if not v:
-                self.raise_or_warn(f"{ch} has not been added to any frame; this might cause issues "
-                                   f"with opening the produced DLIS file in some software")
+                raise_or_warn(
+                    f"{ch} has not been added to any frame; this might cause issues "
+                    f"with opening the produced DLIS file in some software"
+                )
             if v > 1:
-                self.raise_or_warn(f"{ch} has been added to {v} frames; according to RP66 v1, a channel "
-                                   f"can only be added to a single frame")
-
-    @staticmethod
-    def raise_or_warn(message: str) -> None:
-        """If high-compatibility mode is on, raise a RuntimeError with given message. Otherwise, put it in the logs."""
-
-        if global_config.high_compat_mode:
-            raise RuntimeError(message)
-        logger.warning(message)
+                raise_or_warn(
+                    f"{ch} has been added to {v} frames; according to RP66 v1, a channel "
+                    f"can only be added to a single frame"
+                )
 
     def _make_multi_frame_data(
-            self,
-            fr: eflr_types.FrameItem,
-            data: Optional[data_form_type] = None,
-            from_idx: int = 0,
-            to_idx: Optional[int] = None,
-            **kwargs: Any
+        self,
+        fr: eflr_types.FrameItem,
+        data: Optional[data_form_type] = None,
+        from_idx: int = 0,
+        to_idx: Optional[int] = None,
+        **kwargs: Any,
     ) -> MultiFrameData:
         """Create a MultiFrameData object, containing the frame and associated data, generating FrameData instances."""
 
@@ -1846,17 +2204,26 @@ class DLISFile:
 
         if isinstance(data, dict):
             self._data_dict = self._data_dict | data
-            data_object = DictDataWrapper(self._data_dict, mapping=fr.channel_name_mapping,
-                                          known_dtypes=fr.known_channel_dtypes_mapping,
-                                          from_idx=from_idx, to_idx=to_idx)
+            data_object = DictDataWrapper(
+                self._data_dict,
+                mapping=fr.channel_name_mapping,
+                known_dtypes=fr.known_channel_dtypes_mapping,
+                from_idx=from_idx,
+                to_idx=to_idx,
+            )
         else:
             if self._data_dict:
-                raise TypeError(f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
-                                f"(Note: a dictionary is the only allowed type because some channels have been added"
-                                f"with associated data arrays")
+                raise TypeError(
+                    f"Expected a dictionary of np.ndarrays; got {type(data)}: {data} "
+                    f"(Note: a dictionary is the only allowed type because some channels have been added"
+                    f"with associated data arrays"
+                )
             data_object = SourceDataWrapper.make_wrapper(
-                data, mapping=fr.channel_name_mapping, known_dtypes=fr.known_channel_dtypes_mapping,
-                from_idx=from_idx, to_idx=to_idx
+                data,
+                mapping=fr.channel_name_mapping,
+                known_dtypes=fr.known_channel_dtypes_mapping,
+                from_idx=from_idx,
+                to_idx=to_idx,
             )
 
         self._check_data(data_object)
@@ -1872,86 +2239,7 @@ class DLISFile:
             raise RuntimeError("Data types not defined")
         for name in dt.names:
             if np.issubdtype(dt[name].base, np.signedinteger):
-                DLISFile.raise_or_warn(f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "
-                                       f"interpret signed integers correctly (overflow for negative values)")
-
-    def generate_logical_records(self, chunk_size: Optional[int], data: Optional[data_form_type] = None,
-                                 **kwargs: Any) -> SizedGenerator:
-        """Iterate over all logical records defined in the file.
-
-        Yields: EFLR and IFLR objects defined for the file.
-
-        Note: Storage Unit Label should be added to the file separately before adding other records.
-        """
-
-        frame_items: Generator[eflr_types.FrameItem, None, None] \
-            = self._eflr_sets.get_all_items_for_set_type(eflr_types.FrameSet)
-        multi_frame_data_objects: list[MultiFrameData] = [
-            self._make_multi_frame_data(fr, chunk_size=chunk_size, data=data, **kwargs) for fr in frame_items
-        ]
-
-        n = 0
-        for eflr_set_type in self._eflr_sets:
-            n += len(list(self._eflr_sets.get_all_items_for_set_type(eflr_set_type)))
-        for mfd in multi_frame_data_objects:
-            n += len(mfd)
-        n += len(self._no_format_frame_data)
-
-        def generator() -> Generator:
-            """Define a generator yielding logical records to be put in the file."""
-
-            if self.defining_origin is None:
-                raise RuntimeError("No Origin defined for the file")
-
-            yield self.file_header.parent
-            yield from self._eflr_sets[eflr_types.OriginSet].values()
-
-            for set_type, set_dict in self._eflr_sets.items():
-                if set_type not in (eflr_types.FileHeaderSet, eflr_types.OriginSet):
-                    yield from set_dict.values()
-
-            yield from self._no_format_frame_data
-
-            for multi_frame_data in multi_frame_data_objects:
-                yield from multi_frame_data
-
-        return SizedGenerator(generator(), size=n)
-
-    def write(
-            self,
-            dlis_file_name: file_name_type,
-            input_chunk_size: Optional[int] = None,
-            output_chunk_size: Optional[number_type] = 2**32,
-            data: Optional[data_form_type] = None,
-            from_idx: int = 0,
-            to_idx: Optional[int] = None
-    ) -> None:
-        """Create a DLIS file form the current specifications.
-
-        Args:
-            dlis_file_name          :   Name of the file to be created.
-            input_chunk_size        :   Size of the chunks (in rows) in which input data will be loaded to be processed.
-            output_chunk_size       :   Size of the buffers accumulating file bytes before file write action is called.
-            data                    :   Data for channels - if not specified when channels were added.
-            from_idx                :   Index from which the data should be loaded (or number of initial rows
-                                        to ignore).
-            to_idx                  :   Index up to which data should be loaded.
-        """
-
-        def timed_func() -> None:
-            """Perform the action of creating a DLIS file.
-
-            This function is used in a timeit call to time the file creation.
-            """
-
-            self.check_objects()
-
-            logical_records = self.generate_logical_records(
-                chunk_size=input_chunk_size, data=data, from_idx=from_idx, to_idx=to_idx)
-
-            writer = DLISWriter(dlis_file_name, visible_record_length=self.storage_unit_label.max_record_length)
-            writer.write_storage_unit_label(self.storage_unit_label)
-            writer.write_logical_records(logical_records, output_chunk_size=output_chunk_size)
-
-        exec_time = timeit(timed_func, number=1)
-        logger.info(f"DLIS file created in {timedelta(seconds=exec_time)} ({exec_time} seconds)")
+                raise_or_warn(
+                    f"Data type of channel '{name}' is {dt[name].base}; some DLIS viewers cannot "
+                    f"interpret signed integers correctly (overflow for negative values)"
+                )

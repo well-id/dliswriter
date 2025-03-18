@@ -4,8 +4,6 @@ DLISWriter and auxiliary objects
 Given the iterable of logical records, provided by the ``DLISFile``,
 a ``DLISWriter`` iterates over the logical records and for each one:
 
-#. Assigns an ``origin_reference`` to all objects in the file.
-   The origin reference is the ``file_set_number`` of the :ref:`Origin` object defined in the file.
 #. Calls for creation of bytes describing that logical record
    (see :ref:`Converting to bytes`)
 #. If the bytes sequence is too long to fit into a single visible record,

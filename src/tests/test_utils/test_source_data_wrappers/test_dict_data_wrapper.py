@@ -17,8 +17,8 @@ def data() -> source_data_type:
     n = 100
     d = {
         'depth': np.arange(n) * 0.1,
-        'rpm': (10 * np.random.rand(n)).astype(int),
-        'amplitude': np.random.rand(n, 128).astype(np.float32)
+        'rpm': (10 * np.random.rand(n)).astype(np.int32),
+        'amplitude': np.random.rand(n, 128).astype(np.float32),
     }
 
     return d

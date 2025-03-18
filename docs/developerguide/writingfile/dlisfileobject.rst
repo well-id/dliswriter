@@ -27,8 +27,9 @@ from the top level - a ``DLISFile``:
 .. code-block:: python
 
     dlis_file = DLISFile()
-    a_channel = dlis_file.add_channel(...)
-    an_axis = dlis_file.add_axis(...)
+    logical_file = dlis_file.add_logical_file()  # a DLIS file is basically comprised of independent fully self-contained logical files
+    a_channel = logical_file.add_channel(...)
+    an_axis = logical_file.add_axis(...)
 
 
 In order to mark relations between objects, a 'lower-level' object should be created first and then
@@ -36,8 +37,8 @@ passed as argument when creating a 'higher-level' object:
 
 .. code-block:: python
 
-    a_frame = dlis_file.add_frame(..., channels=(a_channel, ...))   # frame can have multiple channels
-    a_computation = dlis_file.add_computation(..., axis=an_axis)    # computation can only have 1 axis
+    a_frame = logical_file.add_frame(..., channels=(a_channel, ...))   # frame can have multiple channels
+    a_computation = logical_file.add_computation(..., axis=an_axis)    # computation can only have 1 axis
 
 
 This makes it trivial to reuse already defined 'lower-level' objects as many times as needed:
@@ -45,8 +46,8 @@ This makes it trivial to reuse already defined 'lower-level' objects as many tim
 .. code-block:: python
 
     # (multiple axes possible for both Parameter and Channel)
-    a_param = dlis_file.add_parameter(..., axis=(an_axis, ...))
-    another_channel = dlis_file.add_channel(..., axis=(an_axis, ...))
+    a_param = logical_file.add_parameter(..., axis=(an_axis, ...))
+    another_channel = logical_file.add_channel(..., axis=(an_axis, ...))
 
 
 As shown in the :doc:`user guide <../../userguide/minimalexample>`, once all required objects are defined,

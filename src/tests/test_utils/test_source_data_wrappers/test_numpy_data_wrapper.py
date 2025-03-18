@@ -9,7 +9,7 @@ from dliswriter.utils.source_data_wrappers import NumpyDataWrapper, SourceDataWr
 def dtype() -> np.dtype:
     data_types = [
         ('depth', float),
-        ('rpm', int),
+        ('rpm', np.int32),
         ('amplitude', np.float32, 128),
         ('radius', np.int32, 20)
     ]
@@ -30,9 +30,9 @@ def data(dtype: np.dtype) -> np.ndarray:
     n = 50
     arr = np.empty(n, dtype=dtype)
     arr['depth'] = np.arange(n) * 0.01
-    arr['rpm'] = np.random.randint(size=n, low=5, high=10)
+    arr['rpm'] = np.random.randint(size=n, low=5, high=10, dtype=np.int32)
     arr['amplitude'] = np.random.rand(n, 128)
-    arr['radius'] = (10 * np.random.rand(n, 20)).astype(int)
+    arr['radius'] = (10 * np.random.rand(n, 20)).astype(np.int32)
 
     return arr
 

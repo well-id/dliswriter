@@ -47,7 +47,7 @@ class EFLRItem:
             name                :   Name of the item. This will be the name it is stored with in the created DLIS file.
             parent              :   EFLRTable instance this item belongs to. If not provided,
                                         retrieved/made based on set_name.
-            origin_reference    :   'file_set_number' of the Origin; common for EFLRItems sharing the same Origin.
+            origin_reference    :   Common for EFLRItems sharing the same Origin.
             **kwargs            :   Values to be set in attributes of this item.
 
         Note:

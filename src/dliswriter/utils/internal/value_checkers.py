@@ -34,10 +34,10 @@ def convert_numeric(value: str) -> Union[int, float, str]:
     parser = float if '.' in value else int
 
     try:
-        value = parser(value)
+        parsed_value = parser(value)
     except ValueError:
         raise ValueError(f"Value '{value}' could not be converted to a numeric type")
-    return value
+    return parsed_value
 
 
 def convert_maybe_numeric(val: Union[str, int, float]) -> Union[str, int, float]:

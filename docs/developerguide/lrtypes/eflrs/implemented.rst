@@ -10,7 +10,7 @@ Note: the standard defines several more types of EFLRs.
 
 File Header
 ^^^^^^^^^^^
-File Header must immediately follow a :ref:`Storage Unit Label <SUL>` of the file.
+Every Logical File must have a (single) File Header.
 Its length must be exactly 124 bytes.
 The ``identifier`` attribute of the File Header represents the name of the DLIS file.
 It should be a string of max 65 characters.
@@ -20,14 +20,17 @@ It should be a string of max 65 characters.
 
 Origin
 ^^^^^^
-Every DLIS file must contain at least one Origin. Usually, it immediately follows the `File Header`_.
+Every Logical File file must contain at least one Origin. Usually, it immediately follows the `File Header`_.
 The Origin keeps key information related to the scanned well, the scan procedure, producer, etc.
 The ``creation_time`` :ref:`Attribute <Attribute>` of Origin, if not explicitly specified, is set to the current
 date and time (when the object is initialised).
 
-The ``file_set_number`` :ref:`Attribute <Attribute>` of an Origin (assigned by user or randomly generated) is used as an Origin reference
-in other DLIS objects. By default, the ``file_set_number`` of the first defined Origin is assigned to all other objects.
-To indicate that an object originally comes from a different file, the user should create an additional Origin
+The ``origin_reference`` :ref:`Attribute <Attribute>` of an Origin (assigned by user or automatically generated) is used
+as an Origin reference in other DLIS objects. By default, the ``origin_reference`` of the first defined Origin is assigned to
+all other objects of its Logical File.
+
+To indicate that an object originally comes from a different logical file, the user should create another Logical File,
+an Origin for it its defining origin additional Origin
 with the relevant information and pass its ``file_set_number`` when creating the objects belonging to that Origin.
 
 From RP66:
