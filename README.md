@@ -129,9 +129,11 @@ You might also want to have a look at our [issues log](https://github.com/well-i
 ## Authors
 `dliswriter` has been developed at [Well ID](https://wellid.no/) by:
 
-* Dominika Dlugosz
-* Magne Lauritzen
-* Kamil Grunwald
+* [Dominika Dlugosz](https://github.com/the-mysh)
+* [Magne Lauritzen](https://github.com/nup002)
+* [Kamil Grunwald](https://github.com/Grundig)
 * Omer Faruk Sari
+
+With contributions from [@ltbrizolara](https://github.com/ltbrizolara).
 
 Based on the definition of the [RP66 v1 standard](https://energistics.org/sites/default/files/RP66/V1/Toc/main.html).
