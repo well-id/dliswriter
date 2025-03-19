@@ -134,6 +134,6 @@ You might also want to have a look at our [issues log](https://github.com/well-i
 * [Kamil Grunwald](https://github.com/Grundig)
 * Omer Faruk Sari
 
-With contributions from [@ltbrizolara](https://github.com/ltbrizolara).
+With contributions from [Tiago Brizolara](https://github.com/ltbrizolara).
 
 Based on the definition of the [RP66 v1 standard](https://energistics.org/sites/default/files/RP66/V1/Toc/main.html).
