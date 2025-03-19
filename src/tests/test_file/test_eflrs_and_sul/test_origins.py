@@ -21,7 +21,7 @@ def test_origin(short_dlis: dlis.file.LogicalFile) -> None:
     assert origin.origin == 42
     assert origin.file_nr == 8
     assert origin.run_nr == [13]
-    assert origin.well_id == 5
+    assert origin.well_id == "5"
     assert origin.well_name == "Test well name"
     assert origin.field_name == "Test field name"
     assert origin.company == "Test company"

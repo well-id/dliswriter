@@ -20,7 +20,7 @@ def test_origin_creation() -> None:
         file_set_name="Test file set name",
         file_number=8,
         run_number=13,
-        well_id=5,
+        well_id="5",
         well_name="Test well name",
         field_name="Test field name",
         company="Test company",
@@ -36,7 +36,7 @@ def test_origin_creation() -> None:
     assert origin.file_set_number.value == 1
     assert origin.origin_reference == 1
     assert origin.run_number.value == 13
-    assert origin.well_id.value == 5
+    assert origin.well_id.value == "5"
     assert origin.well_name.value == "Test well name"
     assert origin.field_name.value == "Test field name"
     assert origin.company.value == "Test company"

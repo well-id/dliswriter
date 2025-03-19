@@ -1431,7 +1431,7 @@ class LogicalFile:
         order_number: OptAttrSetupType[str] = None,
         descent_number: OptAttrSetupType[int] = None,
         run_number: OptAttrSetupType[int] = None,
-        well_id: OptAttrSetupType[int] = None,
+        well_id: OptAttrSetupType[str] = None,
         well_name: OptAttrSetupType[str] = None,
         field_name: OptAttrSetupType[str] = None,
         producer_code: OptAttrSetupType[int] = None,

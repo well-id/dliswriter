@@ -29,7 +29,7 @@ The same applies to :ref:`Origin`, which is the container for key meta-data conc
       file_set_name='MY-FILE-SET-NAME',
       file_set_number=11,
       file_number=22,
-      well_id=55,
+      well_id="55",
       well_name='MY-WELL'
     )
 
