@@ -30,7 +30,7 @@ def _add_origin(lf: LogicalFile) -> eflr_types.OriginItem:
         origin_reference=42,
         file_number=8,
         run_number=13,
-        well_id=5,
+        well_id="5",
         well_name="Test well name",
         field_name="Test field name",
         company="Test company",

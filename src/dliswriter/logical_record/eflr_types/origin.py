@@ -47,7 +47,7 @@ class OriginItem(EFLRItem):
         self.order_number = TextAttribute('order_number')
         self.descent_number = NumericAttribute('descent_number', representation_code=RepC.UNORM)
         self.run_number = NumericAttribute('run_number', representation_code=RepC.UNORM)
-        self.well_id = NumericAttribute('well_id', representation_code=RepC.UNORM)
+        self.well_id = TextAttribute('well_id')
         self.well_name = TextAttribute('well_name')
         self.field_name = TextAttribute('field_name')
         self.producer_code = NumericAttribute('producer_code', representation_code=RepC.UNORM)
