@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.1.1
+-------------
+* `well_id` now set as `TextAttribute` - contribution by @ltbrizolara.
+
 Version 1.1.0
 -------------
 * Allow writing multiple logical files - contribution by @ltbrizolara.
