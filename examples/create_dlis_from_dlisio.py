@@ -3,8 +3,6 @@ from dlisio import dlis    # type: ignore  # untyped library
 import numpy as np
 
 from argparse import ArgumentParser
-from utils import prepare_directory
-# from ..src.dliswriter.utils.import_from_dlisio import create_from_dlisio    # type: ignore  # untyped library
 from dliswriter.utils.import_from_dlisio import create_from_dlisio    # type: ignore  # untyped library
 
 logger = logging.getLogger(__name__)

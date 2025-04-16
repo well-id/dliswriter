@@ -1,4 +1,7 @@
 from dliswriter import DLISFile, enums, eflr_types, StorageUnitLabel
+from dliswriter.logical_record.core.logical_record import LRMeta
+from dliswriter.file.eflr_sets_dict import AnyEFLRSet, AnyEFLRItem
+from typing import Union
 try:
     import dlisio    # type: ignore  # untyped library
 except ImportError:
@@ -7,7 +10,7 @@ except ImportError:
         "You can install dlisio or reinstall dliswriter calling 'pip install dliswriter[dlisio]'"
     )
 
-from dlisio.dlis.utils.valuetypes import parsevalue    # type: ignore  # untyped library
+from dlisio.dlis.utils.valuetypes import scalar, parsevalue    # type: ignore  # untyped library
 
 import logging
 
@@ -40,14 +43,14 @@ dlisio_to_dliswriter = {
 }
 
 
-def dliswriter_Set(dlisio_type):
+def dliswriter_Set(dlisio_type) -> Union[LRMeta, AnyEFLRSet, None]:
     """
     Output the dliswriter EFLRSet type corresponding to the dlisio_type
     """
-    return dlisio_to_dliswriter.get(dlisio_type, "None")
+    return dlisio_to_dliswriter.get(dlisio_type, None)
 
 
-def is_same_object(obj_dliswriter, obj_dlisio):
+def is_same_object(obj_dliswriter, obj_dlisio) -> bool:
     """
     Compare if an object in dlisio and another in dliswriter representation are the same.
     NOTE - Only the attributes that make a general object unique inside a logical file are compared,
@@ -58,7 +61,7 @@ def is_same_object(obj_dliswriter, obj_dlisio):
         obj_dliswriter.copy_number == obj_dlisio.copynumber
 
 
-def find_in_dliswriter(logical_file, object_from_dlisio):
+def find_in_dliswriter(logical_file, object_from_dlisio) -> Union[AnyEFLRItem, None]:
     """
     Find the dliswriter object in the logical file that is equivalent to object_from_dlisio
     """
@@ -101,7 +104,7 @@ def find_dlisio_objects_in_dliswriter(dlisio_objs, dliswriter_candidates):
     return objs
 
 
-def convert_dlisio_to_int(dlisio_in):
+def convert_dlisio_to_int(dlisio_in) -> Union[int, None]:
     out_nr = None
     if dlisio_in:
         if type(dlisio_in) is not int:
@@ -116,7 +119,7 @@ def convert_dlisio_to_int(dlisio_in):
     return out_nr
 
 
-def add_origins(dlisio_lf, out_logical_file, lf_index):
+def add_origins(dlisio_lf, out_logical_file, lf_index) -> None:
     for idx_o, o in enumerate(dlisio_lf.origins):
         programs = o["PROGRAMS"] if len(o["PROGRAMS"]) != 0 else None
 
@@ -151,7 +154,7 @@ def add_origins(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_axes(dlisio_lf, out_logical_file, lf_index):
+def add_axes(dlisio_lf, out_logical_file, lf_index) -> None:
     for a in dlisio_lf.axes:
         out_logical_file.add_axis(
             name=a.name,
@@ -163,7 +166,7 @@ def add_axes(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_equipments(dlisio_lf, out_logical_file, lf_index):
+def add_equipments(dlisio_lf, out_logical_file, lf_index) -> None:
     for e in dlisio_lf.equipments:
         out_logical_file.add_equipment(
             name=e.name,
@@ -189,7 +192,7 @@ def add_equipments(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_wellrefs(dlisio_lf, out_logical_file, lf_index):
+def add_wellrefs(dlisio_lf, out_logical_file, lf_index) -> None:
     for r in dlisio_lf.wellrefs:
         out_logical_file.add_well_reference_point(
             name=r.name,
@@ -209,7 +212,7 @@ def add_wellrefs(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_zones(dlisio_lf, out_logical_file, lf_index):
+def add_zones(dlisio_lf, out_logical_file, lf_index) -> None:
     for z in dlisio_lf.zones:
         out_logical_file.add_zone(
             name=z.name,
@@ -222,7 +225,7 @@ def add_zones(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_longnames(dlisio_lf, out_logical_file, lf_index):
+def add_longnames(dlisio_lf, out_logical_file, lf_index) -> None:
     for ln in dlisio_lf.longnames:
         out_logical_file.add_long_name(
             name=ln.name,
@@ -246,7 +249,7 @@ def add_longnames(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_calibration_coefficients(dlisio_lf, out_logical_file, lf_index):
+def add_calibration_coefficients(dlisio_lf, out_logical_file, lf_index) -> None:
     for c in dlisio_lf.coefficients:
         coeffs = c.coefficients if len(c.coefficients) else None
         refs = c.references if len(c.references) else None
@@ -264,7 +267,7 @@ def add_calibration_coefficients(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_channels_and_frames(dlisio_lf, out_logical_file, lf_index):
+def add_channels_and_frames(dlisio_lf, out_logical_file, lf_index) -> None:
     out_axes = list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
     for f, frame in enumerate(dlisio_lf.frames):
 
@@ -283,7 +286,7 @@ def add_channels_and_frames(dlisio_lf, out_logical_file, lf_index):
                 if type(channel.long_name) is str:
                     lname = channel.long_name
                 elif channel.long_name is not None:
-                    lname = find_in_dliswriter(out_logical_file, channel.long_name)
+                    lname = find_in_dliswriter(out_logical_file, channel.long_name)  # type: ignore  # str ruled out
 
             units = None
             if (channel.units):
@@ -333,7 +336,7 @@ def add_channels_and_frames(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_parameters(dlisio_lf, out_logical_file, lf_index):
+def add_parameters(dlisio_lf, out_logical_file, lf_index) -> None:
     out_axes = list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
     out_zones = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ZoneSet))
@@ -348,7 +351,7 @@ def add_parameters(dlisio_lf, out_logical_file, lf_index):
             if type(p.long_name) is str:
                 lname = p.long_name
             elif p.long_name is not None:
-                lname = find_in_dliswriter(out_logical_file, p.long_name)
+                lname = find_in_dliswriter(out_logical_file, p.long_name)  # type: ignore  # str ruled out in else
 
         out_logical_file.add_parameter(
             name=p.name,
@@ -364,7 +367,7 @@ def add_parameters(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_calibrations(dlisio_lf, out_logical_file, lf_index):
+def add_calibrations(dlisio_lf, out_logical_file, lf_index) -> None:
     out_channels = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
     out_coefficients = \
@@ -392,7 +395,7 @@ def add_calibrations(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_measurements(dlisio_lf, out_logical_file, lf_index):
+def add_measurements(dlisio_lf, out_logical_file, lf_index) -> None:
     out_axes = list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
 
     for m in dlisio_lf.measurements:
@@ -426,7 +429,7 @@ def add_measurements(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_comments(dlisio_lf, out_logical_file, lf_index):
+def add_comments(dlisio_lf, out_logical_file, lf_index) -> None:
     for c in dlisio_lf.comments:
         out_logical_file.add_comment(
             name=c.name,
@@ -436,9 +439,10 @@ def add_comments(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_processes(dlisio_lf, out_logical_file, lf_index):
-    out_axes = list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
-    out_parameters = \
+def add_processes(dlisio_lf, out_logical_file, lf_index) -> None:
+    out_axes: list[eflr_types.AxisItem] = \
+        list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
+    out_parameters: list[eflr_types.ParameterItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ParameterSet))
 
     for p in dlisio_lf.processes:
@@ -462,9 +466,10 @@ def add_processes(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_computations(dlisio_lf, out_logical_file, lf_index):
-    out_axes = list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
-    out_zones = \
+def add_computations(dlisio_lf, out_logical_file, lf_index) -> None:
+    out_axes: list[eflr_types.AxisItem] = \
+        list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
+    out_zones: list[eflr_types.ZoneItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ZoneSet))
 
     for c in dlisio_lf.computations:
@@ -473,7 +478,7 @@ def add_computations(dlisio_lf, out_logical_file, lf_index):
             if type(c.long_name) is str:
                 lname = c.long_name
             elif c.long_name is not None:
-                lname = find_in_dliswriter(out_logical_file, c.long_name)
+                lname = find_in_dliswriter(out_logical_file, c.long_name)  # type: ignore  # str ruled out in else
 
         axes_refs = find_dlisio_objects_in_dliswriter(c.axis, out_axes)
         zones_refs = find_dlisio_objects_in_dliswriter(c.zones, out_zones)
@@ -493,16 +498,16 @@ def add_computations(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_groups(dlisio_lf, out_logical_file, lf_index):
+def add_groups(dlisio_lf, out_logical_file, lf_index) -> None:
     for g in dlisio_lf.groups:
-        olist = []
+        olist = []  # type: ignore
 
         for o in g.objects:
             ref = find_in_dliswriter(out_logical_file, o)
             if ref:
                 olist.append(ref)
         if not len(olist):
-            olist = None
+            olist = None  # type: ignore
 
         out_logical_file.add_group(
             name=g.name,
@@ -512,7 +517,7 @@ def add_groups(dlisio_lf, out_logical_file, lf_index):
             origin_reference=g.origin,
         )
 
-    out_groups = \
+    out_groups: list[eflr_types.GroupItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.GroupSet))
 
     for idx_g, group in enumerate(out_groups):
@@ -524,7 +529,7 @@ def add_groups(dlisio_lf, out_logical_file, lf_index):
             group.group_list.value = group_list
 
 
-def add_messages(dlisio_lf, out_logical_file, lf_index):
+def add_messages(dlisio_lf, out_logical_file, lf_index) -> None:
     for m in dlisio_lf.messages:
         out_logical_file.add_message(
             name=m.name,
@@ -540,8 +545,8 @@ def add_messages(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_paths(dlisio_lf, out_logical_file, lf_index):
-    out_channels = \
+def add_paths(dlisio_lf, out_logical_file, lf_index) -> None:
+    out_channels: list[eflr_types.ChannelItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
 
     for p in dlisio_lf.paths:
@@ -578,10 +583,10 @@ def add_paths(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_splices(dlisio_lf, out_logical_file, lf_index):
-    out_channels = \
+def add_splices(dlisio_lf, out_logical_file, lf_index) -> None:
+    out_channels: list[eflr_types.ChannelItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
-    out_zones = \
+    out_zones: list[eflr_types.ZoneItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ZoneSet))
 
     for s in dlisio_lf.splices:
@@ -599,12 +604,12 @@ def add_splices(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_tools(dlisio_lf, out_logical_file, lf_index):
-    out_channels = \
+def add_tools(dlisio_lf, out_logical_file, lf_index) -> None:
+    out_channels: list[eflr_types.ChannelItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
-    out_parameters = \
+    out_parameters: list[eflr_types.ParameterItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ParameterSet))
-    out_equipments = \
+    out_equipments: list[eflr_types.EquipmentItem] = \
         list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.EquipmentSet))
 
     for t in dlisio_lf.tools:
@@ -625,7 +630,7 @@ def add_tools(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def add_noformats(dlisio_lf, out_logical_file, lf_index):
+def add_noformats(dlisio_lf, out_logical_file, lf_index) -> None:
     for n in dlisio_lf.noformats:
         out_logical_file.add_no_format(
             name=n.name,
@@ -636,7 +641,7 @@ def add_noformats(dlisio_lf, out_logical_file, lf_index):
         )
 
 
-def create_from_dlisio(in_logical_files, minimal):
+def create_from_dlisio(in_logical_files, minimal) -> DLISFile:
     """
     Write a DLIS file from a dlisio object.
 
@@ -683,7 +688,7 @@ def create_from_dlisio(in_logical_files, minimal):
 
         add_origins(lf, out_logical_files[idx_lf], idx_lf)
 
-        if not minimal:
+        if minimal.lower() == "false":
             add_axes(lf, out_logical_files[idx_lf], idx_lf)
             add_measurements(lf, out_logical_files[idx_lf], idx_lf)
             add_equipments(lf, out_logical_files[idx_lf], idx_lf)
@@ -694,7 +699,7 @@ def create_from_dlisio(in_logical_files, minimal):
 
         add_channels_and_frames(lf, out_logical_files[idx_lf], idx_lf)
 
-        if not minimal:
+        if minimal.lower() == "false":
             add_parameters(lf, out_logical_files[idx_lf], idx_lf)
             add_calibrations(lf, out_logical_files[idx_lf], idx_lf)
             add_comments(lf, out_logical_files[idx_lf], idx_lf)
@@ -709,25 +714,25 @@ def create_from_dlisio(in_logical_files, minimal):
 
             # Channels, Computations and Measurements can have references to any objects. We set them here
 
-            out_channels = \
+            out_channels: list[eflr_types.ChannelItem] = \
                 list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ChannelSet))
 
             for idx_c, out_c in enumerate(out_channels):
                 ref_source = find_in_dliswriter(out_logical_file, lf.channels[idx_c].source)
                 out_c.source.value = ref_source
 
-            out_computations = \
+            out_computations: list[eflr_types.ComputationItem] = \
                 list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.ComputationSet))
 
-            out_measurements = \
+            out_measurements: list[eflr_types.CalibrationMeasurementItem] = \
                 list(out_logical_file._eflr_sets.get_all_items_for_set_type(eflr_types.CalibrationMeasurementSet))
 
-            for idx_c, out_c in enumerate(out_computations):
+            for idx_c, out_cp in enumerate(out_computations):
                 ref_source = find_in_dliswriter(out_logical_file, lf.computations[idx_c].source)
-                out_c.source.value = ref_source
+                out_cp.source.value = ref_source
 
             for idx_m, out_m in enumerate(out_measurements):
                 ref_source = find_in_dliswriter(out_logical_file, lf.measurements[idx_m].source)
-                out_m.source.value = ref_source
+                out_m.measurement_source.value = ref_source
 
     return dlisFile

@@ -266,7 +266,7 @@ class LogicalFile:
         fh_set = eflr_types.FileHeaderSet()
 
         # fh_set.set_name = fh_identifier
-        # FIXME - Issue #39 Setting the name of the file header somehow corrupts the output DLIS file. This may be 
+        # FIXME - Issue #39 Setting the name of the file header somehow corrupts the output DLIS file. This may be
         # probably related to the Issue #14
         # And because of that it's problematic to add the fh_set to the self._eflr_sets and physical_file._eflr_sets,
         # now that we have multiple logical files, each one having their header. This is why we have file_header_item
