@@ -1,7 +1,7 @@
 from dliswriter import DLISFile, LogicalFile, enums, eflr_types, StorageUnitLabel
 from dliswriter.file.eflr_sets_dict import AnyEFLRSet, AnyEFLRItem
 from dliswriter.logical_record.core.eflr import EFLRSet
-from typing import Union, Type, Dict, Generic, Optional
+from typing import Union, Dict, Generic, Optional
 try:
     import dlisio    # type: ignore  # untyped library
 except ImportError:
