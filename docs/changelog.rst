@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 1.2.0
+-------------
+* Opening dlis files with `dlisio` and re-writing them with `dliswriter` - contribution by @ltbrizolara.
+
 Version 1.1.1
 -------------
 * `well_id` now set as `TextAttribute` - contribution by @ltbrizolara.
