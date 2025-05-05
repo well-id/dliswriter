@@ -22,8 +22,9 @@ class FileHeaderItem(EFLRItem):
 
     parent: "FileHeaderSet"
 
-    header_id_length_limit = 65             #: max length of the file header name
     max_sequence_number = int(1e10 - 1)     #: max value for sequence number; largest 10-digit integer
+
+    header_id_length_limit = 65             #: max length of the file header name
 
     def __init__(self, header_id: str, parent: "FileHeaderSet", sequence_number: int = 1,
                  identifier: str = '0') -> None:
@@ -87,8 +88,8 @@ class FileHeaderItem(EFLRItem):
         bts += pack_ushort(10)
         bts += get_ascii_bytes(str(self.sequence_number), 10, justify_left=False)
         bts += pack_ushort(int('00100001', 2))
-        bts += pack_ushort(65)
-        bts += get_ascii_bytes(self.header_id, 65, justify_left=True)
+        bts += pack_ushort(self.header_id_length_limit)
+        bts += get_ascii_bytes(self.header_id, self.header_id_length_limit, justify_left=True)
 
         return bts
 

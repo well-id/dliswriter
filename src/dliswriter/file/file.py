@@ -266,8 +266,8 @@ class LogicalFile:
         fh_set = eflr_types.FileHeaderSet()
 
         # fh_set.set_name = fh_identifier
-        # FIXME - Setting the name of the file header somehow corrupts the output DLIS file. This is probably related
-        # to the Issue #14
+        # FIXME - Issue #39 Setting the name of the file header somehow corrupts the output DLIS file. This may be
+        # probably related to the Issue #14
         # And because of that it's problematic to add the fh_set to the self._eflr_sets and physical_file._eflr_sets,
         # now that we have multiple logical files, each one having their header. This is why we have file_header_item
         # as an attribute, as we see below:
@@ -328,6 +328,12 @@ class LogicalFile:
         """Channels defined for the DLIS."""
 
         return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.OriginSet))
+
+    @property
+    def axes(self) -> list[eflr_types.AxisItem]:
+        """Axes defined for the DLIS."""
+
+        return list(self._eflr_sets.get_all_items_for_set_type(eflr_types.AxisSet))
 
     def add_axis(
         self,
