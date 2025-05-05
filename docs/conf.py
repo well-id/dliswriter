@@ -9,7 +9,7 @@
 project = 'dliswriter'
 copyright = '2023, Well ID'
 author = 'Dominika Dlugosz, Magne Lauritzen, Kamil Grunwald, Omer Faruk Sari'
-release = '1.1.1'
+release = '1.2.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
