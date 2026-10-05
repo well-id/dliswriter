@@ -13,13 +13,15 @@ class MultiFrameData:
     SourceDataObject (specifying numerical data, channel names, data types etc.)
     """
 
-    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: Optional[int] = None):
+    def __init__(self, frame: FrameItem, data: SourceDataWrapper, chunk_size: Optional[int] = None,
+                 first_frame_number: int = 1):
         """Initialise MultiFrameData object.
 
         Args:
             frame       :   FrameObject instance the data refer to.
             data        :   Data (with basic metadata) to be included.
             chunk_size  :   Size (in number of rows) of chunks in which source data should be loaded when iterated over.
+            first_frame_number : Positive integer number of the first emitted frame; defaults to 1.
         """
 
         super().__init__()
@@ -27,6 +29,10 @@ class MultiFrameData:
         self._check_type(frame, FrameItem)
         self._check_type(data, SourceDataWrapper)
         self._check_type(chunk_size, int, type(None))
+        if isinstance(first_frame_number, bool) or not isinstance(first_frame_number, int):
+            raise TypeError("first_frame_number must be a positive integer")
+        if first_frame_number < 1:
+            raise ValueError("first_frame_number must be positive")
 
         frame_channel_names = tuple(c.name for c in frame.channels.value)
         data_channel_names = data.dtype.names
@@ -40,7 +46,8 @@ class MultiFrameData:
         self._origin_reference: Union[int, None] = self._frame.origin_reference
 
         self._chunk_rows = chunk_size
-        self._i = 0  # keep track of current frame number during iteration
+        self._first_frame_number = first_frame_number
+        self._i = 0  # batch-local row counter during iteration
         self._data_item_generator: Union[Generator, None] = None
 
     @staticmethod
@@ -82,7 +89,7 @@ class MultiFrameData:
 
         return FrameData(
             frame=self._frame,
-            frame_number=self._i,
+            frame_number=self._first_frame_number + self._i - 1,
             slots=next(self._data_item_generator),
             origin_reference=self._origin_reference
         )
