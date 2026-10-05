@@ -3,10 +3,11 @@
 Note: unless otherwise specified, all quotes come from teh RP66 v1 standard specification.
 """
 
-from typing import Any, Union, Optional, TypeVar, Generator
+from typing import Any, Union, Optional, TypeVar, Generator, TYPE_CHECKING
 import numpy as np
 from timeit import timeit
 from datetime import timedelta, datetime
+from copy import deepcopy
 import logging
 
 from dliswriter.utils.source_data_wrappers import DictDataWrapper, SourceDataWrapper
@@ -31,6 +32,9 @@ from dliswriter.file.multi_frame_data import MultiFrameData
 from dliswriter.file.writer import DLISWriter
 from dliswriter.file.eflr_sets_dict import EFLRSetsDict
 from dliswriter.configuration import global_config
+
+if TYPE_CHECKING:
+    from dliswriter.file.incremental_writer import IncrementalDLISWriter
 
 logger = logging.getLogger(__name__)
 
@@ -175,6 +179,33 @@ class DLISFile:
             n += len(logical_file._no_format_frame_data)
 
         return SizedGenerator(self.generator(multi_frame_data_objects), size=n)
+
+    def _snapshot_metadata(self) -> "DLISFile":
+        """Detach the metadata reference graph without copying stored acquisition arrays."""
+        stores = [self._eflr_sets] + [lf._eflr_sets for lf in self.logical_files]
+        memo: dict[int, Any] = {id(lf._data_dict): {} for lf in self.logical_files}
+        # EFLRSetsDict's no-argument constructor is incompatible with the default
+        # defaultdict deepcopy protocol; seed each store, then copy its contents.
+        memo.update({id(store): type(store)() for store in stores})
+        frozen = deepcopy(self, memo)
+        for store in stores:
+            memo[id(store)].update(deepcopy(dict(store), memo))
+        return frozen
+
+    def start_incremental(
+        self,
+        filename: file_name_type,
+        initial_data: data_form_type,
+        output_chunk_size: int = 2**20,
+    ) -> "IncrementalDLISWriter":
+        """Start a fixed-schema, same-process session for one Logical File / Frame.
+
+        Existing targets are rejected. Metadata is detached from this definition;
+        append batches are safely cast and validated before writing only FDATA.
+        """
+        from dliswriter.file.incremental_writer import IncrementalDLISWriter
+
+        return IncrementalDLISWriter(self, filename, initial_data, output_chunk_size)
 
     def write(
         self,

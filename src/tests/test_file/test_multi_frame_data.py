@@ -3,7 +3,9 @@ import pytest
 
 from dliswriter.file.file import DLISFile
 from dliswriter.file.multi_frame_data import MultiFrameData
+from dliswriter.file.writer import DLISWriter
 from dliswriter.utils.source_data_wrappers import DictDataWrapper
+from ._incremental_test_helpers import definition, synthetic_data, readback
 
 
 @pytest.fixture
@@ -50,3 +52,22 @@ def test_nonpositive_offset(frame_and_data, first):
 def test_noninteger_offset(frame_and_data, first):
     with pytest.raises(TypeError, match='first_frame_number must be'):
         MultiFrameData(*frame_and_data, first_frame_number=first)
+
+
+def test_same_writer_composes_metadata_and_offset_batches(tmp_path, caplog):
+    data = synthetic_data()
+    df, frame = definition(data)
+    path = tmp_path / 'composed.dlis'
+    writer = DLISWriter(path, visible_record_length=df.storage_unit_label.max_record_length)
+    writer.write_storage_unit_label(df.storage_unit_label)
+    # Exactly one LF, no NoFormat: [[]] emits only the existing EFLRs.
+    writer.write_logical_records(list(df.generator([[]])), output_chunk_size=2**20)
+    for start in (0, 100):
+        batch = {name: values[start:start + 100] for name, values in data.items()}
+        wrapper = DictDataWrapper(batch, mapping=frame.channel_name_mapping,
+                                  known_dtypes=frame.known_channel_dtypes_mapping)
+        # Materialize this bounded batch: progressbar may restart a self-iterator.
+        records = list(MultiFrameData(frame, wrapper, first_frame_number=start + 1))
+        assert len(records) == 100
+        writer.write_logical_records(records, output_chunk_size=2**20)
+    readback(path, data, 200, caplog)

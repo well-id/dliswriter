@@ -1,6 +1,6 @@
 import logging
 from progressbar import progressbar
-from typing import Optional, Sequence
+from typing import BinaryIO, Generator, Iterable, Optional, Sequence
 from pathlib import Path
 
 from dliswriter.utils.internal.internal_enums import RepresentationCode
@@ -208,6 +208,33 @@ class DLISWriter:
         self._byte_writer.write_bytes(sul.represent_as_bytes().bts)
         self._sul_written = True
 
+    def _iter_visible_records(self, logical_records: Iterable) -> Generator[bytes, None, None]:
+        """Serialize, segment and wrap records without touching the destination.
+
+        Preflight callers must exhaust this generator to check every segment.
+        Emission uses the same path, with no separate segmentation rules.
+        """
+        # Reserve 4 bytes for the visible header and 4 for the logical segment header.
+        max_lr_segment_size = self._visible_record_length - 8
+        for lr in logical_records:
+            for segment, segment_size in lr.represent_as_bytes().make_segments(max_lr_segment_size):
+                yield self._make_visible_record(segment, segment_size)
+
+    def _commit_prepared(self, prepared: BinaryIO, read_size: int, *, includes_sul: bool = False) -> None:
+        """Copy an owned, rewound prepared stream; never serialize records here.
+
+        Initial streams include the SUL. Subsequent streams contain only records.
+        The caller owns cleanup and failure handling; partial I/O is not rolled back.
+        """
+        if isinstance(read_size, bool) or not isinstance(read_size, int) or read_size <= 0:
+            raise ValueError('Prepared stream read size must be a positive integer')
+        if includes_sul == self._sul_written:
+            raise RuntimeError('Prepared stream must include the SUL exactly once, at startup')
+        while chunk := prepared.read(read_size):
+            self._byte_writer.write_bytes(chunk)
+        if includes_sul:
+            self._sul_written = True
+
     def write_logical_records(self, logical_records: Sequence, output_chunk_size: Optional[number_type]) -> None:
         """Write the provided logical records to the file.
 
@@ -229,16 +256,10 @@ class DLISWriter:
         logger.debug(f"Output file will be produced in chunks of max size {output_chunk_size} bytes")
         output = BufferedOutput(int(output_chunk_size), self._byte_writer)
 
-        # max allowed size of an LR segment body; 4 bytes reserved for VR header and another 4 for LR segment header
-        max_lr_segment_size = self._visible_record_length - 8
-
         # loop through the logical records, transform them and write them to the file
         logger.info("Creating & writing visible records of the DLIS...")
-        for lr in progressbar(logical_records, max_value=len(logical_records)):
-            # represent a logical record as bytes; split it segments as needed
-            for segment, segment_size in lr.represent_as_bytes().make_segments(max_lr_segment_size):
-                # wrap each segment's bytes in a separate visible record and write the VR to the file
-                output.add_bytes(self._make_visible_record(segment, segment_size))
+        for visible_record in self._iter_visible_records(progressbar(logical_records, max_value=len(logical_records))):
+            output.add_bytes(visible_record)
         output.pass_bytes_to_writer()  # pass the remaining bytes kept in the output buffer (not full atm) to the writer
 
         # summarise

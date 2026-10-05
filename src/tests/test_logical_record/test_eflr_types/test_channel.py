@@ -87,6 +87,14 @@ def test_dimension_and_element_limit_not_specified() -> None:
     assert channel.element_limit.value is None
 
 
+def test_data_setup_preserves_legacy_element_limit_normalization() -> None:
+    """Conventional setup still narrows a valid wider limit to the actual sample dimension."""
+    channel = ChannelItem('VECTOR', element_limit=[5], parent=ChannelSet())
+    channel._set_dimension_from_data(np.ones((3, 2), dtype=np.float32))
+    assert channel.dimension.value == [2]
+    assert channel.element_limit.value == [2]
+
+
 @pytest.mark.parametrize(("dim", "el"), (
         ([12, 10], [12]),
         ([2], [1]),

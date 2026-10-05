@@ -115,9 +115,7 @@ class FrameItem(EFLRItem):
             for at in (self.index_min, self.index_max, self.spacing):
                 assign_if_none(at, key='units', value=index_channel.units.value)
 
-            if index_data.ndim != 1:
-                raise RuntimeError(f"Index channel's data must be 1-dimensional; got {index_data.ndim} dimensions "
-                                   f"for {index_channel} of {self}")
+            self._validate_index_structure(index_data.ndim)
             spacing, direction = self._compute_spacing_and_direction(index_data)
 
             if spacing is None:
@@ -133,6 +131,12 @@ class FrameItem(EFLRItem):
             else:
                 assign_if_none(self.spacing, spacing)
                 # no need to define direction if spacing is defined
+
+    def _validate_index_structure(self, ndim: int) -> None:
+        """Require scalar samples for an explicit index, without inferring acquisition metadata."""
+        if self.index_type.value is not None and ndim != 1:
+            raise RuntimeError(f"Index channel's data must be 1-dimensional; got {ndim} dimensions "
+                               f"for {self.channels.value[0]} of {self}")
 
     @staticmethod
     def _compute_spacing_and_direction(index_data: np.ndarray) -> tuple[Union[int, float, None], Union[bool, None]]:

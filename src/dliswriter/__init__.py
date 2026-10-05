@@ -1,4 +1,5 @@
 from dliswriter.file.file import DLISFile, LogicalFile
+from dliswriter.file.incremental_writer import IncrementalDLISWriter
 from dliswriter.logical_record.core.eflr import EFLRSet, EFLRItem, AttrSetup
 from dliswriter.logical_record.core.attribute import Attribute
 from dliswriter.logical_record.misc.storage_unit_label import StorageUnitLabel
